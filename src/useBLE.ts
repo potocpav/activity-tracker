@@ -11,6 +11,7 @@ import {
   BleManager,
   Characteristic,
   Device,
+  Subscription,
 } from "react-native-ble-plx";
 
 const DATA_SERVICE_UUID =           "7e4e1701-1ea6-40c9-9dcc-13d34ffead57";
