@@ -14,9 +14,15 @@ const App = () => {
     allDevices,
     connectedDevice,
     connectToDevice,
-    color,
     requestPermissions,
     scanForPeripherals,
+    disconnectDevice,
+    tareScale,
+    startMeasurement,
+    stopMeasurement,
+    shutdown,
+    sampleBatteryVoltage,
+    weight,
   } = useBLE();
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
 
@@ -36,16 +42,68 @@ const App = () => {
     setIsModalVisible(true);
   };
 
+  const tareScaleWrapper = () => {
+    if (connectedDevice) {
+      tareScale(connectedDevice);
+    }
+  }
+
+  const startMeasurementWrapper = () => {
+    if (connectedDevice) {
+      startMeasurement(connectedDevice);
+    }
+  }
+
+  const stopMeasurementWrapper = () => {
+    if (connectedDevice) {
+      stopMeasurement(connectedDevice);
+    }
+  }
+
+  const shutdownWrapper = () => {
+    if (connectedDevice) {
+      shutdown(connectedDevice);
+    }
+  }
+
+  const sampleBatteryVoltageWrapper = () => {
+    if (connectedDevice) {
+      sampleBatteryVoltage(connectedDevice);
+    }
+  }
+  
+  
+
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: color }]}>
+    <SafeAreaView style={[styles.container]}>
       <View style={styles.heartRateTitleWrapper}>
         {connectedDevice ? (
           <>
             <Text style={styles.heartRateTitleText}>Connected</Text>
+            <Text style={styles.heartRateTitleText}>Device: {connectedDevice?.name}</Text>
+            <TouchableOpacity onPress={tareScaleWrapper} style={styles.ctaButton}>
+              <Text style={styles.ctaButtonText}>Tare</Text>
+            </TouchableOpacity>            
+            <TouchableOpacity onPress={startMeasurementWrapper} style={styles.ctaButton}>
+              <Text style={styles.ctaButtonText}>Start Measurement</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={stopMeasurementWrapper} style={styles.ctaButton}>
+              <Text style={styles.ctaButtonText}>Stop Measurement</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={shutdownWrapper} style={styles.ctaButton}>
+              <Text style={styles.ctaButtonText}>Shutdown</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={sampleBatteryVoltageWrapper} style={styles.ctaButton}>
+              <Text style={styles.ctaButtonText}>Sample Battery Voltage</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={disconnectDevice} style={styles.ctaButton}>
+              <Text style={styles.ctaButtonText}>Disconnect</Text>
+            </TouchableOpacity>
+            <Text style={styles.heartRateText}>Weight: {weight !== null ? Math.max(0, weight).toFixed(1) + ' kg' : '-'}</Text>
           </>
         ) : (
           <Text style={styles.heartRateTitleText}>
-            Please connect the Arduino
+            Please connect the Tindeq Progressor
           </Text>
         )}
       </View>
@@ -89,13 +147,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     height: 50,
     marginHorizontal: 20,
-    marginBottom: 5,
+    marginVertical: 5,
     borderRadius: 8,
   },
   ctaButtonText: {
     fontSize: 18,
     fontWeight: "bold",
     color: "white",
+    marginHorizontal: 20,
   },
 });
 

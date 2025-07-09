@@ -37,7 +37,7 @@ const DeviceModalListItem: FC<DeviceModalListItemProps> = (props) => {
       style={modalStyle.ctaButton}
     >
       <Text style={modalStyle.ctaButtonText}>
-        {item.item.name ?? item.item.localName}
+        {item.item.localName ?? item.item.name ?? item.item.id}
       </Text>
     </TouchableOpacity>
   );
