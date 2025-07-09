@@ -13,19 +13,19 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.potocpav.tindeq-analyzer"
+      "bundleIdentifier": "com.pavelpotocek.tindeq-analyzer"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/icon-fg.png",
+        "backgroundColor": "#ff7c66"
       },
       "permissions": [
         "android.permission.BLUETOOTH",
         "android.permission.BLUETOOTH_ADMIN",
         "android.permission.BLUETOOTH_CONNECT"
       ],
-      "package": "com.potocpav.tindeq-analyzer"
+      "package": "com.pavelpotocek.tindeqanalyzer"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -45,7 +45,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "3992e538-00f6-4566-bed6-7381e317557d"
+        "projectId": "ab8a7477-bea4-43f6-8b55-4a0d4029ac00"
       }
     }
   }

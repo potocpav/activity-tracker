@@ -113,7 +113,7 @@ function useBLE() {
 
       if (
         device &&
-        (device.localName !== null)
+        device.localName?.startsWith("Progressor")
       ) {
         setAllDevices((prevState: Device[]) => {
           if (!isDuplicteDevice(prevState, device)) {
