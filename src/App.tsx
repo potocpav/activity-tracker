@@ -114,9 +114,6 @@ const App = () => {
             <TouchableOpacity onPress={sampleBatteryVoltageWrapper} style={styles.ctaButton}>
               <Text style={styles.ctaButtonText}>Sample Battery Voltage</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={disconnectDevice} style={styles.ctaButton}>
-              <Text style={styles.ctaButtonText}>Disconnect</Text>
-            </TouchableOpacity>
             <Text style={styles.heartRateText}>Weight: {weight !== null ? Math.max(0, weight).toFixed(1) + ' kg' : '-'}</Text>
           </>
         ) : (
@@ -125,9 +122,6 @@ const App = () => {
           </Text>
         )}
       </View>
-      <TouchableOpacity onPress={openModal} style={styles.ctaButton}>
-        <Text style={styles.ctaButtonText}>Connect</Text>
-      </TouchableOpacity>
       <DeviceModal
         closeModal={hideModal}
         visible={isModalVisible}

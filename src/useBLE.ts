@@ -98,7 +98,11 @@ function useBLE() {
   const disconnectDevice = async () => {
     if (connectedDevice) {
       await connectedDevice.cancelConnection();
-      setConnectedDevice(null);
+      const isConnected = await connectedDevice.isConnected();
+      console.log("isConnected", isConnected);
+      if (!isConnected) {
+        setConnectedDevice(null);
+      }
     }
   };
 
