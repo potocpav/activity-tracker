@@ -6,10 +6,22 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import MainPage from "./MainPage";
+import LiveView from "./LiveView";
 import DeviceModal from "./DeviceConnectionModal";
 import useBLE from "./useBLE";
 
+type MeasurementOption = {
+  id: string;
+  title: string;
+  description: string;
+};
+
 const App = () => {
+  const [currentView, setCurrentView] = useState<'main' | 'live-view'>('main');
+  const [selectedOption, setSelectedOption] = useState<MeasurementOption | null>(null);
+  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+
   const {
     allDevices,
     connectedDevice,
@@ -20,11 +32,8 @@ const App = () => {
     tareScale,
     startMeasurement,
     stopMeasurement,
-    shutdown,
-    sampleBatteryVoltage,
     weight,
   } = useBLE();
-  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
 
   const scanForDevices = async () => {
     const isPermissionsEnabled = await requestPermissions();
@@ -42,40 +51,20 @@ const App = () => {
     setIsModalVisible(true);
   };
 
-  const tareScaleWrapper = () => {
-    if (connectedDevice) {
-      tareScale(connectedDevice);
+  const handleSelectOption = (option: MeasurementOption) => {
+    setSelectedOption(option);
+    if (option.id === 'live-view') {
+      setCurrentView('live-view');
     }
-  }
+  };
 
-  const startMeasurementWrapper = () => {
-    if (connectedDevice) {
-      startMeasurement(connectedDevice);
-    }
-  }
-
-  const stopMeasurementWrapper = () => {
-    if (connectedDevice) {
-      stopMeasurement(connectedDevice);
-    }
-  }
-
-  const shutdownWrapper = () => {
-    if (connectedDevice) {
-      shutdown(connectedDevice);
-    }
-  }
-
-  const sampleBatteryVoltageWrapper = () => {
-    if (connectedDevice) {
-      sampleBatteryVoltage(connectedDevice);
-    }
-  }
-  
-  
+  const handleBack = () => {
+    setCurrentView('main');
+    setSelectedOption(null);
+  };
 
   return (
-    <SafeAreaView style={[styles.container]}>
+    <SafeAreaView style={styles.container}>
       {/* Status Bar */}
       <View style={styles.statusBar}>
         <View style={styles.statusInfo}>
@@ -93,41 +82,20 @@ const App = () => {
           </Text>
         </TouchableOpacity>
       </View>
-      
-      {connectedDevice ? (
-        <>
-          {/* Control Buttons Section */}
-          <View style={styles.controlSection}>
-            <View style={styles.buttonRow}>
-              <TouchableOpacity onPress={startMeasurementWrapper} style={styles.controlButton}>
-                <Text style={styles.controlButtonText}>Start</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={stopMeasurementWrapper} style={styles.controlButton}>
-                <Text style={styles.controlButtonText}>Stop</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={tareScaleWrapper} style={styles.controlButton}>
-                <Text style={styles.controlButtonText}>Tare</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-          
-          {/* Weight Display Section */}
-          <View style={styles.weightSection}>
-            <Text style={styles.weightLabel}>Weight</Text>
-            <Text style={styles.weightValue}>
-              {weight !== null ? Math.max(0, weight).toFixed(1) : '-'}
-            </Text>
-            <Text style={styles.weightUnit}>kg</Text>
-          </View>
-        </>
+
+      {currentView === 'live-view' ? (
+        <LiveView 
+          onBack={handleBack}
+          connectedDevice={connectedDevice}
+          tareScale={tareScale}
+          startMeasurement={startMeasurement}
+          stopMeasurement={stopMeasurement}
+          weight={weight}
+        />
       ) : (
-        <View style={styles.disconnectedSection}>
-          <Text style={styles.disconnectedText}>
-            Please connect the Tindeq Progressor
-          </Text>
-        </View>
+        <MainPage onSelectOption={handleSelectOption} />
       )}
-      
+
       <DeviceModal
         closeModal={hideModal}
         visible={isModalVisible}
@@ -180,81 +148,6 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 14,
     fontWeight: '600',
-  },
-  controlSection: {
-    marginHorizontal: 20,
-    marginTop: 10,
-    padding: 0,
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
-  },
-  controlButton: {
-    backgroundColor: "#FF6060",
-    justifyContent: "center",
-    alignItems: "center",
-    height: 50,
-    width: '30%',
-    borderRadius: 8,
-  },
-  controlButtonText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "white",
-  },
-  weightSection: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    marginHorizontal: 20,
-    marginTop: 10,
-    backgroundColor: '#ffffff',
-    borderRadius: 10,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  weightLabel: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#333333",
-    marginBottom: 5,
-  },
-  weightValue: {
-    fontSize: 60,
-    fontWeight: "bold",
-    color: "#FF6060",
-  },
-  weightUnit: {
-    fontSize: 20,
-    color: "#666666",
-    marginTop: 5,
-  },
-  disconnectedSection: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    marginHorizontal: 20,
-    marginTop: 10,
-    backgroundColor: '#ffffff',
-    borderRadius: 10,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  disconnectedText: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#FF5722",
-    textAlign: "center",
   },
 });
 
