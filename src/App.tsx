@@ -94,34 +94,40 @@ const App = () => {
         </TouchableOpacity>
       </View>
       
-      <View style={styles.heartRateTitleWrapper}>
-        {connectedDevice ? (
-          <>
-            <Text style={styles.heartRateTitleText}>Connected</Text>
-            <Text style={styles.heartRateTitleText}>Device: {connectedDevice?.name}</Text>
-            <TouchableOpacity onPress={tareScaleWrapper} style={styles.ctaButton}>
-              <Text style={styles.ctaButtonText}>Tare</Text>
-            </TouchableOpacity>            
-            <TouchableOpacity onPress={startMeasurementWrapper} style={styles.ctaButton}>
-              <Text style={styles.ctaButtonText}>Start Measurement</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={stopMeasurementWrapper} style={styles.ctaButton}>
-              <Text style={styles.ctaButtonText}>Stop Measurement</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={shutdownWrapper} style={styles.ctaButton}>
-              <Text style={styles.ctaButtonText}>Shutdown</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={sampleBatteryVoltageWrapper} style={styles.ctaButton}>
-              <Text style={styles.ctaButtonText}>Sample Battery Voltage</Text>
-            </TouchableOpacity>
-            <Text style={styles.heartRateText}>Weight: {weight !== null ? Math.max(0, weight).toFixed(1) + ' kg' : '-'}</Text>
-          </>
-        ) : (
-          <Text style={styles.heartRateTitleText}>
+      {connectedDevice ? (
+        <>
+          {/* Control Buttons Section */}
+          <View style={styles.controlSection}>
+            <View style={styles.buttonRow}>
+              <TouchableOpacity onPress={startMeasurementWrapper} style={styles.controlButton}>
+                <Text style={styles.controlButtonText}>Start</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={stopMeasurementWrapper} style={styles.controlButton}>
+                <Text style={styles.controlButtonText}>Stop</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={tareScaleWrapper} style={styles.controlButton}>
+                <Text style={styles.controlButtonText}>Tare</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          
+          {/* Weight Display Section */}
+          <View style={styles.weightSection}>
+            <Text style={styles.weightLabel}>Weight</Text>
+            <Text style={styles.weightValue}>
+              {weight !== null ? Math.max(0, weight).toFixed(1) : '-'}
+            </Text>
+            <Text style={styles.weightUnit}>kg</Text>
+          </View>
+        </>
+      ) : (
+        <View style={styles.disconnectedSection}>
+          <Text style={styles.disconnectedText}>
             Please connect the Tindeq Progressor
           </Text>
-        )}
-      </View>
+        </View>
+      )}
+      
       <DeviceModal
         closeModal={hideModal}
         visible={isModalVisible}
@@ -175,36 +181,80 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-  heartRateTitleWrapper: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  heartRateTitleText: {
-    fontSize: 30,
-    fontWeight: "bold",
-    textAlign: "center",
+  controlSection: {
     marginHorizontal: 20,
-    color: "black",
+    marginTop: 10,
+    padding: 0,
   },
-  heartRateText: {
-    fontSize: 25,
-    marginTop: 15,
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
   },
-  ctaButton: {
+  controlButton: {
     backgroundColor: "#FF6060",
     justifyContent: "center",
     alignItems: "center",
     height: 50,
-    marginHorizontal: 20,
-    marginVertical: 5,
+    width: '30%',
     borderRadius: 8,
   },
-  ctaButtonText: {
-    fontSize: 18,
+  controlButtonText: {
+    fontSize: 16,
     fontWeight: "bold",
     color: "white",
+  },
+  weightSection: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
     marginHorizontal: 20,
+    marginTop: 10,
+    backgroundColor: '#ffffff',
+    borderRadius: 10,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  weightLabel: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#333333",
+    marginBottom: 5,
+  },
+  weightValue: {
+    fontSize: 60,
+    fontWeight: "bold",
+    color: "#FF6060",
+  },
+  weightUnit: {
+    fontSize: 20,
+    color: "#666666",
+    marginTop: 5,
+  },
+  disconnectedSection: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginHorizontal: 20,
+    marginTop: 10,
+    backgroundColor: '#ffffff',
+    borderRadius: 10,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  disconnectedText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#FF5722",
+    textAlign: "center",
   },
 });
 
