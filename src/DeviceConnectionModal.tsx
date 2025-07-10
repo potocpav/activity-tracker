@@ -7,6 +7,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  View,
 } from "react-native";
 import { Device } from "react-native-ble-plx";
 
@@ -62,20 +63,26 @@ const DeviceModal: FC<DeviceModalProps> = (props) => {
   return (
     <Modal
       style={modalStyle.modalContainer}
-      animationType="slide"
-      transparent={false}
+      animationType="fade"
+      transparent={true}
       visible={visible}
     >
-      <SafeAreaView style={modalStyle.modalTitle}>
-        <Text style={modalStyle.modalTitleText}>
-          Tap on a device to connect
-        </Text>
-        <FlatList
-          contentContainerStyle={modalStyle.modalFlatlistContiner}
-          data={devices}
-          renderItem={renderDeviceModalListItem}
-        />
-      </SafeAreaView>
+      <View style={modalStyle.overlay}>
+        <View style={modalStyle.modalContent}>
+          <Text style={modalStyle.modalTitleText}>
+            Tap on a device to connect
+          </Text>
+          <FlatList
+            contentContainerStyle={modalStyle.modalFlatlistContiner}
+            data={devices}
+            renderItem={renderDeviceModalListItem}
+            showsVerticalScrollIndicator={false}
+          />
+          <TouchableOpacity onPress={closeModal} style={modalStyle.closeButton}>
+            <Text style={modalStyle.closeButtonText}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     </Modal>
   );
 };
@@ -83,11 +90,33 @@ const DeviceModal: FC<DeviceModalProps> = (props) => {
 const modalStyle = StyleSheet.create({
   modalContainer: {
     flex: 1,
-    backgroundColor: "#f2f2f2",
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 20,
+    marginHorizontal: 20,
+    maxHeight: '70%',
+    minHeight: 300,
+    width: '90%',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
   modalFlatlistContiner: {
-    flex: 1,
-    justifyContent: "center",
+    flexGrow: 1,
+    paddingVertical: 10,
   },
   modalCellOutline: {
     borderWidth: 1,
@@ -97,29 +126,38 @@ const modalStyle = StyleSheet.create({
     paddingVertical: 15,
     borderRadius: 8,
   },
-  modalTitle: {
-    flex: 1,
-    backgroundColor: "#f2f2f2",
-  },
   modalTitleText: {
-    marginTop: 40,
-    fontSize: 30,
+    fontSize: 20,
     fontWeight: "bold",
-    marginHorizontal: 20,
+    marginBottom: 15,
     textAlign: "center",
+    color: '#333333',
   },
   ctaButton: {
     backgroundColor: "#FF6060",
     justifyContent: "center",
     alignItems: "center",
     height: 50,
-    marginHorizontal: 20,
-    marginBottom: 5,
+    marginHorizontal: 10,
+    marginBottom: 8,
     borderRadius: 8,
   },
   ctaButtonText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
+    color: "white",
+  },
+  closeButton: {
+    backgroundColor: '#6c757d',
+    justifyContent: "center",
+    alignItems: "center",
+    height: 44,
+    marginTop: 10,
+    borderRadius: 8,
+  },
+  closeButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
     color: "white",
   },
 });
