@@ -15,10 +15,12 @@ type MeasurementOption = {
 };
 
 type MainPageProps = {
-  onSelectOption: (option: MeasurementOption) => void;
+  // onSelectOption: (option: MeasurementOption) => void;
+  navigation: any;
+  route: any;
 };
 
-const MainPage: React.FC<MainPageProps> = ({ onSelectOption }) => {
+const MainPage: React.FC<MainPageProps> = ({ navigation, route }) => {
   const measurementOptions: MeasurementOption[] = [
     {
       id: "live-view",
@@ -30,7 +32,7 @@ const MainPage: React.FC<MainPageProps> = ({ onSelectOption }) => {
   const renderOption = ({ item }: { item: MeasurementOption }) => (
     <TouchableOpacity
       style={styles.optionCard}
-      onPress={() => onSelectOption(item)}
+      onPress={() => navigation.navigate('Live View', { name: item.title })}
     >
       <Text style={styles.optionTitle}>{item.title}</Text>
       <Text style={styles.optionDescription}>{item.description}</Text>

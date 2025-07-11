@@ -5,40 +5,25 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Button,
 } from "react-native";
+import {NavigationContainer} from '@react-navigation/native';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import MainPage from "./MainPage";
 import LiveView from "./LiveView";
 import DeviceModal from "./DeviceConnectionModal";
 import useBLE from "./useBLE";
 
-type MeasurementOption = {
-  id: string;
-  title: string;
-  description: string;
-};
 
 const App = () => {
-  const [currentView, setCurrentView] = useState<'main' | 'live-view'>('main');
-  const [selectedOption, setSelectedOption] = useState<MeasurementOption | null>(null);
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
 
-  const {
-    allDevices,
-    connectedDevice,
-    connectToDevice,
-    requestPermissions,
-    scanForPeripherals,
-    disconnectDevice,
-    tareScale,
-    startMeasurement,
-    stopMeasurement,
-    weight,
-  } = useBLE();
+  const bleDevice = useBLE();
 
   const scanForDevices = async () => {
-    const isPermissionsEnabled = await requestPermissions();
+    const isPermissionsEnabled = await bleDevice.requestPermissions();
     if (isPermissionsEnabled) {
-      scanForPeripherals();
+      bleDevice.scanForPeripherals();
     }
   };
 
@@ -51,57 +36,50 @@ const App = () => {
     setIsModalVisible(true);
   };
 
-  const handleSelectOption = (option: MeasurementOption) => {
-    setSelectedOption(option);
-    if (option.id === 'live-view') {
-      setCurrentView('live-view');
-    }
-  };
-
-  const handleBack = () => {
-    setCurrentView('main');
-    setSelectedOption(null);
-  };
+  const Stack = createNativeStackNavigator();
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Status Bar */}
-      <View style={styles.statusBar}>
-        <View style={styles.statusInfo}>
-          <View style={[styles.statusIndicator, { backgroundColor: connectedDevice ? '#4CAF50' : '#FF5722' }]} />
-          <Text style={styles.statusText}>
-            {connectedDevice ? `Connected: ${connectedDevice.name}` : 'Disconnected'}
-          </Text>
+        {/* Status Bar */}
+        <View style={styles.statusBar}>
+          <View style={styles.statusInfo}>
+            <View style={[styles.statusIndicator, { backgroundColor: bleDevice.connectedDevice ? '#4CAF50' : '#FF5722' }]} />
+            <Text style={styles.statusText}>
+              {bleDevice.connectedDevice ? `Connected: ${bleDevice.connectedDevice.name}` : 'Disconnected'}
+            </Text>
+          </View>
+          <TouchableOpacity 
+            onPress={bleDevice.connectedDevice ? bleDevice.disconnectDevice : openModal} 
+            style={[styles.statusButton, { backgroundColor: bleDevice.connectedDevice ? '#FF5722' : '#4CAF50' }]}
+          >
+            <Text style={styles.statusButtonText}>
+              {bleDevice.connectedDevice ? 'Disconnect' : 'Connect'}
+            </Text>
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity 
-          onPress={connectedDevice ? disconnectDevice : openModal} 
-          style={[styles.statusButton, { backgroundColor: connectedDevice ? '#FF5722' : '#4CAF50' }]}
-        >
-          <Text style={styles.statusButtonText}>
-            {connectedDevice ? 'Disconnect' : 'Connect'}
-          </Text>
-        </TouchableOpacity>
-      </View>
+      
+        <NavigationContainer>
+          <Stack.Navigator>
+            <Stack.Screen
+              name="Main Page"
+              component={MainPage}
+              options={{title: "Test Page Main"}}
+            />
+            <Stack.Screen 
+              name="Live View" 
+              component={LiveView} 
+              options={{title: "Live View"}}
+              initialParams={{bleDevice: bleDevice}}
+              />
+          </Stack.Navigator>
+        </NavigationContainer>
 
-      {currentView === 'live-view' ? (
-        <LiveView 
-          onBack={handleBack}
-          connectedDevice={connectedDevice}
-          tareScale={tareScale}
-          startMeasurement={startMeasurement}
-          stopMeasurement={stopMeasurement}
-          weight={weight}
+        <DeviceModal
+          closeModal={hideModal}
+          visible={isModalVisible}
+          connectToPeripheral={bleDevice.connectToDevice}
+          devices={bleDevice.allDevices}
         />
-      ) : (
-        <MainPage onSelectOption={handleSelectOption} />
-      )}
-
-      <DeviceModal
-        closeModal={hideModal}
-        visible={isModalVisible}
-        connectToPeripheral={connectToDevice}
-        devices={allDevices}
-      />
     </SafeAreaView>
   );
 };

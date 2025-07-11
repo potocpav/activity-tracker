@@ -9,52 +9,45 @@ import {
 import { Device } from "react-native-ble-plx";
 
 type LiveViewProps = {
-  onBack: () => void;
-  connectedDevice: Device | null;
-  tareScale: (device: Device) => void;
-  startMeasurement: (device: Device) => void;
-  stopMeasurement: (device: Device) => void;
-  weight: number | null;
+  navigation: any;
+  route: any;
 };
 
-const LiveView: React.FC<LiveViewProps> = ({ 
-  onBack, 
-  connectedDevice, 
-  tareScale, 
-  startMeasurement, 
-  stopMeasurement, 
-  weight 
-}) => {
+const LiveView: React.FC<LiveViewProps> = ({navigation, route}) => {
+  const [maxWeight, setMaxWeight] = useState<number | null>(null);
+  const bleDevice = route.params.bleDevice;
+  // // Update max weight whenever weight changes
+  // React.useEffect(() => {
+  //   if (weight !== null) {
+  //     setMaxWeight(prevMax => prevMax === null ? weight : Math.max(prevMax, weight));
+  //   }
+  // }, [weight]);
+
   const tareScaleWrapper = () => {
-    if (connectedDevice) {
-      tareScale(connectedDevice);
+    if (bleDevice.connectedDevice) {
+      bleDevice.tareScale(bleDevice.connectedDevice);
     }
   }
 
   const startMeasurementWrapper = () => {
-    if (connectedDevice) {
-      startMeasurement(connectedDevice);
+    if (bleDevice.connectedDevice) {
+      bleDevice.startMeasurement(bleDevice.connectedDevice);
     }
   }
 
   const stopMeasurementWrapper = () => {
-    if (connectedDevice) {
-      stopMeasurement(connectedDevice);
+    if (bleDevice.connectedDevice) {
+      bleDevice.stopMeasurement(bleDevice.connectedDevice);
     }
   }
 
+  const resetMaxWeight = () => {
+    setMaxWeight(null);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header with Back Button */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Text style={styles.backButtonText}>← Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Live View</Text>
-        <View style={styles.headerSpacer} />
-      </View>
-      
-      {connectedDevice ? (
+      {bleDevice.connectedDevice ? (
         <>
           {/* Control Buttons Section */}
           <View style={styles.controlSection}>
@@ -71,13 +64,38 @@ const LiveView: React.FC<LiveViewProps> = ({
             </View>
           </View>
           
-          {/* Weight Display Section */}
+          {/* Weight and Time Display Section */}
           <View style={styles.weightSection}>
-            <Text style={styles.weightLabel}>Weight</Text>
-            <Text style={styles.weightValue}>
-              {weight !== null ? Math.max(0, weight).toFixed(1) : '-'}
-            </Text>
-            <Text style={styles.weightUnit}>kg</Text>
+            <View style={styles.measurementRow}>
+              <View style={styles.measurementColumn}>
+                <Text style={styles.measurementLabel}>Weight</Text>
+                <Text style={styles.measurementValue}>
+                  {bleDevice.weight !== null ? bleDevice.weight.toFixed(1) : '-'}
+                </Text>
+                <Text style={styles.measurementUnit}>kg</Text>
+              </View>
+              <View style={styles.measurementColumn}>
+                <Text style={styles.measurementLabel}>Time</Text>
+                <Text style={styles.measurementValue}>
+                  {bleDevice.time !== null ? bleDevice.time.toFixed(1) : '-'}
+                </Text>
+                <Text style={styles.measurementUnit}>s</Text>
+              </View>
+            </View>
+            <View style={styles.measurementRow}>
+              <View style={styles.measurementColumn}>
+                <Text style={styles.measurementLabel}>Max Weight</Text>
+                <Text style={styles.measurementValue}>
+                  {bleDevice.maxWeight !== null ? bleDevice.maxWeight.toFixed(1) : '-'}
+                </Text>
+                <Text style={styles.measurementUnit}>kg</Text>
+                {
+                  <TouchableOpacity onPress={resetMaxWeight} style={styles.resetButton}>
+                    <Text style={styles.resetButtonText}>Reset</Text>
+                  </TouchableOpacity>
+                }
+              </View>
+            </View>
           </View>
         </>
       ) : (
@@ -161,21 +179,45 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  weightLabel: {
+  measurementRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    width: '100%',
+  },
+  measurementColumn: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  measurementLabel: {
     fontSize: 24,
     fontWeight: "bold",
     color: "#333333",
     marginBottom: 5,
   },
-  weightValue: {
+  measurementValue: {
     fontSize: 60,
     fontWeight: "bold",
     color: "#FF6060",
   },
-  weightUnit: {
+  measurementUnit: {
     fontSize: 20,
     color: "#666666",
     marginTop: 5,
+  },
+  resetButton: {
+    marginTop: 10,
+    backgroundColor: "#FF6060",
+    justifyContent: "center",
+    alignItems: "center",
+    height: 40,
+    width: '80%',
+    borderRadius: 8,
+  },
+  resetButtonText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "white",
   },
   disconnectedSection: {
     flex: 1,

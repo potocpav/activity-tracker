@@ -25,6 +25,7 @@ function useBLE() {
   const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [weight, setWeight] = useState<number | null>(null);
+  const [time, setTime] = useState<number | null>(null);
 
   const requestAndroid31Permissions = async () => {
     const bluetoothScanPermission = await PermissionsAndroid.request(
@@ -149,12 +150,13 @@ function useBLE() {
       const length = bytes[1];
 
       const view = new DataView(bytes.buffer);
-      const weight = view.getFloat32(length + 2 - 8, true);
-      const time = view.getInt32(length + 2 - 4, true);
+      const weight = Math.abs(view.getFloat32(length + 2 - 8, true));
+      const time = view.getInt32(length + 2 - 4, true) / 1e6;
 
 
       console.log("Weight measurement received. Length: " + length + ", Weight: " + weight + ", Time: " + time + ", Bytes: " + bytes.length);
       setWeight(weight);
+      setTime(time);
     } else if (dataType === 0x02) {
       console.log("Low power warning received");
     } else {
@@ -199,6 +201,7 @@ function useBLE() {
     subscription?.remove();
     setSubscription(null);
     setWeight(null);
+    setTime(null);
   };
 
   const shutdown = async (device: Device) => {
@@ -239,6 +242,7 @@ function useBLE() {
     shutdown,
     sampleBatteryVoltage,
     weight,
+    time,
   };
 }
 
