@@ -14,6 +14,7 @@ type StatusBarProps = {
 
 const StatusBar: React.FC<StatusBarProps> = ({navigation}) => {
     const connectedDevice = useBle((state: any) => state.connectedDevice);
+    const isConnected = useBle((state: any) => state.isConnected);
     const allDevices = useBle((state: any) => state.allDevices);
     const requestPermissions = useBle((state: any) => state.requestPermissions);
     const scanForPeripherals = useBle((state: any) => state.scanForPeripherals);
@@ -35,20 +36,20 @@ const StatusBar: React.FC<StatusBarProps> = ({navigation}) => {
     return (
     <View style={styles.statusBar}>
       <View style={styles.statusInfo}>
-        <View style={[styles.statusIndicator, { backgroundColor: connectedDevice ? '#4CAF50' : '#FF5722' }]} />
+        <View style={[styles.statusIndicator, { backgroundColor: isConnected ? '#4CAF50' : '#FF5722' }]} />
         <Text style={styles.statusText}>
-          {connectedDevice ? `Connected: ${connectedDevice.name}` : 'Disconnected'}
+          {isConnected ? `Connected: ${connectedDevice.name}` : 'Disconnected'}
         </Text>
       </View>
       <TouchableOpacity 
-        onPress={connectedDevice ? disconnectDevice : openModal} 
+        onPress={isConnected ? disconnectDevice : openModal} 
         style={
             [styles.statusButton, 
-            { backgroundColor: connectedDevice ? '#FF5722' : '#4CAF50' }
+            { backgroundColor: isConnected ? '#FF5722' : '#4CAF50' }
         ]}
       >
         <Text style={styles.statusButtonText}>
-          {connectedDevice ? 'Disconnect' : 'Connect'}
+          {isConnected ? 'Disconnect' : 'Connect'}
         </Text>
       </TouchableOpacity>
     </View>

@@ -17,6 +17,7 @@ type LiveViewProps = {
 
 const LiveView: React.FC<LiveViewProps> = ({navigation, route}) => {
   const connectedDevice = useBle((state: any) => state.connectedDevice);
+  const isConnected = useBle((state: any) => state.isConnected);
   const weight = useBle((state: any) => state.weight);
   const time = useBle((state: any) => state.time);
   const startMeasurement = useBle((state: any) => state.startMeasurement);
@@ -28,7 +29,7 @@ const LiveView: React.FC<LiveViewProps> = ({navigation, route}) => {
     <SafeAreaView style={styles.container}>
       <StatusBar navigation={navigation}/>
 
-      {connectedDevice ? (
+      {isConnected ? (
         <>
           {/* Control Buttons Section */}
           <View style={styles.controlSection}>
@@ -139,12 +140,10 @@ const styles = StyleSheet.create({
   },
   weightSection: {
     flex: 1,
-    justifyContent: "center",
+    // justifyContent: "center",
     alignItems: "center",
-    marginHorizontal: 20,
     marginTop: 10,
     backgroundColor: '#ffffff',
-    borderRadius: 10,
     padding: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },

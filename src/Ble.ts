@@ -91,6 +91,7 @@ const requestPermissions = async () => {
 const useBle = create<any>((set, get) => {
     return {
       allDevices: [],
+      isConnected: false,
       connectedDevice: null,
       subscription: null,
       weight: null,
@@ -98,12 +99,18 @@ const useBle = create<any>((set, get) => {
 
       requestPermissions: requestPermissions,
 
+
       connectToDevice: async (device: Device) => {
         try {
             const deviceConnection = await bleManager.connectToDevice(device.id);
             set({connectedDevice: deviceConnection});
             await deviceConnection.discoverAllServicesAndCharacteristics();
             bleManager.stopDeviceScan();
+            set({isConnected: true});
+            deviceConnection.onDisconnected(async () => {
+                console.log("Device is disconnected asynchronously.");
+                set({isConnected: false});
+            });
         } catch (e) {
             console.log("FAILED TO CONNECT", e);
         }
@@ -117,7 +124,7 @@ const useBle = create<any>((set, get) => {
             if (isConnected) {
                 console.log("Device is still connected.");
             } else {
-                set({connectedDevice: null});
+                console.log("Device is disconnected.");
             }
             
         }
