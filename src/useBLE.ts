@@ -110,7 +110,8 @@ function useBLE() {
   const isDuplicteDevice = (devices: Device[], nextDevice: Device) =>
     devices.findIndex((device) => nextDevice.id === device.id) > -1;
 
-  const scanForPeripherals = () =>
+  const scanForPeripherals = () => {
+    console.log("Scanning for peripherals XX");
     bleManager.startDeviceScan(null, null, (error, device) => {
       if (error) {
         console.log(error);
@@ -128,6 +129,7 @@ function useBLE() {
         });
       }
     });
+  }
 
   const onDataUpdate = (
     error: BleError | null,
@@ -162,18 +164,6 @@ function useBLE() {
     } else {
       console.log("Unknown data type received:", dataType);
     }
-    // console.log("Raw bytes:", bytes);
-
-    // let color = "white";
-    // if (colorCode === "B") {
-    //   color = "blue";
-    // } else if (colorCode === "R") {
-    //   color = "red";
-    // } else if (colorCode === "G") {
-    //   color = "green";
-    // }
-
-    // setColor(color);
   };
 
   const sendCommand = async (device: Device, command: number) => {

@@ -7,6 +7,8 @@ import {
   View,
 } from "react-native";
 import { Device } from "react-native-ble-plx";
+import StatusBar from "./StatusBar";
+import useBle from "./Ble";
 
 type LiveViewProps = {
   navigation: any;
@@ -14,51 +16,30 @@ type LiveViewProps = {
 };
 
 const LiveView: React.FC<LiveViewProps> = ({navigation, route}) => {
-  const [maxWeight, setMaxWeight] = useState<number | null>(null);
-  const bleDevice = route.params.bleDevice;
-  // // Update max weight whenever weight changes
-  // React.useEffect(() => {
-  //   if (weight !== null) {
-  //     setMaxWeight(prevMax => prevMax === null ? weight : Math.max(prevMax, weight));
-  //   }
-  // }, [weight]);
+  const connectedDevice = useBle((state: any) => state.connectedDevice);
+  const weight = useBle((state: any) => state.weight);
+  const time = useBle((state: any) => state.time);
+  const startMeasurement = useBle((state: any) => state.startMeasurement);
+  const stopMeasurement = useBle((state: any) => state.stopMeasurement);
+  const tareScale = useBle((state: any) => state.tareScale);
 
-  const tareScaleWrapper = () => {
-    if (bleDevice.connectedDevice) {
-      bleDevice.tareScale(bleDevice.connectedDevice);
-    }
-  }
-
-  const startMeasurementWrapper = () => {
-    if (bleDevice.connectedDevice) {
-      bleDevice.startMeasurement(bleDevice.connectedDevice);
-    }
-  }
-
-  const stopMeasurementWrapper = () => {
-    if (bleDevice.connectedDevice) {
-      bleDevice.stopMeasurement(bleDevice.connectedDevice);
-    }
-  }
-
-  const resetMaxWeight = () => {
-    setMaxWeight(null);
-  };
 
   return (
     <SafeAreaView style={styles.container}>
-      {bleDevice.connectedDevice ? (
+      <StatusBar navigation={navigation}/>
+
+      {connectedDevice ? (
         <>
           {/* Control Buttons Section */}
           <View style={styles.controlSection}>
             <View style={styles.buttonRow}>
-              <TouchableOpacity onPress={startMeasurementWrapper} style={styles.controlButton}>
+              <TouchableOpacity onPress={startMeasurement} style={styles.controlButton}>
                 <Text style={styles.controlButtonText}>Start</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={stopMeasurementWrapper} style={styles.controlButton}>
+              <TouchableOpacity onPress={stopMeasurement} style={styles.controlButton}>
                 <Text style={styles.controlButtonText}>Stop</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={tareScaleWrapper} style={styles.controlButton}>
+              <TouchableOpacity onPress={tareScale} style={styles.controlButton}>
                 <Text style={styles.controlButtonText}>Tare</Text>
               </TouchableOpacity>
             </View>
@@ -70,14 +51,14 @@ const LiveView: React.FC<LiveViewProps> = ({navigation, route}) => {
               <View style={styles.measurementColumn}>
                 <Text style={styles.measurementLabel}>Weight</Text>
                 <Text style={styles.measurementValue}>
-                  {bleDevice.weight !== null ? bleDevice.weight.toFixed(1) : '-'}
+                  {weight !== null ? weight.toFixed(1) : '-'}
                 </Text>
                 <Text style={styles.measurementUnit}>kg</Text>
               </View>
               <View style={styles.measurementColumn}>
                 <Text style={styles.measurementLabel}>Time</Text>
                 <Text style={styles.measurementValue}>
-                  {bleDevice.time !== null ? bleDevice.time.toFixed(1) : '-'}
+                  {time !== null ? time.toFixed(1) : '-'}
                 </Text>
                 <Text style={styles.measurementUnit}>s</Text>
               </View>
@@ -85,14 +66,14 @@ const LiveView: React.FC<LiveViewProps> = ({navigation, route}) => {
             <View style={styles.measurementRow}>
               <View style={styles.measurementColumn}>
                 <Text style={styles.measurementLabel}>Max Weight</Text>
-                <Text style={styles.measurementValue}>
-                  {bleDevice.maxWeight !== null ? bleDevice.maxWeight.toFixed(1) : '-'}
-                </Text>
+                {/* <Text style={styles.measurementValue}>
+                  {maxWeight !== null ? maxWeight.toFixed(1) : '-'}
+                </Text> */}
                 <Text style={styles.measurementUnit}>kg</Text>
                 {
-                  <TouchableOpacity onPress={resetMaxWeight} style={styles.resetButton}>
-                    <Text style={styles.resetButtonText}>Reset</Text>
-                  </TouchableOpacity>
+                  // <TouchableOpacity onPress={resetMaxWeight} style={styles.resetButton}>
+                  //   <Text style={styles.resetButtonText}>Reset</Text>
+                  // </TouchableOpacity>
                 }
               </View>
             </View>

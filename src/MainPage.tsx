@@ -7,6 +7,7 @@ import {
   View,
   FlatList,
 } from "react-native";
+import StatusBar from "./StatusBar";
 
 type MeasurementOption = {
   id: string;
@@ -21,6 +22,7 @@ type MainPageProps = {
 };
 
 const MainPage: React.FC<MainPageProps> = ({ navigation, route }) => {
+
   const measurementOptions: MeasurementOption[] = [
     {
       id: "live-view",
@@ -32,7 +34,7 @@ const MainPage: React.FC<MainPageProps> = ({ navigation, route }) => {
   const renderOption = ({ item }: { item: MeasurementOption }) => (
     <TouchableOpacity
       style={styles.optionCard}
-      onPress={() => navigation.navigate('Live View', { name: item.title })}
+      onPress={() => navigation.navigate('Live View')}
     >
       <Text style={styles.optionTitle}>{item.title}</Text>
       <Text style={styles.optionDescription}>{item.description}</Text>
@@ -41,8 +43,8 @@ const MainPage: React.FC<MainPageProps> = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar navigation={navigation}/>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Tindeq Analyzer</Text>
         <Text style={styles.headerSubtitle}>Select a measurement option</Text>
       </View>
       

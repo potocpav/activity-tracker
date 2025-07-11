@@ -2,35 +2,70 @@ import React, { FC, useCallback } from "react";
 import {
   FlatList,
   ListRenderItemInfo,
-  Modal,
-  SafeAreaView,
   Text,
   StyleSheet,
   TouchableOpacity,
   View,
 } from "react-native";
 import { Device } from "react-native-ble-plx";
+import useBle from "./Ble";
+
+
+
+type DeviceModalProps = {
+  navigation: any;
+  route: any;
+};
+
+const DeviceModal: FC<DeviceModalProps> = ({navigation, route}) => {
+  const allDevices = useBle((state: any) => state.allDevices);
+  const connectToDevice = useBle((state: any) => state.connectToDevice);
+
+  const renderDeviceModalListItem = useCallback(
+    (item: ListRenderItemInfo<Device>) => {
+      return (
+        <DeviceModalListItem
+          item={item}
+          connectToDevice={connectToDevice}
+          navigation={navigation}
+        />
+      );
+    },
+    [connectToDevice]
+  );
+
+  return (
+    <View style={modalStyle.modalContent}>
+      <Text style={modalStyle.modalTitleText}>
+        Tap on a device to connect
+      </Text>
+      <FlatList
+        contentContainerStyle={modalStyle.modalFlatlistContiner}
+        data={allDevices}
+        renderItem={renderDeviceModalListItem}
+        showsVerticalScrollIndicator={false}
+      />
+      <TouchableOpacity onPress={navigation.goBack} style={modalStyle.closeButton}>
+        <Text style={modalStyle.closeButtonText}>Cancel</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
 
 type DeviceModalListItemProps = {
   item: ListRenderItemInfo<Device>;
-  connectToPeripheral: (device: Device) => void;
-  closeModal: () => void;
+  connectToDevice: (device: Device) => void;
+  navigation: any;
 };
 
-type DeviceModalProps = {
-  devices: Device[];
-  visible: boolean;
-  connectToPeripheral: (device: Device) => void;
-  closeModal: () => void;
-};
 
 const DeviceModalListItem: FC<DeviceModalListItemProps> = (props) => {
-  const { item, connectToPeripheral, closeModal } = props;
+  const { item, connectToDevice, navigation } = props;
 
   const connectAndCloseModal = useCallback(() => {
-    connectToPeripheral(item.item);
-    closeModal();
-  }, [closeModal, connectToPeripheral, item.item]);
+    connectToDevice(item.item);
+    navigation.goBack();
+  }, [navigation, connectToDevice, item.item]);
 
   return (
     <TouchableOpacity
@@ -44,48 +79,6 @@ const DeviceModalListItem: FC<DeviceModalListItemProps> = (props) => {
   );
 };
 
-const DeviceModal: FC<DeviceModalProps> = (props) => {
-  const { devices, visible, connectToPeripheral, closeModal } = props;
-
-  const renderDeviceModalListItem = useCallback(
-    (item: ListRenderItemInfo<Device>) => {
-      return (
-        <DeviceModalListItem
-          item={item}
-          connectToPeripheral={connectToPeripheral}
-          closeModal={closeModal}
-        />
-      );
-    },
-    [closeModal, connectToPeripheral]
-  );
-
-  return (
-    <Modal
-      style={modalStyle.modalContainer}
-      animationType="fade"
-      transparent={true}
-      visible={visible}
-    >
-      <View style={modalStyle.overlay}>
-        <View style={modalStyle.modalContent}>
-          <Text style={modalStyle.modalTitleText}>
-            Tap on a device to connect
-          </Text>
-          <FlatList
-            contentContainerStyle={modalStyle.modalFlatlistContiner}
-            data={devices}
-            renderItem={renderDeviceModalListItem}
-            showsVerticalScrollIndicator={false}
-          />
-          <TouchableOpacity onPress={closeModal} style={modalStyle.closeButton}>
-            <Text style={modalStyle.closeButtonText}>Cancel</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </Modal>
-  );
-};
 
 const modalStyle = StyleSheet.create({
   modalContainer: {
@@ -99,20 +92,9 @@ const modalStyle = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: '#ffffff',
-    borderRadius: 12,
     padding: 20,
-    marginHorizontal: 20,
-    maxHeight: '70%',
-    minHeight: 300,
-    width: '90%',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    // maxHeight: '70%',
+    minHeight: '100%',
   },
   modalFlatlistContiner: {
     flexGrow: 1,
