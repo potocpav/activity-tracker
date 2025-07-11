@@ -39,6 +39,9 @@ const DeviceModal: FC<DeviceModalProps> = ({navigation, route}) => {
       <Text style={modalStyle.modalTitleText}>
         Tap on a device to connect
       </Text>
+      <Text style={modalStyle.instructionText}>
+        Make sure the green light is blinking on your Tindeq device.
+      </Text>
       <FlatList
         contentContainerStyle={modalStyle.modalFlatlistContiner}
         data={allDevices}
@@ -114,6 +117,12 @@ const modalStyle = StyleSheet.create({
     marginBottom: 15,
     textAlign: "center",
     color: '#333333',
+  },
+  instructionText: {
+    fontSize: 14,
+    color: '#666666',
+    marginBottom: 15,
+    textAlign: 'center',
   },
   ctaButton: {
     backgroundColor: "#FF6060",

@@ -50,31 +50,23 @@ const LiveView: React.FC<LiveViewProps> = ({navigation, route}) => {
             <View style={styles.measurementRow}>
               <View style={styles.measurementColumn}>
                 <Text style={styles.measurementLabel}>Weight</Text>
-                <Text style={styles.measurementValue}>
+                <Text 
+                  style={styles.measurementValue}
+                  numberOfLines={1}
+                  adjustsFontSizeToFit={true}
+                >
                   {weight !== null ? weight.toFixed(1) : '-'}
                 </Text>
-                <Text style={styles.measurementUnit}>kg</Text>
               </View>
               <View style={styles.measurementColumn}>
                 <Text style={styles.measurementLabel}>Time</Text>
-                <Text style={styles.measurementValue}>
+                <Text 
+                  style={styles.measurementValue}
+                  numberOfLines={1}
+                  adjustsFontSizeToFit={true}
+                >
                   {time !== null ? time.toFixed(1) : '-'}
                 </Text>
-                <Text style={styles.measurementUnit}>s</Text>
-              </View>
-            </View>
-            <View style={styles.measurementRow}>
-              <View style={styles.measurementColumn}>
-                <Text style={styles.measurementLabel}>Max Weight</Text>
-                {/* <Text style={styles.measurementValue}>
-                  {maxWeight !== null ? maxWeight.toFixed(1) : '-'}
-                </Text> */}
-                <Text style={styles.measurementUnit}>kg</Text>
-                {
-                  // <TouchableOpacity onPress={resetMaxWeight} style={styles.resetButton}>
-                  //   <Text style={styles.resetButtonText}>Reset</Text>
-                  // </TouchableOpacity>
-                }
               </View>
             </View>
           </View>

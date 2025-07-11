@@ -41,8 +41,9 @@ const App = () => {
             </Stack.Group>
             <Stack.Group screenOptions={{presentation: 'modal'}}>
               <Stack.Screen 
-                name="DeviceModal" 
+                name="ConnectDevice" 
                 component={DeviceModal} 
+                options={{title: "Connect to a Device"}}
                 />
             </Stack.Group>
 
@@ -57,15 +58,6 @@ const App = () => {
           </Stack.Navigator>
 
         </NavigationContainer>
-
-
-
-        {/* <DeviceModal
-          closeModal={hideModal}
-          visible={isModalVisible}
-          connectToPeripheral={bleDevice.connectToDevice}
-          devices={bleDevice.allDevices}
-        /> */}
     </SafeAreaView>
   );
 };
