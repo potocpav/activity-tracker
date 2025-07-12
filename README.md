@@ -2,7 +2,7 @@
 
 A React Native mobile application for analyzing force measurements from the Tindeq Progressor device. The app provides real-time data visualization and analysis capabilities for strength training and rehabilitation purposes.
 
-This app is work-in-progress, and I don't know how far I'll get before I get bored of it :D
+**This app is work-in-progress, and I don't know how far I'll get before I get bored of it :D**
 
 ## Features
 
