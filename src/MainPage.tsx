@@ -16,12 +16,10 @@ type MeasurementOption = {
 };
 
 type MainPageProps = {
-  // onSelectOption: (option: MeasurementOption) => void;
   navigation: any;
-  route: any;
 };
 
-const MainPage: React.FC<MainPageProps> = ({ navigation, route }) => {
+const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
 
   const measurementOptions: MeasurementOption[] = [
     {

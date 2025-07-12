@@ -14,10 +14,9 @@ import useStore from "./Store";
 
 type DeviceModalProps = {
   navigation: any;
-  route: any;
 };
 
-const DeviceModal: FC<DeviceModalProps> = ({navigation, route}) => {
+const DeviceModal: FC<DeviceModalProps> = ({navigation}) => {
   const allDevices = useStore((state: any) => state.allDevices);
   const connectToDevice = useStore((state: any) => state.connectToDevice);
 

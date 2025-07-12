@@ -2,10 +2,6 @@ import React, { useState } from "react";
 import {
   SafeAreaView,
   StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  Button,
 } from "react-native";
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
@@ -19,12 +15,6 @@ const App = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-        {/* <StatusBar
-          connectedDevice={bleDevice.connectedDevice}
-          onConnectPress={openModal}
-          onDisconnectPress={bleDevice.disconnectDevice}
-        />
-       */}
         <NavigationContainer>
           <Stack.Navigator>
             <Stack.Group>
@@ -46,17 +36,7 @@ const App = () => {
                 options={{title: "Connect to a Device"}}
                 />
             </Stack.Group>
-
-{/* Modal: {
-      screenOptions: {
-        presentation: 'modal',
-      },
-      screens: {
-        MyModal: ModalScreen,
-      },
-    }, */}
           </Stack.Navigator>
-
         </NavigationContainer>
     </SafeAreaView>
   );

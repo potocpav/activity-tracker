@@ -15,7 +15,6 @@ type StatusBarProps = {
 const StatusBar: React.FC<StatusBarProps> = ({navigation}) => {
     const connectedDevice = useStore((state: any) => state.connectedDevice);
     const isConnected = useStore((state: any) => state.isConnected);
-    const allDevices = useStore((state: any) => state.allDevices);
     const requestPermissions = useStore((state: any) => state.requestPermissions);
     const scanForPeripherals = useStore((state: any) => state.scanForPeripherals);
     const disconnectDevice = useStore((state: any) => state.disconnectDevice);

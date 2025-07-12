@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import StatusBar from "./StatusBar";
 import useStore from "./Store";
-import { AreaRange, CartesianChart, Line } from "victory-native";
+import { CartesianChart, Line } from "victory-native";
 import {matchFont} from "@shopify/react-native-skia";
 
 const fontFamily = Platform.select({default: "sans-serif" });
@@ -19,11 +19,6 @@ type LiveViewProps = {
   navigation: any;
   route: any;
 };
-
-const data = Array.from({ length: 31 }, (_, i) => ({
- t: i,
- w: 10 * Math.random(),
-}));
 
 const LiveView: React.FC<LiveViewProps> = ({navigation}) => {
   const isConnected = useStore((state: any) => state.isConnected);
@@ -88,8 +83,6 @@ const LiveView: React.FC<LiveViewProps> = ({navigation}) => {
                 <Text style={styles.measurementValue}>{maxWeight ? maxWeight.toFixed(1) : '-'}</Text>
               </View>
               <View style={styles.measurementColumn}>
-                {/* <Text style={styles.measurementLabel}>Min Weight:</Text>
-                <Text style={styles.measurementValue}>{minWeight ? minWeight.toFixed(1) : '-'}</Text> */}
               </View>
             </View>
             <View style={{ width: '100%', flex: 1 }}>
@@ -100,8 +93,6 @@ const LiveView: React.FC<LiveViewProps> = ({navigation}) => {
                 frame={{
                   lineWidth: 1,
                 }}
-                // padding={{ left: 0, bottom: 0 }}
-                // domainPadding={{ top: 1, bottom: 0.1 }}
                 xAxis={{
                   font: font,
                 }}
@@ -128,7 +119,6 @@ const LiveView: React.FC<LiveViewProps> = ({navigation}) => {
                     color="black"
                     strokeWidth={2}
                   />
-
                 </>
                 )}
               </CartesianChart>
