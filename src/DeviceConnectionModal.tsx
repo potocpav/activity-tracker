@@ -8,7 +8,7 @@ import {
   View,
 } from "react-native";
 import { Device } from "react-native-ble-plx";
-import useBle from "./Ble";
+import useStore from "./Store";
 
 
 
@@ -18,8 +18,8 @@ type DeviceModalProps = {
 };
 
 const DeviceModal: FC<DeviceModalProps> = ({navigation, route}) => {
-  const allDevices = useBle((state: any) => state.allDevices);
-  const connectToDevice = useBle((state: any) => state.connectToDevice);
+  const allDevices = useStore((state: any) => state.allDevices);
+  const connectToDevice = useStore((state: any) => state.connectToDevice);
 
   const renderDeviceModalListItem = useCallback(
     (item: ListRenderItemInfo<Device>) => {

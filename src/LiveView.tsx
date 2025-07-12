@@ -8,21 +8,27 @@ import {
 } from "react-native";
 import { Device } from "react-native-ble-plx";
 import StatusBar from "./StatusBar";
-import useBle from "./Ble";
+import useStore from "./Store";
+import { CartesianChart, Line } from "victory-native";
 
 type LiveViewProps = {
   navigation: any;
   route: any;
 };
 
+const data = Array.from({ length: 31 }, (_, i) => ({
+ x: i,
+ y: 40 + 30 * Math.random(),
+}));
+
 const LiveView: React.FC<LiveViewProps> = ({navigation, route}) => {
-  const connectedDevice = useBle((state: any) => state.connectedDevice);
-  const isConnected = useBle((state: any) => state.isConnected);
-  const weight = useBle((state: any) => state.weight);
-  const time = useBle((state: any) => state.time);
-  const startMeasurement = useBle((state: any) => state.startMeasurement);
-  const stopMeasurement = useBle((state: any) => state.stopMeasurement);
-  const tareScale = useBle((state: any) => state.tareScale);
+  const connectedDevice = useStore((state: any) => state.connectedDevice);
+  const isConnected = useStore((state: any) => state.isConnected);
+  const weight = useStore((state: any) => state.weight);
+  const time = useStore((state: any) => state.time);
+  const startMeasurement = useStore((state: any) => state.startMeasurement);
+  const stopMeasurement = useStore((state: any) => state.stopMeasurement);
+  const tareScale = useStore((state: any) => state.tareScale);
 
 
   return (
@@ -69,6 +75,22 @@ const LiveView: React.FC<LiveViewProps> = ({navigation, route}) => {
                   {time !== null ? time.toFixed(1) : '-'}
                 </Text>
               </View>
+            </View>
+            <View style={{ width: '100%', flex: 1 }}>
+              <CartesianChart 
+                data={data} 
+                xKey="x" 
+                yKeys={["y"]}
+                >              
+                {({ points }) => (
+                  //👇 pass a PointsArray to the Line component, as well as options.
+                  <Line
+                    points={points.y}
+                    color="red"
+                    strokeWidth={3}
+                  />
+                )}
+              </CartesianChart>
             </View>
           </View>
         </>
@@ -171,11 +193,6 @@ const styles = StyleSheet.create({
     fontSize: 60,
     fontWeight: "bold",
     color: "#FF6060",
-  },
-  measurementUnit: {
-    fontSize: 20,
-    color: "#666666",
-    marginTop: 5,
   },
   resetButton: {
     marginTop: 10,

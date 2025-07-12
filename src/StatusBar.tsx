@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import useBle from "./Ble";
+import useStore from "./Store";
 
 type StatusBarProps = {
   navigation: any;
@@ -13,12 +13,12 @@ type StatusBarProps = {
 
 
 const StatusBar: React.FC<StatusBarProps> = ({navigation}) => {
-    const connectedDevice = useBle((state: any) => state.connectedDevice);
-    const isConnected = useBle((state: any) => state.isConnected);
-    const allDevices = useBle((state: any) => state.allDevices);
-    const requestPermissions = useBle((state: any) => state.requestPermissions);
-    const scanForPeripherals = useBle((state: any) => state.scanForPeripherals);
-    const disconnectDevice = useBle((state: any) => state.disconnectDevice);
+    const connectedDevice = useStore((state: any) => state.connectedDevice);
+    const isConnected = useStore((state: any) => state.isConnected);
+    const allDevices = useStore((state: any) => state.allDevices);
+    const requestPermissions = useStore((state: any) => state.requestPermissions);
+    const scanForPeripherals = useStore((state: any) => state.scanForPeripherals);
+    const disconnectDevice = useStore((state: any) => state.disconnectDevice);
 
     const scanForDevices = async () => {
         const isPermissionsEnabled = await requestPermissions();
