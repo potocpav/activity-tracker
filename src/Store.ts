@@ -36,7 +36,8 @@ export type DataPoint = {
     tags: Tag[];
 };
 
-export type Goal = {
+export type GoalType = {
+  id: string;
   name: string;
   description: string;
   unit: Unit;
@@ -51,7 +52,7 @@ export type State = {
 
   dataPoints: {w: number, t: number}[];
 
-  goals: Goal[];
+  goals: GoalType[];
 
   requestPermissions: any;
   connectToDevice: any;
@@ -81,23 +82,36 @@ const useStore = create<State>((set, get) => {
       // Goals related state
       goals: [
         {
+          id: "body-weight",
           name: "Body Weight",
           description: "Body weight measured in the morning before breakfast",
           unit: "kg",
           dataPoints: [
             {
-              time: new Date("1995-12-17T03:24:00"),
+              time: new Date("2025-07-12T03:24:00"),
               value: 80,
               tags: [],
+            },            
+            {
+              time: new Date("2025-07-11T03:24:00"),
+              value: 71,
+              tags: [],
             },
+            {
+              time: new Date("2025-07-10T03:24:00"),
+              value: 70,
+              tags: [],
+            },
+            
           ],
         },
         {
+          id: "finger-strength",
           name: "Finger Strength",
           description: "Finger strength as measured using Tindeq Progressor",
           unit: [
             {
-              name: "Average",
+              name: "Mean",
               symbol: "kg",
             },
             {
@@ -105,16 +119,30 @@ const useStore = create<State>((set, get) => {
               symbol: "kg",
             },
             {
-              name: "Time",
+              name: "TUT",
               symbol: "s",
             },
           ],
           dataPoints: [
             {
-              time: new Date("1995-12-17T03:24:00"),
-              value: 80,
-              tags: [],
+              time: new Date("2025-07-12T03:24:00"),
+              value: {
+                mean: 70,
+                max: 75,
+                tut: 1.5,
+              },
+              tags: ["left"],
             },
+            {
+              time: new Date("2025-07-11T03:24:00"),
+              value: {
+                mean: 65,
+                max: null,
+                tut: 1.0,
+              },
+              tags: ["right", "warmup"],
+            },
+            
           ],
         }
       ],

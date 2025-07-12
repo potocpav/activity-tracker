@@ -8,6 +8,7 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import MainPage from "./MainPage";
 import LiveView from "./LiveView";
 import Goals from "./Goals";
+import Goal from "./Goal";
 import DeviceModal from "./DeviceConnectionModal";
 
 
@@ -33,6 +34,11 @@ const App = () => {
                 name="Goals" 
                 component={Goals} 
                 options={{title: "Goals"}}
+                />
+              <Stack.Screen 
+                name="Goal" 
+                component={Goal} 
+                options={{title: "Goal Details"}}
                 />
             </Stack.Group>
             <Stack.Group screenOptions={{presentation: 'modal'}}>

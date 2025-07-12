@@ -5,8 +5,9 @@ import {
   Text,
   View,
   FlatList,
+  TouchableOpacity,
 } from "react-native";
-import useStore, { Goal, SubUnit, Unit } from "./Store";
+import useStore, { GoalType, SubUnit, Unit } from "./Store";
 
 
 
@@ -24,12 +25,16 @@ const renderUnit = (unit: Unit) => {
 const Goals: React.FC<GoalsProps> = ({ navigation }) => {
   const goals = useStore((state: any) => state.goals);
 
-  const renderGoal = ({ item }: { item: Goal }) => (
-    <View style={styles.goalCard}>
+  const renderGoal = ({ item }: { item: GoalType }) => (
+    <TouchableOpacity
+      style={styles.goalCard}
+      onPress={() => navigation.navigate('Goal', { goalId: item.id })}
+      activeOpacity={0.7}
+    >
       <Text style={styles.goalTitle}>{item.name}</Text>
       <Text style={styles.goalDescription}>{item.description}</Text>
       <Text style={styles.goalDate}>{renderUnit(item.unit)}</Text>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
