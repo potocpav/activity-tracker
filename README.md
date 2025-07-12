@@ -20,9 +20,9 @@ A React Native mobile application for analyzing force measurements from the Tind
     <th>Live View</th>
   </tr>
   <tr>
-    <td style="width: 33.33%;"><img src="screenshots/Screenshot_20250712_212750_Tindeq%20Analyzer.jpg" alt="Main Screen" style="width: 100%;"></td>
-    <td style="width: 33.33%;"><img src="screenshots/Screenshot_20250712_212758_Tindeq%20Analyzer.jpg" alt="Device Connection" style="width: 100%;"></td>
-    <td style="width: 33.33%;"><img src="screenshots/Screenshot_20250712_212823_Tindeq%20Analyzer.jpg" alt="Live View" style="width: 100%;"></td>
+    <td><img src="screenshots/Screenshot_20250712_212750_Tindeq%20Analyzer.jpg" alt="Main Screen""></td>
+    <td><img src="screenshots/Screenshot_20250712_212758_Tindeq%20Analyzer.jpg" alt="Device Connection""></td>
+    <td><img src="screenshots/Screenshot_20250712_212823_Tindeq%20Analyzer.jpg" alt="Live View""></td>
   </tr>
 </table>
 
