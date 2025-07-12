@@ -18,9 +18,56 @@ import {
   BleError,
   Characteristic,
   Device,
+  Subscription,
 } from "react-native-ble-plx";
 
-const useStore = create<any>((set, get) => {
+export type Unit = string | SubUnit[];
+
+export type SubUnit = {
+    name: string;
+    symbol: string;
+};
+
+export type Tag = string;
+
+export type DataPoint = {
+    time: Date;
+    value: any;
+    tags: Tag[];
+};
+
+export type Goal = {
+  name: string;
+  description: string;
+  unit: Unit;
+  dataPoints: DataPoint[];
+};
+
+export type State = {
+  allDevices: Device[];
+  isConnected: boolean;
+  connectedDevice: Device | null;
+  subscription: Subscription | null;
+
+  dataPoints: {w: number, t: number}[];
+
+  goals: Goal[];
+
+  requestPermissions: any;
+  connectToDevice: any;
+  disconnectDevice: any;
+  scanForPeripherals: any;
+  onDataUpdate: any;
+  withDevice: any;
+  tareScale: any;
+  startMeasurement: any;
+  stopMeasurement: any;
+  shutdown: any;
+  sampleBatteryVoltage: any;
+  startStreamingData: any;
+};
+
+const useStore = create<State>((set, get) => {
     return {
       // Bluetooth device related state
       allDevices: [],
@@ -30,6 +77,47 @@ const useStore = create<any>((set, get) => {
       
       // Measurement related state
       dataPoints: [],
+
+      // Goals related state
+      goals: [
+        {
+          name: "Body Weight",
+          description: "Body weight measured in the morning before breakfast",
+          unit: "kg",
+          dataPoints: [
+            {
+              time: new Date("1995-12-17T03:24:00"),
+              value: 80,
+              tags: [],
+            },
+          ],
+        },
+        {
+          name: "Finger Strength",
+          description: "Finger strength as measured using Tindeq Progressor",
+          unit: [
+            {
+              name: "Average",
+              symbol: "kg",
+            },
+            {
+              name: "Max",
+              symbol: "kg",
+            },
+            {
+              name: "Time",
+              symbol: "s",
+            },
+          ],
+          dataPoints: [
+            {
+              time: new Date("1995-12-17T03:24:00"),
+              value: 80,
+              tags: [],
+            },
+          ],
+        }
+      ],
 
       requestPermissions: requestPermissions,
 
@@ -102,7 +190,7 @@ const useStore = create<any>((set, get) => {
 
       startMeasurement: async () => {
         get().withDevice(async (device: Device) => {
-            set({weight: null, time: null, dataPoints: []});
+            set({dataPoints: []});
             await startMeasurementCommand(device);
             get().startStreamingData(device);
         });
@@ -113,7 +201,7 @@ const useStore = create<any>((set, get) => {
             await stopMeasurementCommand(device);
             get().subscription?.remove();
             console.log(get().dataPoints);
-            set({subscription: null, weight: null, time: null});
+            set({subscription: null});
         });
       },
     

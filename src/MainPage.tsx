@@ -27,12 +27,23 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
       title: "Live View",
       description: "Real-time weight measurement and control",
     },
+    {
+      id: "goals",
+      title: "Goals",
+      description: "View your training goals and progress tracking",
+    },
   ];
 
   const renderOption = ({ item }: { item: MeasurementOption }) => (
     <TouchableOpacity
       style={styles.optionCard}
-      onPress={() => navigation.navigate('Live View')}
+      onPress={() => {
+        if (item.id === "live-view") {
+          navigation.navigate('Live View');
+        } else if (item.id === "goals") {
+          navigation.navigate('Goals');
+        }
+      }}
     >
       <Text style={styles.optionTitle}>{item.title}</Text>
       <Text style={styles.optionDescription}>{item.description}</Text>
