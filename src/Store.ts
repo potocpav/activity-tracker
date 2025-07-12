@@ -1,32 +1,41 @@
 /* eslint-disable no-bitwise */
 import { create } from "zustand";
-import { requestPermissions, sendCommand, extractData, tareScale, shutdown, stopMeasurement, sampleBatteryVoltage, startStreamingData } from "./Ble";
+import { 
+  requestPermissions, 
+  connectToDevice, 
+  disconnectDevice, 
+  scanForPeripherals,
+  extractData, 
+  tareScale, 
+  shutdown, 
+  stopMeasurement as stopMeasurementCommand, 
+  sampleBatteryVoltage, 
+  startStreamingData,
+  startMeasurement as startMeasurementCommand
+} from "./Ble";
+
 import {
   BleError,
-  BleManager,
   Characteristic,
   Device,
 } from "react-native-ble-plx";
 
-const bleManager = new BleManager();
-
 const useStore = create<any>((set, get) => {
     return {
+      // Bluetooth device related state
       allDevices: [],
       isConnected: false,
       connectedDevice: null,
       subscription: null,
-      weight: null,
-      time: null,
+      
+      // Measurement related state
+      dataPoints: [],
 
       requestPermissions: requestPermissions,
 
-
       connectToDevice: async (device: Device) => {
         try {
-            const deviceConnection = await bleManager.connectToDevice(device.id);
-            await deviceConnection.discoverAllServicesAndCharacteristics();
-            bleManager.stopDeviceScan();
+            const deviceConnection = await connectToDevice(device);
             set({connectedDevice: deviceConnection, isConnected: true});
             deviceConnection.onDisconnected(async () => {
                 console.log("Device is disconnected asynchronously.");
@@ -40,38 +49,23 @@ const useStore = create<any>((set, get) => {
       disconnectDevice: async () => {
         const connectedDevice: any = get().connectedDevice;
         if (connectedDevice) {
-            await connectedDevice.cancelConnection();
-            const isConnected = await connectedDevice.isConnected();
-            if (isConnected) {
-                console.log("Device is still connected.");
-            } else {
-                console.log("Device is disconnected.");
-            }
-            
+            await disconnectDevice(connectedDevice);
+            set({isConnected: false});
         }
       },
 
       scanForPeripherals: () => {
-        bleManager.startDeviceScan(null, null, (error, device) => {
-          if (error) {
-            console.log(error);
-          }
-    
-          if (
-            device &&
-            device.localName?.startsWith("Progressor")
-          ) {
-            const isDuplicteDevice = (devices: Device[], nextDevice: Device) => {
-                return devices.findIndex((device) => nextDevice.id === device.id) > -1;
-              };
-            set((state: any) => {
-                if (!isDuplicteDevice(state.allDevices, device)) {
-                    return {allDevices: [...state.allDevices, device]};
-                } else {
-                    return {};
-                }
-            });
-          }
+        scanForPeripherals((device) => {
+          const isDuplicteDevice = (devices: Device[], nextDevice: Device) => {
+              return devices.findIndex((device) => nextDevice.id === device.id) > -1;
+            };
+          set((state: any) => {
+              if (!isDuplicteDevice(state.allDevices, device)) {
+                  return {allDevices: [...state.allDevices, device]};
+              } else {
+                  return {};
+              }
+          });
         });
       },
     
@@ -81,7 +75,13 @@ const useStore = create<any>((set, get) => {
       ) => {
         const data = extractData(error, characteristic);
         if (data) {
-          set({weight: data.weight, time: data.time});
+          set((state: any) => {
+            const newDataPoints = [...state.dataPoints, ...data].slice(-800);
+            return {
+              dataPoints: newDataPoints
+            };
+          });
+          console.log("Data updated", data);
         }
       },
 
@@ -102,15 +102,17 @@ const useStore = create<any>((set, get) => {
 
       startMeasurement: async () => {
         get().withDevice(async (device: Device) => {
-            await sendCommand(device, 0x65);
+            set({weight: null, time: null, dataPoints: []});
+            await startMeasurementCommand(device);
             get().startStreamingData(device);
         });
       },
     
       stopMeasurement: async () => {
         get().withDevice(async (device: Device) => {
-            await stopMeasurement(device);
+            await stopMeasurementCommand(device);
             get().subscription?.remove();
+            console.log(get().dataPoints);
             set({subscription: null, weight: null, time: null});
         });
       },

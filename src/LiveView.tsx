@@ -1,15 +1,19 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  Platform,
 } from "react-native";
-import { Device } from "react-native-ble-plx";
 import StatusBar from "./StatusBar";
 import useStore from "./Store";
-import { CartesianChart, Line } from "victory-native";
+import { AreaRange, CartesianChart, Line } from "victory-native";
+import {matchFont} from "@shopify/react-native-skia";
+
+const fontFamily = Platform.select({default: "sans-serif" });
+const font = matchFont({fontFamily: fontFamily});
 
 type LiveViewProps = {
   navigation: any;
@@ -17,18 +21,20 @@ type LiveViewProps = {
 };
 
 const data = Array.from({ length: 31 }, (_, i) => ({
- x: i,
- y: 40 + 30 * Math.random(),
+ t: i,
+ w: 10 * Math.random(),
 }));
 
-const LiveView: React.FC<LiveViewProps> = ({navigation, route}) => {
-  const connectedDevice = useStore((state: any) => state.connectedDevice);
+const LiveView: React.FC<LiveViewProps> = ({navigation}) => {
   const isConnected = useStore((state: any) => state.isConnected);
-  const weight = useStore((state: any) => state.weight);
-  const time = useStore((state: any) => state.time);
+  const dataPoints : {w: number, t: number}[] = useStore((state: any) => state.dataPoints);
   const startMeasurement = useStore((state: any) => state.startMeasurement);
   const stopMeasurement = useStore((state: any) => state.stopMeasurement);
   const tareScale = useStore((state: any) => state.tareScale);
+
+  const weight = dataPoints[dataPoints.length - 1]?.w;
+  const time = dataPoints[dataPoints.length - 1]?.t;
+  const maxWeight = Math.max(...dataPoints.map((point) => point.w));
 
 
   return (
@@ -56,39 +62,74 @@ const LiveView: React.FC<LiveViewProps> = ({navigation, route}) => {
           <View style={styles.weightSection}>
             <View style={styles.measurementRow}>
               <View style={styles.measurementColumn}>
-                <Text style={styles.measurementLabel}>Weight</Text>
+                <Text style={styles.measurementLabel}>Weight:</Text>
                 <Text 
                   style={styles.measurementValue}
                   numberOfLines={1}
                   adjustsFontSizeToFit={true}
                 >
-                  {weight !== null ? weight.toFixed(1) : '-'}
+                  {weight ? weight.toFixed(1) : '-'}
                 </Text>
               </View>
               <View style={styles.measurementColumn}>
-                <Text style={styles.measurementLabel}>Time</Text>
+                <Text style={styles.measurementLabel}>Time:</Text>
                 <Text 
                   style={styles.measurementValue}
                   numberOfLines={1}
                   adjustsFontSizeToFit={true}
                 >
-                  {time !== null ? time.toFixed(1) : '-'}
+                  {time ? time.toFixed(1) : '-'}
                 </Text>
+              </View>
+            </View>
+            <View style={styles.measurementRow}>
+              <View style={styles.measurementColumn}>
+                <Text style={styles.measurementLabel}>Max Weight:</Text>
+                <Text style={styles.measurementValue}>{maxWeight ? maxWeight.toFixed(1) : '-'}</Text>
+              </View>
+              <View style={styles.measurementColumn}>
+                {/* <Text style={styles.measurementLabel}>Min Weight:</Text>
+                <Text style={styles.measurementValue}>{minWeight ? minWeight.toFixed(1) : '-'}</Text> */}
               </View>
             </View>
             <View style={{ width: '100%', flex: 1 }}>
               <CartesianChart 
-                data={data} 
-                xKey="x" 
-                yKeys={["y"]}
+                data={dataPoints} 
+                xKey="t" 
+                yKeys={["w"]}
+                frame={{
+                  lineWidth: 1,
+                }}
+                // padding={{ left: 0, bottom: 0 }}
+                // domainPadding={{ top: 1, bottom: 0.1 }}
+                xAxis={{
+                  font: font,
+                }}
+                yAxis={[
+                  {
+                    yKeys: ["w"],
+                    font: font,
+                    tickCount: 10,
+                  },
+                  // {
+                  //   yKeys: ["w"],
+                  //   tickValues: [0, Math.round(maxWeight * 10) / 10],
+                  //   axisSide: "right",
+                  //   font: font,
+                  //   tickCount: 10,
+                  // }
+                ]}
                 >              
                 {({ points }) => (
                   //👇 pass a PointsArray to the Line component, as well as options.
+                  <>
                   <Line
-                    points={points.y}
-                    color="red"
-                    strokeWidth={3}
+                    points={points.w}
+                    color="black"
+                    strokeWidth={2}
                   />
+
+                </>
                 )}
               </CartesianChart>
             </View>
@@ -187,12 +228,10 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     color: "#333333",
-    marginBottom: 5,
   },
   measurementValue: {
-    fontSize: 60,
+    fontSize: 30,
     fontWeight: "bold",
-    color: "#FF6060",
   },
   resetButton: {
     marginTop: 10,

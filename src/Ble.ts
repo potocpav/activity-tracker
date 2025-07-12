@@ -13,6 +13,8 @@ const DATA_SERVICE_UUID =           "7e4e1701-1ea6-40c9-9dcc-13d34ffead57";
 const CONTROL_CHARACTERISTIC_UUID = "7e4e1703-1ea6-40c9-9dcc-13d34ffead57";
 const DATA_CHARACTERISTIC_UUID =    "7e4e1702-1ea6-40c9-9dcc-13d34ffead57";
 
+const bleManager = new BleManager();
+
 const requestAndroid31Permissions = async () => {
     const bluetoothScanPermission = await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
@@ -78,13 +80,54 @@ const sendCommand = async (device: Device, command: number) => {
     );
 };
 
+const connectToDevice = async (device: Device) => {
+    try {
+        const deviceConnection = await bleManager.connectToDevice(device.id);
+        await deviceConnection.discoverAllServicesAndCharacteristics();
+        bleManager.stopDeviceScan();
+        return deviceConnection;
+    } catch (e) {
+        console.log("FAILED TO CONNECT", e);
+        throw e;
+    }
+};
+
+const disconnectDevice = async (device: Device) => {
+    await device.cancelConnection();
+    const isConnected = await device.isConnected();
+    if (isConnected) {
+        console.log("Device is still connected.");
+    } else {
+        console.log("Device is disconnected.");
+    }
+};
+
+const scanForPeripherals = (onDeviceFound: (device: Device) => void) => {
+    bleManager.startDeviceScan(null, null, (error, device) => {
+        if (error) {
+            console.log(error);
+        }
+
+        if (
+            device &&
+            device.localName?.startsWith("Progressor")
+        ) {
+            onDeviceFound(device);
+        }
+    });
+};
+
+const stopDeviceScan = () => {
+    bleManager.stopDeviceScan();
+};
+
 /**
  * Extracts data from Tindeq Progressor data packet
  */
 const extractData = (
   error: BleError | null,
   characteristic: Characteristic | null
-) : {weight: number, time: number} | null => {
+) : {w: number, t: number}[] | null => {
   if (error) {
     console.log(error);
     return null;
@@ -100,12 +143,15 @@ const extractData = (
     console.log("Battery voltage response received");
   } else if (dataType === 0x01) {
     const length = bytes[1];
-
     const view = new DataView(bytes.buffer);
-    const weight = Math.abs(view.getFloat32(length + 2 - 8, true));
-    const time = view.getInt32(length + 2 - 4, true) / 1e6;
-  
-    return {weight: weight, time: time};
+    const dataPoints: {w: number, t: number}[] = [];
+
+    for (let i = 0; i < length / 8; i++) {
+      const weight = Math.abs(view.getFloat32(2 + i * 8, true));
+      const time = view.getInt32(2 + i * 8 + 4, true) / 1e6;
+      dataPoints.push({w: weight, t: time});
+    }
+    return dataPoints;
   } else if (dataType === 0x02) {
     console.log("Low power warning received");
   } else {
@@ -150,6 +196,10 @@ export {
   requestAndroid31Permissions, 
   requestPermissions, 
   sendCommand,
+  connectToDevice,
+  disconnectDevice,
+  scanForPeripherals,
+  stopDeviceScan,
   extractData,
   tareScale,
   startMeasurement,
