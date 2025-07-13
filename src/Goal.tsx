@@ -38,7 +38,7 @@ const formatDate = (date: Date) => {
 
 const renderValue = (value: any, unit: Unit) => {
   if (typeof value === "number") {
-    return `${value} ${typeof unit === "string" ? unit : ""}`;
+    return `${Math.round(value * 100) / 100} ${typeof unit === "string" ? unit : ""}`;
   }
   
   if (typeof value === "object" && value !== null) {
@@ -107,7 +107,7 @@ const Goal: React.FC<GoalProps> = ({ navigation, route }) => {
   return (
     // <SafeAreaView style={styles.container}>
 
-    <Tab.Navigator>
+    <Tab.Navigator screenOptions={{swipeEnabled: false}}>
       <Tab.Screen name="Summary" component={GoalSummary} initialParams={{ goal }} />
       <Tab.Screen name="Data" component={GoalData} initialParams={{ goal }} />
       <Tab.Screen name="Graph" component={GoalGraph} initialParams={{ goal }} />

@@ -20,6 +20,7 @@ import {
   Device,
   Subscription,
 } from "react-native-ble-plx";
+import { exampleGoals } from "./ExampleData";
 
 export type Unit = string | SubUnit[];
 
@@ -80,72 +81,7 @@ const useStore = create<State>((set, get) => {
       dataPoints: [],
 
       // Goals related state
-      goals: [
-        {
-          id: "body-weight",
-          name: "Body Weight",
-          description: "Body weight measured in the morning before breakfast",
-          unit: "kg",
-          dataPoints: [
-            {
-              time: new Date("2025-07-12T03:24:00"),
-              value: 80,
-              tags: [],
-            },            
-            {
-              time: new Date("2025-07-11T03:24:00"),
-              value: 71,
-              tags: [],
-            },
-            {
-              time: new Date("2025-07-10T03:24:00"),
-              value: 70,
-              tags: [],
-            },
-            
-          ],
-        },
-        {
-          id: "finger-strength",
-          name: "Finger Strength",
-          description: "Finger strength as measured using Tindeq Progressor",
-          unit: [
-            {
-              name: "Mean",
-              symbol: "kg",
-            },
-            {
-              name: "Max",
-              symbol: "kg",
-            },
-            {
-              name: "TUT",
-              symbol: "s",
-            },
-          ],
-          dataPoints: [
-            {
-              time: new Date("2025-07-12T03:24:00"),
-              value: {
-                mean: 70,
-                max: 75,
-                tut: 1.5,
-              },
-              tags: ["left"],
-            },
-            {
-              time: new Date("2025-07-11T03:24:00"),
-              value: {
-                mean: 65,
-                max: null,
-                tut: 1.0,
-              },
-              tags: ["right", "warmup"],
-            },
-            
-          ],
-        }
-      ],
+      goals: exampleGoals,
 
       requestPermissions: requestPermissions,
 
