@@ -110,7 +110,7 @@ const Goal: React.FC<GoalProps> = ({ navigation, route }) => {
     <Tab.Navigator>
       <Tab.Screen name="Summary" component={GoalSummary} initialParams={{ goal }} />
       <Tab.Screen name="Data" component={GoalData} initialParams={{ goal }} />
-      <Tab.Screen name="Graph" component={GoalGraph} />
+      <Tab.Screen name="Graph" component={GoalGraph} initialParams={{ goal }} />
     </Tab.Navigator>
     // </SafeAreaView>
   );

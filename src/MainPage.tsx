@@ -51,12 +51,7 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar navigation={navigation}/>
-      <View style={styles.header}>
-        <Text style={styles.headerSubtitle}>Select a measurement option</Text>
-      </View>
-      
+    <SafeAreaView style={styles.container}>      
       <FlatList
         data={measurementOptions}
         renderItem={renderOption}
