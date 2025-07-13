@@ -32,7 +32,6 @@ const Goals: React.FC<GoalsProps> = ({ navigation }) => {
       activeOpacity={0.7}
     >
       <Text style={styles.goalTitle}>{item.name}</Text>
-      <Text style={styles.goalDescription}>{item.description}</Text>
       <Text style={styles.goalDate}>{renderUnit(item.unit)}</Text>
     </TouchableOpacity>
   );
@@ -73,13 +72,13 @@ const styles = StyleSheet.create({
     color: "#666666",
   },
   listContainer: {
-    padding: 20,
+    padding: 10,
   },
   goalCard: {
     backgroundColor: '#ffffff',
     borderRadius: 12,
-    padding: 20,
-    marginBottom: 15,
+    padding: 10,
+    marginBottom: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,

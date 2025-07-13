@@ -7,7 +7,12 @@ import {
   FlatList,
   TouchableOpacity,
 } from "react-native";
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import useStore, { GoalType, SubUnit, Unit, DataPoint } from "./Store";
+import GoalGraph from "./GoalGraph";
+
+
+const Tab = createMaterialTopTabNavigator();
 
 type GoalProps = {
   navigation: any;
@@ -45,7 +50,7 @@ const renderValue = (value: any, unit: Unit) => {
     const parts: string[] = [];
     unit.forEach((u: SubUnit) => {
       if (value[u.name.toLowerCase()] !== null && value[u.name.toLowerCase()] !== undefined) {
-        parts.push(`${u.name}: ${value[u.name.toLowerCase()]} ${u.symbol}`);
+        parts.push(`${value[u.name.toLowerCase()]} ${u.symbol}`);
       }
     });
     return parts.join(", ");
@@ -69,12 +74,16 @@ const renderTags = (tags: string[]) => {
 };
 
 const renderDataPoint = ({ item }: { item: DataPoint }, unit: Unit) => (
-  <View style={styles.dataPointCard}>
-    <View style={styles.dataPointHeader}>
-      <Text style={styles.dataPointDate}>{formatDate(item.time)}</Text>
-      <Text style={styles.dataPointValue}>
-        {renderValue(item.value, unit)}
-      </Text>
+  <View style={styles.dataPointContainer}>
+    <View style={styles.dataPointContent}>
+      <View style={styles.dataPointDate}>
+        <Text style={styles.dataPointDateText}>{formatDate(item.time)}</Text>
+      </View>
+      <View style={styles.dataPointValueContainer}>
+        <Text style={styles.dataPointValue}>
+          {renderValue(item.value, unit)}
+        </Text>
+      </View>
     </View>
     {renderTags(item.tags)}
   </View>
@@ -96,33 +105,57 @@ const Goal: React.FC<GoalProps> = ({ navigation, route }) => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={styles.backButtonText}>← Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{goal.name}</Text>
-      </View>
-      
-      <View style={styles.goalInfo}>
-        <Text style={styles.goalDescription}>{goal.description}</Text>
-        <Text style={styles.goalUnit}>{renderUnit(goal.unit)}</Text>
-      </View>
+    // <SafeAreaView style={styles.container}>
 
-      <View style={styles.dataSection}>
-        <Text style={styles.sectionTitle}>Data Points ({goal.dataPoints.length})</Text>
-        <FlatList
-          data={goal.dataPoints}
-          renderItem={(item) => renderDataPoint(item, goal.unit)}
-          keyExtractor={(item, index) => index.toString()}
-          contentContainerStyle={styles.listContainer}
-          showsVerticalScrollIndicator={false}
-        />
-      </View>
-    </SafeAreaView>
+    <Tab.Navigator>
+      <Tab.Screen name="Summary" component={GoalSummary} initialParams={{ goal }} />
+      <Tab.Screen name="Data" component={GoalData} initialParams={{ goal }} />
+      <Tab.Screen name="Graph" component={GoalGraph} />
+    </Tab.Navigator>
+    // </SafeAreaView>
+  );
+};
+
+const GoalSummary = ({ route }: { route: any }) => {
+  const { goal } = route.params;
+  return (
+    <View>
+        <View style={styles.header}>
+            <Text style={styles.headerTitle}>{goal.name}</Text>
+        </View>
+        
+        <View style={styles.goalInfo}>
+            <Text style={styles.goalDescription}>{goal.description}</Text>
+            <Text style={styles.goalUnit}>{renderUnit(goal.unit)}</Text>
+        </View>
+
+        <View>
+            <Text style={styles.sectionTitle}>Data Points ({goal.dataPoints.length})</Text>
+            <FlatList
+            data={goal.dataPoints}
+            renderItem={(item) => renderDataPoint(item, goal.unit)}
+            keyExtractor={(item, index) => index.toString()}
+            contentContainerStyle={styles.listContainer}
+            showsVerticalScrollIndicator={false}
+            />
+        </View>
+    </View>
+  );
+};
+
+const GoalData = ({ route }: { route: any }) => {
+  const { goal } = route.params;
+  return (
+    <View>
+      <Text style={styles.sectionTitle}>Data Points ({goal.dataPoints.length})</Text>
+      <FlatList
+      data={goal.dataPoints}
+      renderItem={(item) => renderDataPoint(item, goal.unit)}
+      keyExtractor={(item, index) => index.toString()}
+      contentContainerStyle={styles.listContainer}
+      showsVerticalScrollIndicator={false}
+      />
+  </View>
   );
 };
 
@@ -140,14 +173,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  backButton: {
-    marginRight: 15,
-  },
-  backButtonText: {
-    fontSize: 16,
-    color: "#007AFF",
-    fontWeight: "500",
-  },
   headerTitle: {
     fontSize: 20,
     fontWeight: "bold",
@@ -156,8 +181,7 @@ const styles = StyleSheet.create({
   },
   goalInfo: {
     backgroundColor: '#ffffff',
-    padding: 20,
-    marginBottom: 10,
+    padding: 15,
   },
   goalDescription: {
     fontSize: 16,
@@ -170,9 +194,9 @@ const styles = StyleSheet.create({
     color: "#999999",
     fontStyle: "italic",
   },
-  dataSection: {
-    flex: 1,
-  },
+  // dataSection: {
+  //   flex: 1,
+  // },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
@@ -181,29 +205,29 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
   },
   listContainer: {
-    paddingHorizontal: 20,
-  },
-  dataPointCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
   },
-  dataPointHeader: {
+  dataPointContainer: {
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 10,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  dataPointContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
   },
   dataPointDate: {
+  },
+  dataPointDateText: {
     fontSize: 14,
     color: "#666666",
     fontWeight: "500",
+  },
+  dataPointValueContainer: {
+    alignItems: 'flex-end',
   },
   dataPointValue: {
     fontSize: 16,
