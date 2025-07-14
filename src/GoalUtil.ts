@@ -21,6 +21,9 @@ export const binTime = (binSize: BinSize, t0: number, i: number) => {
 };
 
 export const binTimeSeries = (binSize: BinSize, dataPoints: any[]) => {
+  if (dataPoints.length === 0) {
+    return [];
+  }
   const t0 = dataPoints[0].time;
 
   var bins: {time: number, values: any[]}[] = [{time: binTime(binSize, t0, 0), values: []}];

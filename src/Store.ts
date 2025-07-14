@@ -198,12 +198,17 @@ const useStore = create<State>()(
         set({goals: exampleGoals});
       },
 
-      updateGoalDataPoint: (goalId: string, dataPointIndex: number, updatedDataPoint: DataPoint) => {
+      updateGoalDataPoint: (goalId: string, dataPointIndex: number | undefined, updatedDataPoint: DataPoint) => {
         set((state: any) => {
           const goals = state.goals.map((goal: GoalType) => {
             if (goal.id === goalId) {
               const updatedDataPoints = [...goal.dataPoints];
-              updatedDataPoints[dataPointIndex] = updatedDataPoint;
+              if (dataPointIndex !== undefined) {
+                updatedDataPoints[dataPointIndex] = updatedDataPoint;
+              } else {
+                updatedDataPoints.push(updatedDataPoint);
+                updatedDataPoints.sort((a, b) => a.time - b.time);
+              }
               return { ...goal, dataPoints: updatedDataPoints };
             }
             return goal;
@@ -212,6 +217,19 @@ const useStore = create<State>()(
         });
       },
 
+      deleteGoalDataPoint: (goalId: string, dataPointIndex: number) => {
+        set((state: any) => {
+          const goals = state.goals.map((goal: GoalType) => {
+            if (goal.id === goalId) {
+              const updatedDataPoints = [...goal.dataPoints]; 
+              updatedDataPoints.splice(dataPointIndex, 1);
+              return { ...goal, dataPoints: updatedDataPoints };
+            }
+            return goal;
+          });
+          return { goals };
+        });
+      },
     }),
   {
     name: "store",

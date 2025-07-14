@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import {
+  SafeAreaView,
   StyleSheet,
   Text,
   View,
@@ -81,9 +82,8 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
   const goal = goals.find((g: GoalType) => g.id === goalId);
 
   if (!goal) {
-    return <Text>Goal not found xoxo</Text>;
+    return <Text>Goal not found</Text>;
   }
-
   const bins = binTimeSeries("day", [...goal.dataPoints]);
 
   const getDayKey = (t: number) => t.toString();
@@ -144,7 +144,12 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
 
   return (
     <View>
-      <Text style={styles.sectionTitle}>Data Points ({goal.dataPoints.length})</Text>
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Data Points ({goal.dataPoints.length})</Text>
+        <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate("EditDataPoint", { goalId: goal.id })}>
+          <Text style={styles.addButtonText}>+</Text>
+        </TouchableOpacity>
+      </View>
       <FlatList
         data={bins}
         renderItem={renderDay}
@@ -157,12 +162,38 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
 };
 
 const styles = StyleSheet.create({
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
     color: "#333333",
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+  },
+  addButton: {
+    backgroundColor: '#007AFF',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  addButtonText: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: 'bold',
   },
   listContainer: {
     backgroundColor: '#ffffff',

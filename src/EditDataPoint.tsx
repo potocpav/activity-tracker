@@ -32,18 +32,29 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
   const { goalId, dataPointIndex } = route.params;
   const goals = useStore((state: any) => state.goals);
   const goal = goals.find((g: GoalType) => g.id === goalId);
-  const dataPoint = goal?.dataPoints[dataPointIndex];
-  const dateTime = new Date(dataPoint.time);
+  
+  const dataPoint = dataPointIndex !== undefined ? goal?.dataPoints[dataPointIndex] : {
+    time: new Date().getTime(), 
+    value: typeof goal.unit === "string" ? 
+      null : 
+      Object.fromEntries(goal.unit.map((u: SubUnit) => [u.name, null])), 
+    tags: []
+  };
+  
 
-  if (!dataPoint) {
-    return <Text>Data point not found</Text>;
-  }
+  const dateTime = new Date(dataPoint.time);
+  
+  console.log("dataPoint", dataPoint);
+
+if (!dataPoint) {
+  return <Text>Data point not found</Text>;
+}
   
   const updateGoalDataPoint = useStore((state: any) => state.updateGoalDataPoint);
-  
+  const deleteGoalDataPoint = useStore((state: any) => state.deleteGoalDataPoint);
   const [inputDate, setInputDate] = useState<CalendarDate | undefined>(dateTime);
   const [inputTime, setInputTime] = useState<{hours: number, minutes: number} | undefined>({hours: dateTime.getHours(), minutes: dateTime.getMinutes()});
-  const inputValues = typeof goal.unit === "string" ? [{subUnit: null, value: useState<string>(dataPoint.value.toString())}] : 
+  const inputValues = typeof goal.unit === "string" ? [{subUnit: null, value: useState<string>(dataPoint.value?.toString() ?? "")}] : 
     goal.unit.map((u: SubUnit) => ({subUnit: u, value: useState<string>(dataPoint.value[u.name]?.toString() ?? "")}));
   const [timePickerVisible, setTimePickerVisible] = useState(false);
   const [datePickerVisible, setDatePickerVisible] = useState(false);  
@@ -107,6 +118,14 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
         <TouchableOpacity style={styles.cancelButton} onPress={() => navigation.goBack()}>
           <Text style={styles.cancelButtonText}>Cancel</Text>
         </TouchableOpacity>
+        {dataPointIndex !== undefined && (
+          <TouchableOpacity style={styles.deleteButton} onPress={() => {
+            deleteGoalDataPoint(goalId, dataPointIndex);
+            navigation.goBack();
+          }}>
+            <Text style={styles.deleteButtonText}>Delete</Text>
+          </TouchableOpacity>
+        )}
         <TouchableOpacity style={styles.saveButton} onPress={() => {
           var newValue: any = {};
           var hasNonEmptyValue = false;
@@ -139,6 +158,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
 
           if (inputDate && inputTime && hasNonEmptyValue && newValue !== null) {
             const newTime = new Date(inputDate?.getFullYear(), inputDate?.getMonth(), inputDate?.getDate(), inputTime?.hours, inputTime?.minutes).getTime();
+            console.log("dataPointIndex", dataPointIndex);
             updateGoalDataPoint(goalId, dataPointIndex, {
               time: newTime,
               value: newValue,
@@ -228,6 +248,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   saveButtonText: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "500",
+  },
+  deleteButton: {
+    flex: 1,
+    backgroundColor: "#dc3545",
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  deleteButtonText: {
     color: "#ffffff",
     fontSize: 16,
     fontWeight: "500",

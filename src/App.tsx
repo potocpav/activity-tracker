@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import {
   SafeAreaView,
   StyleSheet,
+  StatusBar,
 } from "react-native";
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
@@ -18,6 +19,7 @@ const App = () => {
 
   return (
     <PaperProvider>
+      <StatusBar barStyle="dark-content" backgroundColor="#f2f2f2" />
       <SafeAreaView style={styles.container}>
         <NavigationContainer>
           <Stack.Navigator>

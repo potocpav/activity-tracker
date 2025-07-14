@@ -2,7 +2,7 @@
 
 export const exampleGoals = [
     {
-      id: "body-weight",
+      id: "body-weight-example",
       name: "Body Weight (Example)",
       description: "Body weight measured in the morning before breakfast",
       unit: "kg",
@@ -13,6 +13,50 @@ export const exampleGoals = [
             value: Math.round((70 + Math.random() * 2) * 10) / 10,
             tags: [],
         })).sort((a, b) => a.time - b.time),
+    },    
+    {
+      id: "body-weight",
+      name: "Body Weight",
+      description: "Body weight measured in the morning before breakfast",
+      unit: "kg",
+      dataPoints: [
+        {
+          time: new Date("2025-07-08T00:00:00").getTime(),
+          value: 81.4,
+          tags: [],
+        },
+        {
+          time: new Date("2025-07-09T00:00:00").getTime(),
+          value: 79.8,
+          tags: [],
+        },
+        {
+          time: new Date("2025-07-10T00:00:00").getTime(),
+          value: 80.9,
+          tags: [],
+        },
+        {
+          time: new Date("2025-07-11T00:00:00").getTime(),
+          value: 80.9,
+          tags: [],
+        },
+        {
+          time: new Date("2025-07-12T00:00:00").getTime(),
+          value: 79.9,
+          tags: [],
+        },
+        {
+          time: new Date("2025-07-13T00:00:00").getTime(),
+          value: 79.1,
+          tags: [],
+        },
+        {
+          time: new Date("2025-07-14T00:00:00").getTime(),
+          value: 80.1,
+          tags: [],
+        },
+        
+      ],
     },
     {
       id: "finger-strength",

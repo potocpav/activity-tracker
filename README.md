@@ -28,8 +28,9 @@ In order to make this app a full-featured management app for workout data, the f
     * [x] Basic implementation 
     * [x] Group by days, allow expanding/collapsing days
     * [x] Allow expanding data points
-    * [ ] "Edit" button for expanded data points
-    * [ ] "Add" button
+    * [x] "Edit" button for expanded data points
+    * [x] "Add" button
+    * [ ] Reverse days
   * [ ] Goal Graphs
     * [x] Box chart
     * [x] Allow choosing out of multiple values
@@ -47,12 +48,12 @@ In order to make this app a full-featured management app for workout data, the f
     * [ ] Tag colors
     * [ ] Editing tags
 * [ ] Add & edit measurements
-  * [ ] Add measurement
-  * [ ] Edit measurement
+  * [x] Add measurement
+  * [x] Edit measurement
+  * [x] Edit time
+  * [x] Edit values according to units
   * [ ] Add tags
   * [ ] Add comments
-  * [ ] Edit time
-  * [ ] Edit values according to units
 * [ ] Tindeq
   * [x] BLE Connection
   * [x] Real-time graph
