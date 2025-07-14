@@ -6,6 +6,7 @@ import {
   View,
   TouchableOpacity,
 } from "react-native";
+import { useTheme } from 'react-native-paper';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import useStore, { GoalType, SubUnit, Unit } from "./Store";
 import GoalGraph from "./GoalGraph";
@@ -28,15 +29,16 @@ const renderUnit = (unit: Unit) => {
 
 
 const Goal: React.FC<GoalProps> = ({ navigation, route }) => {
+  const theme = useTheme();
   const { goalId } = route.params;
   const goals = useStore((state: any) => state.goals);
   const goal = goals.find((g: GoalType) => g.id === goalId);
 
   if (!goal) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surfaceVariant }]}>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Goal not found</Text>
+          <Text style={[styles.errorText, { color: theme.colors.onSurfaceVariant }]}>Goal not found</Text>
         </View>
       </SafeAreaView>
     );
@@ -52,6 +54,7 @@ const Goal: React.FC<GoalProps> = ({ navigation, route }) => {
 };
 
 const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => {
+  const theme = useTheme();
   const { goalId } = route.params;
   const goals = useStore((state: any) => state.goals);
   const goal = goals.find((g: GoalType) => g.id === goalId);
@@ -62,16 +65,16 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
 
   return (
     <View>
-        <View style={styles.header}>
-            <Text style={styles.headerTitle}>{goal.name}</Text>
+        <View style={[styles.header, { backgroundColor: theme.colors.surface, borderBottomColor: theme.colors.outline }]}>
+            <Text style={[styles.headerTitle, { color: theme.colors.onSurface }]}>{goal.name}</Text>
             <TouchableOpacity onPress={() => navigation.navigate('EditGoal', { goalId })}>
-              <Text style={styles.editButton}>Edit</Text>
+              <Text style={[styles.editButton, { color: theme.colors.primary, backgroundColor: theme.colors.primaryContainer }]}>Edit</Text>
             </TouchableOpacity>
         </View>
         
-        <View style={styles.goalInfo}>
-            <Text style={styles.goalDescription}>{goal.description}</Text>
-            <Text style={styles.goalUnit}>{renderUnit(goal.unit)}</Text>
+        <View style={[styles.goalInfo, { backgroundColor: theme.colors.surface }]}>
+            <Text style={[styles.goalDescription, { color: theme.colors.onSurfaceVariant }]}>{goal.description}</Text>
+            <Text style={[styles.goalUnit, { color: theme.colors.onSurfaceVariant }]}>{renderUnit(goal.unit)}</Text>
         </View>
 
         <View>
@@ -84,63 +87,50 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f2f2f2",
   },
   header: {
     paddingHorizontal: 20,
     paddingVertical: 15,
-    backgroundColor: '#ffffff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
     flexDirection: 'row',
     alignItems: 'center',
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#333333",
     flex: 1,
   },
   editButton: {
     fontSize: 14,
-    color: '#1976D2',
     fontWeight: 'bold',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    backgroundColor: '#E3F2FD',
     borderRadius: 6,
   },
   goalInfo: {
-    backgroundColor: '#ffffff',
     padding: 15,
   },
   goalDescription: {
     fontSize: 16,
-    color: "#666666",
     lineHeight: 22,
     marginBottom: 8,
   },
   goalUnit: {
     fontSize: 14,
-    color: "#999999",
     fontStyle: "italic",
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#333333",
     paddingHorizontal: 20,
     paddingVertical: 15,
   },
   listContainer: {
-    backgroundColor: '#ffffff',
   },
   dataPointContainer: {
-    backgroundColor: '#ffffff',
     paddingHorizontal: 10,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   dataPointContent: {
     flexDirection: 'row',
@@ -152,7 +142,6 @@ const styles = StyleSheet.create({
   },
   dataPointValue: {
     fontSize: 16,
-    color: "#333333",
   },
   tagsContainer: {
     flexDirection: 'row',
@@ -160,14 +149,12 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   tag: {
-    backgroundColor: '#E3F2FD',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
   },
   tagText: {
     fontSize: 12,
-    color: '#1976D2',
     fontWeight: "500",
   },
   errorContainer: {
@@ -177,7 +164,6 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 16,
-    color: "#666666",
   },
 });
 

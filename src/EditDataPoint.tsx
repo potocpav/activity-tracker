@@ -7,6 +7,7 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
+import { useTheme } from 'react-native-paper';
 import { SubUnit, GoalType } from "./Store";
 import { TextInput, Button } from "react-native-paper";
 import useStore from "./Store";
@@ -19,6 +20,7 @@ type EditDataPointProps = {
 };
 
 const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
+  const theme = useTheme();
   const { goalId, dataPointIndex } = route.params;
   const goals = useStore((state: any) => state.goals);
   const goal = goals.find((g: GoalType) => g.id === goalId);
@@ -47,10 +49,10 @@ if (!dataPoint) {
   const [datePickerVisible, setDatePickerVisible] = useState(false);  
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
       <ScrollView style={styles.content}>
       <View style={styles.pickerContainer}>
-        <Text style={styles.label}>Date: {inputDate ? inputDate.toLocaleDateString() : 'Not set'}</Text>
+        <Text style={[styles.label, { color: theme.colors.onSurface }]}>Date: {inputDate ? inputDate.toLocaleDateString() : 'Not set'}</Text>
         <Button onPress={() => setDatePickerVisible(true)} uppercase={false} mode="outlined">
           Change
         </Button>
@@ -65,7 +67,7 @@ if (!dataPoint) {
       </View>
 
       <View style={styles.pickerContainer}>
-        <Text style={styles.label}>Time: {inputTime ? `${inputTime.hours}:${inputTime.minutes}` : 'Not set'}</Text>
+        <Text style={[styles.label, { color: theme.colors.onSurface }]}>Time: {inputTime ? `${inputTime.hours}:${inputTime.minutes}` : 'Not set'}</Text>
           <Button 
             onPress={() => setTimePickerVisible(true)} 
             uppercase={false} 
@@ -97,23 +99,23 @@ if (!dataPoint) {
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Tags: {dataPoint.tags.join(", ")}</Text>
+          <Text style={[styles.label, { color: theme.colors.onSurface }]}>Tags: {dataPoint.tags.join(", ")}</Text>
         </View>
       </ScrollView>
 
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.cancelButton} onPress={() => navigation.goBack()}>
-          <Text style={styles.cancelButtonText}>Cancel</Text>
+      <View style={[styles.footer, { borderTopColor: theme.colors.outline }]}>
+        <TouchableOpacity style={[styles.cancelButton, { backgroundColor: theme.colors.secondary }]} onPress={() => navigation.goBack()}>
+          <Text style={[styles.cancelButtonText, { color: theme.colors.onSecondary }]}>Cancel</Text>
         </TouchableOpacity>
         {dataPointIndex !== undefined && (
-          <TouchableOpacity style={styles.deleteButton} onPress={() => {
+          <TouchableOpacity style={[styles.deleteButton, { backgroundColor: theme.colors.error }]} onPress={() => {
             deleteGoalDataPoint(goalId, dataPointIndex);
             navigation.goBack();
           }}>
-            <Text style={styles.deleteButtonText}>Delete</Text>
+            <Text style={[styles.deleteButtonText, { color: theme.colors.onError }]}>Delete</Text>
           </TouchableOpacity>
         )}
-        <TouchableOpacity style={styles.saveButton} onPress={() => {
+        <TouchableOpacity style={[styles.saveButton, { backgroundColor: theme.colors.primary }]} onPress={() => {
           var newValue: any = {};
           var hasNonEmptyValue = false;
           if (typeof goal.unit === "string") {
@@ -153,7 +155,7 @@ if (!dataPoint) {
             Alert.alert("Invalid input");
           }
         }}>
-          <Text style={styles.saveButtonText}>Save</Text>
+          <Text style={[styles.saveButtonText, { color: theme.colors.onPrimary }]}>Save</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -163,19 +165,16 @@ if (!dataPoint) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ffffff",
   },
   title: {
     fontSize: 20,
     fontWeight: "600",
-    color: "#333333",
   },
   closeButton: {
     padding: 5,
   },
   closeButtonText: {
     fontSize: 20,
-    color: "#666666",
   },
   content: {
     flex: 1,
@@ -193,12 +192,10 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: "500",
-    color: "#333333",
     marginBottom: 8,
   },
   helperText: {
     fontSize: 14,
-    color: "#666666",
     marginBottom: 8,
   },
   textInput: {
@@ -209,42 +206,35 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 15,
     borderTopWidth: 1,
-    borderTopColor: "#e0e0e0",
     gap: 10,
   },
   cancelButton: {
     flex: 1,
-    backgroundColor: "#6c757d",
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center",
   },
   cancelButtonText: {
-    color: "#ffffff",
     fontSize: 16,
     fontWeight: "500",
   },
   saveButton: {
     flex: 1,
-    backgroundColor: "#007AFF",
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center",
   },
   saveButtonText: {
-    color: "#ffffff",
     fontSize: 16,
     fontWeight: "500",
   },
   deleteButton: {
     flex: 1,
-    backgroundColor: "#dc3545",
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center",
   },
   deleteButtonText: {
-    color: "#ffffff",
     fontSize: 16,
     fontWeight: "500",
   },

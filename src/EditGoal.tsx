@@ -7,6 +7,7 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
+import { useTheme } from 'react-native-paper';
 import { GoalType } from "./Store";
 import { TextInput, Button } from "react-native-paper";
 import useStore from "./Store";
@@ -17,6 +18,7 @@ type EditGoalProps = {
 };
 
 const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
+  const theme = useTheme();
   const { goalId } = route.params;
   const goals = useStore((state: any) => state.goals);
   const goal = goals.find((g: GoalType) => g.id === goalId);
@@ -29,7 +31,7 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
   const [goalDescription, setGoalDescription] = useState(goal.description);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
       <ScrollView style={styles.content}>
         <View style={styles.inputContainer}>
           <TextInput
@@ -52,21 +54,21 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Unit: {typeof goal.unit === "string" ? goal.unit : goal.unit.map((u: any) => u.name).join(", ")}</Text>
-          <Text style={styles.helperText}>Unit editing will be implemented later</Text>
+          <Text style={[styles.label, { color: theme.colors.onSurface }]}>Unit: {typeof goal.unit === "string" ? goal.unit : goal.unit.map((u: any) => u.name).join(", ")}</Text>
+          <Text style={[styles.helperText, { color: theme.colors.onSurfaceVariant }]}>Unit editing will be implemented later</Text>
         </View>
       </ScrollView>
 
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.cancelButton} onPress={() => navigation.goBack()}>
-          <Text style={styles.cancelButtonText}>Cancel</Text>
+      <View style={[styles.footer, { borderTopColor: theme.colors.outline }]}>
+        <TouchableOpacity style={[styles.cancelButton, { backgroundColor: theme.colors.secondary }]} onPress={() => navigation.goBack()}>
+          <Text style={[styles.cancelButtonText, { color: theme.colors.onSecondary }]}>Cancel</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.saveButton} onPress={() => {
+        <TouchableOpacity style={[styles.saveButton, { backgroundColor: theme.colors.primary }]} onPress={() => {
           // TODO: Implement goal update logic
           Alert.alert("Not implemented", "Goal editing functionality will be implemented later");
           navigation.goBack();
         }}>
-          <Text style={styles.saveButtonText}>Save</Text>
+          <Text style={[styles.saveButtonText, { color: theme.colors.onPrimary }]}>Save</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -76,7 +78,6 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ffffff",
   },
   content: {
     flex: 1,
@@ -88,12 +89,10 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: "500",
-    color: "#333333",
     marginBottom: 8,
   },
   helperText: {
     fontSize: 14,
-    color: "#666666",
     marginBottom: 8,
   },
   textInput: {
@@ -104,30 +103,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 15,
     borderTopWidth: 1,
-    borderTopColor: "#e0e0e0",
     gap: 10,
   },
   cancelButton: {
     flex: 1,
-    backgroundColor: "#6c757d",
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center",
   },
   cancelButtonText: {
-    color: "#ffffff",
     fontSize: 16,
     fontWeight: "500",
   },
   saveButton: {
     flex: 1,
-    backgroundColor: "#007AFF",
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center",
   },
   saveButtonText: {
-    color: "#ffffff",
     fontSize: 16,
     fontWeight: "500",
   },

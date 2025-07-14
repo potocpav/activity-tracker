@@ -4,7 +4,7 @@ import {
   StyleSheet,
   StatusBar,
 } from "react-native";
-import {NavigationContainer, DefaultTheme} from '@react-navigation/native';
+import {NavigationContainer, DefaultTheme, DarkTheme} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import MainPage from "./MainPage";
 import LiveView from "./LiveView";
@@ -16,16 +16,41 @@ import EditGoal from "./EditGoal";
 import {
   PaperProvider,
   MD3LightTheme,
+  MD3DarkTheme,
   adaptNavigationTheme,
 } from 'react-native-paper';
 
-const { LightTheme } = adaptNavigationTheme({
+// Simple theme toggle - change this to false for dark theme
+const USE_LIGHT_THEME = true;
+
+const { LightTheme, DarkTheme: PaperDarkTheme } = adaptNavigationTheme({
   reactNavigationLight: DefaultTheme,
+  reactNavigationDark: DarkTheme,
 });
 
 // Add missing fonts property to fix the TypeScript error
-const navigationTheme = {
+const navigationTheme = USE_LIGHT_THEME ? {
   ...LightTheme,
+  fonts: {
+    regular: {
+      fontFamily: 'System',
+      fontWeight: '400' as const,
+    },
+    medium: {
+      fontFamily: 'System',
+      fontWeight: '500' as const,
+    },
+    bold: {
+      fontFamily: 'System',
+      fontWeight: '700' as const,
+    },
+    heavy: {
+      fontFamily: 'System',
+      fontWeight: '900' as const,
+    },
+  },
+} : {
+  ...PaperDarkTheme,
   fonts: {
     regular: {
       fontFamily: 'System',
@@ -50,9 +75,9 @@ const App = () => {
   const Stack = createNativeStackNavigator();
 
   return (
-    <PaperProvider theme={MD3LightTheme}>
-      <StatusBar barStyle="dark-content" backgroundColor="#f2f2f2" />
-      <SafeAreaView style={styles.container}>
+    <PaperProvider theme={USE_LIGHT_THEME ? MD3LightTheme : MD3DarkTheme}>
+      <StatusBar barStyle={USE_LIGHT_THEME ? "dark-content" : "light-content"} backgroundColor={USE_LIGHT_THEME ? "#f2f2f2" : "#121212"} />
+      <SafeAreaView style={[styles.container, { backgroundColor: USE_LIGHT_THEME ? "#f2f2f2" : "#121212" }]}>
         <NavigationContainer theme={navigationTheme}>
           <Stack.Navigator>
             <Stack.Group>
@@ -104,7 +129,6 @@ const App = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f2f2f2",
   },
 });
 

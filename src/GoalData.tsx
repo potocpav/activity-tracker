@@ -7,6 +7,7 @@ import {
   FlatList,
   TouchableOpacity,
 } from "react-native";
+import { useTheme } from 'react-native-paper';
 import useStore, { DataPoint, GoalType, Unit } from "./Store";
 import { binTimeSeries } from "./GoalUtil";
 import EditDataPoint from "./EditDataPoint";
@@ -77,6 +78,7 @@ const renderDataPoint = ({ item }: { item: DataPoint }, unit: Unit, dataPointInd
 );
 
 const GoalData = ({ navigation, route }: GoalDataProps) => {
+  const theme = useTheme();
   const { goalId } = route.params;
   const goals = useStore((state: any) => state.goals);
   const goal = goals.find((g: GoalType) => g.id === goalId);
@@ -112,14 +114,14 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
           onPress={() => toggleDay(getDayKey(item.time))}
         >
           <View style={styles.dayHeaderContent}>
-            <Text style={styles.dayDate}>{formatDate(new Date(item.time))}</Text>
-            <Text style={styles.dayCount}>({item.values.length})</Text>
+            <Text style={[styles.dayDate, { color: theme.colors.onSurface }]}>{formatDate(new Date(item.time))}</Text>
+            <Text style={[styles.dayCount, { color: theme.colors.onSurfaceVariant }]}>({item.values.length})</Text>
           </View>
-          <Text style={styles.expandIcon}>{isExpanded ? '▼' : '▶'}</Text>
+          <Text style={[styles.expandIcon, { color: theme.colors.onSurfaceVariant }]}>{isExpanded ? '▼' : '▶'}</Text>
         </TouchableOpacity>
 
         {isExpanded && (
-          <View style={styles.dayDataPoints}>
+          <View style={[styles.dayDataPoints, { backgroundColor: theme.colors.surface }]}>
             {item.values.map((dataPoint, index) => {
               // Find the actual index in the original dataPoints array
               const actualIndex = goal.dataPoints.findIndex((dp: DataPoint) =>
@@ -145,16 +147,16 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
   return (
     <View>
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Data Points ({goal.dataPoints.length})</Text>
-        <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate("EditDataPoint", { goalId: goal.id })}>
-          <Text style={styles.addButtonText}>+</Text>
+        <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>Data Points ({goal.dataPoints.length})</Text>
+        <TouchableOpacity style={[styles.addButton, { backgroundColor: theme.colors.primary }]} onPress={() => navigation.navigate("EditDataPoint", { goalId: goal.id })}>
+          <Text style={[styles.addButtonText, { color: theme.colors.onPrimary }]}>+</Text>
         </TouchableOpacity>
       </View>
       <FlatList
         data={bins}
         renderItem={renderDay}
         keyExtractor={(item) => item.time.toString()}
-        contentContainerStyle={styles.listContainer}
+        contentContainerStyle={[styles.listContainer, { backgroundColor: theme.colors.surface }]}
         showsVerticalScrollIndicator={false}
       />
     </View>
@@ -172,10 +174,8 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#333333",
   },
   addButton: {
-    backgroundColor: '#007AFF',
     width: 32,
     height: 32,
     borderRadius: 16,
@@ -191,19 +191,15 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   addButtonText: {
-    color: '#FFFFFF',
     fontSize: 20,
     fontWeight: 'bold',
   },
   listContainer: {
-    backgroundColor: '#ffffff',
   },
   dataPointContainer: {
-    backgroundColor: '#ffffff',
     paddingHorizontal: 10,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   dataPointContent: {
     flexDirection: 'row',
@@ -216,7 +212,6 @@ const styles = StyleSheet.create({
   },
   dataPointValue: {
     fontSize: 16,
-    color: "#333333",
   },
   dataPointActions: {
     flexDirection: 'row',
@@ -229,14 +224,12 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   tag: {
-    backgroundColor: '#E3F2FD',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
   },
   tagText: {
     fontSize: 12,
-    color: '#1976D2',
     fontWeight: "500",
   },
   editButton: {
@@ -260,20 +253,16 @@ const styles = StyleSheet.create({
   },
   dayDate: {
     fontSize: 16,
-    color: '#333333',
     fontWeight: '600',
   },
   dayCount: {
     fontSize: 14,
-    color: '#666666',
     marginLeft: 8,
   },
   expandIcon: {
     fontSize: 16,
-    color: '#666666',
   },
   dayDataPoints: {
-    backgroundColor: '#ffffff',
   },
   nestedDataPointContainer: {
     marginBottom: 0,

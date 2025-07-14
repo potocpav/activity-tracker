@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useTheme } from 'react-native-paper';
 import useStore from "./Store";
 
 type StatusBarProps = {
@@ -13,6 +14,7 @@ type StatusBarProps = {
 
 
 const StatusBar: React.FC<StatusBarProps> = ({navigation}) => {
+    const theme = useTheme();
     const connectedDevice = useStore((state: any) => state.connectedDevice);
     const isConnected = useStore((state: any) => state.isConnected);
     const requestPermissions = useStore((state: any) => state.requestPermissions);
@@ -33,10 +35,10 @@ const StatusBar: React.FC<StatusBarProps> = ({navigation}) => {
     };
 
     return (
-    <View style={styles.statusBar}>
+    <View style={[styles.statusBar, { backgroundColor: theme.colors.surface, borderBottomColor: theme.colors.outline }]}>
       <View style={styles.statusInfo}>
-        <View style={[styles.statusIndicator, { backgroundColor: isConnected ? '#4CAF50' : '#FF5722' }]} />
-        <Text style={styles.statusText}>
+        <View style={[styles.statusIndicator, { backgroundColor: isConnected ? theme.colors.primary : theme.colors.error }]} />
+        <Text style={[styles.statusText, { color: theme.colors.onSurface }]}>
           {isConnected ? `Connected: ${connectedDevice.name}` : 'Disconnected'}
         </Text>
       </View>
@@ -44,10 +46,10 @@ const StatusBar: React.FC<StatusBarProps> = ({navigation}) => {
         onPress={isConnected ? disconnectDevice : openModal} 
         style={
             [styles.statusButton, 
-            { backgroundColor: isConnected ? '#FF5722' : '#4CAF50' }
+            { backgroundColor: isConnected ? theme.colors.error : theme.colors.primary }
         ]}
       >
-        <Text style={styles.statusButtonText}>
+        <Text style={[styles.statusButtonText, { color: isConnected ? theme.colors.onError : theme.colors.onPrimary }]}>
           {isConnected ? 'Disconnect' : 'Connect'}
         </Text>
       </TouchableOpacity>
@@ -62,9 +64,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 15,
-    backgroundColor: '#ffffff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
   },
   statusInfo: {
     flexDirection: 'row',
@@ -80,7 +80,6 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#333333',
   },
   statusButton: {
     paddingHorizontal: 16,
@@ -90,7 +89,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statusButtonText: {
-    color: 'white',
     fontSize: 14,
     fontWeight: '600',
   },
