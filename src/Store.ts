@@ -21,6 +21,8 @@ import {
   Subscription,
 } from "react-native-ble-plx";
 import { exampleGoals } from "./ExampleData";
+import { persist, createJSONStorage } from "zustand/middleware";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export type Unit = string | SubUnit[];
 
@@ -69,8 +71,9 @@ export type State = {
   startStreamingData: any;
 };
 
-const useStore = create<State>((set, get) => {
-    return {
+const useStore = create<State>()(
+  persist(
+  (set, get) => ({
       // Bluetooth device related state
       allDevices: [],
       isConnected: false,
@@ -190,7 +193,14 @@ const useStore = create<State>((set, get) => {
         });
       },
 
-    };
-});
+    }),
+  {
+    name: "store",
+    storage: createJSONStorage(() => AsyncStorage),
+    partialize: (state) => ({
+      goals: state.goals,
+    }),
+  }
+));
 
 export default useStore; 
