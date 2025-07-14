@@ -43,9 +43,6 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
   
 
   const dateTime = new Date(dataPoint.time);
-  
-  console.log("dataPoint", dataPoint);
-
 if (!dataPoint) {
   return <Text>Data point not found</Text>;
 }
@@ -139,7 +136,6 @@ if (!dataPoint) {
             }
           } else {
             for (const inputValue of inputValues) {
-              console.log("val", inputValue.value[0]);
               if (inputValue.value[0] === "") {
                 newValue[inputValue.subUnit.name] = null;
               } else {
@@ -154,11 +150,9 @@ if (!dataPoint) {
               }
             }
           }
-          console.log("New value:", newValue);
 
           if (inputDate && inputTime && hasNonEmptyValue && newValue !== null) {
             const newTime = new Date(inputDate?.getFullYear(), inputDate?.getMonth(), inputDate?.getDate(), inputTime?.hours, inputTime?.minutes).getTime();
-            console.log("dataPointIndex", dataPointIndex);
             updateGoalDataPoint(goalId, dataPointIndex, {
               time: newTime,
               value: newValue,

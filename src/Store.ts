@@ -168,7 +168,6 @@ const useStore = create<State>()(
         get().withDevice(async (device: Device) => {
             await stopMeasurementCommand(device);
             get().subscription?.remove();
-            console.log(get().dataPoints);
             set({subscription: null});
         });
       },

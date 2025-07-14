@@ -88,7 +88,7 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
 
   const getDayKey = (t: number) => t.toString();
 
-  const daysWithFewPoints: any = new Set(bins.filter((bin) => bin.values.length <= 2).map((bin) => bin.time));
+  const daysWithFewPoints: any = new Set(bins.filter((bin) => bin.values.length <= 2).map((bin) => getDayKey(bin.time)));
   const [expandedDays, setExpandedDays] = useState<Set<string>>(daysWithFewPoints);
 
 
