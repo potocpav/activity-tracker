@@ -99,7 +99,14 @@ if (!dataPoint) {
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={[styles.label, { color: theme.colors.onSurface }]}>Tags: {dataPoint.tags.join(", ")}</Text>
+          <Text style={[styles.label, { color: theme.colors.onSurface }]}>Tags:</Text>
+          <View style={styles.tagsContainer}>
+            {dataPoint.tags.map((tag: string, index: number) => (
+              <View key={index} style={styles.tag}>
+                <Text style={styles.tagText}>{tag}</Text>
+              </View>
+            ))}
+          </View>
         </View>
       </ScrollView>
 
@@ -237,6 +244,23 @@ const styles = StyleSheet.create({
   deleteButtonText: {
     fontSize: 16,
     fontWeight: "500",
+  },
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 4,
+  },
+  tag: {
+    backgroundColor: '#f0f0f0',
+    borderWidth: 1,
+    borderColor: '#d0d0d0',
+    borderRadius: 12,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  tagText: {
+    fontSize: 12,
+    fontWeight: '500',
   },
 });
 

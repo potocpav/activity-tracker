@@ -57,6 +57,11 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
           <Text style={[styles.label, { color: theme.colors.onSurface }]}>Unit: {typeof goal.unit === "string" ? goal.unit : goal.unit.map((u: any) => u.name).join(", ")}</Text>
           <Text style={[styles.helperText, { color: theme.colors.onSurfaceVariant }]}>Unit editing will be implemented later</Text>
         </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={[styles.label, { color: theme.colors.onSurface }]}>Tags: -</Text>
+          <Text style={[styles.helperText, { color: theme.colors.onSurfaceVariant }]}>Tag editing will be implemented later</Text>
+        </View>
       </ScrollView>
 
       <View style={[styles.footer, { borderTopColor: theme.colors.outline }]}>

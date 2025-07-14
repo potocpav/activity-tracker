@@ -4,12 +4,11 @@ import {
   StyleSheet,
   Text,
   View,
-  FlatList,
   TouchableOpacity,
+  ScrollView,
 } from "react-native";
-import { useTheme } from 'react-native-paper';
+import { useTheme, DataTable } from 'react-native-paper';
 import useStore, { DataPoint, GoalType, Unit } from "./Store";
-import { binTimeSeries } from "./GoalUtil";
 import EditDataPoint from "./EditDataPoint";
 
 type GoalDataProps = {
@@ -22,6 +21,13 @@ const formatDate = (date: Date) => {
     year: "numeric",
     month: "short",
     day: "numeric",
+  });
+};
+
+const formatTime = (date: Date) => {
+  return date.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
   });
 };
 
@@ -65,6 +71,14 @@ const renderTags = (tags: string[]) => {
 const renderDataPoint = (theme: any, { item }: { item: DataPoint }, unit: Unit) => (
     <View style={styles.dataPointContainer}>
       <View style={styles.dataPointContent}>
+        <View style={styles.dataPointInfo}>
+          <Text style={[styles.dataPointDate, { color: theme.colors.onSurface }]}>
+            {formatDate(new Date(item.time))}
+          </Text>
+          <Text style={[styles.dataPointTime, { color: theme.colors.onSurfaceVariant }]}>
+            {formatTime(new Date(item.time))}
+          </Text>
+        </View>
         <View style={styles.dataPointValueContainer}>
           <Text style={[styles.dataPointValue, { color: theme.colors.onSurface }]}>
             {renderValue(item.value, unit)}
@@ -86,84 +100,48 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
   if (!goal) {
     return <Text>Goal not found</Text>;
   }
-  const bins = binTimeSeries("day", [...goal.dataPoints]);
-
-  const getDayKey = (t: number) => t.toString();
-
-  const daysWithFewPoints: any = new Set(bins.filter((bin) => bin.values.length <= 2).map((bin) => getDayKey(bin.time)));
-  const [expandedDays, setExpandedDays] = useState<Set<string>>(daysWithFewPoints);
-
-
-  const toggleDay = (dayKey: string) => {
-    const newExpanded = new Set(expandedDays);
-    if (newExpanded.has(dayKey)) {
-      newExpanded.delete(dayKey);
-    } else {
-      newExpanded.add(dayKey);
-    }
-    setExpandedDays(newExpanded);
-  };
-
-  const renderDay = ({ item }: { item: { time: number; values: DataPoint[] } }) => {
-    const isExpanded = expandedDays.has(getDayKey(item.time));
-
-    return (
-      <View style={styles.dayContainer}>
-        <TouchableOpacity
-          style={styles.dayHeader}
-          onPress={() => toggleDay(getDayKey(item.time))}
-        >
-          <View style={styles.dayHeaderContent}>
-            <Text style={[styles.dayDate, { color: theme.colors.onSurface }]}>{formatDate(new Date(item.time))}</Text>
-            <Text style={[styles.dayCount, { color: theme.colors.onSurfaceVariant }]}>({item.values.length})</Text>
-          </View>
-          <Text style={[styles.expandIcon, { color: theme.colors.onSurfaceVariant }]}>{isExpanded ? '▼' : '▶'}</Text>
-        </TouchableOpacity>
-
-        {isExpanded && (
-          <View style={[styles.dayDataPoints, { backgroundColor: theme.colors.surface }]}>
-            {item.values.map((dataPoint, index) => {
-              // Find the actual index in the original dataPoints array
-              const actualIndex = goal.dataPoints.findIndex((dp: DataPoint) =>
-                dp.time === dataPoint.time &&
-                JSON.stringify(dp.value) === JSON.stringify(dataPoint.value)
-              );
-              return (
-                  <TouchableOpacity
-                  style={styles.editButton}
-                  onPress={() => navigation.navigate("EditDataPoint", { goalId: goal.id, dataPointIndex: actualIndex })}>
-                  <View key={index} style={styles.nestedDataPointContainer}>
-                    {renderDataPoint(theme, { item: dataPoint }, goal.unit)}
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        )}
-      </View>
-    );
-  };
 
   return (
-    <View>
+    <SafeAreaView style={styles.container}>
       <View style={styles.sectionHeader}>
         <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>Data Points ({goal.dataPoints.length})</Text>
         <TouchableOpacity style={[styles.addButton, { backgroundColor: theme.colors.primary }]} onPress={() => navigation.navigate("EditDataPoint", { goalId: goal.id })}>
           <Text style={[styles.addButtonText, { color: theme.colors.onPrimary }]}>+</Text>
         </TouchableOpacity>
       </View>
-      <FlatList
-        data={bins}
-        renderItem={renderDay}
-        keyExtractor={(item) => item.time.toString()}
-        contentContainerStyle={[styles.listContainer, { backgroundColor: theme.colors.surface }]}
-        showsVerticalScrollIndicator={false}
-      />
-    </View>
+      <ScrollView style={styles.scrollView}>
+        <DataTable>
+          <DataTable.Header>
+            <DataTable.Title>Date</DataTable.Title>
+            <DataTable.Title>Tags</DataTable.Title>
+            <DataTable.Title numeric>Value</DataTable.Title>
+          </DataTable.Header>
+
+          {goal.dataPoints.slice().reverse().map((dataPoint: DataPoint, index: number) => (
+            <TouchableOpacity
+              key={dataPoint.time.toString()}
+              onPress={() => navigation.navigate("EditDataPoint", { goalId: goal.id, dataPointIndex: goal.dataPoints.length - 1 - index })}
+            >
+              <DataTable.Row>
+                <DataTable.Cell>{formatDate(new Date(dataPoint.time))}</DataTable.Cell>
+                <DataTable.Cell>{renderTags(dataPoint.tags)}</DataTable.Cell>
+                <DataTable.Cell numeric>{renderValue(dataPoint.value, goal.unit)}</DataTable.Cell>
+              </DataTable.Row>
+            </TouchableOpacity>
+          ))}
+        </DataTable>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -194,10 +172,8 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
   },
-  listContainer: {
-  },
   dataPointContainer: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 15,
     paddingVertical: 12,
     borderBottomWidth: 1,
   },
@@ -206,12 +182,24 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  dataPointInfo: {
+    flex: 1,
+  },
+  dataPointDate: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  dataPointTime: {
+    fontSize: 14,
+    marginTop: 2,
+  },
   dataPointValueContainer: {
     flex: 1,
-    alignItems: 'flex-end',
+    alignItems: 'center',
   },
   dataPointValue: {
     fontSize: 16,
+    fontWeight: '500',
   },
   dataPointActions: {
     flexDirection: 'row',
@@ -221,51 +209,26 @@ const styles = StyleSheet.create({
   tagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 6,
+    justifyContent: 'flex-end',
+    gap: 4,
   },
   tag: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    backgroundColor: '#f0f0f0',
+    borderWidth: 1,
+    borderColor: '#d0d0d0',
     borderRadius: 12,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
   },
   tagText: {
     fontSize: 12,
-    fontWeight: "500",
+    fontWeight: '500',
   },
   editButton: {
     padding: 4,
   },
   editButtonText: {
     fontSize: 16,
-  },
-  dayContainer: {
-  },
-  dayHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-  },
-  dayHeaderContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  dayDate: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  dayCount: {
-    fontSize: 14,
-    marginLeft: 8,
-  },
-  expandIcon: {
-    fontSize: 16,
-  },
-  dayDataPoints: {
-  },
-  nestedDataPointContainer: {
-    marginBottom: 0,
   },
 });
 
