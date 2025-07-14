@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { Fragment, useState } from "react";
 import { View, Text, Platform, TouchableOpacity } from "react-native";
-import { Line, useChartTransformState } from "victory-native";
+import { getTransformComponents, setScale, setTranslate, useChartTransformState } from "victory-native";
 import { CartesianChart } from "victory-native";
 import {matchFont, Path, Points, Rect, Line as SkLine, vec} from "@shopify/react-native-skia";
 import { GoalType, State } from "./Store";
 import { useStore } from "zustand";
+import { useAnimatedReaction, useSharedValue, withTiming } from "react-native-reanimated";
 
 const fontFamily = Platform.select({default: "sans-serif" });
 const font = matchFont({fontFamily: fontFamily, fontSize: 10});
@@ -88,7 +89,7 @@ const GoalGraph = ({ route }: { route: any }) => {
   const { goal } = route.params;
   const [binning, setBinning] = useState<"day" | "week" | "month" | "quarter" | "year">("day");
   const transformState = useChartTransformState({
-    scaleX: 1.5, // Initial X-axis scale
+    scaleX: 1.0, // Initial X-axis scale
     scaleY: 1.0, // Initial Y-axis scale
   }).state;
 
@@ -101,6 +102,41 @@ const GoalGraph = ({ route }: { route: any }) => {
     ...quartiles(bin.values.map((v: any) => v.value)),
     t: bin.time.getTime()
   }));
+
+
+  const k = useSharedValue(1);
+  const tx = useSharedValue(0);
+  const ty = useSharedValue(0);
+
+
+  // enforce limits when panning
+  useAnimatedReaction(
+    () => {
+      return transformState.panActive.value || transformState.zoomActive.value;
+    },
+    (cv, pv) => {
+      if (!cv && pv) {
+        const vals = getTransformComponents(transformState.matrix.value);
+        k.value = vals.scaleX;
+        tx.value = vals.translateX;
+        ty.value = vals.translateY;
+
+        k.value = withTiming(1);
+        tx.value = withTiming(0);
+        ty.value = withTiming(0);
+      }
+    },
+  );
+
+  useAnimatedReaction(
+    () => {
+      return { k: k.value, tx: tx.value, ty: ty.value };
+    },
+    ({ k, tx, ty }) => {
+      const m = setTranslate(transformState.matrix.value, tx, ty);
+      transformState.matrix.value = setScale(m, k);
+    },
+  );
 
   return (
     <View style={{ flex: 1, padding: 10 }}>
@@ -181,8 +217,9 @@ const GoalGraph = ({ route }: { route: any }) => {
             lineWidth: 1,
           }}
           xAxis={{
-            tickValues: binQuartiles.map((q) => q.t),
+            // tickValues: binQuartiles.map((q) => q.t),
             font: font,
+            enableRescaling: true,
 
             formatXLabel: (t: number) => {
               const d = new Date(t);
@@ -200,7 +237,7 @@ const GoalGraph = ({ route }: { route: any }) => {
                 throw new Error("Invalid bin size");
               }
             },
-            tickCount: 10000,
+            tickCount: 10,
           }}
           yAxis={[
             {
@@ -215,14 +252,12 @@ const GoalGraph = ({ route }: { route: any }) => {
               <>
                 {(() => {
                   const elements = [];
-                  console.log(points);
                   for (let i = 0; i < points.q0.length; i++) {
                     const q0 = points.q0[i];
                     const q1 = points.q1[i];
                     const q2 = points.q2[i];
                     const q3 = points.q3[i];
                     const q4 = points.q4[i];
-                    console.log(q0);
                     const w = barWidth;
                     const rectPoints = [
                       vec(q1.x - w, q1.y || 0), 
@@ -231,52 +266,51 @@ const GoalGraph = ({ route }: { route: any }) => {
                       vec(q3.x - w, q3.y || 0),
                       vec(q1.x - w, q1.y || 0),
                     ];
-                    console.log(rectPoints);
                     elements.push(
-                        <>
-                        <Rect 
-                          key={"rect fill" + i}
-                          x={q1.x - w}
-                          y={q1.y || 0}
-                          width={2 * w}
-                          height={(q3.y || 0) - (q1.y || 0)}
-                          color="lightblue"
-                        />
-                        <SkLine
-                          key={"q0 line" + i}
-                          p1={vec(q0.x - w, q0.y || 0)}
-                          p2={vec(q0.x + w, q0.y || 0)}
-                          color="black"
-                          strokeWidth={1}
-                        />                      
-                        <SkLine
-                          key={"q2 line" + i}
-                          p1={vec(q2.x - w, q2.y || 0)}
-                          p2={vec(q2.x + w, q2.y || 0)}
-                          color="black"
-                          strokeWidth={1}
-                        />
-                        <SkLine
-                          key={"q4 line" + i}
-                          p1={vec(q4.x - w, q4.y || 0)}
-                          p2={vec(q4.x + w, q4.y || 0)}
-                          color="black"
-                          strokeWidth={1}
-                        />
-                        <SkLine
-                          key={"bottom line" + i}
-                          p1={vec(q0.x, q0.y || 0)}
-                          p2={vec(q1.x, q1.y || 0)}
-                          color="black"
-                          strokeWidth={1}
-                        />
-                        <SkLine
-                          key={"top line" + i}
-                          p1={vec(q3.x, q3.y || 0)}
-                          p2={vec(q4.x, q4.y || 0)}
-                          color="black"
-                          strokeWidth={1}
-                        />
+                      <Fragment key={"" + i}>
+                      <Rect 
+                        key={"rect fill" + i}
+                        x={q1.x - w}
+                        y={q1.y || 0}
+                        width={2 * w}
+                        height={(q3.y || 0) - (q1.y || 0)}
+                        color="lightblue"
+                      />
+                      <SkLine
+                        key={"q0 line" + i}
+                        p1={vec(q0.x - w, q0.y || 0)}
+                        p2={vec(q0.x + w, q0.y || 0)}
+                        color="black"
+                        strokeWidth={1}
+                      />                      
+                      <SkLine
+                        key={"q2 line" + i}
+                        p1={vec(q2.x - w, q2.y || 0)}
+                        p2={vec(q2.x + w, q2.y || 0)}
+                        color="black"
+                        strokeWidth={1}
+                      />
+                      <SkLine
+                        key={"q4 line" + i}
+                        p1={vec(q4.x - w, q4.y || 0)}
+                        p2={vec(q4.x + w, q4.y || 0)}
+                        color="black"
+                        strokeWidth={1}
+                      />
+                      <SkLine
+                        key={"bottom line" + i}
+                        p1={vec(q0.x, q0.y || 0)}
+                        p2={vec(q1.x, q1.y || 0)}
+                        color="black"
+                        strokeWidth={1}
+                      />
+                      <SkLine
+                        key={"top line" + i}
+                        p1={vec(q3.x, q3.y || 0)}
+                        p2={vec(q4.x, q4.y || 0)}
+                        color="black"
+                        strokeWidth={1}
+                      />
                       <Points
                         key={"rect" + i}
                         points={rectPoints}
@@ -284,26 +318,11 @@ const GoalGraph = ({ route }: { route: any }) => {
                         strokeWidth={1}
                         mode="polygon"
                       />
-                      </>
+                      </Fragment>
                     );
                   }
                   return elements;
                 })()}
-                {/* <Line
-                  points={points.q0}
-                  color="black"
-                  strokeWidth={2}
-                />
-                <Line
-                  points={points.q4}
-                  color="black"
-                  strokeWidth={2}
-                />
-                <Line
-                  points={points.q2}
-                  color="black"
-                  strokeWidth={2}
-                /> */}
               </>
             );
           }}
