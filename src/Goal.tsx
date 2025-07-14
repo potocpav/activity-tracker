@@ -4,14 +4,11 @@ import {
   StyleSheet,
   Text,
   View,
-  FlatList,
-  TouchableOpacity,
 } from "react-native";
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import useStore, { GoalType, SubUnit, Unit, DataPoint } from "./Store";
+import useStore, { GoalType, SubUnit, Unit } from "./Store";
 import GoalGraph from "./GoalGraph";
 import GoalData from "./GoalData";
-import { binTimeSeries } from "./GoalUtil";
 
 
 const Tab = createMaterialTopTabNavigator();
@@ -28,66 +25,6 @@ const renderUnit = (unit: Unit) => {
   return unit.map((u: SubUnit) => u.name + " [" + u.symbol + "]").join(", ");
 };
 
-const formatDate = (date: Date) => {
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-};
-
-const renderValue = (value: any, unit: Unit) => {
-  if (typeof value === "number") {
-    return `${Math.round(value * 100) / 100} ${typeof unit === "string" ? unit : ""}`;
-  }
-  
-  if (typeof value === "object" && value !== null) {
-    if (typeof unit === "string") {
-      return JSON.stringify(value);
-    }
-    
-    // Handle complex units (like finger strength with mean, max, tut)
-    const parts: string[] = [];
-    unit.forEach((u: SubUnit) => {
-      if (value[u.name] !== null && value[u.name] !== undefined) {
-        parts.push(`${value[u.name]} ${u.symbol}`);
-      }
-    });
-    return parts.join(", ");
-  }
-  
-  return String(value);
-};
-
-const renderTags = (tags: string[]) => {
-  if (tags.length === 0) return null;
-  
-  return (
-    <View style={styles.tagsContainer}>
-      {tags.map((tag, index) => (
-        <View key={index} style={styles.tag}>
-          <Text style={styles.tagText}>{tag}</Text>
-        </View>
-      ))}
-    </View>
-  );
-};
-
-const renderDataPoint = ({ item }: { item: DataPoint }, unit: Unit) => (
-  <View style={styles.dataPointContainer}>
-    <View style={styles.dataPointContent}>
-      {/* <View style={styles.dataPointDate}>
-        <Text style={styles.dataPointDateText}>{formatDate(item.time)}</Text>
-      </View> */}
-      <View style={styles.dataPointValueContainer}>
-        <Text style={styles.dataPointValue}>
-          {renderValue(item.value, unit)}
-        </Text>
-      </View>
-      {renderTags(item.tags)}
-    </View>
-  </View>
-);
 
 const Goal: React.FC<GoalProps> = ({ navigation, route }) => {
   const { goalId } = route.params;
@@ -127,14 +64,7 @@ const GoalSummary = ({ route }: { route: any }) => {
         </View>
 
         <View>
-            <Text style={styles.sectionTitle}>Data Points ({goal.dataPoints.length})</Text>
-            <FlatList
-            data={goal.dataPoints}
-            renderItem={(item) => renderDataPoint(item, goal.unit)}
-            keyExtractor={(item, index) => index.toString()}
-            contentContainerStyle={styles.listContainer}
-            showsVerticalScrollIndicator={false}
-            />
+            <GoalData route={{ params: { goal } }} />
         </View>
     </View>
   );
