@@ -20,7 +20,7 @@ type EditGoalProps = {
 const defaultGoal: GoalType = {
   name: "",
   description: "",
-  unit: "kg",
+  unit: "",
   dataPoints: [],
 };
 
@@ -34,6 +34,7 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
   
   const [goalNameInput, setGoalNameInput] = useState(goal.name);
   const [goalDescriptionInput, setGoalDescriptionInput] = useState(goal.description);
+  const [unitInput, setUnitInput] = useState(goal.unit);
 
 
   if (!goal) {
@@ -64,8 +65,12 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={[styles.label, { color: theme.colors.onSurface }]}>Unit: {typeof goal.unit === "string" ? goal.unit : goal.unit.map((u: any) => u.name).join(", ")}</Text>
-          <Text style={[styles.helperText, { color: theme.colors.onSurfaceVariant }]}>Unit editing will be implemented later</Text>
+          <TextInput
+            label="Unit"
+            value={unitInput}
+            onChangeText={setUnitInput}
+            style={styles.textInput}
+          />
         </View>
 
         <View style={styles.inputContainer}>
@@ -81,16 +86,19 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
         <TouchableOpacity style={[styles.saveButton, { backgroundColor: theme.colors.primary }]} onPress={() => {
           if (goalNameInput === "") {
             Alert.alert("Error", "Goal name cannot be empty");
+          } else if (unitInput === "") {
+            Alert.alert("Error", "Unit cannot be empty");
           } else if (goalNameInput !== goal.name && goals.find((g: GoalType) => g.name === goalNameInput)) {
             Alert.alert("Error", "A goal with this name already exists");
           } else {
             const updatedGoal = {
               ...goal,
               name: goalNameInput,
-              description: goalDescriptionInput
+              description: goalDescriptionInput,
+              unit: unitInput
             };
+            updateGoal(goal.name === "" ? updatedGoal.name : goal.name, updatedGoal);
             navigation.navigate("Goal", { goalName: goalNameInput });
-            updateGoal(goal.name, updatedGoal);
           }
         }}>
           <Text style={[styles.saveButtonText, { color: theme.colors.onPrimary }]}>Save</Text>
