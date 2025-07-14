@@ -31,7 +31,7 @@ export const binTimeSeries = (binSize: BinSize, dataPoints: any[]) => {
   for (let i = 0; i < dataPoints.length; i++) {
     const dp = dataPoints[i];
     var newBin = false;
-    while (binTime(binSize, t0, binIx+1) <= dp.time) {
+    while (binTime(binSize, t0, binIx) <= dp.time) {
       binIx++;
       newBin = true;
     }

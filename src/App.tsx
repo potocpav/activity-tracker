@@ -4,7 +4,7 @@ import {
   StyleSheet,
   StatusBar,
 } from "react-native";
-import {NavigationContainer} from '@react-navigation/native';
+import {NavigationContainer, DefaultTheme} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import MainPage from "./MainPage";
 import LiveView from "./LiveView";
@@ -12,16 +12,48 @@ import Goals from "./Goals";
 import Goal from "./Goal";
 import DeviceModal from "./DeviceConnectionModal";
 import EditDataPoint from "./EditDataPoint";
-import { PaperProvider } from "react-native-paper";
+import EditGoal from "./EditGoal";
+import {
+  PaperProvider,
+  MD3LightTheme,
+  adaptNavigationTheme,
+} from 'react-native-paper';
+
+const { LightTheme } = adaptNavigationTheme({
+  reactNavigationLight: DefaultTheme,
+});
+
+// Add missing fonts property to fix the TypeScript error
+const navigationTheme = {
+  ...LightTheme,
+  fonts: {
+    regular: {
+      fontFamily: 'System',
+      fontWeight: '400' as const,
+    },
+    medium: {
+      fontFamily: 'System',
+      fontWeight: '500' as const,
+    },
+    bold: {
+      fontFamily: 'System',
+      fontWeight: '700' as const,
+    },
+    heavy: {
+      fontFamily: 'System',
+      fontWeight: '900' as const,
+    },
+  },
+};
 
 const App = () => {
   const Stack = createNativeStackNavigator();
 
   return (
-    <PaperProvider>
+    <PaperProvider theme={MD3LightTheme}>
       <StatusBar barStyle="dark-content" backgroundColor="#f2f2f2" />
       <SafeAreaView style={styles.container}>
-        <NavigationContainer>
+        <NavigationContainer theme={navigationTheme}>
           <Stack.Navigator>
             <Stack.Group>
               <Stack.Screen
@@ -55,6 +87,11 @@ const App = () => {
                 name="EditDataPoint" 
                 component={EditDataPoint} 
                 options={{title: "Edit Data Point"}}
+                />
+              <Stack.Screen 
+                name="EditGoal" 
+                component={EditGoal} 
+                options={{title: "Edit Goal"}}
                 />
             </Stack.Group>
           </Stack.Navigator>

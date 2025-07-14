@@ -4,6 +4,7 @@ import {
   StyleSheet,
   Text,
   View,
+  TouchableOpacity,
 } from "react-native";
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import useStore, { GoalType, SubUnit, Unit } from "./Store";
@@ -63,6 +64,9 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
     <View>
         <View style={styles.header}>
             <Text style={styles.headerTitle}>{goal.name}</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('EditGoal', { goalId })}>
+              <Text style={styles.editButton}>Edit</Text>
+            </TouchableOpacity>
         </View>
         
         <View style={styles.goalInfo}>
@@ -96,6 +100,15 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#333333",
     flex: 1,
+  },
+  editButton: {
+    fontSize: 14,
+    color: '#1976D2',
+    fontWeight: 'bold',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#E3F2FD',
+    borderRadius: 6,
   },
   goalInfo: {
     backgroundColor: '#ffffff',

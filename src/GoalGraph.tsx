@@ -94,14 +94,9 @@ const GoalGraph = ({ route }: { route: any }) => {
     }
   }).filter((b) => b !== null);
 
-  console.log("bins", bins);
-  console.log("binQuartiles", binQuartiles);
-
-
   const k = useSharedValue(1);
   const tx = useSharedValue(0);
   const ty = useSharedValue(0);
-
 
   // enforce limits when panning
   useAnimatedReaction(
@@ -161,8 +156,8 @@ const GoalGraph = ({ route }: { route: any }) => {
             pinch: { enabled: false }
           }}
           padding={{bottom: 10}}
-          domain={{x: [now.getTime() - binSizeWindow(binning), now.getTime()]}}
-          domainPadding={{left: barWidth, right: barWidth}}
+          domain={{x: [now.getTime() - binSizeWindow(binning), binTime(binning, now.getTime(), 1)]}}
+          domainPadding={{left: barWidth, right: barWidth * 2}}
           xKey="t" 
           yKeys={["q0", "q1", "q2", "q3", "q4"]}
           frame={{
