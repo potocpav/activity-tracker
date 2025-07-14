@@ -1,5 +1,6 @@
 import React, { Fragment, useState } from "react";
 import { View, Text, Platform, TouchableOpacity } from "react-native";
+import { useTheme } from 'react-native-paper';
 import { getTransformComponents, setScale, setTranslate, useChartTransformState } from "victory-native";
 import { CartesianChart } from "victory-native";
 import {matchFont, Path, Points, Rect, Line as SkLine, vec} from "@shopify/react-native-skia";
@@ -43,23 +44,27 @@ const quartiles = (values: number[]) => {
   return {q0, q1, q2, q3, q4};
 };
 
-const toggleButton = (label: string, isActive: boolean, onPress: () => void) => {
+const toggleButton = (label: string, isActive: boolean, onPress: () => void, theme: any) => {
   return (
     <TouchableOpacity 
       style={{ 
         padding: 8, 
         marginHorizontal: 4, 
-        backgroundColor: isActive ? '#007AFF' : '#E5E5EA',
+        backgroundColor: isActive ? theme.colors.primary : theme.colors.surfaceVariant,
         borderRadius: 6
       }}
       onPress={onPress}
     >
-      <Text style={{ color: isActive ? 'white' : 'black', fontWeight: 'bold' }}>{label}</Text>
+      <Text style={{ 
+        color: isActive ? theme.colors.onPrimary : theme.colors.onSurfaceVariant, 
+        fontWeight: 'bold' 
+      }}>{label}</Text>
     </TouchableOpacity>
   );
 }
 
 const GoalGraph = ({ route }: { route: any }) => {
+  const theme = useTheme();
   const { goalId } = route.params;
   const goals = useStore((state: any) => state.goals);
   const goal = goals.find((g: GoalType) => g.id === goalId);
@@ -131,18 +136,18 @@ const GoalGraph = ({ route }: { route: any }) => {
     <View style={{ flex: 1, padding: 10 }}>
       {/* Binning selection buttons */}
       <View key="binningButtons" style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
-        <Text style={{ marginRight: 10 }}>Binning:</Text>
-        {toggleButton("D", binning === 'day', () => setBinning('day'))}
-        {toggleButton("W", binning === 'week', () => setBinning('week'))}
-        {toggleButton("M", binning === 'month', () => setBinning('month'))}
-        {toggleButton("Q", binning === 'quarter', () => setBinning('quarter'))}
-        {toggleButton("Y", binning === 'year', () => setBinning('year'))}
+        <Text style={{ marginRight: 10, color: theme.colors.onSurface }}>Binning:</Text>
+        {toggleButton("D", binning === 'day', () => setBinning('day'), theme)}
+        {toggleButton("W", binning === 'week', () => setBinning('week'), theme)}
+        {toggleButton("M", binning === 'month', () => setBinning('month'), theme)}
+        {toggleButton("Q", binning === 'quarter', () => setBinning('quarter'), theme)}
+        {toggleButton("Y", binning === 'year', () => setBinning('year'), theme)}
       </View>
       { subUnitNames && (
         <View key="subUnitNames" style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
-          <Text style={{ marginRight: 10 }}>Value:</Text>
+          <Text style={{ marginRight: 10, color: theme.colors.onSurface }}>Value:</Text>
           {subUnitNames?.map((name: string) => 
-            toggleButton(name, subUnitName === name, () => setSubUnitName(name)))}
+            toggleButton(name, subUnitName === name, () => setSubUnitName(name), theme))}
         </View>
       )}
 
@@ -162,11 +167,14 @@ const GoalGraph = ({ route }: { route: any }) => {
           yKeys={["q0", "q1", "q2", "q3", "q4"]}
           frame={{
             lineWidth: 1,
+            lineColor: theme.colors.onSurfaceVariant,
           }}
           xAxis={{
             // tickValues: binQuartiles.map((q) => q.t),
             font: font,
             enableRescaling: true,
+            lineColor: theme.colors.onSurfaceVariant,
+            labelColor: theme.colors.onSurfaceVariant,
 
             formatXLabel: (t: number) => {
               const d = new Date(t);
@@ -191,6 +199,8 @@ const GoalGraph = ({ route }: { route: any }) => {
               yKeys: ["q0", "q1", "q2", "q3", "q4"],
               font: font,
               tickCount: 10,
+              lineColor: theme.colors.onSurfaceVariant,
+              labelColor: theme.colors.onSurfaceVariant,
             },
           ]}
           >              
@@ -221,47 +231,47 @@ const GoalGraph = ({ route }: { route: any }) => {
                         y={q1.y || 0}
                         width={2 * w}
                         height={(q3.y || 0) - (q1.y || 0)}
-                        color="lightblue"
+                        color={theme.colors.primaryContainer}
                       />
                       <SkLine
                         key={"q0 line" + i}
                         p1={vec(q0.x - w, q0.y || 0)}
                         p2={vec(q0.x + w, q0.y || 0)}
-                        color="black"
+                        color={theme.colors.onSurface}
                         strokeWidth={1}
                       />                      
                       <SkLine
                         key={"q2 line" + i}
                         p1={vec(q2.x - w, q2.y || 0)}
                         p2={vec(q2.x + w, q2.y || 0)}
-                        color="black"
+                        color={theme.colors.onSurface}
                         strokeWidth={1}
                       />
                       <SkLine
                         key={"q4 line" + i}
                         p1={vec(q4.x - w, q4.y || 0)}
                         p2={vec(q4.x + w, q4.y || 0)}
-                        color="black"
+                        color={theme.colors.onSurface}
                         strokeWidth={1}
                       />
                       <SkLine
                         key={"bottom line" + i}
                         p1={vec(q0.x, q0.y || 0)}
                         p2={vec(q1.x, q1.y || 0)}
-                        color="black"
+                        color={theme.colors.onSurface}
                         strokeWidth={1}
                       />
                       <SkLine
                         key={"top line" + i}
                         p1={vec(q3.x, q3.y || 0)}
                         p2={vec(q4.x, q4.y || 0)}
-                        color="black"
+                        color={theme.colors.onSurface}
                         strokeWidth={1}
                       />
                       <Points
                         key={"rect" + i}
                         points={rectPoints}
-                        color="black"
+                        color={theme.colors.onSurface}
                         strokeWidth={1}
                         mode="polygon"
                       />

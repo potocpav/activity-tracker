@@ -64,7 +64,7 @@ In order to make this app a full-featured management app for workout data, the f
   * [ ] Improve connection so that we never get stuck
   * [ ] Tare with automatic disconnect/connect
 * [ ] Look & Feel
-  * [ ] Light/Dark themes
+  * [x] Light/Dark themes
   * [ ] Rename and rebrand the app, perhaps to "Goals"
   * [ ] Add default example data
 * [ ] Settings page

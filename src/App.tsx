@@ -21,7 +21,7 @@ import {
 } from 'react-native-paper';
 
 // Simple theme toggle - change this to false for dark theme
-const USE_LIGHT_THEME = true;
+const USE_LIGHT_THEME = false;
 
 const { LightTheme, DarkTheme: PaperDarkTheme } = adaptNavigationTheme({
   reactNavigationLight: DefaultTheme,

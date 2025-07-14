@@ -7,6 +7,7 @@ import {
   View,
   Platform,
 } from "react-native";
+import { useTheme } from 'react-native-paper';
 import StatusBar from "./StatusBar";
 import useStore from "./Store";
 import { CartesianChart, Line } from "victory-native";
@@ -21,6 +22,7 @@ type LiveViewProps = {
 };
 
 const LiveView: React.FC<LiveViewProps> = ({navigation}) => {
+  const theme = useTheme();
   const isConnected = useStore((state: any) => state.isConnected);
   const dataPoints : {w: number, t: number}[] = useStore((state: any) => state.dataPoints);
   const startMeasurement = useStore((state: any) => state.startMeasurement);
@@ -33,7 +35,7 @@ const LiveView: React.FC<LiveViewProps> = ({navigation}) => {
 
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surfaceVariant }]}>
       <StatusBar navigation={navigation}/>
 
       {isConnected ? (
@@ -41,25 +43,25 @@ const LiveView: React.FC<LiveViewProps> = ({navigation}) => {
           {/* Control Buttons Section */}
           <View style={styles.controlSection}>
             <View style={styles.buttonRow}>
-              <TouchableOpacity onPress={startMeasurement} style={styles.controlButton}>
-                <Text style={styles.controlButtonText}>Start</Text>
+              <TouchableOpacity onPress={startMeasurement} style={[styles.controlButton, { backgroundColor: theme.colors.primary }]}>
+                <Text style={[styles.controlButtonText, { color: theme.colors.onPrimary }]}>Start</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={stopMeasurement} style={styles.controlButton}>
-                <Text style={styles.controlButtonText}>Stop</Text>
+              <TouchableOpacity onPress={stopMeasurement} style={[styles.controlButton, { backgroundColor: theme.colors.secondary }]}>
+                <Text style={[styles.controlButtonText, { color: theme.colors.onSecondary }]}>Stop</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={tareScale} style={styles.controlButton}>
-                <Text style={styles.controlButtonText}>Tare</Text>
+              <TouchableOpacity onPress={tareScale} style={[styles.controlButton, { backgroundColor: theme.colors.tertiary }]}>
+                <Text style={[styles.controlButtonText, { color: theme.colors.onTertiary }]}>Tare</Text>
               </TouchableOpacity>
             </View>
           </View>
           
           {/* Weight and Time Display Section */}
-          <View style={styles.weightSection}>
+          <View style={[styles.weightSection, { backgroundColor: theme.colors.surface }]}>
             <View style={styles.measurementRow}>
               <View style={styles.measurementColumn}>
-                <Text style={styles.measurementLabel}>Weight:</Text>
+                <Text style={[styles.measurementLabel, { color: theme.colors.onSurface }]}>Weight:</Text>
                 <Text 
-                  style={styles.measurementValue}
+                  style={[styles.measurementValue, { color: theme.colors.onSurface }]}
                   numberOfLines={1}
                   adjustsFontSizeToFit={true}
                 >
@@ -67,9 +69,9 @@ const LiveView: React.FC<LiveViewProps> = ({navigation}) => {
                 </Text>
               </View>
               <View style={styles.measurementColumn}>
-                <Text style={styles.measurementLabel}>Time:</Text>
+                <Text style={[styles.measurementLabel, { color: theme.colors.onSurface }]}>Time:</Text>
                 <Text 
-                  style={styles.measurementValue}
+                  style={[styles.measurementValue, { color: theme.colors.onSurface }]}
                   numberOfLines={1}
                   adjustsFontSizeToFit={true}
                 >
@@ -79,8 +81,8 @@ const LiveView: React.FC<LiveViewProps> = ({navigation}) => {
             </View>
             <View style={styles.measurementRow}>
               <View style={styles.measurementColumn}>
-                <Text style={styles.measurementLabel}>Max Weight:</Text>
-                <Text style={styles.measurementValue}>{maxWeight ? maxWeight.toFixed(1) : '-'}</Text>
+                <Text style={[styles.measurementLabel, { color: theme.colors.onSurface }]}>Max Weight:</Text>
+                <Text style={[styles.measurementValue, { color: theme.colors.onSurface }]}>{maxWeight ? maxWeight.toFixed(1) : '-'}</Text>
               </View>
               <View style={styles.measurementColumn}>
               </View>
@@ -116,7 +118,7 @@ const LiveView: React.FC<LiveViewProps> = ({navigation}) => {
                   <>
                   <Line
                     points={points.w}
-                    color="black"
+                    color={theme.colors.onSurface}
                     strokeWidth={2}
                   />
                 </>
@@ -126,8 +128,8 @@ const LiveView: React.FC<LiveViewProps> = ({navigation}) => {
           </View>
         </>
       ) : (
-        <View style={styles.disconnectedSection}>
-          <Text style={styles.disconnectedText}>
+        <View style={[styles.disconnectedSection, { backgroundColor: theme.colors.surface }]}>
+          <Text style={[styles.disconnectedText, { color: theme.colors.error }]}>
             Please connect the Tindeq Progressor
           </Text>
         </View>
@@ -139,7 +141,6 @@ const LiveView: React.FC<LiveViewProps> = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f2f2f2",
   },
   header: {
     flexDirection: 'row',
@@ -147,9 +148,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 15,
-    backgroundColor: '#ffffff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
   },
   backButton: {
     paddingHorizontal: 10,
@@ -157,13 +156,11 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     fontSize: 16,
-    color: '#FF6060',
     fontWeight: '600',
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333333',
   },
   headerSpacer: {
     width: 60,
@@ -179,7 +176,6 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   controlButton: {
-    backgroundColor: "#FF6060",
     justifyContent: "center",
     alignItems: "center",
     height: 50,
@@ -189,14 +185,12 @@ const styles = StyleSheet.create({
   controlButtonText: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "white",
   },
   weightSection: {
     flex: 1,
     // justifyContent: "center",
     alignItems: "center",
     marginTop: 10,
-    backgroundColor: '#ffffff',
     padding: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -217,7 +211,6 @@ const styles = StyleSheet.create({
   measurementLabel: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#333333",
   },
   measurementValue: {
     fontSize: 30,
@@ -225,7 +218,6 @@ const styles = StyleSheet.create({
   },
   resetButton: {
     marginTop: 10,
-    backgroundColor: "#FF6060",
     justifyContent: "center",
     alignItems: "center",
     height: 40,
@@ -235,7 +227,6 @@ const styles = StyleSheet.create({
   resetButtonText: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "white",
   },
   disconnectedSection: {
     flex: 1,
@@ -243,7 +234,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginHorizontal: 20,
     marginTop: 10,
-    backgroundColor: '#ffffff',
     borderRadius: 10,
     padding: 20,
     shadowColor: '#000',
@@ -255,7 +245,6 @@ const styles = StyleSheet.create({
   disconnectedText: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#FF5722",
     textAlign: "center",
   },
 });

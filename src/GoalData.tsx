@@ -62,11 +62,11 @@ const renderTags = (tags: string[]) => {
   );
 };
 
-const renderDataPoint = ({ item }: { item: DataPoint }, unit: Unit, dataPointIndex: number) => (
+const renderDataPoint = (theme: any, { item }: { item: DataPoint }, unit: Unit) => (
     <View style={styles.dataPointContainer}>
       <View style={styles.dataPointContent}>
         <View style={styles.dataPointValueContainer}>
-          <Text style={styles.dataPointValue}>
+          <Text style={[styles.dataPointValue, { color: theme.colors.onSurface }]}>
             {renderValue(item.value, unit)}
           </Text>
         </View>
@@ -133,7 +133,7 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
                   style={styles.editButton}
                   onPress={() => navigation.navigate("EditDataPoint", { goalId: goal.id, dataPointIndex: actualIndex })}>
                   <View key={index} style={styles.nestedDataPointContainer}>
-                    {renderDataPoint({ item: dataPoint }, goal.unit,  actualIndex)}
+                    {renderDataPoint(theme, { item: dataPoint }, goal.unit)}
                   </View>
                 </TouchableOpacity>
               );
