@@ -70,7 +70,7 @@ const binTimeSeries = (binSize: BinSize, dataPoints: any[]) => {
 };
 
 const quartiles = (values: number[]) => {
-  const vs = values.sort((a, b) => a - b);
+  const vs = values.filter(v => v !== null).sort((a, b) => a - b);
   const floatIndex = (i: number) => {
     const f = Math.max(0, Math.min(Math.floor(i), vs.length - 1));
     const c = Math.max(0, Math.min(Math.ceil(i), vs.length - 1));
@@ -85,6 +85,22 @@ const quartiles = (values: number[]) => {
   return {q0, q1, q2, q3, q4};
 };
 
+const toggleButton = (label: string, isActive: boolean, onPress: () => void) => {
+  return (
+    <TouchableOpacity 
+      style={{ 
+        padding: 8, 
+        marginHorizontal: 4, 
+        backgroundColor: isActive ? '#007AFF' : '#E5E5EA',
+        borderRadius: 6
+      }}
+      onPress={onPress}
+    >
+      <Text style={{ color: isActive ? 'white' : 'black', fontWeight: 'bold' }}>{label}</Text>
+    </TouchableOpacity>
+  );
+}
+
 const GoalGraph = ({ route }: { route: any }) => {
   const { goal } = route.params;
   const [binning, setBinning] = useState<"day" | "week" | "month" | "quarter" | "year">("day");
@@ -92,6 +108,9 @@ const GoalGraph = ({ route }: { route: any }) => {
     scaleX: 1.0, // Initial X-axis scale
     scaleY: 1.0, // Initial Y-axis scale
   }).state;
+  const subUnitNames = typeof goal.unit === 'string' ? null : goal.unit.map((u: any) => u.name);
+  const [subUnitName, setSubUnitName] = useState(subUnitNames?.[0] || null);
+  const extractValue = (v: any) => subUnitName ? v.value[subUnitName] : v.value;
 
   const now = new Date();
 
@@ -99,7 +118,7 @@ const GoalGraph = ({ route }: { route: any }) => {
   
   let bins = binTimeSeries(binning, goal.dataPoints);
   const binQuartiles : {t: number, q0: number, q1: number, q2: number, q3: number, q4: number}[] = bins.map((bin) => ({
-    ...quartiles(bin.values.map((v: any) => v.value)),
+    ...quartiles(bin.values.map(extractValue)),
     t: bin.time.getTime()
   }));
 
@@ -141,66 +160,24 @@ const GoalGraph = ({ route }: { route: any }) => {
   return (
     <View style={{ flex: 1, padding: 10 }}>
       {/* Binning selection buttons */}
-      <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 10 }}>
-        <TouchableOpacity 
-          style={{ 
-            padding: 8, 
-            marginHorizontal: 4, 
-            backgroundColor: binning === 'day' ? '#007AFF' : '#E5E5EA',
-            borderRadius: 6
-          }}
-          onPress={() => setBinning('day')}
-        >
-          <Text style={{ color: binning === 'day' ? 'white' : 'black', fontWeight: 'bold' }}>d</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={{ 
-            padding: 8, 
-            marginHorizontal: 4, 
-            backgroundColor: binning === 'week' ? '#007AFF' : '#E5E5EA',
-            borderRadius: 6
-          }}
-          onPress={() => setBinning('week')}
-        >
-          <Text style={{ color: binning === 'week' ? 'white' : 'black', fontWeight: 'bold' }}>w</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={{ 
-            padding: 8, 
-            marginHorizontal: 4, 
-            backgroundColor: binning === 'month' ? '#007AFF' : '#E5E5EA',
-            borderRadius: 6
-          }}
-          onPress={() => setBinning('month')}
-        >
-          <Text style={{ color: binning === 'month' ? 'white' : 'black', fontWeight: 'bold' }}>m</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={{ 
-            padding: 8, 
-            marginHorizontal: 4, 
-            backgroundColor: binning === 'quarter' ? '#007AFF' : '#E5E5EA',
-            borderRadius: 6
-          }}
-          onPress={() => setBinning('quarter')}
-        >
-          <Text style={{ color: binning === 'quarter' ? 'white' : 'black', fontWeight: 'bold' }}>q</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={{ 
-            padding: 8, 
-            marginHorizontal: 4, 
-            backgroundColor: binning === 'year' ? '#007AFF' : '#E5E5EA',
-            borderRadius: 6
-          }}
-          onPress={() => setBinning('year')}
-        >
-          <Text style={{ color: binning === 'year' ? 'white' : 'black', fontWeight: 'bold' }}>y</Text>
-        </TouchableOpacity>
+      <View key="binningButtons" style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
+        <Text style={{ marginRight: 10 }}>Binning:</Text>
+        {toggleButton("D", binning === 'day', () => setBinning('day'))}
+        {toggleButton("W", binning === 'week', () => setBinning('week'))}
+        {toggleButton("M", binning === 'month', () => setBinning('month'))}
+        {toggleButton("Q", binning === 'quarter', () => setBinning('quarter'))}
+        {toggleButton("Y", binning === 'year', () => setBinning('year'))}
       </View>
+      { subUnitNames && (
+        <View key="subUnitNames" style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
+          <Text style={{ marginRight: 10 }}>Value:</Text>
+          {subUnitNames?.map((name: string) => 
+            toggleButton(name, subUnitName === name, () => setSubUnitName(name)))}
+        </View>
+      )}
 
       {/* <Text>Goal Graph Placeholder</Text> */}
-      <View style={{flex: 1, width: '100%'}}>
+      <View key="goalGraph" style={{flex: 1, width: '100%'}}>
         <CartesianChart 
           data={binQuartiles} 
           transformState={transformState}

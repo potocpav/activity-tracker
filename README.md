@@ -15,6 +15,44 @@ A React Native mobile application for analyzing force measurements from the Tind
 
 In order to make this app a full-featured management app for workout data, the following list of features must be implemented:
 
+* [ ] Goal Screen
+  * [x] Goal list
+  * [ ] Summary screen
+    * [x] Implement basics
+    * [ ] Allow editing description, title, rating
+    * [ ] Allow editing units
+    * [ ] Allow adding graphs
+    * [ ] Allow adding summary values
+    * [ ] Quick add measurement button
+  * [ ] Data Series screen
+    * [x] Basic implementation 
+    * [ ] Group by days, allow expanding/collapsing days
+    * [ ] Allow expanding data points
+    * [ ] "Edit" button for expanded data points
+    * [ ] "Add" button
+  * [ ] Goal Graphs
+    * [x] Box chart
+    * [x] Allow choosing out of multiple values
+    * [x] Allow and ignore null values
+    * [ ] Improve x-ticks
+    * [ ] Add axis labels
+    * [ ] Bar chart: number of sessions
+    * [ ] Line graph: average, max
+    * [ ] Pan/Zoom Fixes
+    * [ ] Filtering by tags
+  * [ ] Tag management screen
+    * [ ] Implement adding/removing tags
+    * [ ] Implement reordering tags
+    * [ ] Tag categories
+    * [ ] Tag colors
+    * [ ] Editing tags
+* [ ] Add & edit measurements
+  * [ ] Add measurement
+  * [ ] Edit measurement
+  * [ ] Add tags
+  * [ ] Add comments
+  * [ ] Edit time
+  * [ ] Edit values according to units
 * [ ] Tindeq
   * [x] BLE Connection
   * [x] Real-time graph
@@ -38,43 +76,6 @@ In order to make this app a full-featured management app for workout data, the f
   * [ ] Backups
 * [ ] Calendar Screen
   * [ ] Implement to show day-by-day summaries including all goals
-* [ ] Goal Screen
-  * [x] Goal list
-  * [ ] Summary screen
-    * [x] Implement basics
-    * [ ] Allow editing description, title, rating
-    * [ ] Allow editing units
-    * [ ] Allow adding graphs
-    * [ ] Allow adding summary values
-    * [ ] Quick add measurement button
-  * [ ] Data Series screen
-    * [x] Basic implementation 
-    * [ ] Group by days, allow expanding/collapsing days
-    * [ ] Allow expanding data points
-    * [ ] "Edit" button for expanded data points
-    * [ ] "Add" button
-  * [ ] Goal Graphs
-    * [x] Box chart
-    * [ ] Improve x-ticks
-    * [ ] Add axis labels
-    * [ ] Bar chart: number of sessions
-    * [ ] Line graph: average, max
-    * [ ] Allow choosing out of multiple values
-    * [ ] Pan/Zoom Fixes
-    * [ ] Filtering by tags
-  * [ ] Tag management screen
-    * [ ] Implement adding/removing tags
-    * [ ] Implement reordering tags
-    * [ ] Tag categories
-    * [ ] Tag colors
-    * [ ] Editing tags
-* [ ] Add & edit measurements
-  * [ ] Add measurement
-  * [ ] Edit measurement
-  * [ ] Add tags
-  * [ ] Add comments
-  * [ ] Edit time
-  * [ ] Edit values according to units
 
 ## Screenshots
 

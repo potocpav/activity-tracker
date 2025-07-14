@@ -36,20 +36,20 @@ export const exampleGoals = [
       ],
       dataPoints: [
         {
-          time: new Date("2025-07-12T03:24:00"),
+          time: new Date("2025-07-11T03:24:00"),
           value: {
-            mean: 70,
-            max: 75,
-            tut: 1.5,
+            Mean: 70,
+            Max: 75,
+            TUT: 1.5,
           },
           tags: ["left"],
         },
         {
-          time: new Date("2025-07-11T03:24:00"),
+          time: new Date("2025-07-12T03:24:00"),
           value: {
-            mean: 65,
-            max: null,
-            tut: 1.0,
+            Mean: 65,
+            Max: null,
+            TUT: 1.0,
           },
           tags: ["right", "warmup"],
         },
