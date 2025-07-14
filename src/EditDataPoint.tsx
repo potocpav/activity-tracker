@@ -3,14 +3,16 @@ import {
   Modal,
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
   Alert,
 } from "react-native";
 import { DataPoint, Unit, SubUnit, GoalType } from "./Store";
+import { TextInput, Button } from "react-native-paper";
 import useStore from "./Store";
+import { DatePickerInput, DatePickerModal, TimePickerModal } from "react-native-paper-dates";
+import { CalendarDate } from "react-native-paper-dates/lib/typescript/Date/Calendar";
 
 // type EditDataPointProps = {
 //   visible: boolean;
@@ -31,18 +33,94 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
   const goals = useStore((state: any) => state.goals);
   const goal = goals.find((g: GoalType) => g.id === goalId);
   const dataPoint = goal?.dataPoints[dataPointIndex];
+  const dateTime = new Date(dataPoint.time);
 
   if (!dataPoint) {
     return <Text>Data point not found</Text>;
   }
   
   const updateGoalDataPoint = useStore((state: any) => state.updateGoalDataPoint);
+  
+  const [inputDate, setInputDate] = useState<CalendarDate | undefined>(dateTime);
+  const [inputTime, setInputTime] = useState<{hours: number, minutes: number} | undefined>({hours: dateTime.getHours(), minutes: dateTime.getMinutes()});
+  const [inputValue, setInputValue] = useState<string>(dataPoint.value.toString());
+  const [timePickerVisible, setTimePickerVisible] = useState(false);
+  const [datePickerVisible, setDatePickerVisible] = useState(false);  
 
   return (
-    <View>
-      <Text>Time: {dataPoint.time}</Text>
-      <Text>Value: {dataPoint.value.toString()}</Text>
-      <Text>Tags: {dataPoint.tags.join(", ")}</Text>
+    <View style={styles.container}>
+      <ScrollView style={styles.content}>
+      <View style={styles.pickerContainer}>
+        <Text style={styles.label}>Date: {inputDate ? inputDate.toLocaleDateString() : 'Not set'}</Text>
+        <Button onPress={() => setDatePickerVisible(true)} uppercase={false} mode="outlined">
+          Change
+        </Button>
+        <DatePickerModal
+          locale="en"
+          mode="single"
+          visible={datePickerVisible}
+          onDismiss={() => setDatePickerVisible(false)}
+          date={inputDate}
+          onConfirm={(d) => {setInputDate(d.date); setDatePickerVisible(false);}}
+        />
+      </View>
+
+      <View style={styles.pickerContainer}>
+        <Text style={styles.label}>Time: {inputTime ? `${inputTime.hours}:${inputTime.minutes}` : 'Not set'}</Text>
+          <Button 
+            onPress={() => setTimePickerVisible(true)} 
+            uppercase={false} 
+            mode="outlined"
+            style={{marginBottom: 10}}
+          >
+            Change
+          </Button>
+          <TimePickerModal
+            visible={timePickerVisible}
+            onDismiss={() => setTimePickerVisible(false)}
+            onConfirm={(t) => {setInputTime(t); setTimePickerVisible(false);}}
+            hours={12}
+            minutes={14}
+          />
+        </View>
+
+      <View style={styles.inputContainer}>
+          <TextInput
+            label={`Value [${goal.unit}]`}
+            value={inputValue}
+            onChangeText={text => setInputValue(text)}
+            keyboardType="numeric"
+            style={styles.textInput}
+          />
+        </View>
+
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Tags: {dataPoint.tags.join(", ")}</Text>
+        </View>
+      </ScrollView>
+
+      <View style={styles.footer}>
+        <TouchableOpacity style={styles.cancelButton} onPress={() => navigation.goBack()}>
+          <Text style={styles.cancelButtonText}>Cancel</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.saveButton} onPress={() => {
+          const newValue = parseFloat(inputValue);
+          if (inputDate && inputTime && !isNaN(newValue)) {
+            const newTime = new Date(inputDate?.getFullYear(), inputDate?.getMonth(), inputDate?.getDate(), inputTime?.hours, inputTime?.minutes).getTime();
+            updateGoalDataPoint(goalId, dataPointIndex, {
+              time: newTime,
+              value: newValue,
+              tags: dataPoint.tags,
+            });
+            navigation.goBack();
+          } else {
+            Alert.alert("Invalid input");
+          }
+        }}>
+          <Text style={styles.saveButtonText}>Save</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -51,15 +129,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#ffffff",
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
   },
   title: {
     fontSize: 20,
@@ -77,6 +146,12 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
+  pickerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 20,
+  },
   inputContainer: {
     marginBottom: 20,
   },
@@ -92,13 +167,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   textInput: {
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 16,
-    backgroundColor: "#f9f9f9",
   },
   footer: {
     flexDirection: "row",

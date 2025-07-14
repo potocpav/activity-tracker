@@ -7,10 +7,10 @@ export const exampleGoals = [
       description: "Body weight measured in the morning before breakfast",
       unit: "kg",
       dataPoints: 
-        Array.from({ length: 200 }, (_, i) => ({
+        Array.from({ length: 50 }, (_, i) => ({
             time: new Date("2023-01-01").getTime() + 
               Math.random() * (new Date("2025-07-14").getTime() - new Date("2023-01-01").getTime()),
-            value: 70 + Math.random() * 2,
+            value: Math.round((70 + Math.random() * 2) * 10) / 10,
             tags: [],
         })).sort((a, b) => a.time - b.time),
     },

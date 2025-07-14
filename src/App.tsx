@@ -11,13 +11,14 @@ import Goals from "./Goals";
 import Goal from "./Goal";
 import DeviceModal from "./DeviceConnectionModal";
 import EditDataPoint from "./EditDataPoint";
-
+import { PaperProvider } from "react-native-paper";
 
 const App = () => {
   const Stack = createNativeStackNavigator();
 
   return (
-    <SafeAreaView style={styles.container}>
+    <PaperProvider>
+      <SafeAreaView style={styles.container}>
         <NavigationContainer>
           <Stack.Navigator>
             <Stack.Group>
@@ -56,7 +57,8 @@ const App = () => {
             </Stack.Group>
           </Stack.Navigator>
         </NavigationContainer>
-    </SafeAreaView>
+      </SafeAreaView>
+    </PaperProvider>
   );
 };
 
