@@ -50,7 +50,7 @@ const Goal: React.FC<GoalProps> = ({ navigation, route }) => {
   );
 };
 
-const GoalSummary = ({ route }: { route: any }) => {
+const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => {
   const { goal } = route.params;
   return (
     <View>
@@ -64,7 +64,7 @@ const GoalSummary = ({ route }: { route: any }) => {
         </View>
 
         <View>
-            <GoalData route={{ params: { goal } }} />
+            <GoalData navigation={navigation} route={{ params: { goal } }} />
         </View>
     </View>
   );

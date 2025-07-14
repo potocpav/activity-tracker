@@ -8,6 +8,7 @@ import {
   FlatList,
 } from "react-native";
 import StatusBar from "./StatusBar";
+import useStore from "./Store";
 
 type MeasurementOption = {
   id: string;
@@ -20,6 +21,7 @@ type MainPageProps = {
 };
 
 const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
+  const resetGoals = useStore((state: any) => state.resetGoals);
 
   const measurementOptions: MeasurementOption[] = [
     {
@@ -59,6 +61,14 @@ const MainPage: React.FC<MainPageProps> = ({ navigation }) => {
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
       />
+      <View style={styles.resetButtonContainer}>
+        <TouchableOpacity
+          style={styles.resetButton}
+          onPress={resetGoals}
+        >
+          <Text style={styles.resetButtonText}>Reset Data</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 };
@@ -109,6 +119,26 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#666666",
     lineHeight: 22,
+  },
+  resetButtonContainer: {
+    padding: 20,
+    paddingBottom: 30,
+  },
+  resetButton: {
+    backgroundColor: '#ff6b6b',
+    borderRadius: 12,
+    padding: 15,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  resetButtonText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#ffffff",
   },
 });
 

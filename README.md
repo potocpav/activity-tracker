@@ -36,7 +36,7 @@ In order to make this app a full-featured management app for workout data, the f
     * [x] Allow and ignore null values
     * [ ] Improve x-ticks
     * [ ] Add axis labels
-    * [ ] Bar chart: number of sessions
+    * [ ] Bar chart: number of sessions, sum of values
     * [ ] Line graph: average, max
     * [ ] Pan/Zoom Fixes
     * [ ] Filtering by tags
@@ -67,11 +67,11 @@ In order to make this app a full-featured management app for workout data, the f
   * [ ] Rename and rebrand the app, perhaps to "Goals"
   * [ ] Add default example data
 * [ ] Settings page
-  * [ ] Allow resetting data to example data
+  * [x] Allow resetting data to example data
   * [ ] Light/dark theme
 * Data handling
   * [x] Zustand store
-  * [ ] Local data storage
+  * [x] Local data storage
   * [ ] Export data
   * [ ] Backups
 * [ ] Calendar Screen

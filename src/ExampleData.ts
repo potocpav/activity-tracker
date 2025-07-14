@@ -8,13 +8,11 @@ export const exampleGoals = [
       unit: "kg",
       dataPoints: 
         Array.from({ length: 200 }, (_, i) => ({
-            time: new Date(
-              new Date("2023-01-01").getTime() + 
-              Math.random() * (new Date("2025-07-14").getTime() - new Date("2023-01-01").getTime())
-            ),
+            time: new Date("2023-01-01").getTime() + 
+              Math.random() * (new Date("2025-07-14").getTime() - new Date("2023-01-01").getTime()),
             value: 70 + Math.random() * 2,
             tags: [],
-        })).sort((a, b) => a.time.getTime() - b.time.getTime()),
+        })).sort((a, b) => a.time - b.time),
     },
     {
       id: "finger-strength",
@@ -36,7 +34,7 @@ export const exampleGoals = [
       ],
       dataPoints: [
         {
-          time: new Date("2025-07-11T03:24:00"),
+          time: new Date("2025-07-11T03:24:00").getTime(),
           value: {
             Mean: 70,
             Max: 75,
@@ -45,7 +43,7 @@ export const exampleGoals = [
           tags: ["left"],
         },
         {
-          time: new Date("2025-07-12T03:24:00"),
+          time: new Date("2025-07-12T03:24:00").getTime(),
           value: {
             Mean: 65,
             Max: null,

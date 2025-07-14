@@ -10,6 +10,7 @@ import LiveView from "./LiveView";
 import Goals from "./Goals";
 import Goal from "./Goal";
 import DeviceModal from "./DeviceConnectionModal";
+import EditDataPoint from "./EditDataPoint";
 
 
 const App = () => {
@@ -46,6 +47,11 @@ const App = () => {
                 name="ConnectDevice" 
                 component={DeviceModal} 
                 options={{title: "Connect to a Device"}}
+                />
+              <Stack.Screen 
+                name="EditDataPoint" 
+                component={EditDataPoint} 
+                options={{title: "Edit Data Point"}}
                 />
             </Stack.Group>
           </Stack.Navigator>

@@ -78,7 +78,7 @@ const GoalGraph = ({ route }: { route: any }) => {
   const bins = binTimeSeries(binning, goal.dataPoints);
   const binQuartiles : {t: number, q0: number, q1: number, q2: number, q3: number, q4: number}[] = bins.map((bin) => ({
     ...quartiles(bin.values.map(extractValue)),
-    t: bin.time.getTime()
+    t: bin.time
   }));
 
 

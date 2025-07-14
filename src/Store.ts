@@ -34,7 +34,7 @@ export type SubUnit = {
 export type Tag = string;
 
 export type DataPoint = {
-    time: Date;
+    time: number;
     value: any;
     tags: Tag[];
 };
@@ -192,6 +192,10 @@ const useStore = create<State>()(
           const subscription = startStreamingData(device, get().onDataUpdate);
           set({subscription: subscription});
         });
+      },
+
+      resetGoals: () => {
+        set({goals: exampleGoals});
       },
 
       updateGoalDataPoint: (goalId: string, dataPointIndex: number, updatedDataPoint: DataPoint) => {

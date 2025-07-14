@@ -11,6 +11,7 @@ import { binTimeSeries } from "./GoalUtil";
 import EditDataPoint from "./EditDataPoint";
 
 type GoalDataProps = {
+  navigation: any;
   route: any;
 };
 
@@ -26,12 +27,12 @@ const renderValue = (value: any, unit: Unit) => {
   if (typeof value === "number") {
     return `${Math.round(value * 100) / 100} ${typeof unit === "string" ? unit : ""}`;
   }
-  
+
   if (typeof value === "object" && value !== null) {
     if (typeof unit === "string") {
       return JSON.stringify(value);
     }
-    
+
     // Handle complex units (like finger strength with mean, max, tut)
     const parts: string[] = [];
     unit.forEach((u: any) => {
@@ -41,13 +42,13 @@ const renderValue = (value: any, unit: Unit) => {
     });
     return parts.join(", ");
   }
-  
+
   return String(value);
 };
 
 const renderTags = (tags: string[]) => {
   if (tags.length === 0) return null;
-  
+
   return (
     <View style={styles.tagsContainer}>
       {tags.map((tag, index) => (
@@ -59,52 +60,30 @@ const renderTags = (tags: string[]) => {
   );
 };
 
-const renderDataPoint = ({ item }: { item: DataPoint }, unit: Unit, onEdit: (dataPoint: DataPoint, index: number) => void, dataPointIndex: number) => (
-  <View style={styles.dataPointContainer}>
-    <View style={styles.dataPointContent}>
-      <View style={styles.dataPointValueContainer}>
-        <Text style={styles.dataPointValue}>
-          {renderValue(item.value, unit)}
-        </Text>
-      </View>
-      <View style={styles.dataPointActions}>
-        {renderTags(item.tags)}
-        <TouchableOpacity 
-          style={styles.editButton}
-          onPress={() => onEdit(item, dataPointIndex)}
-        >
-          <Text style={styles.editButtonText}>✏️</Text>
-        </TouchableOpacity>
+const renderDataPoint = ({ item }: { item: DataPoint }, unit: Unit, dataPointIndex: number) => (
+    <View style={styles.dataPointContainer}>
+      <View style={styles.dataPointContent}>
+        <View style={styles.dataPointValueContainer}>
+          <Text style={styles.dataPointValue}>
+            {renderValue(item.value, unit)}
+          </Text>
+        </View>
+        <View style={styles.dataPointActions}>
+          {renderTags(item.tags)}
+        </View>
       </View>
     </View>
-  </View>
 );
 
-const GoalData = ({ route }: GoalDataProps) => {
+const GoalData = ({ navigation, route }: GoalDataProps) => {
   const { goal } = route.params;
   const bins = binTimeSeries("day", goal.dataPoints);
-  const [editModalVisible, setEditModalVisible] = useState(false);
-  const [editingDataPoint, setEditingDataPoint] = useState<DataPoint | null>(null);
-  const [editingDataPointIndex, setEditingDataPointIndex] = useState<number>(-1);
 
-  const getDayKey = (t: Date) => {
-    return t.getFullYear() + "-" + (t.getMonth() + 1) + "-" + t.getDate();
-  };
+  const getDayKey = (t: number) => t.toString();
 
-  const daysWithFewPoints: any = new Set(bins.filter((bin) => bin.values.length <= 2).map((bin) => getDayKey(bin.time)));
+  const daysWithFewPoints: any = new Set(bins.filter((bin) => bin.values.length <= 2).map((bin) => bin.time));
   const [expandedDays, setExpandedDays] = useState<Set<string>>(daysWithFewPoints);
 
-  const handleEditDataPoint = (dataPoint: DataPoint, index: number) => {
-    setEditingDataPoint(dataPoint);
-    setEditingDataPointIndex(index);
-    setEditModalVisible(true);
-  };
-
-  const handleCloseEditModal = () => {
-    setEditModalVisible(false);
-    setEditingDataPoint(null);
-    setEditingDataPointIndex(-1);
-  };
 
   const toggleDay = (dayKey: string) => {
     const newExpanded = new Set(expandedDays);
@@ -116,35 +95,38 @@ const GoalData = ({ route }: GoalDataProps) => {
     setExpandedDays(newExpanded);
   };
 
-  const renderDay = ({ item }: { item: { time: Date; values: DataPoint[] } }) => {
-    const dayKey = getDayKey(item.time);
-    const isExpanded = expandedDays.has(dayKey);
+  const renderDay = ({ item }: { item: { time: number; values: DataPoint[] } }) => {
+    const isExpanded = expandedDays.has(getDayKey(item.time));
 
     return (
       <View style={styles.dayContainer}>
-        <TouchableOpacity 
-          style={styles.dayHeader} 
-          onPress={() => toggleDay(dayKey)}
+        <TouchableOpacity
+          style={styles.dayHeader}
+          onPress={() => toggleDay(getDayKey(item.time))}
         >
           <View style={styles.dayHeaderContent}>
-            <Text style={styles.dayDate}>{formatDate(item.time)}</Text>
+            <Text style={styles.dayDate}>{formatDate(new Date(item.time))}</Text>
             <Text style={styles.dayCount}>({item.values.length})</Text>
           </View>
           <Text style={styles.expandIcon}>{isExpanded ? '▼' : '▶'}</Text>
         </TouchableOpacity>
-        
+
         {isExpanded && (
           <View style={styles.dayDataPoints}>
             {item.values.map((dataPoint, index) => {
               // Find the actual index in the original dataPoints array
-              const actualIndex = goal.dataPoints.findIndex((dp: DataPoint) => 
-                dp.time.getTime() === dataPoint.time.getTime() && 
+              const actualIndex = goal.dataPoints.findIndex((dp: DataPoint) =>
+                dp.time === dataPoint.time &&
                 JSON.stringify(dp.value) === JSON.stringify(dataPoint.value)
               );
               return (
-                <View key={index} style={styles.nestedDataPointContainer}>
-                  {renderDataPoint({ item: dataPoint }, goal.unit, handleEditDataPoint, actualIndex)}
-                </View>
+                  <TouchableOpacity
+                  style={styles.editButton}
+                  onPress={() => navigation.navigate("EditDataPoint", { goalId: goal.id, dataPointIndex: actualIndex })}>
+                  <View key={index} style={styles.nestedDataPointContainer}>
+                    {renderDataPoint({ item: dataPoint }, goal.unit,  actualIndex)}
+                  </View>
+                </TouchableOpacity>
               );
             })}
           </View>
@@ -152,25 +134,16 @@ const GoalData = ({ route }: GoalDataProps) => {
       </View>
     );
   };
-  
+
   return (
     <View>
       <Text style={styles.sectionTitle}>Data Points ({goal.dataPoints.length})</Text>
       <FlatList
         data={bins}
         renderItem={renderDay}
-        keyExtractor={(item) => item.time.toISOString().split('T')[0]}
+        keyExtractor={(item) => item.time.toString()}
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
-      />
-      
-      <EditDataPoint
-        visible={editModalVisible}
-        onClose={handleCloseEditModal}
-        dataPoint={editingDataPoint}
-        goalId={goal.id}
-        dataPointIndex={editingDataPointIndex}
-        unit={goal.unit}
       />
     </View>
   );

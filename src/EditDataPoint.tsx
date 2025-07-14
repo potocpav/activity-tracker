@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, FC } from "react";
 import {
   Modal,
   View,
@@ -9,210 +9,41 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
-import { DataPoint, Unit, SubUnit } from "./Store";
+import { DataPoint, Unit, SubUnit, GoalType } from "./Store";
 import useStore from "./Store";
 
+// type EditDataPointProps = {
+//   visible: boolean;
+//   onClose: () => void;
+//   dataPoint: DataPoint | null;
+//   goalId: string;
+//   dataPointIndex: number;
+//   unit: Unit;
+// };
+
 type EditDataPointProps = {
-  visible: boolean;
-  onClose: () => void;
-  dataPoint: DataPoint | null;
-  goalId: string;
-  dataPointIndex: number;
-  unit: Unit;
+  navigation: any;
+  route: any;
 };
 
-const EditDataPoint: React.FC<EditDataPointProps> = ({
-  visible,
-  onClose,
-  dataPoint,
-  goalId,
-  dataPointIndex,
-  unit,
-}) => {
-  const [value, setValue] = useState<string>("");
-  const [tags, setTags] = useState<string>("");
-  const [date, setDate] = useState<string>("");
-  const [time, setTime] = useState<string>("");
+const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
+  const { goalId, dataPointIndex } = route.params;
+  const goals = useStore((state: any) => state.goals);
+  const goal = goals.find((g: GoalType) => g.id === goalId);
+  const dataPoint = goal?.dataPoints[dataPointIndex];
+
+  if (!dataPoint) {
+    return <Text>Data point not found</Text>;
+  }
   
   const updateGoalDataPoint = useStore((state: any) => state.updateGoalDataPoint);
 
-  useEffect(() => {
-    if (dataPoint) {
-      // Handle complex value types
-      if (typeof dataPoint.value === "object" && dataPoint.value !== null) {
-        if (Array.isArray(unit)) {
-          // Handle complex units (like finger strength with mean, max, tut)
-          const valueParts: string[] = [];
-          unit.forEach((u: SubUnit) => {
-            if (dataPoint.value[u.name] !== null && dataPoint.value[u.name] !== undefined) {
-              valueParts.push(`${dataPoint.value[u.name]}`);
-            }
-          });
-          setValue(valueParts.join(", "));
-        } else {
-          setValue(JSON.stringify(dataPoint.value));
-        }
-      } else {
-        setValue(String(dataPoint.value));
-      }
-      
-      setTags(dataPoint.tags.join(", "));
-      
-      const dateObj = new Date(dataPoint.time);
-      setDate(dateObj.toISOString().split('T')[0]);
-      setTime(dateObj.toTimeString().split(' ')[0]);
-    }
-  }, [dataPoint, unit]);
-
-  const handleSave = () => {
-    if (!dataPoint) return;
-
-    try {
-      // Parse the value based on unit type
-      let parsedValue: any = value;
-      
-      if (typeof unit === "string") {
-        // Simple unit - try to parse as number
-        const numValue = parseFloat(value);
-        if (!isNaN(numValue)) {
-          parsedValue = numValue;
-        }
-      } else if (Array.isArray(unit)) {
-        // Complex unit - parse multiple values
-        const valueParts = value.split(",").map((v: string) => v.trim());
-        parsedValue = {};
-        unit.forEach((u: SubUnit, index: number) => {
-          if (valueParts[index]) {
-            const numValue = parseFloat(valueParts[index]);
-            if (!isNaN(numValue)) {
-              parsedValue[u.name] = numValue;
-            }
-          }
-        });
-      }
-
-      // Parse tags
-      const parsedTags = tags
-        .split(",")
-        .map((tag: string) => tag.trim())
-        .filter((tag: string) => tag.length > 0);
-
-      // Parse date and time
-      const dateTimeString = `${date}T${time}`;
-      const parsedTime = new Date(dateTimeString);
-      
-      if (isNaN(parsedTime.getTime())) {
-        Alert.alert("Invalid Date", "Please enter a valid date and time.");
-        return;
-      }
-
-      const updatedDataPoint: DataPoint = {
-        time: parsedTime,
-        value: parsedValue,
-        tags: parsedTags,
-      };
-
-      updateGoalDataPoint(goalId, dataPointIndex, updatedDataPoint);
-      onClose();
-    } catch (error) {
-      Alert.alert("Error", "Failed to save data point. Please check your input.");
-    }
-  };
-
-  const renderValueInput = () => {
-    if (typeof unit === "string") {
-      return (
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Value ({unit})</Text>
-          <TextInput
-            style={styles.textInput}
-            value={value}
-            onChangeText={setValue}
-            placeholder={`Enter value in ${unit}`}
-            keyboardType="numeric"
-          />
-        </View>
-      );
-    } else if (Array.isArray(unit)) {
-      return (
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Values</Text>
-          <Text style={styles.helperText}>
-            Enter values separated by commas: {unit.map((u: SubUnit) => u.symbol).join(", ")}
-          </Text>
-          <TextInput
-            style={styles.textInput}
-            value={value}
-            onChangeText={setValue}
-            placeholder="e.g., 10, 15, 20"
-            keyboardType="numeric"
-          />
-        </View>
-      );
-    }
-    return null;
-  };
-
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={onClose}
-    >
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Edit Data Point</Text>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Text style={styles.closeButtonText}>✕</Text>
-          </TouchableOpacity>
-        </View>
-
-        <ScrollView style={styles.content}>
-          {renderValueInput()}
-
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Tags</Text>
-            <Text style={styles.helperText}>Enter tags separated by commas</Text>
-            <TextInput
-              style={styles.textInput}
-              value={tags}
-              onChangeText={setTags}
-              placeholder="e.g., morning, strong, easy"
-            />
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Date</Text>
-            <TextInput
-              style={styles.textInput}
-              value={date}
-              onChangeText={setDate}
-              placeholder="YYYY-MM-DD"
-            />
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Time</Text>
-            <TextInput
-              style={styles.textInput}
-              value={time}
-              onChangeText={setTime}
-              placeholder="HH:MM:SS"
-            />
-          </View>
-        </ScrollView>
-
-        <View style={styles.footer}>
-          <TouchableOpacity onPress={onClose} style={styles.cancelButton}>
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
-            <Text style={styles.saveButtonText}>Save</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </Modal>
+    <View>
+      <Text>Time: {dataPoint.time}</Text>
+      <Text>Value: {dataPoint.value.toString()}</Text>
+      <Text>Tags: {dataPoint.tags.join(", ")}</Text>
+    </View>
   );
 };
 
@@ -303,4 +134,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default EditDataPoint; 
+export default EditDataPoint;
