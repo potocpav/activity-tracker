@@ -1,6 +1,5 @@
-import React, { useState, useEffect, FC } from "react";
+import React, { useState, FC } from "react";
 import {
-  Modal,
   View,
   Text,
   TouchableOpacity,
@@ -8,20 +7,11 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
-import { DataPoint, Unit, SubUnit, GoalType } from "./Store";
+import { SubUnit, GoalType } from "./Store";
 import { TextInput, Button } from "react-native-paper";
 import useStore from "./Store";
 import { DatePickerInput, DatePickerModal, TimePickerModal } from "react-native-paper-dates";
 import { CalendarDate } from "react-native-paper-dates/lib/typescript/Date/Calendar";
-
-// type EditDataPointProps = {
-//   visible: boolean;
-//   onClose: () => void;
-//   dataPoint: DataPoint | null;
-//   goalId: string;
-//   dataPointIndex: number;
-//   unit: Unit;
-// };
 
 type EditDataPointProps = {
   navigation: any;

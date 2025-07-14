@@ -82,10 +82,20 @@ const GoalGraph = ({ route }: { route: any }) => {
   const barWidth = 5;
   
   const bins = binTimeSeries(binning, goal.dataPoints);
-  const binQuartiles : {t: number, q0: number, q1: number, q2: number, q3: number, q4: number}[] = bins.map((bin) => ({
-    ...quartiles(bin.values.map(extractValue)),
-    t: bin.time
-  }));
+  const binQuartiles : {t: number, q0: number, q1: number, q2: number, q3: number, q4: number}[] = bins.map((bin) => {
+    const values = bin.values.map(extractValue).filter((v: number) => v !== null);
+    if (values.length === 0) {
+      return null
+    } else {
+      return {
+        ...quartiles(values),
+        t: bin.time
+      };
+    }
+  }).filter((b) => b !== null);
+
+  console.log("bins", bins);
+  console.log("binQuartiles", binQuartiles);
 
 
   const k = useSharedValue(1);
