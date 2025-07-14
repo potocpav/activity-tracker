@@ -40,7 +40,6 @@ export type DataPoint = {
 };
 
 export type GoalType = {
-  id: string;
   name: string;
   description: string;
   unit: Unit;
@@ -197,10 +196,24 @@ const useStore = create<State>()(
         set({goals: exampleGoals});
       },
 
-      updateGoalDataPoint: (goalId: string, dataPointIndex: number | undefined, updatedDataPoint: DataPoint) => {
+      deleteGoal: (goalName: string) => {
+        set((state: any) => {
+          const goals = state.goals.filter((goal: GoalType) => goal.name !== goalName);
+          return { goals };
+        });
+      },
+
+      updateGoal: (goalName: string, updatedGoal: GoalType) => {
+        set((state: any) => {
+          const goals = state.goals.map((goal: GoalType) => goal.name === goalName ? updatedGoal : goal);
+          return { goals };
+        });
+      },
+
+      updateGoalDataPoint: (goalName: string, dataPointIndex: number | undefined, updatedDataPoint: DataPoint) => {
         set((state: any) => {
           const goals = state.goals.map((goal: GoalType) => {
-            if (goal.id === goalId) {
+            if (goal.name === goalName) {
               const updatedDataPoints = [...goal.dataPoints];
               if (dataPointIndex !== undefined) {
                 updatedDataPoints[dataPointIndex] = updatedDataPoint;
@@ -216,10 +229,10 @@ const useStore = create<State>()(
         });
       },
 
-      deleteGoalDataPoint: (goalId: string, dataPointIndex: number) => {
+      deleteGoalDataPoint: (goalName: string, dataPointIndex: number) => {
         set((state: any) => {
           const goals = state.goals.map((goal: GoalType) => {
-            if (goal.id === goalId) {
+            if (goal.name === goalName) {
               const updatedDataPoints = [...goal.dataPoints]; 
               updatedDataPoints.splice(dataPointIndex, 1);
               return { ...goal, dataPoints: updatedDataPoints };

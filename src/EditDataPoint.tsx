@@ -21,9 +21,11 @@ type EditDataPointProps = {
 
 const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
   const theme = useTheme();
-  const { goalId, dataPointIndex } = route.params;
+  const { goalName, dataPointIndex } = route.params;
   const goals = useStore((state: any) => state.goals);
-  const goal = goals.find((g: GoalType) => g.id === goalId);
+  const goal = goals.find((g: GoalType) => g.name === goalName);
+  
+  console.log(goalName, goal);
   
   const dataPoint = dataPointIndex !== undefined ? goal?.dataPoints[dataPointIndex] : {
     time: new Date().getTime(), 
@@ -116,7 +118,7 @@ if (!dataPoint) {
         </TouchableOpacity>
         {dataPointIndex !== undefined && (
           <TouchableOpacity style={[styles.deleteButton, { backgroundColor: theme.colors.error }]} onPress={() => {
-            deleteGoalDataPoint(goalId, dataPointIndex);
+            deleteGoalDataPoint(goalName, dataPointIndex);
             navigation.goBack();
           }}>
             <Text style={[styles.deleteButtonText, { color: theme.colors.onError }]}>Delete</Text>
@@ -152,7 +154,7 @@ if (!dataPoint) {
 
           if (inputDate && inputTime && hasNonEmptyValue && newValue !== null) {
             const newTime = new Date(inputDate?.getFullYear(), inputDate?.getMonth(), inputDate?.getDate(), inputTime?.hours, inputTime?.minutes).getTime();
-            updateGoalDataPoint(goalId, dataPointIndex, {
+            updateGoalDataPoint(goalName, dataPointIndex, {
               time: newTime,
               value: newValue,
               tags: dataPoint.tags,

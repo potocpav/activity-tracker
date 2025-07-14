@@ -30,9 +30,9 @@ const renderUnit = (unit: Unit) => {
 
 const Goal: React.FC<GoalProps> = ({ navigation, route }) => {
   const theme = useTheme();
-  const { goalId } = route.params;
+  const { goalName } = route.params;
   const goals = useStore((state: any) => state.goals);
-  const goal = goals.find((g: GoalType) => g.id === goalId);
+  const goal = goals.find((g: GoalType) => g.name === goalName);
 
   if (!goal) {
     return (
@@ -46,18 +46,18 @@ const Goal: React.FC<GoalProps> = ({ navigation, route }) => {
 
   return (
     <Tab.Navigator screenOptions={{swipeEnabled: false}}>
-      <Tab.Screen name="Summary" component={GoalSummary} initialParams={{ goalId }} />
-      <Tab.Screen name="Data" component={GoalData} initialParams={{ goalId }} />
-      <Tab.Screen name="Graph" component={GoalGraph} initialParams={{ goalId }} />
+      <Tab.Screen name="Summary" component={GoalSummary} initialParams={{ goalName }} />
+      <Tab.Screen name="Data" component={GoalData} initialParams={{ goalName }} />
+      <Tab.Screen name="Graph" component={GoalGraph} initialParams={{ goalName }} />
     </Tab.Navigator>
   );
 };
 
 const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => {
   const theme = useTheme();
-  const { goalId } = route.params;
+  const { goalName } = route.params;
   const goals = useStore((state: any) => state.goals);
-  const goal = goals.find((g: GoalType) => g.id === goalId);
+  const goal = goals.find((g: GoalType) => g.name === goalName);
 
   if (!goal) {
     return <Text>Goal not found</Text>;
@@ -67,7 +67,7 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
     <View>
         <View style={[styles.header, { backgroundColor: theme.colors.surface, borderBottomColor: theme.colors.outline }]}>
             <Text style={[styles.headerTitle, { color: theme.colors.onSurface }]}>{goal.name}</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('EditGoal', { goalId })}>
+            <TouchableOpacity onPress={() => navigation.navigate('EditGoal', { goalName })}>
               <Text style={[styles.editButton, { color: theme.colors.primary, backgroundColor: theme.colors.primaryContainer }]}>Edit</Text>
             </TouchableOpacity>
         </View>
@@ -78,7 +78,7 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
         </View>
 
         <View>
-            <GoalData navigation={navigation} route={{ params: { goalId } }} />
+            <GoalData navigation={navigation} route={{ params: { goalName } }} />
         </View>
     </View>
   );

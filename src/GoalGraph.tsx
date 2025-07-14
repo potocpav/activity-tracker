@@ -65,9 +65,9 @@ const toggleButton = (label: string, isActive: boolean, onPress: () => void, the
 
 const GoalGraph = ({ route }: { route: any }) => {
   const theme = useTheme();
-  const { goalId } = route.params;
+  const { goalName } = route.params;
   const goals = useStore((state: any) => state.goals);
-  const goal = goals.find((g: GoalType) => g.id === goalId);
+  const goal = goals.find((g: GoalType) => g.name === goalName);
   
   if (!goal) {
     return <Text>Goal not found</Text>;

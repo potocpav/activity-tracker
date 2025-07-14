@@ -30,7 +30,7 @@ const Goals: React.FC<GoalsProps> = ({ navigation }) => {
   const renderGoal = ({ item }: { item: GoalType }) => (
     <TouchableOpacity
       style={[styles.goalCard, { backgroundColor: theme.colors.surface }]}
-      onPress={() => navigation.navigate('Goal', { goalId: item.id })}
+      onPress={() => navigation.navigate('Goal', { goalName: item.name })}
       activeOpacity={0.7}
     >
       <Text style={[styles.goalTitle, { color: theme.colors.onSurface }]}>{item.name}</Text>
@@ -43,7 +43,7 @@ const Goals: React.FC<GoalsProps> = ({ navigation }) => {
       <FlatList
         data={goals}
         renderItem={renderGoal}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.name}
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
       />

@@ -19,16 +19,16 @@ type EditGoalProps = {
 
 const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
   const theme = useTheme();
-  const { goalId } = route.params;
+  const { goalName } = route.params;
   const goals = useStore((state: any) => state.goals);
-  const goal = goals.find((g: GoalType) => g.id === goalId);
+  const goal = goals.find((g: GoalType) => g.name === goalName);
   
   if (!goal) {
     return <Text>Goal not found</Text>;
   }
 
-  const [goalName, setGoalName] = useState(goal.name);
-  const [goalDescription, setGoalDescription] = useState(goal.description);
+  const [goalNameInput, setGoalNameInput] = useState(goal.name);
+  const [goalDescriptionInput, setGoalDescriptionInput] = useState(goal.description);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
@@ -36,8 +36,8 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
         <View style={styles.inputContainer}>
           <TextInput
             label="Goal Name"
-            value={goalName}
-            onChangeText={setGoalName}
+            value={goalNameInput}
+            onChangeText={setGoalNameInput}
             style={styles.textInput}
           />
         </View>
@@ -45,8 +45,8 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
         <View style={styles.inputContainer}>
           <TextInput
             label="Description"
-            value={goalDescription}
-            onChangeText={setGoalDescription}
+            value={goalDescriptionInput}
+            onChangeText={setGoalDescriptionInput}
             multiline
             numberOfLines={3}
             style={styles.textInput}

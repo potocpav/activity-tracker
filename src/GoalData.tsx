@@ -93,9 +93,9 @@ const renderDataPoint = (theme: any, { item }: { item: DataPoint }, unit: Unit) 
 
 const GoalData = ({ navigation, route }: GoalDataProps) => {
   const theme = useTheme();
-  const { goalId } = route.params;
+  const { goalName } = route.params;
   const goals = useStore((state: any) => state.goals);
-  const goal = goals.find((g: GoalType) => g.id === goalId);
+  const goal = goals.find((g: GoalType) => g.name === goalName);
 
   if (!goal) {
     return <Text>Goal not found</Text>;
@@ -105,7 +105,7 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
     <SafeAreaView style={styles.container}>
       <View style={styles.sectionHeader}>
         <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>Data Points ({goal.dataPoints.length})</Text>
-        <TouchableOpacity style={[styles.addButton, { backgroundColor: theme.colors.primary }]} onPress={() => navigation.navigate("EditDataPoint", { goalId: goal.id })}>
+        <TouchableOpacity style={[styles.addButton, { backgroundColor: theme.colors.primary }]} onPress={() => navigation.navigate("EditDataPoint", { goalName: goal.name })}>
           <Text style={[styles.addButtonText, { color: theme.colors.onPrimary }]}>+</Text>
         </TouchableOpacity>
       </View>
@@ -120,7 +120,7 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
           {goal.dataPoints.slice().reverse().map((dataPoint: DataPoint, index: number) => (
             <TouchableOpacity
               key={dataPoint.time.toString()}
-              onPress={() => navigation.navigate("EditDataPoint", { goalId: goal.id, dataPointIndex: goal.dataPoints.length - 1 - index })}
+              onPress={() => navigation.navigate("EditDataPoint", { goalName: goal.name, dataPointIndex: goal.dataPoints.length - 1 - index })}
             >
               <DataTable.Row>
                 <DataTable.Cell>{formatDate(new Date(dataPoint.time))}</DataTable.Cell>
