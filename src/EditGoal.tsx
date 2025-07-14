@@ -22,13 +22,16 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
   const { goalName } = route.params;
   const goals = useStore((state: any) => state.goals);
   const goal = goals.find((g: GoalType) => g.name === goalName);
+  const updateGoal = useStore((state: any) => state.updateGoal);
+  const deleteGoal = useStore((state: any) => state.deleteGoal);
   
+  const [goalNameInput, setGoalNameInput] = useState(goal.name);
+  const [goalDescriptionInput, setGoalDescriptionInput] = useState(goal.description);
+
+
   if (!goal) {
     return <Text>Goal not found</Text>;
   }
-
-  const [goalNameInput, setGoalNameInput] = useState(goal.name);
-  const [goalDescriptionInput, setGoalDescriptionInput] = useState(goal.description);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
@@ -69,9 +72,17 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
           <Text style={[styles.cancelButtonText, { color: theme.colors.onSecondary }]}>Cancel</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.saveButton, { backgroundColor: theme.colors.primary }]} onPress={() => {
-          // TODO: Implement goal update logic
-          Alert.alert("Not implemented", "Goal editing functionality will be implemented later");
-          navigation.goBack();
+          if (goalNameInput !== goal.name && goals.find((g: GoalType) => g.name === goalNameInput)) {
+            Alert.alert("Error", "A goal with this name already exists");
+          } else {
+            const updatedGoal = {
+              ...goal,
+              name: goalNameInput,
+              description: goalDescriptionInput
+            };
+            navigation.navigate("Goal", { goalName: goalNameInput });
+            updateGoal(goal.name, updatedGoal);
+          }
         }}>
           <Text style={[styles.saveButtonText, { color: theme.colors.onPrimary }]}>Save</Text>
         </TouchableOpacity>

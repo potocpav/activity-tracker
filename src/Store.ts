@@ -203,9 +203,9 @@ const useStore = create<State>()(
         });
       },
 
-      updateGoal: (goalName: string, updatedGoal: GoalType) => {
+      updateGoal: (goalName: string, goal: GoalType) => {
         set((state: any) => {
-          const goals = state.goals.map((goal: GoalType) => goal.name === goalName ? updatedGoal : goal);
+          const goals = state.goals.map((g: GoalType) => goalName === g.name ? goal : g);
           return { goals };
         });
       },
