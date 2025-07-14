@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { DataPoint, Unit } from "./Store";
 import { binTimeSeries } from "./GoalUtil";
+import EditDataPoint from "./EditDataPoint";
 
 type GoalDataProps = {
   route: any;
@@ -58,7 +59,7 @@ const renderTags = (tags: string[]) => {
   );
 };
 
-const renderDataPoint = ({ item }: { item: DataPoint }, unit: Unit) => (
+const renderDataPoint = ({ item }: { item: DataPoint }, unit: Unit, onEdit: (dataPoint: DataPoint, index: number) => void, dataPointIndex: number) => (
   <View style={styles.dataPointContainer}>
     <View style={styles.dataPointContent}>
       <View style={styles.dataPointValueContainer}>
@@ -66,7 +67,15 @@ const renderDataPoint = ({ item }: { item: DataPoint }, unit: Unit) => (
           {renderValue(item.value, unit)}
         </Text>
       </View>
-      {renderTags(item.tags)}
+      <View style={styles.dataPointActions}>
+        {renderTags(item.tags)}
+        <TouchableOpacity 
+          style={styles.editButton}
+          onPress={() => onEdit(item, dataPointIndex)}
+        >
+          <Text style={styles.editButtonText}>✏️</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   </View>
 );
@@ -74,6 +83,9 @@ const renderDataPoint = ({ item }: { item: DataPoint }, unit: Unit) => (
 const GoalData = ({ route }: GoalDataProps) => {
   const { goal } = route.params;
   const bins = binTimeSeries("day", goal.dataPoints);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editingDataPoint, setEditingDataPoint] = useState<DataPoint | null>(null);
+  const [editingDataPointIndex, setEditingDataPointIndex] = useState<number>(-1);
 
   const getDayKey = (t: Date) => {
     return t.getFullYear() + "-" + (t.getMonth() + 1) + "-" + t.getDate();
@@ -82,7 +94,18 @@ const GoalData = ({ route }: GoalDataProps) => {
   const daysWithFewPoints: any = new Set(bins.filter((bin) => bin.values.length <= 2).map((bin) => getDayKey(bin.time)));
   const [expandedDays, setExpandedDays] = useState<Set<string>>(daysWithFewPoints);
 
-  
+  const handleEditDataPoint = (dataPoint: DataPoint, index: number) => {
+    setEditingDataPoint(dataPoint);
+    setEditingDataPointIndex(index);
+    setEditModalVisible(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setEditModalVisible(false);
+    setEditingDataPoint(null);
+    setEditingDataPointIndex(-1);
+  };
+
   const toggleDay = (dayKey: string) => {
     const newExpanded = new Set(expandedDays);
     if (newExpanded.has(dayKey)) {
@@ -112,11 +135,18 @@ const GoalData = ({ route }: GoalDataProps) => {
         
         {isExpanded && (
           <View style={styles.dayDataPoints}>
-            {item.values.map((dataPoint, index) => (
-              <View key={index} style={styles.nestedDataPointContainer}>
-                {renderDataPoint({ item: dataPoint }, goal.unit)}
-              </View>
-            ))}
+            {item.values.map((dataPoint, index) => {
+              // Find the actual index in the original dataPoints array
+              const actualIndex = goal.dataPoints.findIndex((dp: DataPoint) => 
+                dp.time.getTime() === dataPoint.time.getTime() && 
+                JSON.stringify(dp.value) === JSON.stringify(dataPoint.value)
+              );
+              return (
+                <View key={index} style={styles.nestedDataPointContainer}>
+                  {renderDataPoint({ item: dataPoint }, goal.unit, handleEditDataPoint, actualIndex)}
+                </View>
+              );
+            })}
           </View>
         )}
       </View>
@@ -132,6 +162,15 @@ const GoalData = ({ route }: GoalDataProps) => {
         keyExtractor={(item) => item.time.toISOString().split('T')[0]}
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
+      />
+      
+      <EditDataPoint
+        visible={editModalVisible}
+        onClose={handleCloseEditModal}
+        dataPoint={editingDataPoint}
+        goalId={goal.id}
+        dataPointIndex={editingDataPointIndex}
+        unit={goal.unit}
       />
     </View>
   );
@@ -161,11 +200,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   dataPointValueContainer: {
+    flex: 1,
     alignItems: 'flex-end',
   },
   dataPointValue: {
     fontSize: 16,
     color: "#333333",
+  },
+  dataPointActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   tagsContainer: {
     flexDirection: 'row',
@@ -182,6 +227,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#1976D2',
     fontWeight: "500",
+  },
+  editButton: {
+    padding: 4,
+  },
+  editButtonText: {
+    fontSize: 16,
   },
   dayContainer: {
   },

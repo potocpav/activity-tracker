@@ -69,6 +69,7 @@ export type State = {
   shutdown: any;
   sampleBatteryVoltage: any;
   startStreamingData: any;
+  updateGoalDataPoint: any;
 };
 
 const useStore = create<State>()(
@@ -193,6 +194,20 @@ const useStore = create<State>()(
         });
       },
 
+      updateGoalDataPoint: (goalId: string, dataPointIndex: number, updatedDataPoint: DataPoint) => {
+        set((state: any) => {
+          const goals = state.goals.map((goal: GoalType) => {
+            if (goal.id === goalId) {
+              const updatedDataPoints = [...goal.dataPoints];
+              updatedDataPoints[dataPointIndex] = updatedDataPoint;
+              return { ...goal, dataPoints: updatedDataPoints };
+            }
+            return goal;
+          });
+          return { goals };
+        });
+      },
+
     }),
   {
     name: "store",
@@ -200,6 +215,7 @@ const useStore = create<State>()(
     partialize: (state) => ({
       goals: state.goals,
     }),
+    
   }
 ));
 
