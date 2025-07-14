@@ -84,7 +84,7 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
     return <Text>Goal not found xoxo</Text>;
   }
 
-  const bins = binTimeSeries("day", goal.dataPoints);
+  const bins = binTimeSeries("day", [...goal.dataPoints]);
 
   const getDayKey = (t: number) => t.toString();
 

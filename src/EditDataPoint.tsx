@@ -43,7 +43,8 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
   
   const [inputDate, setInputDate] = useState<CalendarDate | undefined>(dateTime);
   const [inputTime, setInputTime] = useState<{hours: number, minutes: number} | undefined>({hours: dateTime.getHours(), minutes: dateTime.getMinutes()});
-  const inputValues = typeof goal.unit === "string" ? [{subUnit: null, value: useState<string>(dataPoint.value.toString())}] : goal.unit.map((u: SubUnit) => ({subUnit: u, value: useState<string>(dataPoint.value[u.name].toString())}));
+  const inputValues = typeof goal.unit === "string" ? [{subUnit: null, value: useState<string>(dataPoint.value.toString())}] : 
+    goal.unit.map((u: SubUnit) => ({subUnit: u, value: useState<string>(dataPoint.value[u.name]?.toString() ?? "")}));
   const [timePickerVisible, setTimePickerVisible] = useState(false);
   const [datePickerVisible, setDatePickerVisible] = useState(false);  
 
@@ -89,7 +90,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
           <TextInput
             key={inputValue.subUnit?.name}
             label={inputValue.subUnit ? `${inputValue.subUnit.name} [${inputValue.subUnit.symbol}]` : `Value [${goal.unit}]`}
-            value={inputValue.value[0]}
+            value={inputValue.value[0] ?? ""}
             onChangeText={text => inputValue.value[1](text)}
             keyboardType="numeric"
             style={styles.textInput}
@@ -108,27 +109,35 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
         </TouchableOpacity>
         <TouchableOpacity style={styles.saveButton} onPress={() => {
           var newValue: any = {};
+          var hasNonEmptyValue = false;
           if (typeof goal.unit === "string") {
             newValue = parseFloat(inputValues[0].value[0]);
             if (isNaN(newValue)) {
               Alert.alert("Invalid input");
               newValue = null;
+            } else {
+              hasNonEmptyValue = true;
             }
           } else {
             for (const inputValue of inputValues) {
               console.log("val", inputValue.value[0]);
-              const value = parseFloat(inputValue.value[0]);
-              if (isNaN(value)) {
-                Alert.alert("Invalid input");
-                newValue = null;
-                break;
+              if (inputValue.value[0] === "") {
+                newValue[inputValue.subUnit.name] = null;
+              } else {
+                hasNonEmptyValue = true;
+                const value = parseFloat(inputValue.value[0]);
+                if (isNaN(value)) {
+                  Alert.alert("Invalid input");
+                  newValue = null;
+                  break;
+                }
+                newValue[inputValue.subUnit.name] = value;
               }
-              newValue[inputValue.subUnit.name] = value;
             }
           }
           console.log("New value:", newValue);
 
-          if (inputDate && inputTime && newValue !== null) {
+          if (inputDate && inputTime && hasNonEmptyValue && newValue !== null) {
             const newTime = new Date(inputDate?.getFullYear(), inputDate?.getMonth(), inputDate?.getDate(), inputTime?.hours, inputTime?.minutes).getTime();
             updateGoalDataPoint(goalId, dataPointIndex, {
               time: newTime,
