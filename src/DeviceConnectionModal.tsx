@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useTheme } from 'react-native-paper';
 import { Device } from "react-native-ble-plx";
 import useStore from "./Store";
 
@@ -17,6 +18,7 @@ type DeviceModalProps = {
 };
 
 const DeviceModal: FC<DeviceModalProps> = ({navigation}) => {
+  const theme = useTheme();
   const allDevices = useStore((state: any) => state.allDevices);
   const connectToDevice = useStore((state: any) => state.connectToDevice);
 
@@ -34,11 +36,11 @@ const DeviceModal: FC<DeviceModalProps> = ({navigation}) => {
   );
 
   return (
-    <View style={modalStyle.modalContent}>
-      <Text style={modalStyle.modalTitleText}>
+    <View style={[modalStyle.modalContent, { backgroundColor: theme.colors.surface }]}>
+      <Text style={[modalStyle.modalTitleText, { color: theme.colors.onSurface }]}>
         Tap on a device to connect
       </Text>
-      <Text style={modalStyle.instructionText}>
+      <Text style={[modalStyle.instructionText, { color: theme.colors.onSurfaceVariant }]}>
         Make sure the green light is blinking on your Tindeq device.
       </Text>
       <FlatList
@@ -47,8 +49,8 @@ const DeviceModal: FC<DeviceModalProps> = ({navigation}) => {
         renderItem={renderDeviceModalListItem}
         showsVerticalScrollIndicator={false}
       />
-      <TouchableOpacity onPress={navigation.goBack} style={modalStyle.closeButton}>
-        <Text style={modalStyle.closeButtonText}>Cancel</Text>
+      <TouchableOpacity onPress={navigation.goBack} style={[modalStyle.closeButton, { backgroundColor: theme.colors.secondary }]}>
+        <Text style={[modalStyle.closeButtonText, { color: theme.colors.onSecondary }]}>Cancel</Text>
       </TouchableOpacity>
     </View>
   );
@@ -62,6 +64,7 @@ type DeviceModalListItemProps = {
 
 
 const DeviceModalListItem: FC<DeviceModalListItemProps> = (props) => {
+  const theme = useTheme();
   const { item, connectToDevice, navigation } = props;
 
   const connectAndCloseModal = useCallback(() => {
@@ -72,9 +75,9 @@ const DeviceModalListItem: FC<DeviceModalListItemProps> = (props) => {
   return (
     <TouchableOpacity
       onPress={connectAndCloseModal}
-      style={modalStyle.ctaButton}
+      style={[modalStyle.ctaButton, { backgroundColor: theme.colors.primary }]}
     >
-      <Text style={modalStyle.ctaButtonText}>
+      <Text style={[modalStyle.ctaButtonText, { color: theme.colors.onPrimary }]}>
         {item.item.localName ?? item.item.name ?? item.item.id}
       </Text>
     </TouchableOpacity>
@@ -93,7 +96,6 @@ const modalStyle = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: '#ffffff',
     padding: 20,
     // maxHeight: '70%',
     minHeight: '100%',
@@ -104,7 +106,6 @@ const modalStyle = StyleSheet.create({
   },
   modalCellOutline: {
     borderWidth: 1,
-    borderColor: "black",
     alignItems: "center",
     marginHorizontal: 20,
     paddingVertical: 15,
@@ -115,16 +116,13 @@ const modalStyle = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 15,
     textAlign: "center",
-    color: '#333333',
   },
   instructionText: {
     fontSize: 14,
-    color: '#666666',
     marginBottom: 15,
     textAlign: 'center',
   },
   ctaButton: {
-    backgroundColor: "#FF6060",
     justifyContent: "center",
     alignItems: "center",
     height: 50,
@@ -135,10 +133,8 @@ const modalStyle = StyleSheet.create({
   ctaButtonText: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "white",
   },
   closeButton: {
-    backgroundColor: '#6c757d',
     justifyContent: "center",
     alignItems: "center",
     height: 44,
@@ -148,7 +144,6 @@ const modalStyle = StyleSheet.create({
   closeButtonText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "white",
   },
 });
 
