@@ -17,11 +17,18 @@ type EditGoalProps = {
   route: any;
 };
 
+const defaultGoal: GoalType = {
+  name: "",
+  description: "",
+  unit: "kg",
+  dataPoints: [],
+};
+
 const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
   const theme = useTheme();
   const { goalName } = route.params;
   const goals = useStore((state: any) => state.goals);
-  const goal = goals.find((g: GoalType) => g.name === goalName);
+  const goal = goals.find((g: GoalType) => g.name === goalName) ?? defaultGoal;
   const updateGoal = useStore((state: any) => state.updateGoal);
   const deleteGoal = useStore((state: any) => state.deleteGoal);
   
@@ -72,7 +79,9 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
           <Text style={[styles.cancelButtonText, { color: theme.colors.onSecondary }]}>Cancel</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.saveButton, { backgroundColor: theme.colors.primary }]} onPress={() => {
-          if (goalNameInput !== goal.name && goals.find((g: GoalType) => g.name === goalNameInput)) {
+          if (goalNameInput === "") {
+            Alert.alert("Error", "Goal name cannot be empty");
+          } else if (goalNameInput !== goal.name && goals.find((g: GoalType) => g.name === goalNameInput)) {
             Alert.alert("Error", "A goal with this name already exists");
           } else {
             const updatedGoal = {

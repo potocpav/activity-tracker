@@ -6,7 +6,7 @@ import {
   View,
   TouchableOpacity,
 } from "react-native";
-import { useTheme } from 'react-native-paper';
+import { useTheme, FAB } from 'react-native-paper';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import useStore, { GoalType, SubUnit, Unit } from "./Store";
 import GoalGraph from "./GoalGraph";
@@ -64,23 +64,27 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
   }
 
   return (
-    <View>
-        <View style={[styles.header, { backgroundColor: theme.colors.surface, borderBottomColor: theme.colors.outline }]}>
-            <Text style={[styles.headerTitle, { color: theme.colors.onSurface }]}>{goal.name}</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('EditGoal', { goalName })}>
-              <Text style={[styles.editButton, { color: theme.colors.primary, backgroundColor: theme.colors.primaryContainer }]}>Edit</Text>
-            </TouchableOpacity>
-        </View>
-        
-        <View style={[styles.goalInfo, { backgroundColor: theme.colors.surface }]}>
-            <Text style={[styles.goalDescription, { color: theme.colors.onSurfaceVariant }]}>{goal.description}</Text>
-            <Text style={[styles.goalUnit, { color: theme.colors.onSurfaceVariant }]}>{renderUnit(goal.unit)}</Text>
-        </View>
-
-        <View>
-            <GoalData navigation={navigation} route={{ params: { goalName } }} />
-        </View>
-    </View>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surfaceVariant }]}>
+      <View>
+          <View style={[styles.header, { backgroundColor: theme.colors.surface, borderBottomColor: theme.colors.outline }]}>
+              <Text style={[styles.headerTitle, { color: theme.colors.onSurface }]}>{goal.name}</Text>
+              <TouchableOpacity onPress={() => navigation.navigate('EditGoal', { goalName })}>
+                <Text style={[styles.editButton, { color: theme.colors.primary, backgroundColor: theme.colors.primaryContainer }]}>Edit</Text>
+              </TouchableOpacity>
+          </View>
+          
+          <View style={[styles.goalInfo, { backgroundColor: theme.colors.surface }]}>
+              <Text style={[styles.goalDescription, { color: theme.colors.onSurfaceVariant }]}>{goal.description}</Text>
+              <Text style={[styles.goalUnit, { color: theme.colors.onSurfaceVariant }]}>{renderUnit(goal.unit)}</Text>
+          </View>
+      </View>
+      <FAB
+        icon="plus"
+        style={[styles.fab, { backgroundColor: theme.colors.primary }]}
+        onPress={() => navigation.navigate("EditDataPoint", { goalName: goal.name })}
+        color={theme.colors.onPrimary}
+      />
+    </SafeAreaView>
   );
 };
 
@@ -164,6 +168,12 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 16,
+  },
+  fab: {
+    position: 'absolute',
+    margin: 16,
+    right: 0,
+    bottom: 0,
   },
 });
 

@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { useTheme } from 'react-native-paper';
+import { FAB } from 'react-native-paper';
 import useStore, { GoalType, SubUnit, Unit } from "./Store";
 
 
@@ -46,6 +47,12 @@ const Goals: React.FC<GoalsProps> = ({ navigation }) => {
         keyExtractor={(item) => item.name}
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
+      />
+      <FAB
+        icon="plus"
+        style={[styles.fab, { backgroundColor: theme.colors.primary }]}
+        onPress={() => navigation.navigate('EditGoal', { goalName: null })}
+        color={theme.colors.onPrimary}
       />
     </SafeAreaView>
   );
@@ -94,6 +101,12 @@ const styles = StyleSheet.create({
   goalDate: {
     fontSize: 14,
     fontStyle: "italic",
+  },
+  fab: {
+    position: 'absolute',
+    margin: 16,
+    right: 0,
+    bottom: 0,
   },
 });
 

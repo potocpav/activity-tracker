@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import { useTheme, DataTable } from 'react-native-paper';
+import { useTheme, DataTable, FAB } from 'react-native-paper';
 import useStore, { DataPoint, GoalType, Unit } from "./Store";
 import EditDataPoint from "./EditDataPoint";
 
@@ -105,9 +105,6 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
     <SafeAreaView style={styles.container}>
       <View style={styles.sectionHeader}>
         <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>Data Points ({goal.dataPoints.length})</Text>
-        <TouchableOpacity style={[styles.addButton, { backgroundColor: theme.colors.primary }]} onPress={() => navigation.navigate("EditDataPoint", { goalName: goal.name })}>
-          <Text style={[styles.addButtonText, { color: theme.colors.onPrimary }]}>+</Text>
-        </TouchableOpacity>
       </View>
       <ScrollView style={styles.scrollView}>
         <DataTable>
@@ -131,6 +128,12 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
           ))}
         </DataTable>
       </ScrollView>
+      <FAB
+        icon="plus"
+        style={[styles.fab, { backgroundColor: theme.colors.primary }]}
+        onPress={() => navigation.navigate("EditDataPoint", { goalName: goal.name })}
+        color={theme.colors.onPrimary}
+      />
     </SafeAreaView>
   );
 };
@@ -153,24 +156,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
   },
-  addButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  addButtonText: {
-    fontSize: 20,
-    fontWeight: 'bold',
+  fab: {
+    position: 'absolute',
+    margin: 16,
+    right: 0,
+    bottom: 0,
   },
   dataPointContainer: {
     paddingHorizontal: 15,
