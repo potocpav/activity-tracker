@@ -3,7 +3,7 @@
 export const exampleGoals = [
     {
       id: "body-weight",
-      name: "Body Weight",
+      name: "Body Weight (Example)",
       description: "Body weight measured in the morning before breakfast",
       unit: "kg",
       dataPoints: 
@@ -18,7 +18,7 @@ export const exampleGoals = [
     },
     {
       id: "finger-strength",
-      name: "Finger Strength",
+      name: "Finger Strength (Example)",
       description: "Finger strength as measured using Tindeq Progressor",
       unit: [
         {
