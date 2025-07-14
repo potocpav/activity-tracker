@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   SafeAreaView,
   StyleSheet,
@@ -10,6 +10,8 @@ import {
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import useStore, { GoalType, SubUnit, Unit, DataPoint } from "./Store";
 import GoalGraph from "./GoalGraph";
+import GoalData from "./GoalData";
+import { binTimeSeries } from "./GoalUtil";
 
 
 const Tab = createMaterialTopTabNavigator();
@@ -31,8 +33,6 @@ const formatDate = (date: Date) => {
     year: "numeric",
     month: "short",
     day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
   });
 };
 
@@ -49,8 +49,8 @@ const renderValue = (value: any, unit: Unit) => {
     // Handle complex units (like finger strength with mean, max, tut)
     const parts: string[] = [];
     unit.forEach((u: SubUnit) => {
-      if (value[u.name.toLowerCase()] !== null && value[u.name.toLowerCase()] !== undefined) {
-        parts.push(`${value[u.name.toLowerCase()]} ${u.symbol}`);
+      if (value[u.name] !== null && value[u.name] !== undefined) {
+        parts.push(`${value[u.name]} ${u.symbol}`);
       }
     });
     return parts.join(", ");
@@ -76,16 +76,16 @@ const renderTags = (tags: string[]) => {
 const renderDataPoint = ({ item }: { item: DataPoint }, unit: Unit) => (
   <View style={styles.dataPointContainer}>
     <View style={styles.dataPointContent}>
-      <View style={styles.dataPointDate}>
+      {/* <View style={styles.dataPointDate}>
         <Text style={styles.dataPointDateText}>{formatDate(item.time)}</Text>
-      </View>
+      </View> */}
       <View style={styles.dataPointValueContainer}>
         <Text style={styles.dataPointValue}>
           {renderValue(item.value, unit)}
         </Text>
       </View>
+      {renderTags(item.tags)}
     </View>
-    {renderTags(item.tags)}
   </View>
 );
 
@@ -105,14 +105,11 @@ const Goal: React.FC<GoalProps> = ({ navigation, route }) => {
   }
 
   return (
-    // <SafeAreaView style={styles.container}>
-
     <Tab.Navigator screenOptions={{swipeEnabled: false}}>
       <Tab.Screen name="Summary" component={GoalSummary} initialParams={{ goal }} />
       <Tab.Screen name="Data" component={GoalData} initialParams={{ goal }} />
       <Tab.Screen name="Graph" component={GoalGraph} initialParams={{ goal }} />
     </Tab.Navigator>
-    // </SafeAreaView>
   );
 };
 
@@ -140,22 +137,6 @@ const GoalSummary = ({ route }: { route: any }) => {
             />
         </View>
     </View>
-  );
-};
-
-const GoalData = ({ route }: { route: any }) => {
-  const { goal } = route.params;
-  return (
-    <View>
-      <Text style={styles.sectionTitle}>Data Points ({goal.dataPoints.length})</Text>
-      <FlatList
-      data={goal.dataPoints}
-      renderItem={(item) => renderDataPoint(item, goal.unit)}
-      keyExtractor={(item, index) => index.toString()}
-      contentContainerStyle={styles.listContainer}
-      showsVerticalScrollIndicator={false}
-      />
-  </View>
   );
 };
 
@@ -194,9 +175,6 @@ const styles = StyleSheet.create({
     color: "#999999",
     fontStyle: "italic",
   },
-  // dataSection: {
-  //   flex: 1,
-  // },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
@@ -219,20 +197,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  dataPointDate: {
-  },
-  dataPointDateText: {
-    fontSize: 14,
-    color: "#666666",
-    fontWeight: "500",
-  },
   dataPointValueContainer: {
     alignItems: 'flex-end',
   },
   dataPointValue: {
     fontSize: 16,
     color: "#333333",
-    fontWeight: "600",
   },
   tagsContainer: {
     flexDirection: 'row',

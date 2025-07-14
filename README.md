@@ -26,8 +26,8 @@ In order to make this app a full-featured management app for workout data, the f
     * [ ] Quick add measurement button
   * [ ] Data Series screen
     * [x] Basic implementation 
-    * [ ] Group by days, allow expanding/collapsing days
-    * [ ] Allow expanding data points
+    * [x] Group by days, allow expanding/collapsing days
+    * [x] Allow expanding data points
     * [ ] "Edit" button for expanded data points
     * [ ] "Add" button
   * [ ] Goal Graphs
