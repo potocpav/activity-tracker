@@ -11,6 +11,71 @@ A React Native mobile application for analyzing force measurements from the Tind
 - **Measurement Controls**: Start, stop, and tare scale functionality
 - **Data Display**: Real-time weight, time, and maximum weight tracking
 
+## ToDo List
+
+In order to make this app a full-featured management app for workout data, the following list of features must be implemented:
+
+* [ ] Tindeq
+  * [x] BLE Connection
+  * [x] Real-time graph
+  * [x] Track maximum pull strength
+  * [x] Tare, measurements
+  * [ ] Auto-analyze and add reps from Tindeq
+  * [ ] Integrate Tindeq with goal management
+  * [ ] Improve connection so that we never get stuck
+  * [ ] Tare with automatic disconnect/connect
+* [ ] Look & Feel
+  * [ ] Light/Dark themes
+  * [ ] Rename and rebrand the app, perhaps to "Goals"
+  * [ ] Add default example data
+* [ ] Settings page
+  * [ ] Allow resetting data to example data
+  * [ ] Light/dark theme
+* Data handling
+  * [x] Zustand store
+  * [ ] Local data storage
+  * [ ] Export data
+  * [ ] Backups
+* [ ] Calendar Screen
+  * [ ] Implement to show day-by-day summaries including all goals
+* [ ] Goal Screen
+  * [x] Goal list
+  * [ ] Summary screen
+    * [x] Implement basics
+    * [ ] Allow editing description, title, rating
+    * [ ] Allow editing units
+    * [ ] Allow adding graphs
+    * [ ] Allow adding summary values
+    * [ ] Quick add measurement button
+  * [ ] Data Series screen
+    * [x] Basic implementation 
+    * [ ] Group by days, allow expanding/collapsing days
+    * [ ] Allow expanding data points
+    * [ ] "Edit" button for expanded data points
+    * [ ] "Add" button
+  * [ ] Goal Graphs
+    * [x] Box chart
+    * [ ] Improve x-ticks
+    * [ ] Add axis labels
+    * [ ] Bar chart: number of sessions
+    * [ ] Line graph: average, max
+    * [ ] Allow choosing out of multiple values
+    * [ ] Pan/Zoom Fixes
+    * [ ] Filtering by tags
+  * [ ] Tag management screen
+    * [ ] Implement adding/removing tags
+    * [ ] Implement reordering tags
+    * [ ] Tag categories
+    * [ ] Tag colors
+    * [ ] Editing tags
+* [ ] Add & edit measurements
+  * [ ] Add measurement
+  * [ ] Edit measurement
+  * [ ] Add tags
+  * [ ] Add comments
+  * [ ] Edit time
+  * [ ] Edit values according to units
+
 ## Screenshots
 
 <table>
