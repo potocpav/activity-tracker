@@ -43,15 +43,22 @@ const Goal: React.FC<GoalProps> = ({ navigation, route }) => {
 
   return (
     <Tab.Navigator screenOptions={{swipeEnabled: false}}>
-      <Tab.Screen name="Summary" component={GoalSummary} initialParams={{ goal }} />
-      <Tab.Screen name="Data" component={GoalData} initialParams={{ goal }} />
-      <Tab.Screen name="Graph" component={GoalGraph} initialParams={{ goal }} />
+      <Tab.Screen name="Summary" component={GoalSummary} initialParams={{ goalId }} />
+      <Tab.Screen name="Data" component={GoalData} initialParams={{ goalId }} />
+      <Tab.Screen name="Graph" component={GoalGraph} initialParams={{ goalId }} />
     </Tab.Navigator>
   );
 };
 
 const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => {
-  const { goal } = route.params;
+  const { goalId } = route.params;
+  const goals = useStore((state: any) => state.goals);
+  const goal = goals.find((g: GoalType) => g.id === goalId);
+
+  if (!goal) {
+    return <Text>Goal not found</Text>;
+  }
+
   return (
     <View>
         <View style={styles.header}>
@@ -64,7 +71,7 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
         </View>
 
         <View>
-            <GoalData navigation={navigation} route={{ params: { goal } }} />
+            <GoalData navigation={navigation} route={{ params: { goalId } }} />
         </View>
     </View>
   );

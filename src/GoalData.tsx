@@ -6,7 +6,7 @@ import {
   FlatList,
   TouchableOpacity,
 } from "react-native";
-import { DataPoint, Unit } from "./Store";
+import useStore, { DataPoint, GoalType, Unit } from "./Store";
 import { binTimeSeries } from "./GoalUtil";
 import EditDataPoint from "./EditDataPoint";
 
@@ -76,7 +76,14 @@ const renderDataPoint = ({ item }: { item: DataPoint }, unit: Unit, dataPointInd
 );
 
 const GoalData = ({ navigation, route }: GoalDataProps) => {
-  const { goal } = route.params;
+  const { goalId } = route.params;
+  const goals = useStore((state: any) => state.goals);
+  const goal = goals.find((g: GoalType) => g.id === goalId);
+
+  if (!goal) {
+    return <Text>Goal not found xoxo</Text>;
+  }
+
   const bins = binTimeSeries("day", goal.dataPoints);
 
   const getDayKey = (t: number) => t.toString();

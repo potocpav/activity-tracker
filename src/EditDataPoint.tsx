@@ -43,7 +43,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
   
   const [inputDate, setInputDate] = useState<CalendarDate | undefined>(dateTime);
   const [inputTime, setInputTime] = useState<{hours: number, minutes: number} | undefined>({hours: dateTime.getHours(), minutes: dateTime.getMinutes()});
-  const [inputValue, setInputValue] = useState<string>(dataPoint.value.toString());
+  const inputValues = typeof goal.unit === "string" ? [{subUnit: null, value: useState<string>(dataPoint.value.toString())}] : goal.unit.map((u: SubUnit) => ({subUnit: u, value: useState<string>(dataPoint.value[u.name].toString())}));
   const [timePickerVisible, setTimePickerVisible] = useState(false);
   const [datePickerVisible, setDatePickerVisible] = useState(false);  
 
@@ -85,15 +85,17 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
         </View>
 
       <View style={styles.inputContainer}>
+        {inputValues.map((inputValue: {subUnit: SubUnit | null, value: [string, (text: string) => void]}) => (
           <TextInput
-            label={`Value [${goal.unit}]`}
-            value={inputValue}
-            onChangeText={text => setInputValue(text)}
+            key={inputValue.subUnit?.name}
+            label={inputValue.subUnit ? `${inputValue.subUnit.name} [${inputValue.subUnit.symbol}]` : `Value [${goal.unit}]`}
+            value={inputValue.value[0]}
+            onChangeText={text => inputValue.value[1](text)}
             keyboardType="numeric"
             style={styles.textInput}
-          />
+          />      
+        ))}
         </View>
-
 
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Tags: {dataPoint.tags.join(", ")}</Text>
@@ -105,8 +107,28 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
           <Text style={styles.cancelButtonText}>Cancel</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.saveButton} onPress={() => {
-          const newValue = parseFloat(inputValue);
-          if (inputDate && inputTime && !isNaN(newValue)) {
+          var newValue: any = {};
+          if (typeof goal.unit === "string") {
+            newValue = parseFloat(inputValues[0].value[0]);
+            if (isNaN(newValue)) {
+              Alert.alert("Invalid input");
+              newValue = null;
+            }
+          } else {
+            for (const inputValue of inputValues) {
+              console.log("val", inputValue.value[0]);
+              const value = parseFloat(inputValue.value[0]);
+              if (isNaN(value)) {
+                Alert.alert("Invalid input");
+                newValue = null;
+                break;
+              }
+              newValue[inputValue.subUnit.name] = value;
+            }
+          }
+          console.log("New value:", newValue);
+
+          if (inputDate && inputTime && newValue !== null) {
             const newTime = new Date(inputDate?.getFullYear(), inputDate?.getMonth(), inputDate?.getDate(), inputTime?.hours, inputTime?.minutes).getTime();
             updateGoalDataPoint(goalId, dataPointIndex, {
               time: newTime,
@@ -167,6 +189,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   textInput: {
+    marginBottom: 10,
   },
   footer: {
     flexDirection: "row",

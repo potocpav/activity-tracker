@@ -3,8 +3,7 @@ import { View, Text, Platform, TouchableOpacity } from "react-native";
 import { getTransformComponents, setScale, setTranslate, useChartTransformState } from "victory-native";
 import { CartesianChart } from "victory-native";
 import {matchFont, Path, Points, Rect, Line as SkLine, vec} from "@shopify/react-native-skia";
-import { GoalType, State } from "./Store";
-import { useStore } from "zustand";
+import useStore, { GoalType, State } from "./Store";
 import { useAnimatedReaction, useSharedValue, withTiming } from "react-native-reanimated";
 import { binTime, binTimeSeries, BinSize } from "./GoalUtil";
 
@@ -61,7 +60,14 @@ const toggleButton = (label: string, isActive: boolean, onPress: () => void) => 
 }
 
 const GoalGraph = ({ route }: { route: any }) => {
-  const { goal } = route.params;
+  const { goalId } = route.params;
+  const goals = useStore((state: any) => state.goals);
+  const goal = goals.find((g: GoalType) => g.id === goalId);
+  
+  if (!goal) {
+    return <Text>Goal not found</Text>;
+  }
+
   const [binning, setBinning] = useState<"day" | "week" | "month" | "quarter" | "year">("day");
   const transformState = useChartTransformState({
     scaleX: 1.0, // Initial X-axis scale
