@@ -9,7 +9,8 @@ import {
 } from "react-native";
 import { useTheme } from 'react-native-paper';
 import { FAB } from 'react-native-paper';
-import useStore, { GoalType, SubUnit, Unit } from "./Store";
+import useStore, { GoalType, SubUnit, Unit, setGoals } from "./Store";
+import DraggableFlatList from 'react-native-draggable-flatlist'
 
 
 
@@ -27,11 +28,13 @@ const renderUnit = (unit: Unit) => {
 const Goals: React.FC<GoalsProps> = ({ navigation }) => {
   const theme = useTheme();
   const goals = useStore((state: any) => state.goals);
+  const setGoals = useStore((state: any) => state.setGoals);
 
-  const renderGoal = ({ item }: { item: GoalType }) => (
+  const renderGoal = ({ item, drag }: { item: GoalType, drag: () => void }) => (
     <TouchableOpacity
       style={[styles.goalCard, { backgroundColor: theme.colors.surface }]}
       onPress={() => navigation.navigate('Goal', { goalName: item.name })}
+      onLongPress={drag}
       activeOpacity={0.7}
     >
       <Text style={[styles.goalTitle, { color: theme.colors.onSurface }]}>{item.name}</Text>
@@ -40,14 +43,15 @@ const Goals: React.FC<GoalsProps> = ({ navigation }) => {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surfaceVariant }]}>
-      <FlatList
+    <SafeAreaView style={[styles.container]}>
+      <DraggableFlatList
         data={goals}
+        onDragEnd={({ data }) => setGoals(data)}
         renderItem={renderGoal}
         keyExtractor={(item) => item.name}
         contentContainerStyle={styles.listContainer}
-        showsVerticalScrollIndicator={false}
       />
+
       <FAB
         icon="plus"
         style={[styles.fab, { backgroundColor: theme.colors.primary }]}
@@ -79,17 +83,13 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   goalCard: {
-    borderRadius: 12,
     padding: 10,
     marginBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
   },
   goalTitle: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: "bold",
     marginBottom: 8,
   },

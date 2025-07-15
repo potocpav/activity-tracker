@@ -25,8 +25,6 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
   const goals = useStore((state: any) => state.goals);
   const goal = goals.find((g: GoalType) => g.name === goalName);
   
-  console.log(goalName, goal);
-  
   const dataPoint = dataPointIndex !== undefined ? goal?.dataPoints[dataPointIndex] : {
     time: new Date().getTime(), 
     value: typeof goal.unit === "string" ? 

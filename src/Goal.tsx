@@ -35,6 +35,16 @@ const Goal: React.FC<GoalProps> = ({ navigation, route }) => {
   const goals = useStore((state: any) => state.goals);
   const goal = goals.find((g: GoalType) => g.name === goalName);
 
+  return goal ? (
+    <GoalInner goal={goal} navigation={navigation} />
+  ) : (
+    <Text></Text>
+  )
+}
+
+const GoalInner: React.FC<any> = ({ goal, navigation }) => {
+  const goalName = goal.name;
+  const theme = useTheme();
   if (!goal) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surfaceVariant }]}>
@@ -45,10 +55,7 @@ const Goal: React.FC<GoalProps> = ({ navigation, route }) => {
     );
   }
 
-
   React.useEffect(() => {
-    // Use `setOptions` to update the button that we previously specified
-    // Now the button includes an `onPress` handler to update the count
     navigation.setOptions({
       title: goal.name,
       headerRight: () => (
@@ -90,7 +97,7 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
       <FAB
         icon="plus"
         style={[styles.fab, { backgroundColor: theme.colors.primary }]}
-        onPress={() => navigation.navigate("EditDataPoint", { goalName: goal.name })}
+        onPress={() => navigation.navigate("EditDataPoint", { goalName })}
         color={theme.colors.onPrimary}
       />
     </SafeAreaView>

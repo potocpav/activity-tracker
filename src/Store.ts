@@ -202,6 +202,10 @@ const useStore = create<State>()(
         set({goals: exampleGoals});
       },
 
+      setGoals: (goals: GoalType[]) => {
+        set({goals: goals});
+      },
+
       deleteGoal: (goalName: string) => {
         set((state: any) => {
           const goals = state.goals.filter((goal: GoalType) => goal.name !== goalName);
@@ -211,8 +215,13 @@ const useStore = create<State>()(
 
       updateGoal: (goalName: string, goal: GoalType) => {
         set((state: any) => {
-          const goals = state.goals.map((g: GoalType) => goalName === g.name ? goal : g);
-          return { goals };
+          const goalExists = state.goals.find((g: GoalType) => g.name === goalName);
+          if (goalExists) {
+            const goals = state.goals.map((g: GoalType) => goalName === g.name ? goal : g);
+            return { goals };
+          } else {
+            return { goals: [...state.goals, goal] };
+          }
         });
       },
 

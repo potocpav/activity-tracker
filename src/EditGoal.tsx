@@ -11,7 +11,7 @@ import { useTheme } from 'react-native-paper';
 import { GoalType } from "./Store";
 import { TextInput, Button } from "react-native-paper";
 import useStore from "./Store";
-
+import AntDesign from '@expo/vector-icons/AntDesign';
 type EditGoalProps = {
   navigation: any;
   route: any;
@@ -22,6 +22,7 @@ const defaultGoal: GoalType = {
   description: "",
   unit: "",
   dataPoints: [],
+  tags: [],
 };
 
 const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
@@ -40,6 +41,67 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
   if (!goal) {
     return <Text>Goal not found</Text>;
   }
+
+  const saveGoal = () => {
+    if (goalNameInput === "") {
+      Alert.alert("Error", "Goal name cannot be empty");
+    } else if (unitInput === "") {
+      Alert.alert("Error", "Unit cannot be empty");
+    } else if (goalNameInput !== goal.name && goals.find((g: GoalType) => g.name === goalNameInput)) {
+      Alert.alert("Error", "A goal with this name already exists");
+    } else {
+      const updatedGoal = {
+        ...goal,
+        name: goalNameInput,
+        description: goalDescriptionInput,
+        unit: unitInput
+      };
+      const goalName = goal.name === "" ? updatedGoal.name : goal.name;
+      updateGoal(goalName, updatedGoal);
+      navigation.reset(
+        {
+        index: 0,
+        routes: [{name: 'Main Page'}, {name: 'Goals'}, {name: 'Goal', params: { goalName: updatedGoal.name }}],
+      });
+    }
+  }
+
+  const deleteGoalWrapper = () => {
+    Alert.alert(
+      `Delete "${goal.name}"`,
+      "Are you sure you want to delete this goal? This action cannot be undone.",
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => {
+            deleteGoal(goal.name);
+            navigation.reset({
+              index: 0,
+              routes: [{name: 'Main Page'}, {name: 'Goals'}],
+            });
+          }
+        }
+      ]
+    );
+  }
+  React.useEffect(() => {
+    navigation.setOptions({
+      title: goal.name,
+      headerRight: () => (
+        <>
+        <Button compact={true} onPress={() => {
+          saveGoal();
+        }}><AntDesign name="check" size={24} color={theme.colors.onSurface} /></Button>        
+        <Button compact={true} onPress={deleteGoalWrapper}><AntDesign name="delete" size={24} color={theme.colors.onSurface} /></Button>
+        </>
+      ),
+    });
+  }, [navigation, goal, goalNameInput, goalDescriptionInput, unitInput]);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
@@ -78,32 +140,6 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
           <Text style={[styles.helperText, { color: theme.colors.onSurfaceVariant }]}>Tag editing will be implemented later</Text>
         </View>
       </ScrollView>
-
-      <View style={[styles.footer, { borderTopColor: theme.colors.outline }]}>
-        <TouchableOpacity style={[styles.cancelButton, { backgroundColor: theme.colors.secondary }]} onPress={() => navigation.goBack()}>
-          <Text style={[styles.cancelButtonText, { color: theme.colors.onSecondary }]}>Cancel</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.saveButton, { backgroundColor: theme.colors.primary }]} onPress={() => {
-          if (goalNameInput === "") {
-            Alert.alert("Error", "Goal name cannot be empty");
-          } else if (unitInput === "") {
-            Alert.alert("Error", "Unit cannot be empty");
-          } else if (goalNameInput !== goal.name && goals.find((g: GoalType) => g.name === goalNameInput)) {
-            Alert.alert("Error", "A goal with this name already exists");
-          } else {
-            const updatedGoal = {
-              ...goal,
-              name: goalNameInput,
-              description: goalDescriptionInput,
-              unit: unitInput
-            };
-            updateGoal(goal.name === "" ? updatedGoal.name : goal.name, updatedGoal);
-            navigation.navigate("Goal", { goalName: goalNameInput });
-          }
-        }}>
-          <Text style={[styles.saveButtonText, { color: theme.colors.onPrimary }]}>Save</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 };

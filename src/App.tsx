@@ -23,6 +23,7 @@ import {
   MD3DarkTheme,
   adaptNavigationTheme,
 } from 'react-native-paper';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 // Simple theme toggle - change this to false for dark theme
 const USE_LIGHT_THEME = true;
@@ -80,6 +81,7 @@ const App = () => {
   const theme = useTheme();
   return (
     <PaperProvider theme={USE_LIGHT_THEME ? MD3LightTheme : MD3DarkTheme}>
+      <GestureHandlerRootView>
       <StatusBar barStyle={USE_LIGHT_THEME ? "dark-content" : "light-content"} backgroundColor={USE_LIGHT_THEME ? "#f2f2f2" : "#121212"} />
       <SafeAreaView style={[styles.container, { backgroundColor: USE_LIGHT_THEME ? "#f2f2f2" : "#121212" }]}>
         <NavigationContainer theme={navigationTheme}>
@@ -125,6 +127,7 @@ const App = () => {
           </Stack.Navigator>
         </NavigationContainer>
       </SafeAreaView>
+      </GestureHandlerRootView>
     </PaperProvider>
   );
 };
