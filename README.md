@@ -14,84 +14,44 @@ A React Native mobile application for analyzing force measurements from the Tind
 ## ToDo List
 
 In order to make this app a full-featured management app for workout data, the following list of features must be implemented:
-
-* [ ] Dogfooding
-  * [ ] Preview version
-  * [ ] Data stability and migrations
-* [ ] UX
-  * [x] Light/Dark themes
-  * [x] Allow adding multiple points
-  * [x] Allow duplicating an existing point
-  * [x] Rename and rebrand the app, perhaps to "Workout Tracker"
-  * [x] Add default example data
-  * [ ] Simplify graph presentation
-  * [ ] Fix goal tag editing to wait on submit
+  
 * [ ] Goal Screen
-  * [x] Goal list
+  * [ ] Goal list
+    * [ ] "Add point" button directly on the Goal list
     * [ ] Show last data points in the list
-    * [ ] Add point button directly on the Goal list
-    * [x] Drag & drop to reorder list
   * [ ] Summary screen
-    * [x] Implement basics
-    * [x] Allow editing description, title
-    * [x] Allow editing units
     * [ ] Allow editing composite units
     * [ ] Allow adding graphs
     * [ ] Allow adding summary values
-    * [x] Quick add measurement button
+    * [ ] Fix duplicating points, add an alert on duplication
   * [ ] Data Series screen
-    * [x] Basic implementation 
-    * [x] Group by days, allow expanding/collapsing days
-    * [x] Allow expanding data points
-    * [x] "Edit" button for expanded data points
-    * [x] "Add" button
-    * [x] Reverse days
     * [ ] Compact display
   * [ ] Goal Graphs
-    * [x] Box chart
-    * [x] Allow choosing out of multiple values
-    * [x] Allow and ignore null values
     * [ ] Improve x-ticks
     * [ ] Add axis labels
-    * [ ] Bar chart: number of sessions, sum of values
-    * [ ] Line graph: average, max
     * [ ] Pan/Zoom Fixes
     * [ ] Filtering by tags
+    * [ ] Simplify graph presentation
   * [ ] Tag management screen
-    * [ ] Implement adding/removing tags
-    * [ ] Implement reordering tags
     * [ ] Tag categories
+    * [ ] Fix tag rendering to show them in a single scrollable row
     * [ ] Tag colors
-    * [ ] Editing tags
-* [ ] Add & edit measurements
-  * [x] Add measurement
-  * [x] Edit measurement
-  * [x] Edit time
-  * [x] Edit values according to units
-  * [ ] Add tags
+    * [ ] Fix goal tag editing to wait on submit
+* [x] Add & edit measurements
   * [ ] Add comments
 * [ ] Tindeq
-  * [x] BLE Connection
-  * [x] Real-time graph
-  * [x] Track maximum pull strength
-  * [x] Tare, measurements
   * [ ] Auto-analyze and add reps from Tindeq
   * [ ] Integrate Tindeq with goal management
   * [ ] Improve connection so that we never get stuck
   * [ ] Tare with automatic disconnect/connect
 * [ ] Settings page
-  * [x] Allow resetting data to example data
-  * [ ] Light/dark theme
   * [ ] Week start customization
+  * [ ] Data export and import
 * Data handling
-  * [x] Zustand store
-  * [x] Local data storage
-  * [ ] Export data
-  * [ ] Backups
+  * [ ] Export as CSV
+  * [ ] Data stability and migrations
   * [ ] Address goals based on their list IDs, not their names
   * [ ] Performance improvements for 1k-10k data points
-* [ ] Calendar Screen
-  * [ ] Implement to show day-by-day summaries including all goals
 
 
 ## Screenshots
