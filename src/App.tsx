@@ -7,7 +7,6 @@ import {
 import {NavigationContainer, DefaultTheme, DarkTheme} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import { Button } from "react-native-paper";
-import MainPage from "./MainPage";
 import LiveView from "./LiveView";
 import Goals from "./Goals";
 import Goal from "./Goal";
@@ -87,20 +86,15 @@ const App = () => {
         <NavigationContainer theme={navigationTheme}>
           <Stack.Navigator>
             <Stack.Group>
-              <Stack.Screen
-                name="Main Page"
-                component={MainPage}
-                options={{title: "Tindeq Analyzer"}}
-              />
-              <Stack.Screen 
-                name="Live View" 
-                component={LiveView} 
-                options={{title: "Live View"}}
-                />
               <Stack.Screen 
                 name="Goals" 
                 component={Goals} 
                 options={{title: "Goals"}}
+                />
+              <Stack.Screen 
+                name="Live View" 
+                component={LiveView} 
+                options={{title: "Live View"}}
                 />
               <Stack.Screen 
                 name="Goal" 

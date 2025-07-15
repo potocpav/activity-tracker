@@ -7,10 +7,11 @@ import {
   FlatList,
   TouchableOpacity,
 } from "react-native";
-import { useTheme } from 'react-native-paper';
-import { FAB } from 'react-native-paper';
+import { Menu, useTheme } from 'react-native-paper';
+import { FAB, Button } from 'react-native-paper';
 import useStore, { GoalType, SubUnit, Unit } from "./Store";
 import DraggableFlatList from 'react-native-draggable-flatlist'
+import AntDesign from '@expo/vector-icons/AntDesign';
 
 
 
@@ -29,6 +30,17 @@ const Goals: React.FC<GoalsProps> = ({ navigation }) => {
   const theme = useTheme();
   const goals = useStore((state: any) => state.goals);
   const setGoals = useStore((state: any) => state.setGoals);
+  const [menuVisible, setMenuVisible] = React.useState(false);
+
+  React.useEffect(() => {
+    navigation.setOptions({
+      // title: goal.name,
+      headerRight: () => (
+        <Button compact={true} onPress={() => {setMenuVisible(!menuVisible)}}>
+        <AntDesign name="bars" size={24} color={theme.colors.onSurface} /></Button>
+      ),
+    });
+  }, [navigation, menuVisible]);
 
   const renderGoal = ({ item, drag }: { item: GoalType, drag: () => void }) => (
     <TouchableOpacity
@@ -44,6 +56,16 @@ const Goals: React.FC<GoalsProps> = ({ navigation }) => {
 
   return (
     <SafeAreaView style={[styles.container]}>
+      <View style={{ position: 'absolute', top: 10, right: 0}}>
+        <Menu
+          visible={menuVisible}
+          onDismiss={() => setMenuVisible(false)}
+          anchor={<View style={{width: 1, height: 1}}/>}
+        >
+            <Menu.Item onPress={() => {setMenuVisible(false); navigation.navigate('Live View')}} title="Tindeq Live View" />
+            <Menu.Item onPress={() => {setMenuVisible(false)}} title="Settings" />
+          </Menu>
+        </View>
       <DraggableFlatList
         data={goals}
         onDragEnd={({ data }) => setGoals(data)}

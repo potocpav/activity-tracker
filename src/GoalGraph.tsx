@@ -1,12 +1,13 @@
 import React, { Fragment, useState } from "react";
 import { View, Text, Platform, TouchableOpacity } from "react-native";
 import { Chip, useTheme } from 'react-native-paper';
-import { getTransformComponents, setScale, setTranslate, useChartTransformState } from "victory-native";
+import { Bar, getTransformComponents, Line, Scatter, setScale, setTranslate, useChartTransformState } from "victory-native";
 import { CartesianChart } from "victory-native";
 import {matchFont, Path, Points, Rect, Skia, Line as SkLine, vec} from "@shopify/react-native-skia";
 import useStore, { GoalType, State, Tag } from "./Store";
 import { useAnimatedReaction, useSharedValue, withTiming } from "react-native-reanimated";
 import { binTime, binTimeSeries, BinSize } from "./GoalUtil";
+import AntDesign from '@expo/vector-icons/AntDesign';
 
 const fontFamily = Platform.select({default: "sans-serif" });
 const font = matchFont({fontFamily: fontFamily, fontSize: 10});
@@ -44,10 +45,10 @@ const quartiles = (values: number[]) => {
   return {q0, q1, q2, q3, q4};
 };
 
-const toggleButton = (label: string, isActive: boolean, onPress: () => void, theme: any) => {
+const toggleButton = (key: string, label: React.ReactNode, isActive: boolean, onPress: () => void, theme: any) => {
   return (
     <TouchableOpacity 
-      key={label}
+      key={key}
       style={{ 
         padding: 8, 
         marginHorizontal: 4, 
@@ -103,17 +104,46 @@ const GoalGraph = ({ route }: { route: any }) => {
   const barWidth = 5;
   
   const bins = binTimeSeries(binning, goal.dataPoints);
-  const binQuartiles : {t: number, q0: number, q1: number, q2: number, q3: number, q4: number}[] = bins.map((bin) => {
+  const binStats : {t: number, q0: number, q1: number, q2: number, q3: number, q4: number, count: number, sum: number, mean: number}[] = bins.map((bin) => {
     const values = bin.values.map(extractValue).filter((v: number) => v !== null);
     if (values.length === 0) {
       return null
     } else {
       return {
         ...quartiles(values),
+        count: values.length,
+        sum: values.reduce((a, b) => a + b, 0),
+        mean: values.reduce((a, b) => a + b, 0) / values.length,
         t: bin.time
       };
     }
   }).filter((b) => b !== null);
+
+
+  var yKeys : (keyof typeof binStats[number])[]; 
+  if (graphType === "box") {
+    yKeys = ["q0", "q1", "q2", "q3", "q4"];
+  } else if (graphType === "bar-count") {
+    yKeys = ["count"];
+  } else if (graphType === "bar-sum") {
+    yKeys = ["sum"];
+  } else if (graphType === "line-mean") {
+    yKeys = ["mean"];
+  } else {
+    throw new Error("Invalid graph type");
+  }
+
+  const graphLabel = (gType: any) => {;
+    if (gType === "box") {
+      return (<AntDesign name="barchart" size={24} color="black" />);
+    } else if (gType === "bar-count") {
+      return (<AntDesign name="barschart" size={24} color="black" />);
+    } else if (gType === "bar-sum") {
+      return (<AntDesign name="barschart" size={24} color="black" />);
+    } else if (gType === "line-mean") {
+      return (<AntDesign name="linechart" size={24} color="black" />);
+    }
+  }
 
   const k = useSharedValue(1);
   const tx = useSharedValue(0);
@@ -152,18 +182,17 @@ const GoalGraph = ({ route }: { route: any }) => {
     <View style={{ flex: 1, padding: 10 }}>
       {/* Binning selection buttons */}
       <View key="binningButtons" style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
-        <Text style={{ marginRight: 10, color: theme.colors.onSurface }}>Binning:</Text>
-        {toggleButton("D", binning === 'day', () => setBinning('day'), theme)}
-        {toggleButton("W", binning === 'week', () => setBinning('week'), theme)}
-        {toggleButton("M", binning === 'month', () => setBinning('month'), theme)}
-        {toggleButton("Q", binning === 'quarter', () => setBinning('quarter'), theme)}
-        {toggleButton("Y", binning === 'year', () => setBinning('year'), theme)}
+        {toggleButton("D", "Day", binning === 'day', () => setBinning('day'), theme)}
+        {toggleButton("W", "Week", binning === 'week', () => setBinning('week'), theme)}
+        {toggleButton("M", "Month", binning === 'month', () => setBinning('month'), theme)}
+        {toggleButton("Q", "Quarter", binning === 'quarter', () => setBinning('quarter'), theme)}
+        {toggleButton("Y", "Year", binning === 'year', () => setBinning('year'), theme)}
       </View>
       { subUnitNames && (
         <View key="subUnitNames" style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
           <Text style={{ marginRight: 10, color: theme.colors.onSurface }}>Value:</Text>
           {subUnitNames?.map((name: string) => 
-            toggleButton(name, subUnitName === name, () => setSubUnitName(name), theme))}
+            toggleButton(name, name, subUnitName === name, () => setSubUnitName(name), theme))}
         </View>
       )}
 
@@ -197,12 +226,12 @@ const GoalGraph = ({ route }: { route: any }) => {
       )}
 
       <View key="graphTypeButtons" style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
-        {graphTypes.map((type) => toggleButton(type, graphType === type, () => setGraphType(type as "box" | "bar-count" | "bar-sum" | "line-mean"), theme))}
+        {graphTypes.map((type) => toggleButton(type, graphLabel(type), graphType === type, () => setGraphType(type as "box" | "bar-count" | "bar-sum" | "line-mean"), theme))}
       </View>
 
       <View key="goalGraph" style={{flex: 1, width: '100%'}}>
         <CartesianChart 
-          data={binQuartiles} 
+          data={binStats} 
           transformState={transformState}
           transformConfig={{
             pan: { dimensions: "x" },
@@ -210,15 +239,15 @@ const GoalGraph = ({ route }: { route: any }) => {
           }}
           padding={{bottom: 10}}
           domain={{x: [now.getTime() - binSizeWindow(binning), binTime(binning, now.getTime(), 1)]}}
-          domainPadding={{top: 10, bottom: 10, left: barWidth, right: barWidth * 2}}
+          domainPadding={{top: 10, bottom: 0, left: barWidth, right: barWidth * 2}}
           xKey="t" 
-          yKeys={["q0", "q1", "q2", "q3", "q4"]}
+          yKeys={yKeys}
           frame={{
             lineWidth: 1,
             lineColor: theme.colors.onSurfaceVariant,
           }}
           xAxis={{
-            // tickValues: binQuartiles.map((q) => q.t),
+            // tickValues: binStats.map((q) => q.t),
             font: font,
             enableRescaling: true,
             lineColor: theme.colors.onSurfaceVariant,
@@ -244,18 +273,19 @@ const GoalGraph = ({ route }: { route: any }) => {
           }}
           yAxis={[
             {
-              yKeys: ["q0", "q1", "q2", "q3", "q4"],
+              yKeys: yKeys,
               font: font,
               tickCount: 10,
               lineColor: theme.colors.onSurfaceVariant,
               labelColor: theme.colors.onSurfaceVariant,
             },
           ]}
-          >              
-          {({ points }) =>  {
-            return (
-              <>
-                {(() => {
+          >
+          {({ points, chartBounds }) => {
+            if (graphType === "box") {
+              return (
+                <>
+                  {(() => {
                   const elements = [];
                   for (let i = 0; i < points.q0.length; i++) {
                     const q0 = points.q0[i];
@@ -337,6 +367,49 @@ const GoalGraph = ({ route }: { route: any }) => {
                 })()}
               </>
             );
+            } else if (graphType === "bar-count") {
+              return (
+                <Bar
+                  points={points.count}
+                  chartBounds={chartBounds}
+                  color={theme.colors.primary}
+                  roundedCorners={{ topLeft: 3, topRight: 3 }}
+                />
+              );
+            } else if (graphType === "bar-sum") {
+              return (
+                <Bar
+                  points={points.sum}
+                  chartBounds={chartBounds}
+                  color={theme.colors.primary}
+                  roundedCorners={{ topLeft: 3, topRight: 3 }}
+                />
+              );
+            } else if (graphType === "line-mean") {
+              return (
+                <>
+                <Line
+                  points={points.mean}
+                  color={theme.colors.primary}
+                  strokeWidth={4}
+                />
+                <Scatter
+                  points={points.mean}
+                  shape="circle"
+                  radius={7}
+                  style="fill"
+                  color={theme.colors.surface}
+                />                
+                <Scatter
+                  points={points.mean}
+                  shape="circle"
+                  radius={5}
+                  style="fill"
+                  color={theme.colors.primary}
+                />
+                </>
+              );
+            }
           }}
         </CartesianChart>
       </View>
