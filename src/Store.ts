@@ -225,6 +225,64 @@ const useStore = create<State>()(
         });
       },
 
+      setTags: (goalName: string, tags: Tag[]) => {
+        set((state: any) => {
+          const goals = state.goals.map((goal: GoalType) => goal.name === goalName ? { ...goal, tags: tags } : goal);
+          return { goals };
+        });
+      },
+
+      findTag: (goalName: string, tagName: string) => {
+        return get().goals.find((g: GoalType) => g.name === goalName)?.tags.find((t: Tag) => t.name === tagName.toLowerCase());
+      },
+
+      addTag: (goalName: string, unormalizedTag: Tag) => {
+        set((state: any) => {
+          const tag = { ...unormalizedTag, name: unormalizedTag.name.toLowerCase() };
+          const existingTags = state.goals.find((g: GoalType) => g.name === goalName)?.tags;
+          if (!existingTags.find((t: Tag) => t.name === tag.name)) {
+            const goals = state.goals.map((goal: GoalType) => goal.name === goalName ? { ...goal, tags: [...goal.tags, tag] } : goal);
+            return { goals };
+          } else {
+            console.log("Tag already exists");
+            return {};
+          }
+        });
+      },
+
+      deleteTag: (goalName: string, tagName: string) => {
+        set((state: any) => {
+          const updateDataPoints = (dataPoints: DataPoint[], tagName: string) => {
+            return dataPoints.map((dataPoint: DataPoint) => dataPoint.tags.includes(tagName) ? { ...dataPoint, tags: dataPoint.tags.filter((t: string) => t !== tagName) } : dataPoint);
+          }
+          const updateTags = (tags: Tag[], tagName: string) => {
+            return tags.filter((t: Tag) => t.name !== tagName.toLowerCase());
+          } 
+          const goals = state.goals.map((goal: GoalType) => goal.name === goalName ? { ...goal, tags: updateTags(goal.tags, tagName), dataPoints: updateDataPoints(goal.dataPoints, tagName) } : goal);
+          return { goals };
+        });
+      },
+
+      renameTag: (goalName: string, unnormalizedOldTagName: string, unnormalizedNewTagName: string) => {
+        const tagName = unnormalizedOldTagName.toLowerCase();
+        const newTagName = unnormalizedNewTagName.toLowerCase();
+        set((state: any) => {
+          const updateTags = (tags: Tag[], oldTagName: string, newTagName: string) => {
+            return tags.map((tag: Tag) => tag.name === oldTagName ? { ...tag, name: newTagName } : tag);
+          }
+          const updateDataPoints = (dataPoints: DataPoint[], oldTagName: string, newTagName: string) => {
+            return dataPoints.map((dataPoint: DataPoint) => dataPoint.tags.includes(oldTagName) ? { ...dataPoint, tags: [...dataPoint.tags.filter((t: string) => t !== oldTagName), newTagName] } : dataPoint);
+          }
+          const goals = state.goals.map((goal: GoalType) => goal.name === goalName ? { 
+            ...goal, 
+            tags: updateTags(goal.tags, tagName, newTagName),
+            dataPoints: updateDataPoints(goal.dataPoints, tagName, newTagName)
+          } : goal);
+
+          return { goals };
+        });
+      },
+
       updateGoalDataPoint: (goalName: string, dataPointIndex: number | undefined, updatedDataPoint: DataPoint) => {
         set((state: any) => {
           const goals = state.goals.map((goal: GoalType) => {

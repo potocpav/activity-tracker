@@ -7,11 +7,12 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
-import { useTheme } from 'react-native-paper';
-import { GoalType } from "./Store";
-import { TextInput, Button } from "react-native-paper";
+import { Dialog, Portal, useTheme } from 'react-native-paper';
+import { GoalType, Tag } from "./Store";
+import { TextInput, Button, Chip } from "react-native-paper";
 import useStore from "./Store";
 import AntDesign from '@expo/vector-icons/AntDesign';
+import DraggableFlatList from 'react-native-draggable-flatlist';
 type EditGoalProps = {
   navigation: any;
   route: any;
@@ -32,10 +33,19 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
   const goal = goals.find((g: GoalType) => g.name === goalName) ?? defaultGoal;
   const updateGoal = useStore((state: any) => state.updateGoal);
   const deleteGoal = useStore((state: any) => state.deleteGoal);
+  const findTag = useStore((state: any) => state.findTag);
+  const addTag = useStore((state: any) => state.addTag);
+  const deleteTag = useStore((state: any) => state.deleteTag);
+  const renameTag = useStore((state: any) => state.renameTag);
+  const setTags = useStore((state: any) => state.setTags);
   
   const [goalNameInput, setGoalNameInput] = useState(goal.name);
   const [goalDescriptionInput, setGoalDescriptionInput] = useState(goal.description);
   const [unitInput, setUnitInput] = useState(goal.unit);
+
+  const [tagDialogVisible, setTagDialogVisible] = useState(false);
+  const [tagDialogName, setTagDialogName] = useState("");
+  const [tagDialogNameInput, setTagDialogNameInput] = useState("");
 
 
   if (!goal) {
@@ -101,6 +111,31 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
     });
   }, [navigation, goal, goalNameInput, goalDescriptionInput, unitInput]);
 
+  const onUpdateTag = (action: "delete" | "update") => {
+    if (tagDialogNameInput === "") {
+      Alert.alert("Error", "Tag name cannot be empty");
+    } else {
+      if (action === "delete") {
+        deleteTag(goal.name, tagDialogName);
+      } else if (action === "update") {
+        if (findTag(goal.name, tagDialogNameInput)) {
+          if (tagDialogName === tagDialogNameInput) {
+            // do nothing
+          } else {
+            Alert.alert("Error", "You cannot rename a tag to its own name");
+          }
+        } else {
+          if (tagDialogName) {
+            renameTag(goal.name, tagDialogName, tagDialogNameInput);
+          } else {
+            addTag(goal.name, { name: tagDialogNameInput, color: theme.colors.primary });
+          }
+        }
+      }
+      setTagDialogVisible(false);
+    }
+  }
+
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
       <ScrollView style={styles.content}>
@@ -134,10 +169,55 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={[styles.label, { color: theme.colors.onSurface }]}>Tags: -</Text>
-          <Text style={[styles.helperText, { color: theme.colors.onSurfaceVariant }]}>Tag editing will be implemented later</Text>
+          <Text style={[styles.label, { color: theme.colors.onSurface }]}>Tags:</Text>
+          <DraggableFlatList
+            data={goal.tags}
+            horizontal={true}
+            keyExtractor={(item: Tag) => item.name}
+            renderItem={({ item, drag, isActive }: { item: Tag, drag: () => void, isActive: boolean }) => (
+              <Chip
+                onPress={() => { console.log("pressed", item.name); setTagDialogVisible(true); setTagDialogName(item.name); setTagDialogNameInput(item.name);}}
+                style={{
+                  // backgroundColor: item.color,
+                  marginRight: 8,
+                  marginBottom: 8,
+                  // opacity: isActive ? 0.7 : 1,
+                }}
+                onLongPress={drag}
+              >
+                {item.name}
+              </Chip>
+            )}
+            onDragEnd={() => {
+              setTags(goal.name, goal.tags);
+            }}
+            contentContainerStyle={{ flexDirection: 'row' }}
+            style={{ marginTop: 8 }}
+          />
+          <View style={{ flexDirection: 'row' }}>
+              <Chip onPress={() => { setTagDialogVisible(true); setTagDialogName(""); setTagDialogNameInput("");}}
+                mode="outlined"
+                style={{
+                  marginRight: 8,
+                  marginBottom: 8,
+                }}
+              >
+                +
+              </Chip>
+          </View>
         </View>
       </ScrollView>
+      <Portal>
+          <Dialog visible={tagDialogVisible} onDismiss={() => setTagDialogVisible(false)}>
+            <Dialog.Content>
+              <TextInput label="Tag Name" value={tagDialogNameInput} onChangeText={setTagDialogNameInput} mode="outlined" />
+            </Dialog.Content>
+            <Dialog.Actions>
+              <Button onPress={() => onUpdateTag("delete")}><AntDesign name="delete" size={24} color={theme.colors.onSurface} /></Button>
+              <Button onPress={() => onUpdateTag("update")}><AntDesign name="check" size={24} color={theme.colors.onSurface} /></Button>
+            </Dialog.Actions>
+          </Dialog>
+        </Portal>
     </View>
   );
 };

@@ -7,7 +7,7 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
-import { useTheme } from 'react-native-paper';
+import { Chip, useTheme } from 'react-native-paper';
 import { SubUnit, GoalType } from "./Store";
 import { TextInput, Button } from "react-native-paper";
 import useStore from "./Store";
@@ -46,8 +46,13 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
   const [inputTime, setInputTime] = useState<{hours: number, minutes: number} | undefined>({hours: dateTime.getHours(), minutes: dateTime.getMinutes()});
   const inputValues = typeof goal.unit === "string" ? [{subUnit: null, value: useState<string>(dataPoint.value?.toString() ?? "")}] : 
     goal.unit.map((u: SubUnit) => ({subUnit: u, value: useState<string>(dataPoint.value[u.name]?.toString() ?? "")}));
+  const [inputTags, setInputTags] = useState<string[]>(dataPoint.tags);
   const [timePickerVisible, setTimePickerVisible] = useState(false);
   const [datePickerVisible, setDatePickerVisible] = useState(false);  
+
+  const toggleInputTag = (tag: string) => {
+    setInputTags(inputTags.includes(tag) ? inputTags.filter((t: string) => t !== tag) : [...inputTags, tag]);
+  }
 
   const deleteDataPointWrapper = () => {
     deleteGoalDataPoint(goalName, dataPointIndex);
@@ -84,10 +89,11 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
 
       if (inputDate && inputTime && hasNonEmptyValue && newValue !== null) {
         const newTime = new Date(inputDate?.getFullYear(), inputDate?.getMonth(), inputDate?.getDate(), inputTime?.hours, inputTime?.minutes).getTime();
+        console.log("inputTags", inputTags);
         updateGoalDataPoint(goalName, newDataPoint ? undefined : dataPointIndex, {
           time: newTime,
           value: newValue,
-          tags: dataPoint.tags,
+          tags: inputTags,
         });
         navigation.goBack();
       } else {
@@ -113,7 +119,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
         </>
       ),
     });
-  }, [navigation, goal, inputDate, inputTime, ...inputValues.map((inputValue: any) => inputValue.value[0])]);
+  }, [navigation, goal, inputDate, inputTime, ...inputValues.map((inputValue: any) => inputValue.value[0]), inputTags]);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
@@ -167,12 +173,18 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={[styles.label, { color: theme.colors.onSurface }]}>Tags:</Text>
           <View style={styles.tagsContainer}>
-            {dataPoint.tags.map((tag: string, index: number) => (
-              <View key={index} style={styles.tag}>
-                <Text style={styles.tagText}>{tag}</Text>
-              </View>
+
+            {goal.tags.map((tag: any, index: number) => (
+              <Chip
+                onPress={() => { toggleInputTag(tag.name); }}
+                mode={inputTags.includes(tag.name) ? "flat" : "outlined"}
+                style={{
+                  marginRight: 8,
+                  marginBottom: 8,
+                }} >
+                {tag.name}
+              </Chip>
             ))}
           </View>
         </View>
