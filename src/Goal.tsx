@@ -59,7 +59,7 @@ const GoalInner: React.FC<any> = ({ goal, navigation }) => {
     navigation.setOptions({
       title: goal.name,
       headerRight: () => (
-        <Button onPress={() => {
+        <Button compact={true} onPress={() => {
           navigation.navigate("EditGoal", { goalName });
         }}><AntDesign name="edit" size={24} color={theme.colors.onSurface} /></Button>
       ),
@@ -97,7 +97,7 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
       <FAB
         icon="plus"
         style={[styles.fab, { backgroundColor: theme.colors.primary }]}
-        onPress={() => navigation.navigate("EditDataPoint", { goalName })}
+        onPress={() => navigation.navigate("EditDataPoint", { goalName, newDataPoint: true })}
         color={theme.colors.onPrimary}
       />
     </SafeAreaView>

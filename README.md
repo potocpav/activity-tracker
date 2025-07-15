@@ -20,16 +20,16 @@ In order to make this app a full-featured management app for workout data, the f
   * [ ] Data stability and migrations
 * [ ] UX
   * [x] Light/Dark themes
-  * [ ] Allow adding multiple points
-  * [ ] Allow duplicating an existing point
-  * [ ] Rename and rebrand the app, perhaps to "Workout Tracker"
-  * [ ] Add default example data
+  * [x] Allow adding multiple points
+  * [x] Allow duplicating an existing point
+  * [x] Rename and rebrand the app, perhaps to "Workout Tracker"
+  * [x] Add default example data
   * [ ] Simplify graph presentation
 * [ ] Goal Screen
   * [x] Goal list
     * [ ] Show last data points in the list
     * [ ] Add point button directly on the Goal list
-    * [ ] Drag & drop to reorder list
+    * [x] Drag & drop to reorder list
   * [ ] Summary screen
     * [x] Implement basics
     * [x] Allow editing description, title

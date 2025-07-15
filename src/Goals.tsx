@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { useTheme } from 'react-native-paper';
 import { FAB } from 'react-native-paper';
-import useStore, { GoalType, SubUnit, Unit, setGoals } from "./Store";
+import useStore, { GoalType, SubUnit, Unit } from "./Store";
 import DraggableFlatList from 'react-native-draggable-flatlist'
 
 

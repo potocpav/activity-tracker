@@ -36,7 +36,7 @@ export type Tag = {
   color: string;
 };
 
-export type TagName = String;
+export type TagName = string;
 
 export type DataPoint = {
     time: number;

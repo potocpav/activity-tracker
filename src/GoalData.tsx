@@ -116,7 +116,7 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
 
           {goal.dataPoints.slice().reverse().map((dataPoint: DataPoint, index: number) => (
             <TouchableOpacity
-              key={dataPoint.time.toString()}
+              key={index}
               onPress={() => navigation.navigate("EditDataPoint", { goalName: goal.name, dataPointIndex: goal.dataPoints.length - 1 - index })}
             >
               <DataTable.Row>
@@ -131,7 +131,7 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
       <FAB
         icon="plus"
         style={[styles.fab, { backgroundColor: theme.colors.primary }]}
-        onPress={() => navigation.navigate("EditDataPoint", { goalName: goal.name })}
+        onPress={() => navigation.navigate("EditDataPoint", { goalName: goal.name, newDataPoint: true })}
         color={theme.colors.onPrimary}
       />
     </SafeAreaView>

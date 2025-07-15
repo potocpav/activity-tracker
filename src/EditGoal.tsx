@@ -94,9 +94,7 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
       title: goal.name,
       headerRight: () => (
         <>
-        <Button compact={true} onPress={() => {
-          saveGoal();
-        }}><AntDesign name="check" size={24} color={theme.colors.onSurface} /></Button>        
+        <Button compact={true} onPress={saveGoal}><AntDesign name="check" size={24} color={theme.colors.onSurface} /></Button>        
         <Button compact={true} onPress={deleteGoalWrapper}><AntDesign name="delete" size={24} color={theme.colors.onSurface} /></Button>
         </>
       ),
@@ -111,7 +109,7 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
             label="Goal Name"
             value={goalNameInput}
             onChangeText={setGoalNameInput}
-            style={styles.textInput}
+            mode="outlined"
           />
         </View>
 
@@ -122,7 +120,7 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
             onChangeText={setGoalDescriptionInput}
             multiline
             numberOfLines={3}
-            style={styles.textInput}
+            mode="outlined"
           />
         </View>
 
@@ -131,7 +129,7 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
             label="Unit"
             value={unitInput}
             onChangeText={setUnitInput}
-            style={styles.textInput}
+            mode="outlined"
           />
         </View>
 

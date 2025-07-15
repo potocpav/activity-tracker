@@ -13,7 +13,8 @@ import { TextInput, Button } from "react-native-paper";
 import useStore from "./Store";
 import { DatePickerInput, DatePickerModal, TimePickerModal } from "react-native-paper-dates";
 import { CalendarDate } from "react-native-paper-dates/lib/typescript/Date/Calendar";
-
+import AntDesign from '@expo/vector-icons/AntDesign';
+import Ionicons from '@expo/vector-icons/Ionicons';
 type EditDataPointProps = {
   navigation: any;
   route: any;
@@ -21,7 +22,7 @@ type EditDataPointProps = {
 
 const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
   const theme = useTheme();
-  const { goalName, dataPointIndex } = route.params;
+  const { goalName, dataPointIndex, newDataPoint } = route.params;
   const goals = useStore((state: any) => state.goals);
   const goal = goals.find((g: GoalType) => g.name === goalName);
   
@@ -35,9 +36,9 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
   
 
   const dateTime = new Date(dataPoint.time);
-if (!dataPoint) {
-  return <Text>Data point not found</Text>;
-}
+  if (!dataPoint) {
+    return <Text>Data point not found</Text>;
+  }
   
   const updateGoalDataPoint = useStore((state: any) => state.updateGoalDataPoint);
   const deleteGoalDataPoint = useStore((state: any) => state.deleteGoalDataPoint);
@@ -48,6 +49,72 @@ if (!dataPoint) {
   const [timePickerVisible, setTimePickerVisible] = useState(false);
   const [datePickerVisible, setDatePickerVisible] = useState(false);  
 
+  const deleteDataPointWrapper = () => {
+    deleteGoalDataPoint(goalName, dataPointIndex);
+    navigation.goBack();
+  };
+
+  const saveDataPointWrapper = () => {
+      var newValue: any = {};
+      var hasNonEmptyValue = false;
+      if (typeof goal.unit === "string") {
+        newValue = parseFloat(inputValues[0].value[0]);
+        if (isNaN(newValue)) {
+          Alert.alert("Invalid input");
+          newValue = null;
+        } else {
+          hasNonEmptyValue = true;
+        }
+      } else {
+        for (const inputValue of inputValues) {
+          if (inputValue.value[0] === "") {
+            newValue[inputValue.subUnit.name] = null;
+          } else {
+            hasNonEmptyValue = true;
+            const value = parseFloat(inputValue.value[0]);
+            if (isNaN(value)) {
+              Alert.alert("Invalid input");
+              newValue = null;
+              break;
+            }
+            newValue[inputValue.subUnit.name] = value;
+          }
+        }
+      }
+
+      if (inputDate && inputTime && hasNonEmptyValue && newValue !== null) {
+        const newTime = new Date(inputDate?.getFullYear(), inputDate?.getMonth(), inputDate?.getDate(), inputTime?.hours, inputTime?.minutes).getTime();
+        updateGoalDataPoint(goalName, newDataPoint ? undefined : dataPointIndex, {
+          time: newTime,
+          value: newValue,
+          tags: dataPoint.tags,
+        });
+        navigation.goBack();
+      } else {
+        Alert.alert("Invalid input");
+      }
+    };
+
+  const duplicateDataPointWrapper = () => {
+    saveDataPointWrapper();
+    navigation.navigate("EditDataPoint", { goalName, dataPointIndex: dataPointIndex, newDataPoint: true });
+  };
+  
+  React.useEffect(() => {
+    navigation.setOptions({
+      title: `${inputDate ? inputDate.toLocaleDateString() : 'Not set'} #${newDataPoint ? 'New' : dataPointIndex + 1}`,
+      headerRight: () => (
+        <>
+        <Button compact={true} onPress={saveDataPointWrapper}><AntDesign name="check" size={24} color={theme.colors.onSurface} /></Button>
+        <Button compact={true} onPress={duplicateDataPointWrapper}><Ionicons name="duplicate-outline" size={24} color={theme.colors.onSurface} /></Button>
+        {dataPointIndex !== undefined && (
+          <Button compact={true} onPress={deleteDataPointWrapper}><AntDesign name="delete" size={24} color={theme.colors.onSurface} /></Button>
+        )}
+        </>
+      ),
+    });
+  }, [navigation, goal, inputDate, inputTime, ...inputValues.map((inputValue: any) => inputValue.value[0])]);
+
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
       <ScrollView style={styles.content}>
@@ -57,7 +124,7 @@ if (!dataPoint) {
           Change
         </Button>
         <DatePickerModal
-          locale="en"
+          locale="cs"
           mode="single"
           visible={datePickerVisible}
           onDismiss={() => setDatePickerVisible(false)}
@@ -77,6 +144,7 @@ if (!dataPoint) {
             Change
           </Button>
           <TimePickerModal
+            locale="cs"
             visible={timePickerVisible}
             onDismiss={() => setTimePickerVisible(false)}
             onConfirm={(t) => {setInputTime(t); setTimePickerVisible(false);}}
@@ -93,7 +161,7 @@ if (!dataPoint) {
             value={inputValue.value[0] ?? ""}
             onChangeText={text => inputValue.value[1](text)}
             keyboardType="numeric"
-            style={styles.textInput}
+            mode="outlined"
           />      
         ))}
         </View>
@@ -109,62 +177,6 @@ if (!dataPoint) {
           </View>
         </View>
       </ScrollView>
-
-      <View style={[styles.footer, { borderTopColor: theme.colors.outline }]}>
-        <TouchableOpacity style={[styles.cancelButton, { backgroundColor: theme.colors.secondary }]} onPress={() => navigation.goBack()}>
-          <Text style={[styles.cancelButtonText, { color: theme.colors.onSecondary }]}>Cancel</Text>
-        </TouchableOpacity>
-        {dataPointIndex !== undefined && (
-          <TouchableOpacity style={[styles.deleteButton, { backgroundColor: theme.colors.error }]} onPress={() => {
-            deleteGoalDataPoint(goalName, dataPointIndex);
-            navigation.goBack();
-          }}>
-            <Text style={[styles.deleteButtonText, { color: theme.colors.onError }]}>Delete</Text>
-          </TouchableOpacity>
-        )}
-        <TouchableOpacity style={[styles.saveButton, { backgroundColor: theme.colors.primary }]} onPress={() => {
-          var newValue: any = {};
-          var hasNonEmptyValue = false;
-          if (typeof goal.unit === "string") {
-            newValue = parseFloat(inputValues[0].value[0]);
-            if (isNaN(newValue)) {
-              Alert.alert("Invalid input");
-              newValue = null;
-            } else {
-              hasNonEmptyValue = true;
-            }
-          } else {
-            for (const inputValue of inputValues) {
-              if (inputValue.value[0] === "") {
-                newValue[inputValue.subUnit.name] = null;
-              } else {
-                hasNonEmptyValue = true;
-                const value = parseFloat(inputValue.value[0]);
-                if (isNaN(value)) {
-                  Alert.alert("Invalid input");
-                  newValue = null;
-                  break;
-                }
-                newValue[inputValue.subUnit.name] = value;
-              }
-            }
-          }
-
-          if (inputDate && inputTime && hasNonEmptyValue && newValue !== null) {
-            const newTime = new Date(inputDate?.getFullYear(), inputDate?.getMonth(), inputDate?.getDate(), inputTime?.hours, inputTime?.minutes).getTime();
-            updateGoalDataPoint(goalName, dataPointIndex, {
-              time: newTime,
-              value: newValue,
-              tags: dataPoint.tags,
-            });
-            navigation.goBack();
-          } else {
-            Alert.alert("Invalid input");
-          }
-        }}>
-          <Text style={[styles.saveButtonText, { color: theme.colors.onPrimary }]}>Save</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 };
