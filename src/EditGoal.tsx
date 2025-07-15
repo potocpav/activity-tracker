@@ -126,6 +126,7 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
           }
         } else {
           if (tagDialogName) {
+            console.log("renameTag", goal.name, tagDialogName, tagDialogNameInput);
             renameTag(goal.name, tagDialogName, tagDialogNameInput);
           } else {
             addTag(goal.name, { name: tagDialogNameInput, color: theme.colors.primary });

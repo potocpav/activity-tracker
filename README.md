@@ -25,6 +25,7 @@ In order to make this app a full-featured management app for workout data, the f
   * [x] Rename and rebrand the app, perhaps to "Workout Tracker"
   * [x] Add default example data
   * [ ] Simplify graph presentation
+  * [ ] Fix goal tag editing to wait on submit
 * [ ] Goal Screen
   * [x] Goal list
     * [ ] Show last data points in the list

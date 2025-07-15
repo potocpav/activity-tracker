@@ -16,7 +16,7 @@ type GoalDataProps = {
   route: any;
 };
 
-const formatDate = (date: Date) => {
+export const formatDate = (date: Date) => {
   return date.toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
@@ -31,7 +31,7 @@ const formatTime = (date: Date) => {
   });
 };
 
-const renderValue = (value: any, unit: Unit) => {
+export const renderValue = (value: any, unit: Unit) => {
   if (typeof value === "number") {
     return `${Math.round(value * 100) / 100} ${typeof unit === "string" ? unit : ""}`;
   }
