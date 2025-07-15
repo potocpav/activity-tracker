@@ -6,6 +6,7 @@ import {
 } from "react-native";
 import {NavigationContainer, DefaultTheme, DarkTheme} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import { Button } from "react-native-paper";
 import MainPage from "./MainPage";
 import LiveView from "./LiveView";
 import Goals from "./Goals";
@@ -13,6 +14,9 @@ import Goal from "./Goal";
 import DeviceModal from "./DeviceConnectionModal";
 import EditDataPoint from "./EditDataPoint";
 import EditGoal from "./EditGoal";
+import { useTheme } from "react-native-paper";
+import Ionicons from '@expo/vector-icons/Ionicons';
+import AntDesign from '@expo/vector-icons/AntDesign';
 import {
   PaperProvider,
   MD3LightTheme,
@@ -73,7 +77,7 @@ const navigationTheme = USE_LIGHT_THEME ? {
 
 const App = () => {
   const Stack = createNativeStackNavigator();
-
+  const theme = useTheme();
   return (
     <PaperProvider theme={USE_LIGHT_THEME ? MD3LightTheme : MD3DarkTheme}>
       <StatusBar barStyle={USE_LIGHT_THEME ? "dark-content" : "light-content"} backgroundColor={USE_LIGHT_THEME ? "#f2f2f2" : "#121212"} />
@@ -99,7 +103,6 @@ const App = () => {
               <Stack.Screen 
                 name="Goal" 
                 component={Goal} 
-                options={{title: "Goal Details"}}
                 />
             </Stack.Group>
             <Stack.Group screenOptions={{presentation: 'modal'}}>

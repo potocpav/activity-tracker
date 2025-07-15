@@ -6,11 +6,12 @@ import {
   View,
   TouchableOpacity,
 } from "react-native";
-import { useTheme, FAB } from 'react-native-paper';
+import { useTheme, FAB, Button } from 'react-native-paper';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import useStore, { GoalType, SubUnit, Unit } from "./Store";
 import GoalGraph from "./GoalGraph";
 import GoalData from "./GoalData";
+import AntDesign from '@expo/vector-icons/AntDesign';
 
 
 const Tab = createMaterialTopTabNavigator();
@@ -44,6 +45,20 @@ const Goal: React.FC<GoalProps> = ({ navigation, route }) => {
     );
   }
 
+
+  React.useEffect(() => {
+    // Use `setOptions` to update the button that we previously specified
+    // Now the button includes an `onPress` handler to update the count
+    navigation.setOptions({
+      title: goal.name,
+      headerRight: () => (
+        <Button onPress={() => {
+          navigation.navigate("EditGoal", { goalName });
+        }}><AntDesign name="edit" size={24} color={theme.colors.onSurface} /></Button>
+      ),
+    });
+  }, [navigation]);
+
   return (
     <Tab.Navigator screenOptions={{swipeEnabled: false}}>
       <Tab.Screen name="Summary" component={GoalSummary} initialParams={{ goalName }} />
@@ -66,12 +81,6 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surfaceVariant }]}>
       <View>
-          <View style={[styles.header, { backgroundColor: theme.colors.surface, borderBottomColor: theme.colors.outline }]}>
-              <Text style={[styles.headerTitle, { color: theme.colors.onSurface }]}>{goal.name}</Text>
-              <TouchableOpacity onPress={() => navigation.navigate('EditGoal', { goalName })}>
-                <Text style={[styles.editButton, { color: theme.colors.primary, backgroundColor: theme.colors.primaryContainer }]}>Edit</Text>
-              </TouchableOpacity>
-          </View>
           
           <View style={[styles.goalInfo, { backgroundColor: theme.colors.surface }]}>
               <Text style={[styles.goalDescription, { color: theme.colors.onSurfaceVariant }]}>{goal.description}</Text>
