@@ -1,8 +1,11 @@
 {
-  "name": "tindeq-analyzer",
+  "name": "workout-tracker",
   "version": "1.0.0",
   "main": "expo/AppEntry.js",
   "scripts": {
+    "dev": "APP_VARIANT=development npx expo start",
+    "build-dev": "eas build --platform android --profile development --local",
+    "build-preview": "eas build --platform android --profile preview --local",
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",

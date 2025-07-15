@@ -17,20 +17,24 @@ In order to make this app a full-featured management app for workout data, the f
 
 * [ ] Goal Screen
   * [x] Goal list
+    * [ ] Show last data points in the list
+    * [ ] Add point button directly on the Goal list
   * [ ] Summary screen
     * [x] Implement basics
-    * [ ] Allow editing description, title, rating
-    * [ ] Allow editing units
+    * [x] Allow editing description, title
+    * [x] Allow editing units
+    * [ ] Allow editing composite units
     * [ ] Allow adding graphs
     * [ ] Allow adding summary values
-    * [ ] Quick add measurement button
+    * [x] Quick add measurement button
   * [ ] Data Series screen
     * [x] Basic implementation 
     * [x] Group by days, allow expanding/collapsing days
     * [x] Allow expanding data points
     * [x] "Edit" button for expanded data points
     * [x] "Add" button
-    * [ ] Reverse days
+    * [x] Reverse days
+    * [ ] Compact display
   * [ ] Goal Graphs
     * [x] Box chart
     * [x] Allow choosing out of multiple values
@@ -67,14 +71,18 @@ In order to make this app a full-featured management app for workout data, the f
   * [x] Light/Dark themes
   * [ ] Rename and rebrand the app, perhaps to "Goals"
   * [ ] Add default example data
+  * [ ] Simplify graph presentation
 * [ ] Settings page
   * [x] Allow resetting data to example data
   * [ ] Light/dark theme
+  * [ ] Week start customization
 * Data handling
   * [x] Zustand store
   * [x] Local data storage
   * [ ] Export data
   * [ ] Backups
+  * [ ] Address goals based on their list IDs, not their names
+  * [ ] Performance improvements for 1k-10k data points
 * [ ] Calendar Screen
   * [ ] Implement to show day-by-day summaries including all goals
 

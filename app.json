@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Tindeq Analyzer",
-    "slug": "tindeq-analyzer",
+    "name": "Workout Tracker",
+    "slug": "workout-tracker",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -13,7 +13,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.pavelpotocek.tindeq-analyzer"
+      "bundleIdentifier": "com.pavelpotocek.workouttracker"
     },
     "android": {
       "adaptiveIcon": {
@@ -25,7 +25,7 @@
         "android.permission.BLUETOOTH_ADMIN",
         "android.permission.BLUETOOTH_CONNECT"
       ],
-      "package": "com.pavelpotocek.tindeqanalyzer"
+      "package": "com.pavelpotocek.workouttracker"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -45,7 +45,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "ab8a7477-bea4-43f6-8b55-4a0d4029ac00"
+        "projectId": "3738fb5a-ab12-4854-8cd0-bfece19c9a98"
       }
     }
   }
