@@ -1,13 +1,13 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { StyleSheet, ScrollView } from 'react-native';
 import { List, Divider, Switch, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import useStore from './Store';
 
 const Settings = () => {
   const theme = useTheme();
-  const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
-  const [darkModeEnabled, setDarkModeEnabled] = React.useState(false);
-  const [autoSyncEnabled, setAutoSyncEnabled] = React.useState(true);
+  const themeState = useStore((state: any) => state.theme);
+  const setThemeState = useStore((state: any) => state.setTheme);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -15,37 +15,14 @@ const Settings = () => {
         <List.Section>
           <List.Subheader>General</List.Subheader>
           <List.Item
-            title="Notifications"
-            description="Enable push notifications for workout reminders"
-            left={(props) => <List.Icon {...props} icon="bell" />}
-            right={() => (
-              <Switch
-                value={notificationsEnabled}
-                onValueChange={setNotificationsEnabled}
-              />
-            )}
-          />
-          <Divider />
-          <List.Item
             title="Dark Mode"
             description="Use dark theme throughout the app"
+            onPress={() => setThemeState(themeState == 'dark' ? 'light' : 'dark')}
             left={(props) => <List.Icon {...props} icon="theme-light-dark" />}
             right={() => (
               <Switch
-                value={darkModeEnabled}
-                onValueChange={setDarkModeEnabled}
-              />
-            )}
-          />
-          <Divider />
-          <List.Item
-            title="Auto Sync"
-            description="Automatically sync data with cloud storage"
-            left={(props) => <List.Icon {...props} icon="cloud-sync" />}
-            right={() => (
-              <Switch
-                value={autoSyncEnabled}
-                onValueChange={setAutoSyncEnabled}
+                value={themeState == 'dark'}
+                onValueChange={() => setThemeState(themeState == 'dark' ? 'light' : 'dark')}
               />
             )}
           />

@@ -109,7 +109,7 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
         </>
       ),
     });
-  }, [navigation, goal, goalNameInput, goalDescriptionInput, unitInput]);
+  }, [navigation, theme, goal, goalNameInput, goalDescriptionInput, unitInput]);
 
   const onUpdateTag = (action: "delete" | "update") => {
     if (tagDialogNameInput === "") {

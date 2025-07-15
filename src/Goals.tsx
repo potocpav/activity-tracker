@@ -40,7 +40,7 @@ const Goals: React.FC<GoalsProps> = ({ navigation }) => {
         <AntDesign name="bars" size={24} color={theme.colors.onSurface} /></Button>
       ),
     });
-  }, [navigation, menuVisible]);
+  }, [navigation, menuVisible, theme]);
 
   const renderGoal = ({ item, drag }: { item: GoalType, drag: () => void }) => (
     <TouchableOpacity

@@ -9,6 +9,7 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import { Button } from "react-native-paper";
 import LiveView from "./LiveView";
 import Goals from "./Goals";
+import useStore from "./Store";
 import Goal from "./Goal";
 import Settings from "./Settings";
 import DeviceModal from "./DeviceConnectionModal";
@@ -25,65 +26,63 @@ import {
 } from 'react-native-paper';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-// Simple theme toggle - change this to false for dark theme
-const USE_LIGHT_THEME = true;
-
 const { LightTheme, DarkTheme: PaperDarkTheme } = adaptNavigationTheme({
   reactNavigationLight: DefaultTheme,
   reactNavigationDark: DarkTheme,
 });
 
-// Add missing fonts property to fix the TypeScript error
-const navigationTheme = USE_LIGHT_THEME ? {
-  ...LightTheme,
-  fonts: {
-    regular: {
-      fontFamily: 'System',
-      fontWeight: '400' as const,
-    },
-    medium: {
-      fontFamily: 'System',
-      fontWeight: '500' as const,
-    },
-    bold: {
-      fontFamily: 'System',
-      fontWeight: '700' as const,
-    },
-    heavy: {
-      fontFamily: 'System',
-      fontWeight: '900' as const,
-    },
-  },
-} : {
-  ...PaperDarkTheme,
-  fonts: {
-    regular: {
-      fontFamily: 'System',
-      fontWeight: '400' as const,
-    },
-    medium: {
-      fontFamily: 'System',
-      fontWeight: '500' as const,
-    },
-    bold: {
-      fontFamily: 'System',
-      fontWeight: '700' as const,
-    },
-    heavy: {
-      fontFamily: 'System',
-      fontWeight: '900' as const,
-    },
-  },
-};
-
 const App = () => {
   const Stack = createNativeStackNavigator();
-  const theme = useTheme();
+  const theme = useStore((state: any) => state.theme);
+
+  // Add missing fonts property to fix the TypeScript error
+  const navigationTheme = theme == 'light' ? {
+    ...LightTheme,
+    fonts: {
+      regular: {
+        fontFamily: 'System',
+        fontWeight: '400' as const,
+      },
+      medium: {
+        fontFamily: 'System',
+        fontWeight: '500' as const,
+      },
+      bold: {
+        fontFamily: 'System',
+        fontWeight: '700' as const,
+      },
+      heavy: {
+        fontFamily: 'System',
+        fontWeight: '900' as const,
+      },
+    },
+  } : {
+    ...PaperDarkTheme,
+    fonts: {
+      regular: {
+        fontFamily: 'System',
+        fontWeight: '400' as const,
+      },
+      medium: {
+        fontFamily: 'System',
+        fontWeight: '500' as const,
+      },
+      bold: {
+        fontFamily: 'System',
+        fontWeight: '700' as const,
+      },
+      heavy: {
+        fontFamily: 'System',
+        fontWeight: '900' as const,
+      },
+    },
+  };
+
   return (
-    <PaperProvider theme={USE_LIGHT_THEME ? MD3LightTheme : MD3DarkTheme}>
+    <PaperProvider theme={theme == 'light' ? MD3LightTheme : MD3DarkTheme}>
       <GestureHandlerRootView>
-      <StatusBar barStyle={USE_LIGHT_THEME ? "dark-content" : "light-content"} backgroundColor={USE_LIGHT_THEME ? "#f2f2f2" : "#121212"} />
-      <SafeAreaView style={[styles.container, { backgroundColor: USE_LIGHT_THEME ? "#f2f2f2" : "#121212" }]}>
+      <StatusBar barStyle={theme == 'light' ? "dark-content" : "light-content"} backgroundColor={theme == 'light' ? "#f2f2f2" : "#121212"} />
+      <SafeAreaView style={[styles.container, { backgroundColor: theme == 'light' ? "#f2f2f2" : "#121212" }]}>
         <NavigationContainer theme={navigationTheme}>
           <Stack.Navigator>
             <Stack.Group>

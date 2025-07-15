@@ -119,7 +119,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
         </>
       ),
     });
-  }, [navigation, goal, inputDate, inputTime, ...inputValues.map((inputValue: any) => inputValue.value[0]), inputTags]);
+  }, [navigation, theme, goal, inputDate, inputTime, ...inputValues.map((inputValue: any) => inputValue.value[0]), inputTags]);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>

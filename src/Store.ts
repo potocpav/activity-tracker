@@ -61,6 +61,7 @@ export type State = {
   dataPoints: {w: number, t: number}[];
 
   goals: GoalType[];
+  theme: "light" | "dark";
 
   requestPermissions: any;
   connectToDevice: any;
@@ -91,8 +92,13 @@ const useStore = create<State>()(
 
       // Goals related state
       goals: exampleGoals,
+      theme: "light",
 
       requestPermissions: requestPermissions,
+
+      setTheme: (theme: "light" | "dark") => {
+        set({theme: theme});
+      },
 
       connectToDevice: async (device: Device) => {
         try {
@@ -318,6 +324,7 @@ const useStore = create<State>()(
     storage: createJSONStorage(() => AsyncStorage),
     partialize: (state) => ({
       goals: state.goals,
+      theme: state.theme,
     }),
     
   }

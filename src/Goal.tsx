@@ -65,7 +65,7 @@ const GoalInner: React.FC<any> = ({ goal, navigation }) => {
         }}><AntDesign name="edit" size={24} color={theme.colors.onSurface} /></Button>
       ),
     });
-  }, [navigation]);
+  }, [navigation, theme]);
 
   return (
     <Tab.Navigator screenOptions={{swipeEnabled: false}}>
