@@ -82,7 +82,19 @@ const GoalGraph = ({ route }: { route: any }) => {
   }).state;
   const subUnitNames = typeof goal.unit === 'string' ? null : goal.unit.map((u: any) => u.name);
   const [subUnitName, setSubUnitName] = useState(subUnitNames?.[0] || null);
-  const extractValue = (v: any) => subUnitName ? v.value[subUnitName] : v.value;
+
+  const extractValue = (dataPoint: any) => {
+    const requiredTags = tags.filter((t) => t.state === "yes");
+    const negativeTags = tags.filter((t) => t.state === "no");
+    const hasAllRequiredTags = requiredTags.every((t) => dataPoint.tags.includes(t.name));
+    const hasAnyNegativeTags = negativeTags.some((t) => dataPoint.tags.includes(t.name));
+    if (hasAllRequiredTags && !hasAnyNegativeTags) {
+      const value = subUnitName ? dataPoint.value[subUnitName] : dataPoint.value;
+      return value;
+    } else {
+      return null;
+    }
+  }
 
   const now = new Date();
 
@@ -157,12 +169,32 @@ const GoalGraph = ({ route }: { route: any }) => {
         <View key="tags" style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
           <Text style={{ marginRight: 10, color: theme.colors.onSurface }}>Tags:</Text>
           {goal.tags.map((tag: Tag) => 
-            <Chip key={tag.name} mode="outlined" style={{ marginRight: 10 }}>{tag.name}</Chip>
+            <Chip 
+              key={tag.name} 
+              mode="outlined" 
+              icon={(() => {
+                const state = tags.find((t) => t.name === tag.name)?.state;
+                if (state === "yes") {
+                  return "check";
+                } else if (state === "no") {
+                  return "close";
+                } else {
+                  return "";
+                }
+              })()}
+              selected={tags.find((t) => t.name === tag.name)?.state === "yes"}
+              style={{ marginRight: 10 }}
+              onLongPress={() => {
+                setTags(tags.map((t) => t.name === tag.name ? {...t, state: "no"} : t));
+              }}
+              onPress={() => {
+                setTags(tags.map((t) => t.name === tag.name ? {...t, state: t.state === "maybe" ? "yes" : "maybe"} : t));
+              }}
+            >{tag.name}</Chip>
             )}
         </View>
       )}
 
-      {/* <Text>Goal Graph Placeholder</Text> */}
       <View key="goalGraph" style={{flex: 1, width: '100%'}}>
         <CartesianChart 
           data={binQuartiles} 
