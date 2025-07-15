@@ -3,7 +3,7 @@ import { View, Text, Platform, TouchableOpacity } from "react-native";
 import { useTheme } from 'react-native-paper';
 import { getTransformComponents, setScale, setTranslate, useChartTransformState } from "victory-native";
 import { CartesianChart } from "victory-native";
-import {matchFont, Path, Points, Rect, Line as SkLine, vec} from "@shopify/react-native-skia";
+import {matchFont, Path, Points, Rect, Skia, Line as SkLine, vec} from "@shopify/react-native-skia";
 import useStore, { GoalType, State } from "./Store";
 import { useAnimatedReaction, useSharedValue, withTiming } from "react-native-reanimated";
 import { binTime, binTimeSeries, BinSize } from "./GoalUtil";
@@ -47,6 +47,7 @@ const quartiles = (values: number[]) => {
 const toggleButton = (label: string, isActive: boolean, onPress: () => void, theme: any) => {
   return (
     <TouchableOpacity 
+      key={label}
       style={{ 
         padding: 8, 
         marginHorizontal: 4, 
@@ -162,7 +163,7 @@ const GoalGraph = ({ route }: { route: any }) => {
           }}
           padding={{bottom: 10}}
           domain={{x: [now.getTime() - binSizeWindow(binning), binTime(binning, now.getTime(), 1)]}}
-          domainPadding={{left: barWidth, right: barWidth * 2}}
+          domainPadding={{top: 10, bottom: 10, left: barWidth, right: barWidth * 2}}
           xKey="t" 
           yKeys={["q0", "q1", "q2", "q3", "q4"]}
           frame={{
@@ -211,72 +212,79 @@ const GoalGraph = ({ route }: { route: any }) => {
                   const elements = [];
                   for (let i = 0; i < points.q0.length; i++) {
                     const q0 = points.q0[i];
-                    const q1 = points.q1[i];
-                    const q2 = points.q2[i];
-                    const q3 = points.q3[i];
                     const q4 = points.q4[i];
+                    const [q0x, q0y] = [q0.x, q0.y ?? NaN];
+                    const [q4x, q4y] = [q4.x, q4.y ?? NaN];
                     const w = barWidth;
-                    const rectPoints = [
-                      vec(q1.x - w, q1.y || 0), 
-                      vec(q1.x + w, q1.y || 0), 
-                      vec(q3.x + w, q3.y || 0), 
-                      vec(q3.x - w, q3.y || 0),
-                      vec(q1.x - w, q1.y || 0),
-                    ];
-                    elements.push(
-                      <Fragment key={"" + i}>
-                      <Rect 
-                        key={"rect fill" + i}
-                        x={q1.x - w}
-                        y={q1.y || 0}
-                        width={2 * w}
-                        height={(q3.y || 0) - (q1.y || 0)}
-                        color={theme.colors.primaryContainer}
-                      />
-                      <SkLine
-                        key={"q0 line" + i}
-                        p1={vec(q0.x - w, q0.y || 0)}
-                        p2={vec(q0.x + w, q0.y || 0)}
-                        color={theme.colors.onSurface}
-                        strokeWidth={1}
-                      />                      
-                      <SkLine
-                        key={"q2 line" + i}
-                        p1={vec(q2.x - w, q2.y || 0)}
-                        p2={vec(q2.x + w, q2.y || 0)}
-                        color={theme.colors.onSurface}
-                        strokeWidth={1}
-                      />
-                      <SkLine
-                        key={"q4 line" + i}
-                        p1={vec(q4.x - w, q4.y || 0)}
-                        p2={vec(q4.x + w, q4.y || 0)}
-                        color={theme.colors.onSurface}
-                        strokeWidth={1}
-                      />
-                      <SkLine
-                        key={"bottom line" + i}
-                        p1={vec(q0.x, q0.y || 0)}
-                        p2={vec(q1.x, q1.y || 0)}
-                        color={theme.colors.onSurface}
-                        strokeWidth={1}
-                      />
-                      <SkLine
-                        key={"top line" + i}
-                        p1={vec(q3.x, q3.y || 0)}
-                        p2={vec(q4.x, q4.y || 0)}
-                        color={theme.colors.onSurface}
-                        strokeWidth={1}
-                      />
-                      <Points
-                        key={"rect" + i}
-                        points={rectPoints}
-                        color={theme.colors.onSurface}
-                        strokeWidth={1}
-                        mode="polygon"
-                      />
-                      </Fragment>
-                    );
+                    if (q0.y == q4.y) {
+                      const path = Skia.Path.Make();
+                      path.moveTo(q0x - w, q0y);
+                      path.lineTo(q0x, q0y - w);
+                      path.lineTo(q4x + w, q4y);
+                      path.lineTo(q4x, q4y + w);
+                      path.close();
+                      elements.push(
+                        <Fragment key={"" + i}>
+                          <Path
+                            path={path}
+                            color={theme.colors.primaryContainer}
+                          />
+                          <Path
+                            style="stroke"
+                            path={path}
+                            color={theme.colors.onSurface}
+                            strokeWidth={1}
+                          />                          
+                        </Fragment>
+                      );
+                    } else {
+                      const q1 = points.q1[i];
+                      const q2 = points.q2[i];
+                      const q3 = points.q3[i];
+                      const [q1x, q1y] = [q1.x, q1.y ?? NaN];
+                      const [q2x, q2y] = [q2.x, q2.y ?? NaN];
+                      const [q3x, q3y] = [q3.x, q3.y ?? NaN];
+
+                      const fill = Skia.Path.Make();
+                      fill.moveTo(q3x - w, q3y);
+                      fill.lineTo(q3x + w, q3y);
+                      fill.lineTo(q1x + w, q1y);
+                      fill.lineTo(q1x - w, q1y);
+                      fill.close()        
+
+                      const stroke = Skia.Path.Make();
+                      stroke.moveTo(q4x - w, q4y);
+                      stroke.lineTo(q4x + w, q4y);
+                      stroke.moveTo(q4x, q4y);
+                      stroke.lineTo(q3x, q3y);
+                      stroke.moveTo(q3x - w, q3y);
+                      stroke.lineTo(q3x + w, q3y);
+                      stroke.lineTo(q1x + w, q1y);
+                      stroke.lineTo(q1x - w, q1y);
+                      stroke.lineTo(q3x - w, q3y);
+                      stroke.moveTo(q2x - w, q2y);
+                      stroke.lineTo(q2x + w, q2y);
+                      stroke.moveTo(q1x, q1y);
+                      stroke.lineTo(q0x, q0y);
+                      stroke.moveTo(q0x - w, q0y);
+                      stroke.lineTo(q0x + w, q0y);
+
+                      elements.push(
+                        <Fragment key={"" + i}>
+                          <Path
+                            style="fill"
+                            path={fill}
+                            color={theme.colors.primaryContainer}
+                          />
+                          <Path
+                            style="stroke"
+                            path={stroke}
+                            color={theme.colors.onSurface}
+                            strokeWidth={1}
+                          />
+                        </Fragment>
+                      );
+                    }
                   }
                   return elements;
                 })()}
