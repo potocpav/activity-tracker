@@ -1,10 +1,10 @@
 import React, { Fragment, useState } from "react";
 import { View, Text, Platform, TouchableOpacity } from "react-native";
-import { useTheme } from 'react-native-paper';
+import { Chip, useTheme } from 'react-native-paper';
 import { getTransformComponents, setScale, setTranslate, useChartTransformState } from "victory-native";
 import { CartesianChart } from "victory-native";
 import {matchFont, Path, Points, Rect, Skia, Line as SkLine, vec} from "@shopify/react-native-skia";
-import useStore, { GoalType, State } from "./Store";
+import useStore, { GoalType, State, Tag } from "./Store";
 import { useAnimatedReaction, useSharedValue, withTiming } from "react-native-reanimated";
 import { binTime, binTimeSeries, BinSize } from "./GoalUtil";
 
@@ -75,6 +75,7 @@ const GoalGraph = ({ route }: { route: any }) => {
   }
 
   const [binning, setBinning] = useState<"day" | "week" | "month" | "quarter" | "year">("day");
+  const [tags, setTags] = useState<{name: string, state: "yes" | "no" | "maybe"}[]>(goal.tags.map((t: Tag) => ({name: t.name, state: "maybe"})));
   const transformState = useChartTransformState({
     scaleX: 1.0, // Initial X-axis scale
     scaleY: 1.0, // Initial Y-axis scale
@@ -149,6 +150,15 @@ const GoalGraph = ({ route }: { route: any }) => {
           <Text style={{ marginRight: 10, color: theme.colors.onSurface }}>Value:</Text>
           {subUnitNames?.map((name: string) => 
             toggleButton(name, subUnitName === name, () => setSubUnitName(name), theme))}
+        </View>
+      )}
+
+      { goal.tags.length > 0 && (
+        <View key="tags" style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
+          <Text style={{ marginRight: 10, color: theme.colors.onSurface }}>Tags:</Text>
+          {goal.tags.map((tag: Tag) => 
+            <Chip key={tag.name} mode="outlined" style={{ marginRight: 10 }}>{tag.name}</Chip>
+            )}
         </View>
       )}
 
