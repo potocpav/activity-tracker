@@ -63,7 +63,7 @@ const Goals: React.FC<GoalsProps> = ({ navigation }) => {
           anchor={<View style={{width: 1, height: 1}}/>}
         >
             <Menu.Item onPress={() => {setMenuVisible(false); navigation.navigate('Live View')}} title="Tindeq Live View" />
-            <Menu.Item onPress={() => {setMenuVisible(false)}} title="Settings" />
+            <Menu.Item onPress={() => {setMenuVisible(false); navigation.navigate('Settings')}} title="Settings" />
           </Menu>
         </View>
       <DraggableFlatList

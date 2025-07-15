@@ -10,6 +10,7 @@ import { Button } from "react-native-paper";
 import LiveView from "./LiveView";
 import Goals from "./Goals";
 import Goal from "./Goal";
+import Settings from "./Settings";
 import DeviceModal from "./DeviceConnectionModal";
 import EditDataPoint from "./EditDataPoint";
 import EditGoal from "./EditGoal";
@@ -99,6 +100,11 @@ const App = () => {
               <Stack.Screen 
                 name="Goal" 
                 component={Goal} 
+                />
+              <Stack.Screen 
+                name="Settings" 
+                component={Settings} 
+                options={{title: "Settings"}}
                 />
             </Stack.Group>
             <Stack.Group screenOptions={{presentation: 'modal'}}>
