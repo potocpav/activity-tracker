@@ -76,6 +76,8 @@ const GoalGraph = ({ route }: { route: any }) => {
 
   const [binning, setBinning] = useState<"day" | "week" | "month" | "quarter" | "year">("day");
   const [tags, setTags] = useState<{name: string, state: "yes" | "no" | "maybe"}[]>(goal.tags.map((t: Tag) => ({name: t.name, state: "maybe"})));
+  const [graphType, setGraphType] = useState<"box" | "bar-count" | "bar-sum" | "line-mean">("box");
+  const graphTypes = ["box", "bar-count", "bar-sum", "line-mean"];
   const transformState = useChartTransformState({
     scaleX: 1.0, // Initial X-axis scale
     scaleY: 1.0, // Initial Y-axis scale
@@ -171,7 +173,6 @@ const GoalGraph = ({ route }: { route: any }) => {
           {goal.tags.map((tag: Tag) => 
             <Chip 
               key={tag.name} 
-              mode="outlined" 
               icon={(() => {
                 const state = tags.find((t) => t.name === tag.name)?.state;
                 if (state === "yes") {
@@ -194,6 +195,10 @@ const GoalGraph = ({ route }: { route: any }) => {
             )}
         </View>
       )}
+
+      <View key="graphTypeButtons" style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
+        {graphTypes.map((type) => toggleButton(type, graphType === type, () => setGraphType(type as "box" | "bar-count" | "bar-sum" | "line-mean"), theme))}
+      </View>
 
       <View key="goalGraph" style={{flex: 1, width: '100%'}}>
         <CartesianChart 
