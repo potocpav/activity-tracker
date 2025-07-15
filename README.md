@@ -15,10 +15,21 @@ A React Native mobile application for analyzing force measurements from the Tind
 
 In order to make this app a full-featured management app for workout data, the following list of features must be implemented:
 
+* [ ] Dogfooding
+  * [ ] Preview version
+  * [ ] Data stability and migrations
+* [ ] UX
+  * [x] Light/Dark themes
+  * [ ] Allow adding multiple points
+  * [ ] Allow duplicating an existing point
+  * [ ] Rename and rebrand the app, perhaps to "Workout Tracker"
+  * [ ] Add default example data
+  * [ ] Simplify graph presentation
 * [ ] Goal Screen
   * [x] Goal list
     * [ ] Show last data points in the list
     * [ ] Add point button directly on the Goal list
+    * [ ] Drag & drop to reorder list
   * [ ] Summary screen
     * [x] Implement basics
     * [x] Allow editing description, title
@@ -67,11 +78,6 @@ In order to make this app a full-featured management app for workout data, the f
   * [ ] Integrate Tindeq with goal management
   * [ ] Improve connection so that we never get stuck
   * [ ] Tare with automatic disconnect/connect
-* [ ] Look & Feel
-  * [x] Light/Dark themes
-  * [ ] Rename and rebrand the app, perhaps to "Goals"
-  * [ ] Add default example data
-  * [ ] Simplify graph presentation
 * [ ] Settings page
   * [x] Allow resetting data to example data
   * [ ] Light/dark theme
@@ -85,6 +91,7 @@ In order to make this app a full-featured management app for workout data, the f
   * [ ] Performance improvements for 1k-10k data points
 * [ ] Calendar Screen
   * [ ] Implement to show day-by-day summaries including all goals
+
 
 ## Screenshots
 
@@ -104,7 +111,7 @@ In order to make this app a full-featured management app for workout data, the f
 ## Prerequisites
 
 - Expo CLI
-- Tindeq Progressor device
+- Optional: Tindeq Progressor device
 
 ## Running the App
 

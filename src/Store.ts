@@ -31,12 +31,17 @@ export type SubUnit = {
     symbol: string;
 };
 
-export type Tag = string;
+export type Tag = {
+  name: TagName;
+  color: string;
+};
+
+export type TagName = String;
 
 export type DataPoint = {
     time: number;
-    value: any;
-    tags: Tag[];
+    value: number | object;
+    tags: TagName[];
 };
 
 export type GoalType = {
@@ -44,6 +49,7 @@ export type GoalType = {
   description: string;
   unit: Unit;
   dataPoints: DataPoint[];
+  tags: Tag[];
 };
 
 export type State = {
