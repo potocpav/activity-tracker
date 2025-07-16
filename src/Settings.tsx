@@ -8,6 +8,8 @@ const Settings = () => {
   const theme = useTheme();
   const themeState = useStore((state: any) => state.theme);
   const setThemeState = useStore((state: any) => state.setTheme);
+  const blackBackground = useStore((state: any) => state.blackBackground);
+  const setBlackBackground = useStore((state: any) => state.setBlackBackground);
   const goals = useStore((state: any) => state.goals);
 
   return (
@@ -16,7 +18,7 @@ const Settings = () => {
         <List.Section>
           <List.Subheader>Interface</List.Subheader>
           <List.Item
-            title="Dark Mode"
+            title="Dark Theme"
             description="Use dark theme throughout the app"
             onPress={() => setThemeState(themeState == 'dark' ? 'light' : 'dark')}
             left={(props) => <List.Icon {...props} icon="theme-light-dark" />}
@@ -24,6 +26,18 @@ const Settings = () => {
               <Switch
                 value={themeState == 'dark'}
                 onValueChange={() => setThemeState(themeState == 'dark' ? 'light' : 'dark')}
+              />
+            )}
+          />          
+          <List.Item
+            title="Use pure black in dark theme"
+            description="Replaces gray backgrounds with pure black in dark theme. Reduces battery usage in phones with AMOLED screens."
+            onPress={() => setBlackBackground(!blackBackground)}
+            left={(props) => <List.Icon {...props} icon="brightness-6" />}
+            right={() => (
+              <Switch
+                value={blackBackground}
+                onValueChange={() => setBlackBackground(!blackBackground)}
               />
             )}
           />

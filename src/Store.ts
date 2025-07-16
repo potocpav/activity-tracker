@@ -62,6 +62,7 @@ export type State = {
 
   goals: GoalType[];
   theme: "light" | "dark";
+  blackBackground: boolean;
 
   requestPermissions: any;
   connectToDevice: any;
@@ -93,11 +94,16 @@ const useStore = create<State>()(
       // Goals related state
       goals: exampleGoals,
       theme: "light",
+      blackBackground: false,
 
       requestPermissions: requestPermissions,
 
       setTheme: (theme: "light" | "dark") => {
         set({theme: theme});
+      },
+
+      setBlackBackground: (blackBackground: boolean) => {
+        set({blackBackground: blackBackground});
       },
 
       connectToDevice: async (device: Device) => {

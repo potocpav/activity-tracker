@@ -114,14 +114,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   listContainer: {
-    padding: 10,
+    margin: 10,
   },
   goalCard: {
     padding: 6,
   },
   goalTitle: {
     fontSize: 16,
-    fontWeight: "bold",
     width: '60%',
   },
   goalDescription: {

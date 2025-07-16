@@ -426,6 +426,7 @@ const GoalGraph = ({ route }: { route: any }) => {
             tickValues: ticks, // binStats.map((q) => q.t),
             font: font,
             // enableRescaling: true,
+            lineWidth: 0,
             lineColor: theme.colors.onSurfaceVariant,
             labelColor: theme.colors.onSurfaceVariant,
 
@@ -454,12 +455,13 @@ const GoalGraph = ({ route }: { route: any }) => {
               yKeys: yKeys,
               font: font,
               tickCount: 10,
+              // lineWidth: ,
               lineColor: theme.colors.onSurfaceVariant,
               labelColor: theme.colors.onSurfaceVariant,
             },
           ]}
           >
-          {({ points, chartBounds }) => {
+          {({ points }) => {
             if (graphType === "box") {
               return (
                 <>
@@ -487,24 +489,6 @@ const GoalGraph = ({ route }: { route: any }) => {
                         q1y -= h;
                         q3y += h;
                       }
-                      const fill = Skia.Path.Make();
-                      fill.moveTo(q3x - w, q3y);
-                      fill.lineTo(q3x + w, q3y);
-                      fill.lineTo(q1x + w, q1y);
-                      fill.lineTo(q1x - w, q1y);
-                      fill.close()     
-
-                      const stroke = Skia.Path.Make();
-                      stroke.moveTo(q4x, q4y);
-                      stroke.lineTo(q3x, q3y);
-                      stroke.moveTo(q2x - w, q2y);
-                      stroke.lineTo(q2x + w, q2y);
-                      stroke.moveTo(q1x, q1y);
-                      stroke.lineTo(q0x, q0y);
-
-                      const q2stroke = Skia.Path.Make();
-                      q2stroke.moveTo(q2x - w, q2y);
-                      q2stroke.lineTo(q2x + w, q2y);
 
                       elements.push(
                         <Fragment key={"" + i}>
@@ -525,31 +509,13 @@ const GoalGraph = ({ route }: { route: any }) => {
                             r={ws}
                           />
                           <RoundedRect
-                            x={q2x - w}
+                            x={q2x - w * 1.7}
                             y={q2y - hs}
-                            width={2 * w}
+                            width={2 * w * 1.7}
                             height={2 * hs}
-                            color={theme.colors.onSurface}
+                            color={theme.colors.primary}
                             r={ws}
                           />
-                          {/* <Path
-                            style="fill"
-                            path={fill}
-                            color={theme.colors.primary}
-                          /> */}
-                          {/* <Path
-                            style="stroke"
-                            path={stroke}
-                            color={theme.colors.primary}
-                            strokeWidth={w*0.7}
-
-                          />
-                          <Path
-                            style="stroke"
-                            path={q2stroke}
-                            color={theme.colors.onSurface}
-                            strokeWidth={w*0.5}
-                          /> */}
                         </Fragment>
                       );
                   }

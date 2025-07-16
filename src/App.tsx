@@ -27,9 +27,20 @@ const { LightTheme, DarkTheme: PaperDarkTheme } = adaptNavigationTheme({
   reactNavigationDark: DarkTheme,
 });
 
+const MD3BlackTheme = {
+  ...MD3DarkTheme,
+  colors: {
+    ...MD3DarkTheme.colors,
+    background: "#000000",
+    surface: "#000000",
+    surfaceVariant: "#000000",
+  },
+};
+
 const App = () => {
   const Stack = createNativeStackNavigator();
   const theme = useStore((state: any) => state.theme);
+  const blackBackground = useStore((state: any) => state.blackBackground);
 
   // Add missing fonts property to fix the TypeScript error
   const navigationTheme = theme == 'light' ? {
@@ -75,10 +86,10 @@ const App = () => {
   };
 
   return (
-    <PaperProvider theme={theme == 'light' ? MD3LightTheme : MD3DarkTheme}>
+    <PaperProvider theme={theme == 'light' ? MD3LightTheme : blackBackground ? MD3BlackTheme : MD3DarkTheme}>
       <GestureHandlerRootView>
-      <StatusBar barStyle={theme == 'light' ? "dark-content" : "light-content"} backgroundColor={theme == 'light' ? "#f2f2f2" : "#121212"} />
-      <SafeAreaView style={[styles.container, { backgroundColor: theme == 'light' ? "#f2f2f2" : "#121212" }]}>
+      <StatusBar barStyle={theme == 'light' ? "dark-content" : "light-content"} backgroundColor={theme == 'light' ? "#f2f2f2" : blackBackground ? "#000000" : "#121212"} />
+      <SafeAreaView style={[styles.container, { backgroundColor: theme == 'light' ? "#f2f2f2" : blackBackground ? "#000000" : "#121212" }]}>
         <NavigationContainer theme={navigationTheme}>
           <Stack.Navigator>
             <Stack.Group>
