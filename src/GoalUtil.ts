@@ -3,7 +3,6 @@ export type BinSize = "day" | "week" | "month" | "quarter" | "year";
 export const binTime = (binSize: BinSize, t0: number, i: number) => {
   const t0Date = new Date(t0);
   if (binSize === "day") {
-    // console.log(new Date(t0Date.getFullYear(), t0Date.getMonth(), t0Date.getDate() + i, 0).toLocaleString());
     return new Date(t0Date.getFullYear(), t0Date.getMonth(), t0Date.getDate() + i, 0).getTime();
 
   } else if (binSize === "week") {

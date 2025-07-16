@@ -126,7 +126,6 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
           }
         } else {
           if (tagDialogName) {
-            console.log("renameTag", goal.name, tagDialogName, tagDialogNameInput);
             renameTag(goal.name, tagDialogName, tagDialogNameInput);
           } else {
             addTag(goal.name, { name: tagDialogNameInput, color: theme.colors.primary });
@@ -177,7 +176,7 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
             keyExtractor={(item: Tag) => item.name}
             renderItem={({ item, drag, isActive }: { item: Tag, drag: () => void, isActive: boolean }) => (
               <Chip
-                onPress={() => { console.log("pressed", item.name); setTagDialogVisible(true); setTagDialogName(item.name); setTagDialogNameInput(item.name);}}
+                onPress={() => { setTagDialogVisible(true); setTagDialogName(item.name); setTagDialogNameInput(item.name);}}
                 style={{
                   // backgroundColor: item.color,
                   marginRight: 8,

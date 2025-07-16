@@ -104,12 +104,14 @@ const GoalGraph = ({ route }: { route: any }) => {
   const barHeight = 5;
   
   var ticks = [];
-  var tick_t = binTime(binning, goal.dataPoints[0].time, 0);
-  for (let i = 0; tick_t < now.getTime(); i++) {
-    tick_t = binTime(binning, goal.dataPoints[0].time, i);
-    ticks.push(tick_t);
-    if (i > 1000) {
-      break; // limit
+  if (goal.dataPoints.length > 0) {
+    var tick_t = binTime(binning, goal.dataPoints[0].time, 0);
+    for (let i = 0; tick_t < now.getTime(); i++) {
+      tick_t = binTime(binning, goal.dataPoints[0].time, i);
+      ticks.push(tick_t);
+      if (i > 1000) {
+        break; // limit
+      }
     }
   }
 
@@ -156,10 +158,12 @@ const GoalGraph = ({ route }: { route: any }) => {
   }
 
   const {domain, viewport} : {domain: {x: [number, number], y?: [number, number]}, viewport: {x: [number, number]}} = (() => {
+    const firstBinTime = bins.length ? bins[0].time : now.getTime();
+    const lastBinTime = bins.length ? bins[bins.length - 1].time : now.getTime();
     const nowBin = binTime(binning, now.getTime(), 0);
-    const t1 = Math.max(bins[bins.length - 1].time, nowBin) + approximateBinSize(binning) / 2;
+    const t1 = Math.max(lastBinTime, nowBin) + approximateBinSize(binning) / 2;
     const t0view = t1 - approximateBinSize(binning) * 15;
-    const t0 = Math.min(bins[0].time  - approximateBinSize(binning) / 2, t0view);
+    const t0 = Math.min(firstBinTime - approximateBinSize(binning) / 2, t0view);
     
     var domain : {x: [number, number], y?: [number, number]} = {x: [t0, t1]};
     var viewport : {x: [number, number]} = {x: [t0view, t1]};

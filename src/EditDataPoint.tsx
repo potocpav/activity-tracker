@@ -88,7 +88,6 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
 
       if (inputDate && hasNonEmptyValue && newValue !== null) {
         const newTime = new Date(inputDate?.getFullYear(), inputDate?.getMonth(), inputDate?.getDate()).getTime();
-        console.log("inputTags", inputTags);
         updateGoalDataPoint(goalName, newDataPoint ? undefined : dataPointIndex, {
           time: newTime,
           value: newValue,
