@@ -152,6 +152,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
 
             {goal.tags.map((tag: any, index: number) => (
               <Chip
+                key={tag.name}
                 onPress={() => { toggleInputTag(tag.name); }}
                 mode={inputTags.includes(tag.name) ? "flat" : "outlined"}
                 style={{

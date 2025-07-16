@@ -2,7 +2,7 @@ import React from "react";
 import { SafeAreaView, StyleSheet, Text, View } from "react-native";
 import { useTheme, FAB, Divider } from 'react-native-paper';
 import useStore, { DataPoint, GoalType, Unit } from "./Store";
-import { renderValue, formatDate } from "./GoalData";
+import { renderValueSummary, formatDate } from "./GoalData";
 
 const renderUnit = (unit: Unit) => {
   if (typeof unit === "string") {
@@ -42,7 +42,9 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
           <Text style={[styles.statsLabel, { color: theme.colors.onSurfaceVariant }]}>Days</Text>
         </View>
         <View style={styles.statsColumn}>
-          <Text style={[styles.statsValue, { color: theme.colors.primary }]}>{lastDataPoint ? renderValue(lastDataPoint.value, goal.unit) : '-'}</Text>
+          <View style={[styles.statsValueContainer]}>{lastDataPoint ? 
+            renderValueSummary(lastDataPoint.value, goal.unit, [styles.statsValue, { color: theme.colors.primary}]) : 
+            <Text style={[styles.statsValue, { color: theme.colors.onSurfaceVariant }]}>-</Text>}</View>
           <Text style={[styles.statsLabel, { color: theme.colors.onSurfaceVariant }]}>Last</Text>
         </View>
       </View>
@@ -89,6 +91,10 @@ const styles = StyleSheet.create({
   statsValue: {
     fontSize: 24,
     fontWeight: 'bold',
+  },
+  statsValueContainer: {
+    flexDirection: 'column',
+    alignItems: 'center'
   },
   fab: {
     position: 'absolute',

@@ -28,20 +28,31 @@ const formatTime = (date: Date) => {
   });
 };
 
-export const renderValueSummary = (value: any, unit: Unit) => {
+export const renderValueSummary = (value: any, unit: Unit, style: any, short=false) => {
   if (typeof value === "number" && typeof unit === "string") {
-    return `${Math.round(value * 100) / 100} ${unit}`;
+    return (
+      <Text style={style}>{`${Math.round(value * 100) / 100} ${unit}`}</Text>
+    );
   } else if (typeof value === "object" && typeof unit === "object") {
     // Handle complex units (like finger strength with mean, max, tut)
-    const parts: string[] = [];
+    var parts: string[] = [];
     unit.forEach((u: any) => {
       if (value[u.name] !== null && value[u.name] !== undefined) {
         parts.push(`${value[u.name]} ${u.symbol}`);
       }
     });
-    return parts.join(", ");
+    if (short) {
+      parts = parts.slice(0, 1);
+    }
+    return (
+      // <View style={{flexDirection: 'column'}}>
+        parts.map((p: string, i: number) => (
+          <Text style={style} key={i}>{p}</Text>
+        ))
+      // </View>
+    );
   } else {
-    return "n/a"
+    return <Text style={style}>-</Text>
   }
 };
 

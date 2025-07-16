@@ -1,10 +1,10 @@
 import React, { Fragment, useState } from "react";
 import { View, Text, Platform, TouchableOpacity } from "react-native";
 import { Chip, useTheme } from 'react-native-paper';
-import { Bar, getTransformComponents, Line, Scatter, setScale, setTranslate, useChartTransformState } from "victory-native";
+import { getTransformComponents, Line, Scatter, setScale, setTranslate, useChartTransformState } from "victory-native";
 import { CartesianChart } from "victory-native";
-import {matchFont, Path, Points, Rect, Skia, Line as SkLine, vec} from "@shopify/react-native-skia";
-import useStore, { GoalType, State, Tag } from "./Store";
+import {matchFont, Path, RoundedRect, Skia} from "@shopify/react-native-skia";
+import useStore, { GoalType, Tag } from "./Store";
 import { useAnimatedReaction, useSharedValue, withTiming } from "react-native-reanimated";
 import { binTime, binTimeSeries, BinSize } from "./GoalUtil";
 import AntDesign from '@expo/vector-icons/AntDesign';
@@ -100,9 +100,19 @@ const GoalGraph = ({ route }: { route: any }) => {
   }
 
   const now = new Date();
-
   const barWidth = 5;
+  const barHeight = 5;
   
+  var ticks = [];
+  var tick_t = binTime(binning, goal.dataPoints[0].time, 0);
+  for (let i = 0; tick_t < now.getTime(); i++) {
+    tick_t = binTime(binning, goal.dataPoints[0].time, i);
+    ticks.push(tick_t);
+    if (i > 1000) {
+      break; // limit
+    }
+  }
+
   const bins = binTimeSeries(binning, goal.dataPoints);
   const binStats : {t: number, q0: number, q1: number, q2: number, q3: number, q4: number, count: number, sum: number, mean: number, zero: number}[] = bins.map((bin) => {
     const values = bin.values.map(extractValue).filter((v: number) => v !== null);
@@ -119,7 +129,6 @@ const GoalGraph = ({ route }: { route: any }) => {
       };
     }
   }).filter((b) => b !== null);
-
 
   var yKeys : (keyof typeof binStats[number])[]; 
   if (graphType === "box") {
@@ -146,33 +155,43 @@ const GoalGraph = ({ route }: { route: any }) => {
     }
   }
 
-  const {domain, viewport} : {domain: {x: [number, number], y?: [number]}, viewport: {x: [number, number]}} = (() => {
+  const {domain, viewport} : {domain: {x: [number, number], y?: [number, number]}, viewport: {x: [number, number]}} = (() => {
     const nowBin = binTime(binning, now.getTime(), 0);
     const t1 = Math.max(bins[bins.length - 1].time, nowBin) + approximateBinSize(binning) / 2;
     const t0view = t1 - approximateBinSize(binning) * 15;
     const t0 = Math.min(bins[0].time  - approximateBinSize(binning) / 2, t0view);
-
-    console.log(new Date(t0), new Date(t0view), new Date(t1));
     
-    var domain : {x: [number, number], y?: [number]} = {x: [t0, t1]};
+    var domain : {x: [number, number], y?: [number, number]} = {x: [t0, t1]};
     var viewport : {x: [number, number]} = {x: [t0view, t1]};
     if (graphType === "box") {
-
+      const [ymin, ymax] = [Math.min(...binStats.map((b) => b.q0)), Math.max(...binStats.map((b) => b.q4))];
+      domain.y = [ymin, ymax];
     } else if (graphType === "bar-count") {
-      domain.y = [0];
+      domain.y = [0, Math.max(...binStats.map((b) => b.count))];
     } else if (graphType === "bar-sum") {
-      domain.y = [0];
+      domain.y = [0, Math.max(...binStats.map((b) => b.sum))];
     } else if (graphType === "line-mean") {
-
+      domain.y = [Math.min(...binStats.map((b) => b.mean)), Math.max(...binStats.map((b) => b.mean))];
     } else {
       throw new Error("Invalid graph type");
     }
     return {domain, viewport};
   })();
 
-  const k = useSharedValue(1);
+
+  // const [xDomain, setXDomain] = useState<[number, number]>(domain.x);
+
+  const kx = useSharedValue(1);
+  const ky = useSharedValue(1);
   const tx = useSharedValue(0);
   const ty = useSharedValue(0);
+
+  const resetTransform = () => {
+    tx.value = withTiming(0);
+  }
+
+    // transformState.matrix.value = setScale(transformState.matrix.value, 1, 1);
+  // transformState.matrix.value = setTranslate(transformState.matrix.value, 0, 0);
 
   // enforce limits when panning
   useAnimatedReaction(
@@ -182,24 +201,29 @@ const GoalGraph = ({ route }: { route: any }) => {
     (cv, pv) => {
       if (!cv && pv) {
         const vals = getTransformComponents(transformState.matrix.value);
-        k.value = vals.scaleX;
+        kx.value = vals.scaleX;
         tx.value = vals.translateX;
-        ty.value = vals.translateY;
 
-        k.value = withTiming(1);
-        tx.value = withTiming(0);
-        ty.value = withTiming(0);
+        if (tx.value < 0) {
+          tx.value = withTiming(0);
+        }
+
+        // const limit = 300;
+        // if (tx.value > limit) {
+        //   tx.value = withTiming(limit);
+        // }
       }
     },
   );
 
+
   useAnimatedReaction(
     () => {
-      return { k: k.value, tx: tx.value, ty: ty.value };
+      return { kx: kx.value, ky: ky.value, tx: tx.value, ty: ty.value };
     },
-    ({ k, tx, ty }) => {
+    ({ kx, ky, tx, ty }) => {
       const m = setTranslate(transformState.matrix.value, tx, ty);
-      transformState.matrix.value = setScale(m, k);
+      transformState.matrix.value = setScale(m, kx, ky);
     },
   );
 
@@ -239,11 +263,11 @@ const GoalGraph = ({ route }: { route: any }) => {
     <View style={{ flex: 1, padding: 10 }}>
       {/* Binning selection buttons */}
       <View key="binningButtons" style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
-        {toggleButton("D", "Day", binning === 'day', () => setBinning('day'), theme)}
-        {toggleButton("W", "Week", binning === 'week', () => setBinning('week'), theme)}
-        {toggleButton("M", "Month", binning === 'month', () => setBinning('month'), theme)}
-        {toggleButton("Q", "Quarter", binning === 'quarter', () => setBinning('quarter'), theme)}
-        {toggleButton("Y", "Year", binning === 'year', () => setBinning('year'), theme)}
+        {toggleButton("D", "Day", binning === 'day', () => {resetTransform(); setBinning('day');}, theme)}
+        {toggleButton("W", "Week", binning === 'week', () => {resetTransform(); setBinning('week');}, theme)}
+        {toggleButton("M", "Month", binning === 'month', () => {resetTransform(); setBinning('month');}, theme)}
+        {toggleButton("Q", "Quarter", binning === 'quarter', () => {resetTransform(); setBinning('quarter');}, theme)}
+        {toggleButton("Y", "Year", binning === 'year', () => {resetTransform(); setBinning('year');}, theme)}
       </View>
       { subUnitNames && (
         <View key="subUnitNames" style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
@@ -286,7 +310,7 @@ const GoalGraph = ({ route }: { route: any }) => {
         {graphTypes.map((type) => toggleButton(type, graphLabel(type), graphType === type, () => setGraphType(type as "box" | "bar-count" | "bar-sum" | "line-mean"), theme))}
       </View>
 
-      <View key="goalGraph" style={{flex: 1, width: '100%'}}>
+      <View key="goalGraph" style={{height: '70%', width: '100%'}}>
         <CartesianChart 
           data={binStats} 
           transformState={transformState}
@@ -297,7 +321,6 @@ const GoalGraph = ({ route }: { route: any }) => {
           padding={{bottom: 10}}
           domain={domain}
           viewport={viewport}
-          domainPadding={{top: 10, bottom: 0, left: barWidth, right: barWidth}}
           xKey="t" 
           yKeys={yKeys}
           // frame={{
@@ -305,7 +328,7 @@ const GoalGraph = ({ route }: { route: any }) => {
           //   lineColor: theme.colors.onSurfaceVariant,
           // }}
           xAxis={{
-            tickValues: binStats.map((q) => q.t),
+            tickValues: ticks, // binStats.map((q) => q.t),
             font: font,
             // enableRescaling: true,
             lineColor: theme.colors.onSurfaceVariant,
@@ -318,9 +341,11 @@ const GoalGraph = ({ route }: { route: any }) => {
               } else if (binning === "week") {
                 return "" + (d.getDate() + 1);
               } else if (binning === "month") {
-                return "" + (d.getMonth() + 1);
+                const m = d.getMonth() + 1;
+                return m > 1 ? `${m}` : `'${d.getFullYear() % 100}`;
               } else if (binning === "quarter") {
-                return "q" + (d.getMonth() / 3 + 1);
+                const q = d.getMonth() / 3 + 1;
+                return q > 1 ? `q${q}` : `'${d.getFullYear() % 100}`;
               } else if (binning === "year") {
                 return "" + d.getFullYear();
               } else {
@@ -346,46 +371,33 @@ const GoalGraph = ({ route }: { route: any }) => {
                   {(() => {
                   const elements = [];
                   for (let i = 0; i < points.q0.length; i++) {
-                    const q0 = points.q0[i];
-                    const q4 = points.q4[i];
-                    const [q0x, q0y] = [q0.x, q0.y ?? NaN];
-                    const [q4x, q4y] = [q4.x, q4.y ?? NaN];
                     const w = barWidth;
-                    if (q0.y == q4.y) {
-                      const path = Skia.Path.Make();
-                      path.moveTo(q0x - w, q0y - w);
-                      path.lineTo(q0x + w, q0y - w);
-                      path.lineTo(q4x + w, q4y + w);
-                      path.lineTo(q4x - w, q4y + w);
-                      path.close();
-                      elements.push(
-                        <Fragment key={"" + i}>
-                          <Path
-                            path={path}
-                            color={theme.colors.primary}
-                          />
-                          <Path
-                            style="stroke"
-                            path={path}
-                            color={theme.colors.primary}
-                            strokeWidth={1}
-                          />                          
-                        </Fragment>
-                      );
-                    } else {
+                    const h = barHeight;
+                    
+                    const ws = w*0.4;
+                    const hs = h*0.4;
+
+                      const q0 = points.q0[i];
                       const q1 = points.q1[i];
                       const q2 = points.q2[i];
                       const q3 = points.q3[i];
-                      const [q1x, q1y] = [q1.x, q1.y ?? NaN];
+                      const q4 = points.q4[i];
+                      const [q0x, q0y] = [q0.x, q0.y ?? NaN];
+                      var [q1x, q1y] = [q1.x, q1.y ?? NaN];
                       const [q2x, q2y] = [q2.x, q2.y ?? NaN];
-                      const [q3x, q3y] = [q3.x, q3.y ?? NaN];
+                      var [q3x, q3y] = [q3.x, q3.y ?? NaN];
+                      const [q4x, q4y] = [q4.x, q4.y ?? NaN];
 
+                      if (q1.y == q3.y) { 
+                        q1y -= h;
+                        q3y += h;
+                      }
                       const fill = Skia.Path.Make();
                       fill.moveTo(q3x - w, q3y);
                       fill.lineTo(q3x + w, q3y);
                       fill.lineTo(q1x + w, q1y);
                       fill.lineTo(q1x - w, q1y);
-                      fill.close()        
+                      fill.close()     
 
                       const stroke = Skia.Path.Make();
                       stroke.moveTo(q4x, q4y);
@@ -401,26 +413,50 @@ const GoalGraph = ({ route }: { route: any }) => {
 
                       elements.push(
                         <Fragment key={"" + i}>
-                          <Path
+                          <RoundedRect
+                            x={q1x - w}
+                            y={q1y}
+                            width={2*w}
+                            height={q3y - q1y}
+                            color={theme.colors.primary}
+                            r={w/2}
+                          />
+                          <RoundedRect
+                            x={q0x - ws}
+                            y={q0y}
+                            width={2*ws}
+                            height={q4y - q0y}
+                            color={theme.colors.primary}
+                            r={ws}
+                          />
+                          <RoundedRect
+                            x={q2x - w}
+                            y={q2y - hs}
+                            width={2 * w}
+                            height={2 * hs}
+                            color={theme.colors.onSurface}
+                            r={ws}
+                          />
+                          {/* <Path
                             style="fill"
                             path={fill}
                             color={theme.colors.primary}
-                          />
-                          <Path
+                          /> */}
+                          {/* <Path
                             style="stroke"
                             path={stroke}
                             color={theme.colors.primary}
                             strokeWidth={w*0.7}
+
                           />
                           <Path
                             style="stroke"
                             path={q2stroke}
                             color={theme.colors.onSurface}
                             strokeWidth={w*0.5}
-                          />
+                          /> */}
                         </Fragment>
                       );
-                    }
                   }
                   return elements;
                 })()}

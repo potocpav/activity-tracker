@@ -12,18 +12,11 @@ import { FAB, Button } from 'react-native-paper';
 import useStore, { GoalType, SubUnit, Unit } from "./Store";
 import DraggableFlatList from 'react-native-draggable-flatlist'
 import AntDesign from '@expo/vector-icons/AntDesign';
-
+import { renderValueSummary } from "./GoalData";
 
 
 type GoalsProps = {
   navigation: any;
-};
-
-const renderUnit = (unit: Unit) => {
-  if (typeof unit === "string") {
-    return "[" + unit + "]";
-  }
-  return unit.map((u: SubUnit) => u.name + " [" + u.symbol + "]").join(", ");
 };
 
 const Goals: React.FC<GoalsProps> = ({ navigation }) => {
@@ -42,17 +35,36 @@ const Goals: React.FC<GoalsProps> = ({ navigation }) => {
     });
   }, [navigation, menuVisible, theme]);
 
-  const renderGoal = ({ item, drag }: { item: GoalType, drag: () => void }) => (
-    <TouchableOpacity
-      style={[styles.goalCard, { backgroundColor: theme.colors.surface }]}
-      onPress={() => navigation.navigate('Goal', { goalName: item.name })}
-      onLongPress={drag}
-      activeOpacity={0.7}
-    >
-      <Text style={[styles.goalTitle, { color: theme.colors.onSurface }]}>{item.name}</Text>
-      <Text style={[styles.goalDate, { color: theme.colors.onSurfaceVariant }]}>{renderUnit(item.unit)}</Text>
-    </TouchableOpacity>
-  );
+  const renderGoal = ({ item, drag }: { item: GoalType, drag: () => void }) => {
+    const lastDataPoint = item.dataPoints && item.dataPoints.length > 0 ? item.dataPoints[item.dataPoints.length - 1] : null;
+    return (
+      <TouchableOpacity
+        style={[styles.goalCard, { backgroundColor: theme.colors.surface }]}
+        onPress={() => navigation.navigate('Goal', { goalName: item.name })}
+        onLongPress={drag}
+        activeOpacity={0.7}
+      >
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.goalTitle, { color: theme.colors.onSurface }]}>{item.name}</Text>
+          </View>
+          <View style={{ marginTop: 4 }}>
+              {lastDataPoint ? (
+                renderValueSummary(lastDataPoint.value, item.unit, [styles.goalDescription, { color: theme.colors.primary }], true)
+              ) : (
+                <Text style={[styles.goalDescription, { color: theme.colors.onSurfaceVariant }]}>No data</Text>
+              )}
+            </View>
+          <TouchableOpacity
+            onPress={() => { console.log('Add data point for', item.name); /* Placeholder for add action */ }}
+            style={{ marginLeft: 12, padding: 8 }}
+          >
+            <AntDesign name="pluscircleo" size={24} color={theme.colors.primary} />
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <SafeAreaView style={[styles.container]}>
@@ -105,20 +117,17 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   goalCard: {
-    padding: 10,
-    marginBottom: 10,
+    padding: 6,
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
   },
   goalTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    marginBottom: 8,
+    width: '60%',
   },
   goalDescription: {
     fontSize: 16,
-    lineHeight: 22,
-    marginBottom: 8,
   },
   goalDate: {
     fontSize: 14,
