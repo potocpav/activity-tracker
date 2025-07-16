@@ -17,7 +17,7 @@ type GoalDataProps = {
 };
 
 export const formatDate = (date: Date) => {
-  return date.toLocaleDateString("cs-CZ", {year: "numeric",month: "short",day: "numeric",hour: "2-digit",minute: "2-digit"});
+  return date.toLocaleDateString("cs-CZ", {year: "numeric",month: "short",day: "numeric"});
   // return date.toUTCString();
 };
 
@@ -73,14 +73,14 @@ export const renderValue = (value: any, unit: Unit) => {
   }
 };
 
-const renderTags = (tags: string[]) => {
+const renderTags = (tags: string[], theme: any) => {
   if (tags.length === 0) return null;
 
   return (
     <View style={styles.tagsContainer}>
       {tags.map((tag, index) => (
-        <View key={index} style={styles.tag}>
-          <Text style={styles.tagText}>{tag}</Text>
+        <View key={index} style={[styles.tag, { backgroundColor: theme.colors.surfaceVariant, borderColor: theme.colors.onSurfaceVariant }]}>
+          <Text style={[styles.tagText, { color: theme.colors.onSurfaceVariant }]}>{tag}</Text>
         </View>
       ))}
     </View>
@@ -99,9 +99,6 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.sectionHeader}>
-        <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>Data Points ({goal.dataPoints.length})</Text>
-      </View>
       <ScrollView style={styles.scrollView}>
         <DataTable>
           <DataTable.Header>
@@ -117,7 +114,7 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
             >
               <DataTable.Row>
                 <DataTable.Cell>{formatDate(new Date(dataPoint.time))}</DataTable.Cell>
-                <DataTable.Cell>{renderTags(dataPoint.tags)}</DataTable.Cell>
+                <DataTable.Cell>{renderTags(dataPoint.tags, theme)}</DataTable.Cell>
                 <DataTable.Cell numeric>{renderValue(dataPoint.value, goal.unit)}</DataTable.Cell>
               </DataTable.Row>
             </TouchableOpacity>
@@ -199,9 +196,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   tag: {
-    backgroundColor: '#f0f0f0',
     borderWidth: 1,
-    borderColor: '#d0d0d0',
     borderRadius: 12,
     paddingHorizontal: 6,
     paddingVertical: 2,

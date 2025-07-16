@@ -16,14 +16,22 @@ const getUniqueIdentifier = () => {
   
   const getAppName = () => {
     if (IS_DEV) {
-      return 'Workout Tracker (Dev)';
+      return 'Workouts (Dev)';
     }
   
     if (IS_PREVIEW) {
-      return 'Workout Tracker (Preview)';
+      return 'Workouts';
     }
   
-    return 'Workout Tracker';
+    return 'Workouts';
+  };
+
+  const getIconBackground = () => {
+    if (IS_DEV) {
+      return '#4d4d4d';
+    }
+
+    return "#7166ff";
   };
   
 
@@ -37,6 +45,10 @@ const getUniqueIdentifier = () => {
     android: {
       ...config.android,
       package: getUniqueIdentifier(),
+      adaptiveIcon: {
+        ...config.android.adaptiveIcon,
+        backgroundColor: getIconBackground(),
+      },
     },
   });
   

@@ -23,7 +23,8 @@ In order to make this app a full-featured management app for workout data, the f
     * [ ] Allow editing composite units
     * [ ] Allow adding graphs
     * [ ] Allow adding summary values
-    * [ ] Fix duplicating points, add an alert on duplication
+    * [x] Fix duplicating points
+    * [ ] add an alert on duplication
   * [ ] Data Series screen
     * [ ] Compact display
   * [ ] Goal Graphs

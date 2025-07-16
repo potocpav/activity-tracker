@@ -149,15 +149,15 @@ const GoalGraph = ({ route }: { route: any }) => {
     throw new Error("Invalid graph type");
   }
 
-  const graphLabel = (gType: any) => {;
+  const graphLabel = (gType: any) => {
     if (gType === "box") {
-      return (<View style={{flexDirection: 'row', alignItems: 'center'}}><AntDesign name="barchart" size={24} color="black" /><Text>Box</Text></View>);
+      return (<View style={{flexDirection: 'row', alignItems: 'center'}}><AntDesign name="barchart" size={24} color={theme.colors.onSurfaceVariant} /><Text style={{ color: theme.colors.onSurfaceVariant }}>Box</Text></View>);
     } else if (gType === "bar-count") {
-      return (<View style={{flexDirection: 'row', alignItems: 'center'}}><AntDesign name="barschart" size={24} color="black" /><Text>Count</Text></View>);
+      return (<View style={{flexDirection: 'row', alignItems: 'center'}}><AntDesign name="barschart" size={24} color={theme.colors.onSurfaceVariant} /><Text style={{ color: theme.colors.onSurfaceVariant }}>Count</Text></View>);
     } else if (gType === "bar-sum") {
-      return (<View style={{flexDirection: 'row', alignItems: 'center'}}><AntDesign name="barschart" size={24} color="black" /><Text>Sum</Text></View>);
+      return (<View style={{flexDirection: 'row', alignItems: 'center'}}><AntDesign name="barschart" size={24} color={theme.colors.onSurfaceVariant} /><Text style={{ color: theme.colors.onSurfaceVariant }}>Sum</Text></View>);
     } else if (gType === "line-mean") {
-      return (<View style={{flexDirection: 'row', alignItems: 'center'}}><AntDesign name="linechart" size={24} color="black" /><Text>Mean</Text></View>);
+      return (<View style={{flexDirection: 'row', alignItems: 'center'}}><AntDesign name="linechart" size={24} color={theme.colors.onSurfaceVariant} /><Text style={{ color: theme.colors.onSurfaceVariant }}>Mean</Text></View>);
     }
   }
 
@@ -173,7 +173,7 @@ const GoalGraph = ({ route }: { route: any }) => {
     var viewport : {x: [number, number]} = {x: [t0view, t1]};
     if (graphType === "box") {
       const [ymin, ymax] = [Math.min(...binStats.map((b) => b.q0)), Math.max(...binStats.map((b) => b.q4))];
-      domain.y = [ymin, ymax];
+      domain.y = [ymin + (ymax - ymin) * 0.05, ymax + (ymax - ymin) * 0.05];
     } else if (graphType === "bar-count") {
       domain.y = [0, Math.max(...binStats.map((b) => b.count))];
     } else if (graphType === "bar-sum") {
@@ -286,7 +286,7 @@ const GoalGraph = ({ route }: { route: any }) => {
           anchor={
             <Button compact={true} onPress={() => setBinMenuVisible(true)} style={{ marginRight: 8 }}>
               <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Text style={{ marginRight: 10 }}>{binningLabels[binning]}</Text>
+                <Text style={{ marginRight: 10, color: theme.colors.onSurfaceVariant }}>{binningLabels[binning]}</Text>
                 <AntDesign name="down" size={16} color={theme.colors.onSurfaceVariant} />
       </View>
             </Button>
@@ -313,7 +313,7 @@ const GoalGraph = ({ route }: { route: any }) => {
             anchor={
               <Button compact={true} onPress={() => setSubUnitMenuVisible(true)} style={{ marginRight: 8 }}>
                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  <Text style={{ marginRight: 10 }}>{subUnitName}</Text>
+                  <Text style={{ marginRight: 10, color: theme.colors.onSurfaceVariant }}>{subUnitName}</Text>
                   <AntDesign name="down" size={16} color={theme.colors.onSurfaceVariant} />
                 </View>
               </Button>
@@ -340,16 +340,15 @@ const GoalGraph = ({ route }: { route: any }) => {
             anchor={
               <Button compact={true} onPress={() => setTagsMenuVisible(true)} style={{ marginRight: 8 }}>
                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  <Text style={{ marginRight: 10 }}>
+                  <Text style={{ marginRight: 10, color: theme.colors.onSurfaceVariant }}>
                     Tags
                     {(() => {
                       const yesTags = tags.filter(t => t.state === 'yes').map(t => t.name);
                       const noTags = tags.filter(t => t.state === 'no').map(t => t.name);
-                      if (yesTags.length === 0 && noTags.length === 0) return '';
-                      let summary = '';
-                      if (yesTags.length > 0) summary += ` [+${yesTags.join(', ')}]`;
-                      if (noTags.length > 0) summary += ` [-${noTags.join(', ')}]`;
-                      return summary;
+                      if (yesTags.length === 0 && noTags.length === 0) 
+                        return '';
+                      else
+                        return '*';
                     })()}
                   </Text>
                   <AntDesign name="down" size={16} color={theme.colors.onSurfaceVariant} />

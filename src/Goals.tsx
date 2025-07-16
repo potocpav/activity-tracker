@@ -118,8 +118,6 @@ const styles = StyleSheet.create({
   },
   goalCard: {
     padding: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
   },
   goalTitle: {
     fontSize: 16,

@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Workout Tracker",
+    "name": "Workouts",
     "slug": "workout-tracker",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -18,7 +18,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon-fg.png",
-        "backgroundColor": "#ff7c66"
+        "backgroundColor": "#7166ff"
       },
       "permissions": [
         "android.permission.BLUETOOTH",

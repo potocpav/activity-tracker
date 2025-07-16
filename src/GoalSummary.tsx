@@ -27,7 +27,7 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
 
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surfaceVariant }]}>    
+    <SafeAreaView style={[styles.container]}>    
       <View style={[styles.goalInfo, { backgroundColor: theme.colors.surface }]}>  
         <Text style={[styles.goalDescription, { color: theme.colors.onSurface, textAlign: 'center' }]}>{goal.description}</Text>
       </View>
@@ -48,6 +48,7 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
           <Text style={[styles.statsLabel, { color: theme.colors.onSurfaceVariant }]}>Last</Text>
         </View>
       </View>
+      <Divider />
       <FAB
         icon="plus"
         style={[styles.fab, { backgroundColor: theme.colors.primary }]}
@@ -64,7 +65,6 @@ const styles = StyleSheet.create({
   },
   goalInfo: {
     padding: 15,
-    borderRadius: 10,
   },
   goalDescription: {
     fontSize: 16,
