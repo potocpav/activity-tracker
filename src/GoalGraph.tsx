@@ -1,6 +1,6 @@
 import React, { Fragment, useState } from "react";
 import { View, Text, Platform, TouchableOpacity } from "react-native";
-import { Chip, useTheme } from 'react-native-paper';
+import { Chip, useTheme, Menu, Button } from 'react-native-paper';
 import { getTransformComponents, Line, Scatter, setScale, setTranslate, useChartTransformState } from "victory-native";
 import { CartesianChart } from "victory-native";
 import {matchFont, Path, RoundedRect, Skia} from "@shopify/react-native-skia";
@@ -76,6 +76,7 @@ const GoalGraph = ({ route }: { route: any }) => {
   }
 
   const [binning, setBinning] = useState<"day" | "week" | "month" | "quarter" | "year">("day");
+  const [binMenuVisible, setBinMenuVisible] = useState(false);
   const [tags, setTags] = useState<{name: string, state: "yes" | "no" | "maybe"}[]>(goal.tags.map((t: Tag) => ({name: t.name, state: "maybe"})));
   const [graphType, setGraphType] = useState<"box" | "bar-count" | "bar-sum" | "line-mean">("box");
   const graphTypes = ["box", "bar-count", "bar-sum", "line-mean"];
@@ -85,6 +86,9 @@ const GoalGraph = ({ route }: { route: any }) => {
   }).state;
   const subUnitNames = typeof goal.unit === 'string' ? null : goal.unit.map((u: any) => u.name);
   const [subUnitName, setSubUnitName] = useState(subUnitNames?.[0] || null);
+  const [subUnitMenuVisible, setSubUnitMenuVisible] = useState(false);
+  const [tagsMenuVisible, setTagsMenuVisible] = useState(false);
+  const [graphTypeMenuVisible, setGraphTypeMenuVisible] = useState(false);
 
   const extractValue = (dataPoint: any) => {
     const requiredTags = tags.filter((t) => t.state === "yes");
@@ -263,58 +267,146 @@ const GoalGraph = ({ route }: { route: any }) => {
     </>);
   }
 
+  const binningLabels: Record<typeof binning, string> = {
+    day: "Day",
+    week: "Week",
+    month: "Month",
+    quarter: "Quarter",
+    year: "Year"
+  };
+
   return (
     <View style={{ flex: 1, padding: 10 }}>
-      {/* Binning selection buttons */}
-      <View key="binningButtons" style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
-        {toggleButton("D", "Day", binning === 'day', () => {resetTransform(); setBinning('day');}, theme)}
-        {toggleButton("W", "Week", binning === 'week', () => {resetTransform(); setBinning('week');}, theme)}
-        {toggleButton("M", "Month", binning === 'month', () => {resetTransform(); setBinning('month');}, theme)}
-        {toggleButton("Q", "Quarter", binning === 'quarter', () => {resetTransform(); setBinning('quarter');}, theme)}
-        {toggleButton("Y", "Year", binning === 'year', () => {resetTransform(); setBinning('year');}, theme)}
+      {/* Menus row */}
+      <View key="menusRow" style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 5 }}>
+        {/* Binning menu */}
+        <Menu
+          visible={binMenuVisible}
+          onDismiss={() => setBinMenuVisible(false)}
+          anchor={
+            <Button compact={true} onPress={() => setBinMenuVisible(true)} style={{ marginRight: 8 }}>
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <Text style={{ marginRight: 10 }}>{binningLabels[binning]}</Text>
+                <AntDesign name="down" size={16} color={theme.colors.onSurfaceVariant} />
       </View>
-      { subUnitNames && (
-        <View key="subUnitNames" style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
-          <Text style={{ marginRight: 10, color: theme.colors.onSurface }}>Value:</Text>
-          {subUnitNames?.map((name: string) => 
-            toggleButton(name, name, subUnitName === name, () => setSubUnitName(name), theme))}
-        </View>
-      )}
-
-      { goal.tags.length > 0 && (
-        <View key="tags" style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
-          <Text style={{ marginRight: 10, color: theme.colors.onSurface }}>Tags:</Text>
-          {goal.tags.map((tag: Tag) => 
-            <Chip 
-              key={tag.name} 
-              icon={(() => {
-                const state = tags.find((t) => t.name === tag.name)?.state;
-                if (state === "yes") {
-                  return "check";
-                } else if (state === "no") {
-                  return "close";
-                } else {
-                  return "";
-                }
-              })()}
-              selected={tags.find((t) => t.name === tag.name)?.state === "yes"}
-              style={{ marginRight: 10 }}
-              onLongPress={() => {
-                setTags(tags.map((t) => t.name === tag.name ? {...t, state: t.state === "maybe" ? "no" : "maybe"} : t));
-              }}
+            </Button>
+          }
+        >
+          {Object.entries(binningLabels).map(([key, label]) => (
+            <Menu.Item
+              key={key}
               onPress={() => {
-                setTags(tags.map((t) => t.name === tag.name ? {...t, state: t.state === "maybe" ? "yes" : "maybe"} : t));
+                setBinMenuVisible(false);
+                resetTransform();
+                setBinning(key as typeof binning);
               }}
-            >{tag.name}</Chip>
-            )}
-        </View>
-      )}
-
-      <View key="graphTypeButtons" style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
-        {graphTypes.map((type) => toggleButton(type, graphLabel(type), graphType === type, () => setGraphType(type as "box" | "bar-count" | "bar-sum" | "line-mean"), theme))}
+              title={label}
+              leadingIcon={binning === key ? "check" : undefined}
+            />
+          ))}
+        </Menu>
+        {/* SubUnit menu */}
+        {subUnitNames && (
+          <Menu
+            visible={subUnitMenuVisible}
+            onDismiss={() => setSubUnitMenuVisible(false)}
+            anchor={
+              <Button compact={true} onPress={() => setSubUnitMenuVisible(true)} style={{ marginRight: 8 }}>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  <Text style={{ marginRight: 10 }}>{subUnitName}</Text>
+                  <AntDesign name="down" size={16} color={theme.colors.onSurfaceVariant} />
+                </View>
+              </Button>
+            }
+          >
+            {subUnitNames.map((name: string) => (
+              <Menu.Item
+                key={name}
+                onPress={() => {
+                  setSubUnitMenuVisible(false);
+                  setSubUnitName(name);
+                }}
+                title={name}
+                leadingIcon={subUnitName === name ? "check" : undefined}
+              />
+            ))}
+          </Menu>
+        )}
+        {/* Tags menu */}
+        {goal.tags.length > 0 && (
+          <Menu
+            visible={tagsMenuVisible}
+            onDismiss={() => setTagsMenuVisible(false)}
+            anchor={
+              <Button compact={true} onPress={() => setTagsMenuVisible(true)} style={{ marginRight: 8 }}>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  <Text style={{ marginRight: 10 }}>
+                    Tags
+                    {(() => {
+                      const yesTags = tags.filter(t => t.state === 'yes').map(t => t.name);
+                      const noTags = tags.filter(t => t.state === 'no').map(t => t.name);
+                      if (yesTags.length === 0 && noTags.length === 0) return '';
+                      let summary = '';
+                      if (yesTags.length > 0) summary += ` [+${yesTags.join(', ')}]`;
+                      if (noTags.length > 0) summary += ` [-${noTags.join(', ')}]`;
+                      return summary;
+                    })()}
+                  </Text>
+                  <AntDesign name="down" size={16} color={theme.colors.onSurfaceVariant} />
+                </View>
+              </Button>
+            }
+          >
+            {goal.tags.map((tag: Tag) => {
+              const state = tags.find((t) => t.name === tag.name)?.state;
+              let icon = undefined;
+              let title = tag.name;
+              if (state === 'yes') icon = 'check';
+              else if (state === 'no') icon = 'close';
+              return (
+                <Menu.Item
+                  key={tag.name}
+                  onPress={() => {
+                    setTags(tags.map((t) => t.name === tag.name ? {
+                      ...t,
+                      state: t.state === 'maybe' ? 'yes' : t.state === 'yes' ? 'no' : 'maybe'
+                    } : t));
+                  }}
+                  title={title}
+                  leadingIcon={icon}
+                />
+              );
+            })}
+          </Menu>
+        )}
+        {/* Graph type menu */}
+        <Menu
+          visible={graphTypeMenuVisible}
+          onDismiss={() => setGraphTypeMenuVisible(false)}
+          anchor={
+            <Button compact={true} onPress={() => setGraphTypeMenuVisible(true)}>
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                {graphLabel(graphType)}
+                <AntDesign name="down" size={16} color={theme.colors.onSurfaceVariant} style={{ marginLeft: 6 }} />
+              </View>
+            </Button>
+          }
+        >
+          {graphTypes.map((type) => (
+            <Menu.Item
+              key={type}
+              onPress={() => {
+                setGraphTypeMenuVisible(false);
+                setGraphType(type as "box" | "bar-count" | "bar-sum" | "line-mean");
+              }}
+              title={<View style={{flexDirection: 'row', alignItems: 'center'}}>{graphLabel(type)}</View>}
+              leadingIcon={graphType === type ? "check" : undefined}
+            />
+          ))}
+        </Menu>
       </View>
 
-      <View key="goalGraph" style={{height: '70%', width: '100%'}}>
+      <View key="goalGraph" style={{height: '50%', width: '100%'}}>
         <CartesianChart 
           data={binStats} 
           transformState={transformState}
