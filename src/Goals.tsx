@@ -67,7 +67,7 @@ const Goals: React.FC<GoalsProps> = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={[styles.container]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={{ position: 'absolute', top: 10, right: 0}}>
         <Menu
           visible={menuVisible}

@@ -98,7 +98,7 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <ScrollView style={styles.scrollView}>
         <DataTable>
           <DataTable.Header>

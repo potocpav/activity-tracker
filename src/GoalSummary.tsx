@@ -27,7 +27,7 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
 
 
   return (
-    <SafeAreaView style={[styles.container]}>    
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>    
       <View style={[styles.goalInfo, { backgroundColor: theme.colors.surface }]}>  
         <Text style={[styles.goalDescription, { color: theme.colors.onSurface, textAlign: 'center' }]}>{goal.description}</Text>
       </View>

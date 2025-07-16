@@ -276,7 +276,7 @@ const GoalGraph = ({ route }: { route: any }) => {
   };
 
   return (
-    <View style={{ flex: 1, padding: 10 }}>
+    <View style={{ flex: 1, padding: 10, backgroundColor: theme.colors.background }}>
       {/* Menus row */}
       <View key="menusRow" style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 5 }}>
         {/* Binning menu */}
@@ -512,7 +512,7 @@ const GoalGraph = ({ route }: { route: any }) => {
                             x={q2x - w * 1.7}
                             y={q2y - hs}
                             width={2 * w * 1.7}
-                            height={2 * hs}
+                            height={3 * hs}
                             color={theme.colors.primary}
                             r={ws}
                           />

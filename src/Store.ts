@@ -333,6 +333,7 @@ const useStore = create<State>()(
     partialize: (state) => ({
       goals: state.goals,
       theme: state.theme,
+      blackBackground: state.blackBackground,
     }),
     
   }

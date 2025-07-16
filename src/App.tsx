@@ -65,6 +65,12 @@ const App = () => {
     },
   } : {
     ...PaperDarkTheme,
+    colors: {
+      ...PaperDarkTheme.colors,
+      background: "#000000",
+      surface: "#000000",
+      surfaceVariant: "#000000",
+    },
     fonts: {
       regular: {
         fontFamily: 'System',
@@ -84,6 +90,8 @@ const App = () => {
       },
     },
   };
+
+  console.log(navigationTheme)
 
   return (
     <PaperProvider theme={theme == 'light' ? MD3LightTheme : blackBackground ? MD3BlackTheme : MD3DarkTheme}>
