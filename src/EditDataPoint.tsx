@@ -88,20 +88,21 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
 
       if (inputDate && hasNonEmptyValue && newValue !== null) {
         const newTime = new Date(inputDate?.getFullYear(), inputDate?.getMonth(), inputDate?.getDate()).getTime();
-        updateGoalDataPoint(goalName, newDataPoint ? undefined : dataPointIndex, {
+        const newIndex = updateGoalDataPoint(goalName, newDataPoint ? undefined : dataPointIndex, {
           time: newTime,
           value: newValue,
           tags: inputTags,
         });
         navigation.goBack();
+        return newIndex
       } else {
         Alert.alert("Invalid input");
       }
     };
 
   const duplicateDataPointWrapper = () => {
-    saveDataPointWrapper();
-    navigation.navigate("EditDataPoint", { goalName, dataPointIndex: dataPointIndex, newDataPoint: true });
+    const newIndex = saveDataPointWrapper();
+    navigation.navigate("EditDataPoint", { goalName, dataPointIndex: newIndex, newDataPoint: true });
   };
   
   React.useEffect(() => {

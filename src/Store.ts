@@ -287,22 +287,23 @@ const useStore = create<State>()(
       },
 
       updateGoalDataPoint: (goalName: string, dataPointIndex: number | undefined, updatedDataPoint: DataPoint) => {
+        var insertIndex: number = NaN;
         set((state: any) => {
           const goals = state.goals.map((goal: GoalType) => {
             if (goal.name === goalName) {
               const updatedDataPoints = [...goal.dataPoints];
               if (dataPointIndex !== undefined) {
-                updatedDataPoints[dataPointIndex] = updatedDataPoint;
-              } else {
-                updatedDataPoints.push(updatedDataPoint);
-                updatedDataPoints.sort((a, b) => a.time - b.time);
+                updatedDataPoints.splice(dataPointIndex, 1);
               }
+              insertIndex = updatedDataPoints.findLastIndex((dp: DataPoint) => dp.time <= updatedDataPoint.time) + 1;
+              updatedDataPoints.splice(insertIndex, 0, updatedDataPoint);
               return { ...goal, dataPoints: updatedDataPoints };
             }
             return goal;
           });
           return { goals };
         });
+        return insertIndex;
       },
 
       deleteGoalDataPoint: (goalName: string, dataPointIndex: number) => {
@@ -322,10 +323,10 @@ const useStore = create<State>()(
   {
     name: "store",
     storage: createJSONStorage(() => AsyncStorage),
+    version: 0,
     partialize: (state) => ({
       goals: state.goals,
       theme: state.theme,
-      version: 0,
     }),
     
   }

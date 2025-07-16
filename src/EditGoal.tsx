@@ -71,7 +71,7 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
       navigation.reset(
         {
         index: 0,
-        routes: [{name: 'Main Page'}, {name: 'Goals'}, {name: 'Goal', params: { goalName: updatedGoal.name }}],
+        routes: [{name: 'Goals'}, {name: 'Goal', params: { goalName: updatedGoal.name }}],
       });
     }
   }
@@ -92,7 +92,7 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
             deleteGoal(goal.name);
             navigation.reset({
               index: 0,
-              routes: [{name: 'Main Page'}, {name: 'Goals'}],
+              routes: [{name: 'Goals'}],
             });
           }
         }

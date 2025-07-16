@@ -56,10 +56,10 @@ const Goals: React.FC<GoalsProps> = ({ navigation }) => {
               )}
             </View>
           <TouchableOpacity
-            onPress={() => { console.log('Add data point for', item.name); /* Placeholder for add action */ }}
+            onPress={() => { navigation.navigate('EditDataPoint', { goalName: item.name, dataPointName: null, new: true }); }}
             style={{ marginLeft: 12, padding: 8 }}
           >
-            <AntDesign name="pluscircleo" size={24} color={theme.colors.primary} />
+            <AntDesign name="plus" size={24} color={theme.colors.primary} />
           </TouchableOpacity>
         </View>
       </TouchableOpacity>

@@ -16,9 +16,9 @@ A React Native mobile application for analyzing force measurements from the Tind
 In order to make this app a full-featured management app for workout data, the following list of features must be implemented:
   
 * [ ] Goal Screen
-  * [ ] Goal list
-    * [ ] "Add point" button directly on the Goal list
-    * [ ] Show last data points in the list
+  * [x] Goal list
+    * [x] "Add point" button directly on the Goal list
+    * [x] Show last data points in the list
   * [ ] Summary screen
     * [ ] Allow editing composite units
     * [ ] Allow adding graphs
@@ -27,13 +27,12 @@ In order to make this app a full-featured management app for workout data, the f
   * [ ] Data Series screen
     * [ ] Compact display
   * [ ] Goal Graphs
-    * [ ] Improve x-ticks
+    * [x] Improve x-ticks
     * [ ] Add axis labels
-    * [ ] Pan/Zoom Fixes
-    * [ ] Filtering by tags
-    * [ ] Simplify graph presentation
+    * [ ] Limit Panning on the left
+    * [x] Filtering by tags
+    * [x] Simplify graph presentation
   * [ ] Tag management screen
-    * [ ] Tag categories
     * [ ] Fix tag rendering to show them in a single scrollable row
     * [ ] Tag colors
     * [ ] Fix goal tag editing to wait on submit
@@ -46,10 +45,10 @@ In order to make this app a full-featured management app for workout data, the f
   * [ ] Tare with automatic disconnect/connect
 * [ ] Settings page
   * [ ] Week start customization
-  * [ ] Data export and import
+  * [ ] Data import
 * Data handling
   * [ ] Export as CSV
-  * [ ] Data stability and migrations
+  * [x] Data stability and migrations
   * [ ] Address goals based on their list IDs, not their names
   * [ ] Performance improvements for 1k-10k data points
 
