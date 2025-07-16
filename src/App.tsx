@@ -65,12 +65,13 @@ const App = () => {
     },
   } : {
     ...PaperDarkTheme,
-    colors: {
+    colors: blackBackground ? {
       ...PaperDarkTheme.colors,
       background: "#000000",
       surface: "#000000",
       surfaceVariant: "#000000",
-    },
+      card: "#000000",
+    } : PaperDarkTheme.colors,
     fonts: {
       regular: {
         fontFamily: 'System',
@@ -99,7 +100,14 @@ const App = () => {
       <StatusBar barStyle={theme == 'light' ? "dark-content" : "light-content"} backgroundColor={theme == 'light' ? "#f2f2f2" : blackBackground ? "#000000" : "#121212"} />
       <SafeAreaView style={[styles.container, { backgroundColor: theme == 'light' ? "#f2f2f2" : blackBackground ? "#000000" : "#121212" }]}>
         <NavigationContainer theme={navigationTheme}>
-          <Stack.Navigator>
+          <Stack.Navigator
+            screenOptions={theme == 'dark' && blackBackground ? {
+              headerStyle: {
+                backgroundColor: "#000000",
+              },
+              // headerTintColor: theme == 'light' ? "#000000" : "#ffffff",
+            } : {}}
+          >
             <Stack.Group>
               <Stack.Screen 
                 name="Goals" 

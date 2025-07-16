@@ -151,13 +151,13 @@ const GoalGraph = ({ route }: { route: any }) => {
 
   const graphLabel = (gType: any) => {
     if (gType === "box") {
-      return (<View style={{flexDirection: 'row', alignItems: 'center'}}><AntDesign name="barchart" size={24} color={theme.colors.onSurfaceVariant} /><Text style={{ color: theme.colors.onSurfaceVariant }}>Box</Text></View>);
+      return (<View style={{flexDirection: 'row', alignItems: 'center'}}><AntDesign name="barchart" size={24} color={theme.colors.onSurfaceVariant} /><Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Box</Text></View>);
     } else if (gType === "bar-count") {
-      return (<View style={{flexDirection: 'row', alignItems: 'center'}}><AntDesign name="barschart" size={24} color={theme.colors.onSurfaceVariant} /><Text style={{ color: theme.colors.onSurfaceVariant }}>Count</Text></View>);
+      return (<View style={{flexDirection: 'row', alignItems: 'center'}}><AntDesign name="barschart" size={24} color={theme.colors.onSurfaceVariant} /><Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Count</Text></View>);
     } else if (gType === "bar-sum") {
-      return (<View style={{flexDirection: 'row', alignItems: 'center'}}><AntDesign name="barschart" size={24} color={theme.colors.onSurfaceVariant} /><Text style={{ color: theme.colors.onSurfaceVariant }}>Sum</Text></View>);
+      return (<View style={{flexDirection: 'row', alignItems: 'center'}}><AntDesign name="barschart" size={24} color={theme.colors.onSurfaceVariant} /><Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Sum</Text></View>);
     } else if (gType === "line-mean") {
-      return (<View style={{flexDirection: 'row', alignItems: 'center'}}><AntDesign name="linechart" size={24} color={theme.colors.onSurfaceVariant} /><Text style={{ color: theme.colors.onSurfaceVariant }}>Mean</Text></View>);
+      return (<View style={{flexDirection: 'row', alignItems: 'center'}}><AntDesign name="linechart" size={24} color={theme.colors.onSurfaceVariant} /><Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Mean</Text></View>);
     }
   }
 
@@ -301,7 +301,7 @@ const GoalGraph = ({ route }: { route: any }) => {
                 setBinning(key as typeof binning);
               }}
               title={label}
-              leadingIcon={binning === key ? "check" : undefined}
+              trailingIcon={binning === key ? "check" : undefined}
             />
           ))}
         </Menu>
@@ -327,7 +327,7 @@ const GoalGraph = ({ route }: { route: any }) => {
                   setSubUnitName(name);
                 }}
                 title={name}
-                leadingIcon={subUnitName === name ? "check" : undefined}
+                trailingIcon={subUnitName === name ? "check" : undefined}
               />
             ))}
           </Menu>
@@ -341,7 +341,7 @@ const GoalGraph = ({ route }: { route: any }) => {
               <Button compact={true} onPress={() => setTagsMenuVisible(true)} style={{ marginRight: 8 }}>
                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
                   <Text style={{ marginRight: 10, color: theme.colors.onSurfaceVariant }}>
-                    Tags
+                    <AntDesign name="filter" size={16} color={theme.colors.onSurfaceVariant} />
                     {(() => {
                       const yesTags = tags.filter(t => t.state === 'yes').map(t => t.name);
                       const noTags = tags.filter(t => t.state === 'no').map(t => t.name);
@@ -372,7 +372,7 @@ const GoalGraph = ({ route }: { route: any }) => {
                     } : t));
                   }}
                   title={title}
-                  leadingIcon={icon}
+                  trailingIcon={icon}
                 />
               );
             })}
@@ -399,7 +399,7 @@ const GoalGraph = ({ route }: { route: any }) => {
                 setGraphType(type as "box" | "bar-count" | "bar-sum" | "line-mean");
               }}
               title={<View style={{flexDirection: 'row', alignItems: 'center'}}>{graphLabel(type)}</View>}
-              leadingIcon={graphType === type ? "check" : undefined}
+              trailingIcon={graphType === type ? "check" : undefined}
             />
           ))}
         </Menu>
@@ -419,7 +419,7 @@ const GoalGraph = ({ route }: { route: any }) => {
           xKey="t" 
           yKeys={yKeys}
           // frame={{
-          //   lineWidth: 1,
+          //   lineWidth: 0,
           //   lineColor: theme.colors.onSurfaceVariant,
           // }}
           xAxis={{
@@ -455,9 +455,9 @@ const GoalGraph = ({ route }: { route: any }) => {
               yKeys: yKeys,
               font: font,
               tickCount: 10,
-              // lineWidth: ,
-              lineColor: theme.colors.onSurfaceVariant,
-              labelColor: theme.colors.onSurfaceVariant,
+              // lineWidth: 1,
+              lineColor: theme.colors.outline,
+              labelColor: theme.colors.outline,
             },
           ]}
           >
@@ -512,9 +512,9 @@ const GoalGraph = ({ route }: { route: any }) => {
                             x={q2x - w * 1.7}
                             y={q2y - hs}
                             width={2 * w * 1.7}
-                            height={3 * hs}
+                            height={2 * hs}
                             color={theme.colors.primary}
-                            r={ws}
+                            r={hs}
                           />
                         </Fragment>
                       );
