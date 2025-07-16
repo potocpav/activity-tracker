@@ -142,29 +142,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-  },
-  backButton: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-  },
-  backButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  headerSpacer: {
-    width: 60,
-  },
   controlSection: {
     marginHorizontal: 20,
     marginTop: 10,
@@ -214,18 +191,6 @@ const styles = StyleSheet.create({
   },
   measurementValue: {
     fontSize: 30,
-    fontWeight: "bold",
-  },
-  resetButton: {
-    marginTop: 10,
-    justifyContent: "center",
-    alignItems: "center",
-    height: 40,
-    width: '80%',
-    borderRadius: 8,
-  },
-  resetButtonText: {
-    fontSize: 16,
     fontWeight: "bold",
   },
   disconnectedSection: {

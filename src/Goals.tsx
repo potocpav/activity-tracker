@@ -4,7 +4,6 @@ import {
   StyleSheet,
   Text,
   View,
-  FlatList,
   TouchableOpacity,
 } from "react-native";
 import { Menu, useTheme } from 'react-native-paper';
@@ -100,19 +99,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    borderBottomWidth: 1,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
-    marginBottom: 5,
-  },
-  headerSubtitle: {
-    fontSize: 16,
-  },
   listContainer: {
     margin: 10,
   },
@@ -125,10 +111,6 @@ const styles = StyleSheet.create({
   },
   goalDescription: {
     fontSize: 16,
-  },
-  goalDate: {
-    fontSize: 14,
-    fontStyle: "italic",
   },
   fab: {
     position: 'absolute',

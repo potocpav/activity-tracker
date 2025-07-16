@@ -2,7 +2,6 @@ import React, { useState, FC } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
   ScrollView,
   Alert,
@@ -11,7 +10,7 @@ import { Chip, useTheme } from 'react-native-paper';
 import { SubUnit, GoalType } from "./Store";
 import { TextInput, Button } from "react-native-paper";
 import useStore from "./Store";
-import { DatePickerInput, DatePickerModal, TimePickerModal } from "react-native-paper-dates";
+import { DatePickerInput } from "react-native-paper-dates";
 import { CalendarDate } from "react-native-paper-dates/lib/typescript/Date/Calendar";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -46,9 +45,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
   const inputValues = typeof goal.unit === "string" ? [{subUnit: null, value: useState<string>(dataPoint.value?.toString() ?? "")}] : 
     goal.unit.map((u: SubUnit) => ({subUnit: u, value: useState<string>(dataPoint.value[u.name]?.toString() ?? "")}));
   const [inputTags, setInputTags] = useState<string[]>(dataPoint.tags);
-  const [timePickerVisible, setTimePickerVisible] = useState(false);
-  const [datePickerVisible, setDatePickerVisible] = useState(false);  
-
+  
   const toggleInputTag = (tag: string) => {
     setInputTags(inputTags.includes(tag) ? inputTags.filter((t: string) => t !== tag) : [...inputTags, tag]);
   }
@@ -173,16 +170,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  title: {
-    fontSize: 20,
-    fontWeight: "600",
-  },
-  closeButton: {
-    padding: 5,
-  },
-  closeButtonText: {
-    fontSize: 20,
-  },
   content: {
     flex: 1,
     padding: 20,
@@ -196,71 +183,9 @@ const styles = StyleSheet.create({
   inputContainer: {
     marginBottom: 20,
   },
-  label: {
-    fontSize: 16,
-    fontWeight: "500",
-    marginBottom: 8,
-  },
-  helperText: {
-    fontSize: 14,
-    marginBottom: 8,
-  },
-  textInput: {
-    marginBottom: 10,
-  },
-  footer: {
-    flexDirection: "row",
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderTopWidth: 1,
-    gap: 10,
-  },
-  cancelButton: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  cancelButtonText: {
-    fontSize: 16,
-    fontWeight: "500",
-  },
-  saveButton: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  saveButtonText: {
-    fontSize: 16,
-    fontWeight: "500",
-  },
-  deleteButton: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  deleteButtonText: {
-    fontSize: 16,
-    fontWeight: "500",
-  },
   tagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 4,
-  },
-  tag: {
-    backgroundColor: '#f0f0f0',
-    borderWidth: 1,
-    borderColor: '#d0d0d0',
-    borderRadius: 12,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-  },
-  tagText: {
-    fontSize: 12,
-    fontWeight: '500',
   },
 });
 

@@ -138,56 +138,11 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-  },
   fab: {
     position: 'absolute',
     margin: 16,
     right: 0,
     bottom: 0,
-  },
-  dataPointContainer: {
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-  },
-  dataPointContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  dataPointInfo: {
-    flex: 1,
-  },
-  dataPointDate: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  dataPointTime: {
-    fontSize: 14,
-    marginTop: 2,
-  },
-  dataPointValueContainer: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  dataPointValue: {
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  dataPointActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
   },
   tagsContainer: {
     flexDirection: 'row',
@@ -204,12 +159,6 @@ const styles = StyleSheet.create({
   tagText: {
     fontSize: 12,
     fontWeight: '500',
-  },
-  editButton: {
-    padding: 4,
-  },
-  editButtonText: {
-    fontSize: 16,
   },
 });
 

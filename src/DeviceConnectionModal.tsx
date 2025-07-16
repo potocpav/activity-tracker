@@ -86,15 +86,6 @@ const DeviceModalListItem: FC<DeviceModalListItemProps> = (props) => {
 
 
 const modalStyle = StyleSheet.create({
-  modalContainer: {
-    flex: 1,
-  },
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   modalContent: {
     padding: 20,
     // maxHeight: '70%',
@@ -103,13 +94,6 @@ const modalStyle = StyleSheet.create({
   modalFlatlistContiner: {
     flexGrow: 1,
     paddingVertical: 10,
-  },
-  modalCellOutline: {
-    borderWidth: 1,
-    alignItems: "center",
-    marginHorizontal: 20,
-    paddingVertical: 15,
-    borderRadius: 8,
   },
   modalTitleText: {
     fontSize: 20,

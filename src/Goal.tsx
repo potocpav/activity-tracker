@@ -83,75 +83,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    flex: 1,
-  },
-  editButton: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-  },
-  goalInfo: {
-    padding: 15,
-  },
-  goalDescription: {
-    fontSize: 16,
-    lineHeight: 22,
-    marginBottom: 8,
-  },
-  goalUnit: {
-    fontSize: 14,
-    fontStyle: "italic",
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-  },
-  listContainer: {
-  },
-  dataPointContainer: {
-    paddingHorizontal: 10,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-  },
-  dataPointContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  dataPointValueContainer: {
-    alignItems: 'flex-end',
-  },
-  dataPointValue: {
-    fontSize: 16,
-  },
-  tagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-  },
-  tag: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  tagText: {
-    fontSize: 12,
-    fontWeight: "500",
-  },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -159,12 +90,6 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 16,
-  },
-  fab: {
-    position: 'absolute',
-    margin: 16,
-    right: 0,
-    bottom: 0,
   },
 });
 
