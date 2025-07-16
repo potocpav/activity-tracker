@@ -6,7 +6,6 @@ import {
 } from "react-native";
 import {NavigationContainer, DefaultTheme, DarkTheme} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import { Button } from "react-native-paper";
 import LiveView from "./LiveView";
 import Goals from "./Goals";
 import useStore from "./Store";
@@ -15,9 +14,6 @@ import Settings from "./Settings";
 import DeviceModal from "./DeviceConnectionModal";
 import EditDataPoint from "./EditDataPoint";
 import EditGoal from "./EditGoal";
-import { useTheme } from "react-native-paper";
-import Ionicons from '@expo/vector-icons/Ionicons';
-import AntDesign from '@expo/vector-icons/AntDesign';
 import {
   PaperProvider,
   MD3LightTheme,
