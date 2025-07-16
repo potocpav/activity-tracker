@@ -146,31 +146,28 @@ const GoalGraph = ({ route }: { route: any }) => {
     }
   }
 
-  const domain : {x: [number, number], y?: [number]} = (() => {
+  const {domain, viewport} : {domain: {x: [number, number], y?: [number]}, viewport: {x: [number, number]}} = (() => {
     const nowBin = binTime(binning, now.getTime(), 0);
-    const t0 = Math.min(bins[0].time, nowBin - approximateBinSize(binning) * 15) - approximateBinSize(binning) / 2;
     const t1 = Math.max(bins[bins.length - 1].time, nowBin) + approximateBinSize(binning) / 2;
+    const t0view = t1 - approximateBinSize(binning) * 15;
+    const t0 = Math.min(bins[0].time  - approximateBinSize(binning) / 2, t0view);
+
+    console.log(new Date(t0), new Date(t0view), new Date(t1));
+    
+    var domain : {x: [number, number], y?: [number]} = {x: [t0, t1]};
+    var viewport : {x: [number, number]} = {x: [t0view, t1]};
     if (graphType === "box") {
-      return {
-        x: [t0 ?? NaN, t1 ?? NaN], 
-      }
+
     } else if (graphType === "bar-count") {
-      return {
-        x: [t0 ?? NaN, t1 ?? NaN], 
-        y: [0]
-      }
+      domain.y = [0];
     } else if (graphType === "bar-sum") {
-      return {
-        x: [t0 ?? NaN, t1 ?? NaN], 
-        y: [0]
-      }
+      domain.y = [0];
     } else if (graphType === "line-mean") {
-      return {
-        x: [t0 ?? NaN, t1 ?? NaN], 
-      }
+
     } else {
       throw new Error("Invalid graph type");
     }
+    return {domain, viewport};
   })();
 
   const k = useSharedValue(1);
@@ -299,23 +296,20 @@ const GoalGraph = ({ route }: { route: any }) => {
           }}
           padding={{bottom: 10}}
           domain={domain}
+          viewport={viewport}
           domainPadding={{top: 10, bottom: 0, left: barWidth, right: barWidth}}
-          viewport={{
-            // x: [0, 100],
-          }}
           xKey="t" 
           yKeys={yKeys}
-          frame={{
-            lineWidth: 1,
-            lineColor: theme.colors.onSurfaceVariant,
-          }}
+          // frame={{
+          //   lineWidth: 1,
+          //   lineColor: theme.colors.onSurfaceVariant,
+          // }}
           xAxis={{
             tickValues: binStats.map((q) => q.t),
             font: font,
-            enableRescaling: true,
+            // enableRescaling: true,
             lineColor: theme.colors.onSurfaceVariant,
             labelColor: theme.colors.onSurfaceVariant,
-
 
             formatXLabel: (t: number) => {
               const d = new Date(t);
@@ -333,7 +327,7 @@ const GoalGraph = ({ route }: { route: any }) => {
                 throw new Error("Invalid bin size");
               }
             },
-            tickCount: 10,
+            tickCount: 1000,
           }}
           yAxis={[
             {
@@ -359,10 +353,10 @@ const GoalGraph = ({ route }: { route: any }) => {
                     const w = barWidth;
                     if (q0.y == q4.y) {
                       const path = Skia.Path.Make();
-                      path.moveTo(q0x - w, q0y);
-                      path.lineTo(q0x, q0y - w);
-                      path.lineTo(q4x + w, q4y);
-                      path.lineTo(q4x, q4y + w);
+                      path.moveTo(q0x - w, q0y - w);
+                      path.lineTo(q0x + w, q0y - w);
+                      path.lineTo(q4x + w, q4y + w);
+                      path.lineTo(q4x - w, q4y + w);
                       path.close();
                       elements.push(
                         <Fragment key={"" + i}>
@@ -373,7 +367,7 @@ const GoalGraph = ({ route }: { route: any }) => {
                           <Path
                             style="stroke"
                             path={path}
-                            color={theme.colors.onSurface}
+                            color={theme.colors.primary}
                             strokeWidth={1}
                           />                          
                         </Fragment>
@@ -394,21 +388,16 @@ const GoalGraph = ({ route }: { route: any }) => {
                       fill.close()        
 
                       const stroke = Skia.Path.Make();
-                      stroke.moveTo(q4x - w, q4y);
-                      stroke.lineTo(q4x + w, q4y);
                       stroke.moveTo(q4x, q4y);
                       stroke.lineTo(q3x, q3y);
-                      stroke.moveTo(q3x - w, q3y);
-                      stroke.lineTo(q3x + w, q3y);
-                      stroke.lineTo(q1x + w, q1y);
-                      stroke.lineTo(q1x - w, q1y);
-                      stroke.lineTo(q3x - w, q3y);
                       stroke.moveTo(q2x - w, q2y);
                       stroke.lineTo(q2x + w, q2y);
                       stroke.moveTo(q1x, q1y);
                       stroke.lineTo(q0x, q0y);
-                      stroke.moveTo(q0x - w, q0y);
-                      stroke.lineTo(q0x + w, q0y);
+
+                      const q2stroke = Skia.Path.Make();
+                      q2stroke.moveTo(q2x - w, q2y);
+                      q2stroke.lineTo(q2x + w, q2y);
 
                       elements.push(
                         <Fragment key={"" + i}>
@@ -420,8 +409,14 @@ const GoalGraph = ({ route }: { route: any }) => {
                           <Path
                             style="stroke"
                             path={stroke}
+                            color={theme.colors.primary}
+                            strokeWidth={w*0.7}
+                          />
+                          <Path
+                            style="stroke"
+                            path={q2stroke}
                             color={theme.colors.onSurface}
-                            strokeWidth={1}
+                            strokeWidth={w*0.5}
                           />
                         </Fragment>
                       );
