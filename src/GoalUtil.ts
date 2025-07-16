@@ -2,19 +2,20 @@ export type BinSize = "day" | "week" | "month" | "quarter" | "year";
 
 export const binTime = (binSize: BinSize, t0: number, i: number) => {
   const t0Date = new Date(t0);
-  const offset = t0Date.getTimezoneOffset();
   if (binSize === "day") {
-    return new Date(t0Date.getFullYear(), t0Date.getMonth(), t0Date.getDate() + i, 0, -offset).getTime();
+    // console.log(new Date(t0Date.getFullYear(), t0Date.getMonth(), t0Date.getDate() + i, 0).toLocaleString());
+    return new Date(t0Date.getFullYear(), t0Date.getMonth(), t0Date.getDate() + i, 0).getTime();
+
   } else if (binSize === "week") {
     const dayOfWeek = t0Date.getDay();
-    return new Date(t0Date.getFullYear(), t0Date.getMonth(), t0Date.getDate() - dayOfWeek + i * 7, 0, -offset).getTime();
+    return new Date(t0Date.getFullYear(), t0Date.getMonth(), t0Date.getDate() - dayOfWeek + i * 7, 0).getTime();
   } else if (binSize === "month") {
-    return new Date(t0Date.getFullYear(), t0Date.getMonth() + i, 1, 0, -offset).getTime();
+    return new Date(t0Date.getFullYear(), t0Date.getMonth() + i, 1, 0).getTime();
   } else if (binSize === "quarter") {
     const month = t0Date.getMonth()
-    return new Date(t0Date.getFullYear(), month - (month % 3) + i * 3, 1, 0, -offset).getTime();
+    return new Date(t0Date.getFullYear(), month - (month % 3) + i * 3, 1, 0).getTime();
   } else if (binSize === "year") {
-    return new Date(t0Date.getFullYear() + i, 0, 1, 0, -offset).getTime();
+    return new Date(t0Date.getFullYear() + i, 0, 1, 0).getTime();
   } else {
     throw new Error("Invalid bin size");
   }
@@ -31,7 +32,7 @@ export const binTimeSeries = (binSize: BinSize, dataPoints: any[]) => {
   for (let i = 0; i < dataPoints.length; i++) {
     const dp = dataPoints[i];
     var newBin = false;
-    while (binTime(binSize, t0, binIx) <= dp.time) {
+    while (binTime(binSize, t0, binIx+1) <= dp.time) {
       binIx++;
       newBin = true;
     }

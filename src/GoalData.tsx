@@ -17,15 +17,12 @@ type GoalDataProps = {
 };
 
 export const formatDate = (date: Date) => {
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
+  return date.toLocaleDateString("cs-CZ", {year: "numeric",month: "short",day: "numeric",hour: "2-digit",minute: "2-digit"});
+  // return date.toUTCString();
 };
 
 const formatTime = (date: Date) => {
-  return date.toLocaleTimeString("en-US", {
+  return date.toLocaleTimeString("cs-CZ", {
     hour: "2-digit",
     minute: "2-digit",
   });
@@ -67,29 +64,6 @@ const renderTags = (tags: string[]) => {
     </View>
   );
 };
-
-const renderDataPoint = (theme: any, { item }: { item: DataPoint }, unit: Unit) => (
-    <View style={styles.dataPointContainer}>
-      <View style={styles.dataPointContent}>
-        <View style={styles.dataPointInfo}>
-          <Text style={[styles.dataPointDate, { color: theme.colors.onSurface }]}>
-            {formatDate(new Date(item.time))}
-          </Text>
-          <Text style={[styles.dataPointTime, { color: theme.colors.onSurfaceVariant }]}>
-            {formatTime(new Date(item.time))}
-          </Text>
-        </View>
-        <View style={styles.dataPointValueContainer}>
-          <Text style={[styles.dataPointValue, { color: theme.colors.onSurface }]}>
-            {renderValue(item.value, unit)}
-          </Text>
-        </View>
-        <View style={styles.dataPointActions}>
-          {renderTags(item.tags)}
-        </View>
-      </View>
-    </View>
-);
 
 const GoalData = ({ navigation, route }: GoalDataProps) => {
   const theme = useTheme();

@@ -12,18 +12,18 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 const fontFamily = Platform.select({default: "sans-serif" });
 const font = matchFont({fontFamily: fontFamily, fontSize: 10});
 
-const binSizeWindow = (binSize: BinSize) => {
+const approximateBinSize = (binSize: BinSize) => {
   const day = 24 * 60 * 60 * 1000;
   if (binSize === "day") {
-    return 31 * day;
+    return day;
   } else if (binSize === "week") {
-    return 20 * 7 * day;
+    return 7 * day;
   } else if (binSize === "month") {
-    return 20 * 30 * day;
+    return 30 * day;
   } else if (binSize === "quarter") {
-    return 20 * 365 / 4 * day;
+    return 365 / 4 * day;
   } else if (binSize === "year") {
-    return 20 * 365 * day;
+    return 365 * day;
   } else {
     throw new Error("Invalid bin size");
   }
@@ -104,7 +104,7 @@ const GoalGraph = ({ route }: { route: any }) => {
   const barWidth = 5;
   
   const bins = binTimeSeries(binning, goal.dataPoints);
-  const binStats : {t: number, q0: number, q1: number, q2: number, q3: number, q4: number, count: number, sum: number, mean: number}[] = bins.map((bin) => {
+  const binStats : {t: number, q0: number, q1: number, q2: number, q3: number, q4: number, count: number, sum: number, mean: number, zero: number}[] = bins.map((bin) => {
     const values = bin.values.map(extractValue).filter((v: number) => v !== null);
     if (values.length === 0) {
       return null
@@ -114,6 +114,7 @@ const GoalGraph = ({ route }: { route: any }) => {
         count: values.length,
         sum: values.reduce((a, b) => a + b, 0),
         mean: values.reduce((a, b) => a + b, 0) / values.length,
+        zero: 0,
         t: bin.time
       };
     }
@@ -124,9 +125,9 @@ const GoalGraph = ({ route }: { route: any }) => {
   if (graphType === "box") {
     yKeys = ["q0", "q1", "q2", "q3", "q4"];
   } else if (graphType === "bar-count") {
-    yKeys = ["count"];
+    yKeys = ["count", "zero"];
   } else if (graphType === "bar-sum") {
-    yKeys = ["sum"];
+    yKeys = ["sum", "zero"];
   } else if (graphType === "line-mean") {
     yKeys = ["mean"];
   } else {
@@ -135,15 +136,42 @@ const GoalGraph = ({ route }: { route: any }) => {
 
   const graphLabel = (gType: any) => {;
     if (gType === "box") {
-      return (<AntDesign name="barchart" size={24} color="black" />);
+      return (<View style={{flexDirection: 'row', alignItems: 'center'}}><AntDesign name="barchart" size={24} color="black" /><Text>Box</Text></View>);
     } else if (gType === "bar-count") {
-      return (<AntDesign name="barschart" size={24} color="black" />);
+      return (<View style={{flexDirection: 'row', alignItems: 'center'}}><AntDesign name="barschart" size={24} color="black" /><Text>Count</Text></View>);
     } else if (gType === "bar-sum") {
-      return (<AntDesign name="barschart" size={24} color="black" />);
+      return (<View style={{flexDirection: 'row', alignItems: 'center'}}><AntDesign name="barschart" size={24} color="black" /><Text>Sum</Text></View>);
     } else if (gType === "line-mean") {
-      return (<AntDesign name="linechart" size={24} color="black" />);
+      return (<View style={{flexDirection: 'row', alignItems: 'center'}}><AntDesign name="linechart" size={24} color="black" /><Text>Mean</Text></View>);
     }
   }
+
+  const domain : {x: [number, number], y?: [number]} = (() => {
+    const nowBin = binTime(binning, now.getTime(), 0);
+    const t0 = Math.min(bins[0].time, nowBin - approximateBinSize(binning) * 15) - approximateBinSize(binning) / 2;
+    const t1 = Math.max(bins[bins.length - 1].time, nowBin) + approximateBinSize(binning) / 2;
+    if (graphType === "box") {
+      return {
+        x: [t0 ?? NaN, t1 ?? NaN], 
+      }
+    } else if (graphType === "bar-count") {
+      return {
+        x: [t0 ?? NaN, t1 ?? NaN], 
+        y: [0]
+      }
+    } else if (graphType === "bar-sum") {
+      return {
+        x: [t0 ?? NaN, t1 ?? NaN], 
+        y: [0]
+      }
+    } else if (graphType === "line-mean") {
+      return {
+        x: [t0 ?? NaN, t1 ?? NaN], 
+      }
+    } else {
+      throw new Error("Invalid graph type");
+    }
+  })();
 
   const k = useSharedValue(1);
   const tx = useSharedValue(0);
@@ -177,6 +205,38 @@ const GoalGraph = ({ route }: { route: any }) => {
       transformState.matrix.value = setScale(m, k);
     },
   );
+
+  const barPlot = (values: any, zero: any) => {
+    return (
+      <>
+        {(() => {
+        const elements = [];
+        for (let i = 0; i < values.length; i++) {
+          const val = values[i];
+          const [vx, vy] = [val.x, val.y ?? NaN];
+          const w = barWidth;
+
+            const fill = Skia.Path.Make();
+            fill.moveTo(vx - w, vy);
+            fill.lineTo(vx + w, vy);
+            fill.lineTo(vx + w, zero[i].y ?? NaN);
+            fill.lineTo(vx - w, zero[i].y ?? NaN);
+            fill.close()        
+
+            elements.push(
+              <Fragment key={"" + i}>
+                <Path
+                  style="fill"
+                  path={fill}
+                  color={theme.colors.primary}
+                />
+              </Fragment>
+            );
+        }
+        return elements;
+      })()}
+    </>);
+  }
 
   return (
     <View style={{ flex: 1, padding: 10 }}>
@@ -215,7 +275,7 @@ const GoalGraph = ({ route }: { route: any }) => {
               selected={tags.find((t) => t.name === tag.name)?.state === "yes"}
               style={{ marginRight: 10 }}
               onLongPress={() => {
-                setTags(tags.map((t) => t.name === tag.name ? {...t, state: "no"} : t));
+                setTags(tags.map((t) => t.name === tag.name ? {...t, state: t.state === "maybe" ? "no" : "maybe"} : t));
               }}
               onPress={() => {
                 setTags(tags.map((t) => t.name === tag.name ? {...t, state: t.state === "maybe" ? "yes" : "maybe"} : t));
@@ -229,6 +289,8 @@ const GoalGraph = ({ route }: { route: any }) => {
         {graphTypes.map((type) => toggleButton(type, graphLabel(type), graphType === type, () => setGraphType(type as "box" | "bar-count" | "bar-sum" | "line-mean"), theme))}
       </View>
 
+
+
       <View key="goalGraph" style={{flex: 1, width: '100%'}}>
         <CartesianChart 
           data={binStats} 
@@ -238,8 +300,11 @@ const GoalGraph = ({ route }: { route: any }) => {
             pinch: { enabled: false }
           }}
           padding={{bottom: 10}}
-          domain={{x: [now.getTime() - binSizeWindow(binning), binTime(binning, now.getTime(), 1)]}}
-          domainPadding={{top: 10, bottom: 0, left: barWidth, right: barWidth * 2}}
+          domain={domain}
+          domainPadding={{top: 10, bottom: 0, left: barWidth, right: barWidth}}
+          viewport={{
+            // x: [0, 100],
+          }}
           xKey="t" 
           yKeys={yKeys}
           frame={{
@@ -247,11 +312,12 @@ const GoalGraph = ({ route }: { route: any }) => {
             lineColor: theme.colors.onSurfaceVariant,
           }}
           xAxis={{
-            // tickValues: binStats.map((q) => q.t),
+            tickValues: binStats.map((q) => q.t),
             font: font,
             enableRescaling: true,
             lineColor: theme.colors.onSurfaceVariant,
             labelColor: theme.colors.onSurfaceVariant,
+
 
             formatXLabel: (t: number) => {
               const d = new Date(t);
@@ -304,7 +370,7 @@ const GoalGraph = ({ route }: { route: any }) => {
                         <Fragment key={"" + i}>
                           <Path
                             path={path}
-                            color={theme.colors.primaryContainer}
+                            color={theme.colors.primary}
                           />
                           <Path
                             style="stroke"
@@ -351,7 +417,7 @@ const GoalGraph = ({ route }: { route: any }) => {
                           <Path
                             style="fill"
                             path={fill}
-                            color={theme.colors.primaryContainer}
+                            color={theme.colors.primary}
                           />
                           <Path
                             style="stroke"
@@ -368,23 +434,9 @@ const GoalGraph = ({ route }: { route: any }) => {
               </>
             );
             } else if (graphType === "bar-count") {
-              return (
-                <Bar
-                  points={points.count}
-                  chartBounds={chartBounds}
-                  color={theme.colors.primary}
-                  roundedCorners={{ topLeft: 3, topRight: 3 }}
-                />
-              );
+              return barPlot(points.count, points.zero);
             } else if (graphType === "bar-sum") {
-              return (
-                <Bar
-                  points={points.sum}
-                  chartBounds={chartBounds}
-                  color={theme.colors.primary}
-                  roundedCorners={{ topLeft: 3, topRight: 3 }}
-                />
-              );
+              return barPlot(points.sum, points.zero);
             } else if (graphType === "line-mean") {
               return (
                 <>

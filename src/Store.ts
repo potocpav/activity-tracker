@@ -325,6 +325,7 @@ const useStore = create<State>()(
     partialize: (state) => ({
       goals: state.goals,
       theme: state.theme,
+      version: 0,
     }),
     
   }
