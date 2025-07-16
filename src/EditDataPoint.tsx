@@ -43,7 +43,6 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
   const updateGoalDataPoint = useStore((state: any) => state.updateGoalDataPoint);
   const deleteGoalDataPoint = useStore((state: any) => state.deleteGoalDataPoint);
   const [inputDate, setInputDate] = useState<CalendarDate | undefined>(dateTime);
-  const [inputTime, setInputTime] = useState<{hours: number, minutes: number} | undefined>({hours: dateTime.getHours(), minutes: dateTime.getMinutes()});
   const inputValues = typeof goal.unit === "string" ? [{subUnit: null, value: useState<string>(dataPoint.value?.toString() ?? "")}] : 
     goal.unit.map((u: SubUnit) => ({subUnit: u, value: useState<string>(dataPoint.value[u.name]?.toString() ?? "")}));
   const [inputTags, setInputTags] = useState<string[]>(dataPoint.tags);
@@ -87,8 +86,8 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
         }
       }
 
-      if (inputDate && inputTime && hasNonEmptyValue && newValue !== null) {
-        const newTime = new Date(inputDate?.getFullYear(), inputDate?.getMonth(), inputDate?.getDate(), inputTime?.hours, inputTime?.minutes).getTime();
+      if (inputDate && hasNonEmptyValue && newValue !== null) {
+        const newTime = new Date(inputDate?.getFullYear(), inputDate?.getMonth(), inputDate?.getDate()).getTime();
         console.log("inputTags", inputTags);
         updateGoalDataPoint(goalName, newDataPoint ? undefined : dataPointIndex, {
           time: newTime,
@@ -119,45 +118,21 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
         </>
       ),
     });
-  }, [navigation, theme, goal, inputDate, inputTime, ...inputValues.map((inputValue: any) => inputValue.value[0]), inputTags]);
+  }, [navigation, theme, goal, inputDate, ...inputValues.map((inputValue: any) => inputValue.value[0]), inputTags]);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
       <ScrollView style={styles.content}>
       <View style={styles.pickerContainer}>
-        <Text style={[styles.label, { color: theme.colors.onSurface }]}>Date: {inputDate ? inputDate.toLocaleDateString() : 'Not set'}</Text>
-        <Button onPress={() => setDatePickerVisible(true)} uppercase={false} mode="outlined">
-          Change
-        </Button>
-        <DatePickerModal
+        <DatePickerInput
           locale="cs"
-          mode="single"
-          visible={datePickerVisible}
-          onDismiss={() => setDatePickerVisible(false)}
-          date={inputDate}
-          onConfirm={(d) => {setInputDate(d.date); setDatePickerVisible(false);}}
+          value={inputDate}
+          onChange={(d) => {setInputDate(d);}}
+          inputMode="start"
+          mode="outlined"
+          label="Date"
         />
       </View>
-
-      <View style={styles.pickerContainer}>
-        <Text style={[styles.label, { color: theme.colors.onSurface }]}>Time: {inputTime ? `${inputTime.hours}:${inputTime.minutes}` : 'Not set'}</Text>
-          <Button 
-            onPress={() => setTimePickerVisible(true)} 
-            uppercase={false} 
-            mode="outlined"
-            style={{marginBottom: 10}}
-          >
-            Change
-          </Button>
-          <TimePickerModal
-            locale="cs"
-            visible={timePickerVisible}
-            onDismiss={() => setTimePickerVisible(false)}
-            onConfirm={(t) => {setInputTime(t); setTimePickerVisible(false);}}
-            hours={12}
-            minutes={14}
-          />
-        </View>
 
       <View style={styles.inputContainer}>
         {inputValues.map((inputValue: {subUnit: SubUnit | null, value: [string, (text: string) => void]}) => (

@@ -289,8 +289,6 @@ const GoalGraph = ({ route }: { route: any }) => {
         {graphTypes.map((type) => toggleButton(type, graphLabel(type), graphType === type, () => setGraphType(type as "box" | "bar-count" | "bar-sum" | "line-mean"), theme))}
       </View>
 
-
-
       <View key="goalGraph" style={{flex: 1, width: '100%'}}>
         <CartesianChart 
           data={binStats} 

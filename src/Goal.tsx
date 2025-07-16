@@ -13,6 +13,7 @@ import GoalGraph from "./GoalGraph";
 import GoalData from "./GoalData";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { formatDate, renderValue } from "./GoalData";
+import GoalSummary from "./GoalSummary";
 
 
 const Tab = createMaterialTopTabNavigator();
@@ -76,45 +77,7 @@ const GoalInner: React.FC<any> = ({ goal, navigation }) => {
   );
 };
 
-const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => {
-  const theme = useTheme();
-  const { goalName } = route.params;
-  const goals = useStore((state: any) => state.goals);
-  const goal = goals.find((g: GoalType) => g.name === goalName);
-
-  if (!goal) {
-    return <Text>Goal not found</Text>;
-  }
-
-  const numDataPoints = goal.dataPoints.length;
-  const lastDataPoint = numDataPoints > 0 ? goal.dataPoints[numDataPoints - 1] : null;
-
-  return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surfaceVariant }]}>    
-      <View>
-        <View style={[styles.goalInfo, { backgroundColor: theme.colors.surface }]}>  
-          <Text style={[styles.goalDescription, { color: theme.colors.onSurfaceVariant }]}>{goal.description}</Text>
-          <Text style={[styles.goalUnit, { color: theme.colors.onSurfaceVariant }]}>Unit: {renderUnit(goal.unit)}</Text>
-        </View>
-        <View style={[styles.goalInfo, { backgroundColor: theme.colors.surface }]}>  
-          <Text style={{ color: theme.colors.onSurfaceVariant }}>Number of data points: {numDataPoints}</Text>
-          {lastDataPoint && (
-            <>
-              <Text style={{ color: theme.colors.onSurfaceVariant }}>Last data point: {renderValue(lastDataPoint.value, goal.unit)}</Text>
-              <Text style={{ color: theme.colors.onSurfaceVariant }}>Last date: {formatDate(new Date(lastDataPoint.time))}</Text>
-            </>
-          )}
-        </View>
-      </View>
-      <FAB
-        icon="plus"
-        style={[styles.fab, { backgroundColor: theme.colors.primary }]}
-        onPress={() => navigation.navigate("EditDataPoint", { goalName, newDataPoint: true })}
-        color={theme.colors.onPrimary}
-      />
-    </SafeAreaView>
-  );
-};
+// GoalSummary component removed for extraction to a separate file.
 
 const styles = StyleSheet.create({
   container: {

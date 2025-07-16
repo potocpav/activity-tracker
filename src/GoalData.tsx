@@ -28,16 +28,10 @@ const formatTime = (date: Date) => {
   });
 };
 
-export const renderValue = (value: any, unit: Unit) => {
-  if (typeof value === "number") {
-    return `${Math.round(value * 100) / 100} ${typeof unit === "string" ? unit : ""}`;
-  }
-
-  if (typeof value === "object" && value !== null) {
-    if (typeof unit === "string") {
-      return JSON.stringify(value);
-    }
-
+export const renderValueSummary = (value: any, unit: Unit) => {
+  if (typeof value === "number" && typeof unit === "string") {
+    return `${Math.round(value * 100) / 100} ${unit}`;
+  } else if (typeof value === "object" && typeof unit === "object") {
     // Handle complex units (like finger strength with mean, max, tut)
     const parts: string[] = [];
     unit.forEach((u: any) => {
@@ -46,9 +40,26 @@ export const renderValue = (value: any, unit: Unit) => {
       }
     });
     return parts.join(", ");
+  } else {
+    return "n/a"
   }
+};
 
-  return String(value);
+export const renderValue = (value: any, unit: Unit) => {
+  if (typeof value === "number" && typeof unit === "string") {
+    return `${Math.round(value * 100) / 100} ${unit}`;
+  } else if (typeof value === "object" && typeof unit === "object") {
+    // Handle complex units (like finger strength with mean, max, tut)
+    const parts: string[] = [];
+    unit.forEach((u: any) => {
+      if (value[u.name] !== null && value[u.name] !== undefined) {
+        parts.push(`${value[u.name]} ${u.symbol}`);
+      }
+    });
+    return parts.join(", ");
+  } else {
+    return "n/a"
+  }
 };
 
 const renderTags = (tags: string[]) => {
