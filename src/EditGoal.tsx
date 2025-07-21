@@ -6,9 +6,9 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
-import { Dialog, Portal, useTheme } from 'react-native-paper';
-import { GoalType, Tag } from "./Store";
-import { TextInput, Button, Chip } from "react-native-paper";
+import { Dialog, Divider, Portal, useTheme } from 'react-native-paper';
+import { GoalType, SetTag, Tag } from "./Store";
+import { TextInput, Button, Chip, ToggleButton } from "react-native-paper";
 import useStore from "./Store";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import DraggableFlatList from 'react-native-draggable-flatlist';
@@ -34,18 +34,19 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
   const themeState = useStore((state: any) => state.theme);
   const goal = goals.find((g: GoalType) => g.name === goalName) ?? defaultGoal;
   const updateGoal = useStore((state: any) => state.updateGoal);
-  const deleteGoal = useStore((state: any) => state.deleteGoal);
-  const findTag = useStore((state: any) => state.findTag);
-  const addTag = useStore((state: any) => state.addTag);
-  const deleteTag = useStore((state: any) => state.deleteTag);
-  const renameTag = useStore((state: any) => state.renameTag);
   const setTags = useStore((state: any) => state.setTags);
   
   const [goalNameInput, setGoalNameInput] = useState(goal.name);
   const [goalDescriptionInput, setGoalDescriptionInput] = useState(goal.description);
   const [unitInput, setUnitInput] = useState(goal.unit);
+  const [unitMode, setUnitMode] = useState<'single' | 'multiple'>('single');
+  const [multiValues, setMultiValues] = useState([
+    { value: '', unit: '' },
+    { value: '', unit: '' },
+  ]);
 
   const [tagDialogVisible, setTagDialogVisible] = useState(false);
+  const [tagState, setTagState] = useState<SetTag[]>(goal.tags.map((t: Tag) => ({oldTagName: t.name, ...t})));
   const [tagDialogName, setTagDialogName] = useState("");
   const [tagDialogNameInput, setTagDialogNameInput] = useState("");
 
@@ -70,9 +71,10 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
         description: goalDescriptionInput,
         unit: unitInput,
         color: selectedColor,
-      };
+      }; 
       const goalName = goal.name === "" ? updatedGoal.name : goal.name;
       updateGoal(goalName, updatedGoal);
+      setTags(updatedGoal.name, tagState);
       navigation.reset(
         {
         index: 0,
@@ -90,27 +92,24 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
         </>
       ),
     });
-  }, [navigation, theme, goal, goalNameInput, goalDescriptionInput, unitInput, selectedColor]);
+  }, [navigation, theme, goal, goalNameInput, goalDescriptionInput, unitInput, selectedColor, tagState]);
 
   const onUpdateTag = (action: "delete" | "update") => {
     if (tagDialogNameInput === "") {
       Alert.alert("Error", "Tag name cannot be empty");
     } else {
       if (action === "delete") {
-        deleteTag(goal.name, tagDialogName);
+        setTagState(tagState.filter((t: SetTag) => t.name !== tagDialogName));
       } else if (action === "update") {
-        if (findTag(goal.name, tagDialogNameInput)) {
-          if (tagDialogName === tagDialogNameInput) {
-            // do nothing
-          } else {
-            Alert.alert("Error", "You cannot rename a tag to its own name");
-          }
+        const existingTagNames = tagState.map((t: SetTag) => t.name);
+        if (tagDialogNameInput !== tagDialogName && existingTagNames.includes(tagDialogNameInput)) {
+          Alert.alert("Error", "A tag with this name already exists");
+          return;
+        } 
+        if (tagDialogName === "") {
+            setTagState([...tagState, { oldTagName: null, name: tagDialogNameInput, color: 19 }]);
         } else {
-          if (tagDialogName) {
-            renameTag(goal.name, tagDialogName, tagDialogNameInput);
-          } else {
-            addTag(goal.name, { name: tagDialogNameInput, color: theme.colors.primary });
-          }
+          setTagState(tagState.map((t: SetTag) => t.name === tagDialogName ? { ...t, name: tagDialogNameInput } : t));
         }
       }
       setTagDialogVisible(false);
@@ -155,23 +154,74 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
             mode="outlined"
           />
         </View>
-
         <View style={styles.inputContainer}>
-          <TextInput
-            label="Unit"
-            value={unitInput}
-            onChangeText={setUnitInput}
-            mode="outlined"
-          />
+          <View style={{ flexDirection: 'row', justifyContent: 'center'}}>
+            <Button
+              mode={unitMode === 'single' ? 'contained' : 'outlined'}
+              onPress={() => setUnitMode('single')}
+              style={{ marginRight: 8, flex: 1 }}
+            >
+              Single value
+            </Button>
+            <Button
+              mode={unitMode === 'multiple' ? 'contained' : 'outlined'}
+              onPress={() => setUnitMode('multiple')}
+              style={{ flex: 1 }}
+            >
+              Multiple values
+            </Button>
+          </View>
         </View>
+
+        {unitMode === 'single' ? (
+          <View style={styles.inputContainer}>
+            <TextInput
+              label="Unit"
+              value={unitInput}
+              onChangeText={setUnitInput}
+              mode="outlined"
+            />
+          </View>
+        ) : (
+          <View style={styles.inputContainer}>
+            {[0, 1].map(idx => (
+              <View key={idx} style={{ flexDirection: 'row', marginBottom: 8 }}>
+                <View style={{ flex: 1, marginRight: 8 }}>
+                  <TextInput
+                    label="Value"
+                    value={multiValues[idx].value}
+                    onChangeText={text => {
+                      const newVals = [...multiValues];
+                      newVals[idx].value = text;
+                      setMultiValues(newVals);
+                    }}
+                    mode="outlined"
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <TextInput
+                    label="Unit"
+                    value={multiValues[idx].unit}
+                    onChangeText={text => {
+                      const newVals = [...multiValues];
+                      newVals[idx].unit = text;
+                      setMultiValues(newVals);
+                    }}
+                    mode="outlined"
+                  />
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
 
         <View style={styles.inputContainer}>
           <Text style={[styles.label, { color: theme.colors.onSurface }]}>Tags:</Text>
           <DraggableFlatList
-            data={goal.tags}
+            data={tagState}
             horizontal={true}
-            keyExtractor={(item: Tag) => item.name}
-            renderItem={({ item, drag, isActive }: { item: Tag, drag: () => void, isActive: boolean }) => (
+            keyExtractor={(item: SetTag) => item.name}
+            renderItem={({ item, drag, isActive }: { item: SetTag, drag: () => void, isActive: boolean }) => (
               <Chip
                 onPress={() => { setTagDialogVisible(true); setTagDialogName(item.name); setTagDialogNameInput(item.name);}}
                 style={{
@@ -186,7 +236,7 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
               </Chip>
             )}
             onDragEnd={() => {
-              setTags(goal.name, goal.tags);
+              console.log("Tag reordering is not implemented yet.")
             }}
             contentContainerStyle={{ flexDirection: 'row' }}
             style={{ marginTop: 8 }}
@@ -235,7 +285,7 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
                         height: 40,
                         borderRadius: 15,
                         borderWidth: selectedColor === row * 4 + idx ? 2 : 1,
-                        borderColor: selectedColor === row * 4 + idx ? theme.colors.primary : '#ccc',
+                        borderColor: selectedColor === row * 4 + idx ? theme.colors.onSurface : theme.colors.onSurfaceVariant,
                         justifyContent: 'center',
                         alignItems: 'center',
                         elevation: 2,

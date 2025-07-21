@@ -81,15 +81,15 @@ export const exampleGoals = [
       tags: [
         {
           name: "left",
-          color: "#000000",
+          color: 10,
         },
         {
           name: "right",
-          color: "#000000",
+          color: 11,
         },
         {
           name: "warmup",
-          color: "#000000",
+          color: 12,
         },
       ],
       dataPoints: [

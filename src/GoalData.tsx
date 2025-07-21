@@ -6,11 +6,13 @@ import {
   View,
   TouchableOpacity,
   ScrollView,
+  NativeModules,
 } from "react-native";
 import { useTheme, DataTable, FAB } from 'react-native-paper';
 import useStore, { DataPoint, GoalType, Unit } from "./Store";
-import EditDataPoint from "./EditDataPoint";
 import { darkPalette, lightPalette } from "./Color";
+
+const locale = NativeModules.I18nManager.localeIdentifier;
 
 type GoalDataProps = {
   navigation: any;
@@ -18,12 +20,12 @@ type GoalDataProps = {
 };
 
 export const formatDate = (date: Date) => {
-  return date.toLocaleDateString("cs-CZ", {year: "numeric",month: "short",day: "numeric"});
+  return date.toLocaleDateString(locale, {year: "numeric",month: "short",day: "numeric"});
   // return date.toUTCString();
 };
 
 const formatTime = (date: Date) => {
-  return date.toLocaleTimeString("cs-CZ", {
+  return date.toLocaleTimeString(locale, {
     hour: "2-digit",
     minute: "2-digit",
   });

@@ -6,6 +6,7 @@ import {
   ScrollView,
   Alert,
   ToastAndroid,
+  NativeModules,
 } from "react-native";
 import { Chip, useTheme, TextInput, Button } from 'react-native-paper';
 import { SubUnit, GoalType } from "./Store";
@@ -18,6 +19,8 @@ type EditDataPointProps = {
   navigation: any;
   route: any;
 };
+
+const locale = NativeModules.I18nManager.localeIdentifier;
 
 const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
   const theme = useTheme();
@@ -59,11 +62,14 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
   const saveDataPointWrapper = () => {
       var newValue: any = {};
       var hasNonEmptyValue = false;
+      var hasNonNumbervalue = false;
       if (typeof goal.unit === "string") {
         newValue = parseFloat(inputValues[0].value[0]);
-        if (isNaN(newValue)) {
-          Alert.alert("Invalid input");
+        if (inputValues[0].value[0] === "") {
           newValue = null;
+        } else if (isNaN(newValue)) { 
+          newValue = null;
+          hasNonNumbervalue = true;
         } else {
           hasNonEmptyValue = true;
         }
@@ -75,8 +81,8 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
             hasNonEmptyValue = true;
             const value = parseFloat(inputValue.value[0]);
             if (isNaN(value)) {
-              Alert.alert("Invalid input");
               newValue = null;
+              hasNonNumbervalue = true;
               break;
             }
             newValue[inputValue.subUnit.name] = value;
@@ -84,7 +90,13 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
         }
       }
 
-      if (inputDate && hasNonEmptyValue && newValue !== null) {
+      if (!inputDate) {
+        Alert.alert("Date is required");
+      } else if (hasNonNumbervalue) {
+        Alert.alert("Value must be a number");
+      } else if (!hasNonEmptyValue) {
+        Alert.alert("Value is required");
+      } else {
         const newTime = new Date(inputDate?.getFullYear(), inputDate?.getMonth(), inputDate?.getDate()).getTime();
         const note = noteInput === "" ? {} : {"note": noteInput};
         const newIndex = updateGoalDataPoint(goalName, newDataPoint ? undefined : dataPointIndex, {
@@ -95,8 +107,6 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
         });
         navigation.goBack();
         return newIndex
-      } else {
-        Alert.alert("Invalid input");
       }
     };
 
@@ -108,7 +118,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
   
   React.useEffect(() => {
     navigation.setOptions({
-      title: `${inputDate ? inputDate.toLocaleDateString() : 'Not set'} #${newDataPoint ? 'New' : dataPointIndex + 1}`,
+      title: newDataPoint ? 'New data point' : `${new Date(dataPoint.time).toLocaleDateString(locale)} #${dataPointIndex + 1}`,
       headerRight: () => (
         <>
         <Button compact={true} onPress={saveDataPointWrapper}><AntDesign name="check" size={24} color={theme.colors.onSurface} /></Button>
@@ -126,7 +136,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
       <ScrollView style={styles.content}>
       <View style={styles.pickerContainer}>
         <DatePickerInput
-          locale="cs"
+          locale={locale}
           value={inputDate}
           onChange={(d) => {setInputDate(d);}}
           inputMode="start"
@@ -144,6 +154,9 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
             onChangeText={text => inputValue.value[1](text)}
             keyboardType="numeric"
             mode="outlined"
+            style={{
+              marginBottom: 10,
+            }}
           />      
         ))}
       </View>

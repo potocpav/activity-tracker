@@ -18,6 +18,8 @@ In order to make this app a full-featured management app for workout data, the f
   
 ## Features
 
+* [x] Add measurement comments
+* [x] Implement editing composite units (placeholder)
 * [ ] Implement editing composite units
 * [ ] Allow adding graphs to Summary page
 * [ ] Allow adding values to Summary page
@@ -26,21 +28,23 @@ In order to make this app a full-featured management app for workout data, the f
 * [ ] Export data as CSV
 * [ ] Add week start customization to Settings
 * [ ] Add data import to Settings
-* [x] Add measurement comments
+* [ ] Allow value-less goals
 
 ## Bugs
 
 * [x] Add alert on point duplication
+* [x] Allow unit-less measurements
+* [x] Make tag editing wait on goal submit
+* [ ] Fix direct date input
 * [ ] Make bounds on graphs pixel-perfect
-* [ ] Make tag editing wait on goal submit
-* [ ] Allow unit-less measurements
-* [ ] Allow value-less goals
+* [ ] Fix localization
+* [ ] Implement tag reordering
 
 ## General Usability
 
-* [ ] Improve form validation messages
+* [x] When editing, show a better point header.
+* [x] Improve form validation messages
 * [ ] Show measurment comments somewhere
-* [ ] When editing, show a better point header.
 * [ ] Screen orientation
 * [ ] Limit graph Panning on the left
 * [ ] Prevent future point input

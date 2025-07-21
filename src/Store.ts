@@ -33,8 +33,14 @@ export type SubUnit = {
 
 export type Tag = {
   name: TagName;
-  color: string;
+  color: number;
 };
+
+export type SetTag = {
+  oldTagName : TagName | null;
+  name: TagName;
+  color: number;
+}
 
 export type TagName = string;
 
@@ -239,9 +245,29 @@ const useStore = create<State>()(
         });
       },
 
-      setTags: (goalName: string, tags: Tag[]) => {
+      setTags: (goalName: string, tags: SetTag[]) => {
+        const newTagNames = tags.map((t: SetTag) => t.name);
+        const oldTagNames = tags.map((t: SetTag) => t.oldTagName).filter((t: TagName | null) => t !== null);
+        if (new Set(newTagNames).size !== newTagNames.length) {
+          console.log("Tag names must be unique");
+          return;
+        }
+        if (new Set(oldTagNames).size !== oldTagNames.length) {
+          console.log("Old tag names must be unique");
+          return;
+        }
+        const newTags = tags.map((t: SetTag) => ({name: t.name, color: t.color}));
+        const updateTag = (tagName: TagName) => 
+          tags.find((t: SetTag) => t.oldTagName === tagName)?.name ?? null;
         set((state: any) => {
-          const goals = state.goals.map((goal: GoalType) => goal.name === goalName ? { ...goal, tags: tags } : goal);
+          const goals = state.goals.map((goal: GoalType) => goal.name === goalName ? { 
+            ...goal, 
+            tags: newTags,
+            dataPoints: goal.dataPoints.map((dp: DataPoint) => ({
+              ...dp,
+              tags: dp.tags.map((t: TagName) => updateTag(t)).filter((t: TagName | null) => t !== null)
+            }))
+          } : goal);
           return { goals };
         });
       },
@@ -331,19 +357,25 @@ const useStore = create<State>()(
   {
     name: "store",
     storage: createJSONStorage(() => AsyncStorage),
-    version: 1,
+    version: 2,
     partialize: (state) => ({
       goals: state.goals,
       theme: state.theme,
       blackBackground: state.blackBackground,
     }),
     migrate: (persisted: any, version) => {
-      if (version === 0) {
+      if (version <= 0) {
         persisted.goals.forEach((goal: GoalType) => {
           goal.color = 19;
         });
       }
-    
+      if (version <= 1) {
+        persisted.goals.forEach((goal: GoalType) => {
+          goal.tags.forEach((tag: Tag) => {
+            tag.color = 19;
+          });
+        });
+      }
       return persisted
     }
   }
