@@ -173,7 +173,7 @@ const GoalGraph = ({ route }: { route: any }) => {
     var viewport : {x: [number, number]} = {x: [t0view, t1]};
     if (graphType === "box") {
       const [ymin, ymax] = [Math.min(...binStats.map((b) => b.q0)), Math.max(...binStats.map((b) => b.q4))];
-      domain.y = [ymin + (ymax - ymin) * 0.05, ymax + (ymax - ymin) * 0.05];
+      domain.y = [ymin - (ymax - ymin) * 0.05, ymax + (ymax - ymin) * 0.05];
     } else if (graphType === "bar-count") {
       domain.y = [0, Math.max(...binStats.map((b) => b.count))];
     } else if (graphType === "bar-sum") {
@@ -469,55 +469,48 @@ const GoalGraph = ({ route }: { route: any }) => {
                   const elements = [];
                   for (let i = 0; i < points.q0.length; i++) {
                     const w = barWidth;
-                    const h = barHeight;
-                    
                     const ws = w*0.4;
-                    const hs = h*0.4;
+                    const wcircle = w * 0.5;
 
-                      const q0 = points.q0[i];
-                      const q1 = points.q1[i];
-                      const q2 = points.q2[i];
-                      const q3 = points.q3[i];
-                      const q4 = points.q4[i];
-                      const [q0x, q0y] = [q0.x, q0.y ?? NaN];
-                      var [q1x, q1y] = [q1.x, q1.y ?? NaN];
-                      const [q2x, q2y] = [q2.x, q2.y ?? NaN];
-                      var [q3x, q3y] = [q3.x, q3.y ?? NaN];
-                      const [q4x, q4y] = [q4.x, q4.y ?? NaN];
+                    const q0 = points.q0[i];
+                    const q1 = points.q1[i];
+                    const q2 = points.q2[i];
+                    const q3 = points.q3[i];
+                    const q4 = points.q4[i];
+                    const [q0x, q0y] = [q0.x, q0.y ?? NaN];
+                    const [q2x, q2y] = [q2.x, q2.y ?? NaN];
+                    var [q1x, q1y] = [q1.x, Math.max(q1.y ?? NaN, q2y + w)];
+                    var [q3x, q3y] = [q3.x, Math.min(q3.y ?? NaN, q2y - w)];
+                    const [q4x, q4y] = [q4.x, q4.y ?? NaN];
 
-                      if (q1.y == q3.y) { 
-                        q1y -= h;
-                        q3y += h;
-                      }
-
-                      elements.push(
-                        <Fragment key={"" + i}>
-                          <RoundedRect
-                            x={q1x - w}
-                            y={q1y}
-                            width={2*w}
-                            height={q3y - q1y}
-                            color={theme.colors.primary}
-                            r={w/2}
-                          />
-                          <RoundedRect
-                            x={q0x - ws}
-                            y={q0y}
-                            width={2*ws}
-                            height={q4y - q0y}
-                            color={theme.colors.primary}
-                            r={ws}
-                          />
-                          <RoundedRect
-                            x={q2x - w * 1.7}
-                            y={q2y - hs}
-                            width={2 * w * 1.7}
-                            height={2 * hs}
-                            color={theme.colors.primary}
-                            r={hs}
-                          />
-                        </Fragment>
-                      );
+                    elements.push(
+                      <Fragment key={"" + i}>
+                        <RoundedRect
+                          x={q1x - w}
+                          y={q1y}
+                          width={2*w}
+                          height={q3y - q1y}
+                          color={theme.colors.primary}
+                          r={w}
+                        />
+                        <RoundedRect
+                          x={q0x - ws}
+                          y={q0y}
+                          width={2*ws}
+                          height={q4y - q0y}
+                          color={theme.colors.primary}
+                          r={ws}
+                        />
+                        <RoundedRect
+                          x={q2x - wcircle}
+                          y={q2y - wcircle}
+                          width={2 * wcircle}
+                          height={2 * wcircle}
+                          color={theme.colors.onPrimary}
+                          r={wcircle}
+                        />
+                      </Fragment>
+                    );
                   }
                   return elements;
                 })()}

@@ -27,12 +27,13 @@ In order to make this app a full-featured management app for workout data, the f
     * [ ] add an alert on duplication
   * [ ] Data Series screen
     * [ ] Compact display
+    * [ ] Event filtering by tags
   * [ ] Goal Graphs
     * [x] Improve x-ticks
-    * [ ] Add axis labels
-    * [ ] Limit Panning on the left
     * [x] Filtering by tags
     * [x] Simplify graph presentation
+    * [ ] Add axis labels
+    * [ ] Limit Panning on the left
   * [ ] Tag management screen
     * [ ] Fix tag rendering to show them in a single scrollable row
     * [ ] Tag colors
@@ -48,8 +49,8 @@ In order to make this app a full-featured management app for workout data, the f
   * [ ] Week start customization
   * [ ] Data import
 * Data handling
-  * [ ] Export as CSV
   * [x] Data stability and migrations
+  * [ ] Export as CSV
   * [ ] Address goals based on their list IDs, not their names
   * [ ] Performance improvements for 1k-10k data points
 
