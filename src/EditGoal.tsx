@@ -13,6 +13,7 @@ import useStore from "./Store";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import { lightPalette, darkPalette } from './Color';
+import ColorPicker from './ColorPicker';
 type EditGoalProps = {
   navigation: any;
   route: any;
@@ -266,40 +267,14 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
           </Dialog.Actions>
         </Dialog>
         {/* Color picker dialog */}
-        <Dialog visible={colorDialogVisible} onDismiss={() => setColorDialogVisible(false)}>
-          <Dialog.Title>Pick a color</Dialog.Title>
-          <Dialog.Content>
-            <View style={{ flexDirection: 'column', alignItems: 'center' }}>
-              {[0, 1, 2, 3, 4].map(row => (
-                <View key={row} style={{ flexDirection: 'row', marginBottom: 8 }}>
-                  {palette.slice(row * 4, row * 4 + 4).map((color, idx) => (
-                    <Button
-                      key={idx}
-                      mode="contained"
-                      compact={true}
-                      onPress={() => handleColorSelect(row * 4 + idx)}
-                      style={{
-                        backgroundColor: color,
-                        marginHorizontal: 4,
-                        width: 40,
-                        height: 40,
-                        borderRadius: 15,
-                        borderWidth: selectedColor === row * 4 + idx ? 2 : 1,
-                        borderColor: selectedColor === row * 4 + idx ? theme.colors.onSurface : theme.colors.onSurfaceVariant,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        elevation: 2,
-                      }}
-                      contentStyle={{ width: 40, height: 40 }}
-                    >
-                      {selectedColor === row * 4 + idx ? <AntDesign name="check" size={20} color={theme.colors.surface} /> : null}
-                    </Button>
-                  ))}
-                </View>
-              ))}
-            </View>
-          </Dialog.Content>
-        </Dialog>
+        <ColorPicker
+          visible={colorDialogVisible}
+          palette={palette}
+          selectedColor={selectedColor}
+          onSelect={handleColorSelect}
+          onDismiss={() => setColorDialogVisible(false)}
+          theme={theme}
+        />
       </Portal>
     </View>
   );
