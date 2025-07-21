@@ -97,11 +97,13 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
   // Filtering logic
   const requiredTags = tags.filter((t) => t.state === "yes").map(t => t.name);
   const negativeTags = tags.filter((t) => t.state === "no").map(t => t.name);
-  const filteredDataPoints = goal.dataPoints.filter((dataPoint: DataPoint) => {
-    const hasAllRequired = requiredTags.every(tag => dataPoint.tags.includes(tag));
-    const hasAnyNegative = negativeTags.some(tag => dataPoint.tags.includes(tag));
-    return hasAllRequired && !hasAnyNegative;
-  });
+  const filteredDataPoints = goal.dataPoints
+    .map((o: DataPoint, i: number) => [o, i])
+    .filter(([dataPoint, i]: [DataPoint, number]) => {
+      const hasAllRequired = requiredTags.every(tag => dataPoint.tags.includes(tag));
+      const hasAnyNegative = negativeTags.some(tag => dataPoint.tags.includes(tag));
+      return hasAllRequired && !hasAnyNegative;
+    })
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -126,10 +128,10 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
             <DataTable.Title numeric>Value</DataTable.Title>
           </DataTable.Header>
 
-          {filteredDataPoints.slice().reverse().map((dataPoint: DataPoint, index: number) => (
+          {filteredDataPoints.slice().reverse().map(([dataPoint, i]: [DataPoint, number]) => (
             <TouchableOpacity
-              key={index}
-              onPress={() => navigation.navigate("EditDataPoint", { goalName: goal.name, dataPointIndex: goal.dataPoints.length - 1 - goal.dataPoints.indexOf(dataPoint) })}
+              key={i}
+              onPress={() => navigation.navigate("EditDataPoint", { goalName: goal.name, dataPointIndex: i })}
             >
               <DataTable.Row>
                 <DataTable.Cell>{formatDate(new Date(dataPoint.time))}</DataTable.Cell>
