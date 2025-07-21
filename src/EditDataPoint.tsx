@@ -5,10 +5,10 @@ import {
   StyleSheet,
   ScrollView,
   Alert,
+  ToastAndroid,
 } from "react-native";
-import { Chip, useTheme } from 'react-native-paper';
+import { Chip, useTheme, TextInput, Button } from 'react-native-paper';
 import { SubUnit, GoalType } from "./Store";
-import { TextInput, Button } from "react-native-paper";
 import useStore from "./Store";
 import { DatePickerInput } from "react-native-paper-dates";
 import { CalendarDate } from "react-native-paper-dates/lib/typescript/Date/Calendar";
@@ -42,6 +42,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
   const updateGoalDataPoint = useStore((state: any) => state.updateGoalDataPoint);
   const deleteGoalDataPoint = useStore((state: any) => state.deleteGoalDataPoint);
   const [inputDate, setInputDate] = useState<CalendarDate | undefined>(dateTime);
+  const [noteInput, setNoteInput] = useState<string>(dataPoint.note ?? "");
   const inputValues = typeof goal.unit === "string" ? [{subUnit: null, value: useState<string>(dataPoint.value?.toString() ?? "")}] : 
     goal.unit.map((u: SubUnit) => ({subUnit: u, value: useState<string>(dataPoint.value[u.name]?.toString() ?? "")}));
   const [inputTags, setInputTags] = useState<string[]>(dataPoint.tags);
@@ -85,10 +86,12 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
 
       if (inputDate && hasNonEmptyValue && newValue !== null) {
         const newTime = new Date(inputDate?.getFullYear(), inputDate?.getMonth(), inputDate?.getDate()).getTime();
+        const note = noteInput === "" ? {} : {"note": noteInput};
         const newIndex = updateGoalDataPoint(goalName, newDataPoint ? undefined : dataPointIndex, {
           time: newTime,
           value: newValue,
           tags: inputTags,
+          ...note,
         });
         navigation.goBack();
         return newIndex
@@ -99,6 +102,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
 
   const duplicateDataPointWrapper = () => {
     const newIndex = saveDataPointWrapper();
+    ToastAndroid.show('Data point saved', ToastAndroid.SHORT);
     navigation.navigate("EditDataPoint", { goalName, dataPointIndex: newIndex, newDataPoint: true });
   };
   
@@ -115,7 +119,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
         </>
       ),
     });
-  }, [navigation, theme, goal, inputDate, ...inputValues.map((inputValue: any) => inputValue.value[0]), inputTags]);
+  }, [navigation, theme, goal, inputDate, ...inputValues.map((inputValue: any) => inputValue.value[0]), inputTags, noteInput]);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
@@ -134,14 +138,23 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
       <View style={styles.inputContainer}>
         {inputValues.map((inputValue: {subUnit: SubUnit | null, value: [string, (text: string) => void]}) => (
           <TextInput
-            key={inputValue.subUnit?.name}
-            label={inputValue.subUnit ? `${inputValue.subUnit.name} [${inputValue.subUnit.symbol}]` : `Value [${goal.unit}]`}
+            key={inputValue.subUnit?.name ?? "value"}
+            label={inputValue.subUnit ? `${inputValue.subUnit.name} [${inputValue.subUnit.symbol}]` : `Value ${goal.unit ? `[${goal.unit}]` : "-"}`}
             value={inputValue.value[0] ?? ""}
             onChangeText={text => inputValue.value[1](text)}
             keyboardType="numeric"
             mode="outlined"
           />      
         ))}
+      </View>
+
+      <View style={styles.inputContainer}>
+        <TextInput
+            label="Note"
+            value={noteInput}
+            onChangeText={setNoteInput}
+            mode="outlined"
+          />
         </View>
 
         <View style={styles.inputContainer}>

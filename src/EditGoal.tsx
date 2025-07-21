@@ -61,8 +61,6 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
   const saveGoal = () => {
     if (goalNameInput === "") {
       Alert.alert("Error", "Goal name cannot be empty");
-    } else if (unitInput === "") {
-      Alert.alert("Error", "Unit cannot be empty");
     } else if (goalNameInput !== goal.name && goals.find((g: GoalType) => g.name === goalNameInput)) {
       Alert.alert("Error", "A goal with this name already exists");
     } else {
@@ -83,36 +81,12 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
     }
   }
 
-  const deleteGoalWrapper = () => {
-    Alert.alert(
-      `Delete "${goal.name}"`,
-      "Are you sure you want to delete this goal? This action cannot be undone.",
-      [
-        {
-          text: "Cancel",
-          style: "cancel"
-        },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: () => {
-            deleteGoal(goal.name);
-            navigation.reset({
-              index: 0,
-              routes: [{name: 'Goals'}],
-            });
-          }
-        }
-      ]
-    );
-  }
   React.useEffect(() => {
     navigation.setOptions({
       title: goal.name,
       headerRight: () => (
         <>
         <Button compact={true} onPress={saveGoal}><AntDesign name="check" size={24} color={theme.colors.onSurface} /></Button>        
-        <Button compact={true} onPress={deleteGoalWrapper}><AntDesign name="delete" size={24} color={theme.colors.onSurface} /></Button>
         </>
       ),
     });

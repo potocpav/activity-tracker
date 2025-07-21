@@ -16,46 +16,50 @@ A React Native mobile application for analyzing force measurements from the Tind
 
 In order to make this app a full-featured management app for workout data, the following list of features must be implemented:
   
-* [ ] Goal Screen
-  * [x] Goal colors
-  * [x] Goal list
-    * [x] "Add point" button directly on the Goal list
-    * [x] Show last data points in the list
-  * [ ] Summary screen
-    * [ ] Allow editing composite units
-    * [ ] Allow adding graphs
-    * [ ] Allow adding summary values
-    * [x] Fix duplicating points
-    * [ ] add an alert on duplication
-  * [ ] Data Series screen
-    * [ ] Compact display
-    * [ ] Event filtering by tags
-  * [ ] Goal Graphs
-    * [x] Improve x-ticks
-    * [x] Filtering by tags
-    * [x] Simplify graph presentation
-    * [ ] Add axis labels
-    * [ ] Limit Panning on the left
-  * [ ] Tag management screen
-    * [ ] Fix tag rendering to show them in a single scrollable row
-    * [ ] Tag colors
-    * [ ] Fix goal tag editing to wait on submit
-* [x] Add & edit measurements
-  * [ ] Add comments
-* [ ] Tindeq
-  * [ ] Auto-analyze and add reps from Tindeq
-  * [ ] Integrate Tindeq with goal management
-  * [ ] Improve connection so that we never get stuck
-  * [ ] Tare with automatic disconnect/connect
-* [ ] Settings page
-  * [ ] Week start customization
-  * [ ] Data import
-* Data handling
-  * [x] Data stability and migrations
-  * [ ] Export as CSV
-  * [ ] Address goals based on their list IDs, not their names
-  * [ ] Performance improvements for 1k-10k data points
+## Features
 
+* [ ] Implement editing composite units
+* [ ] Allow adding graphs to Summary page
+* [ ] Allow adding values to Summary page
+* [ ] Event list filtering by tags
+* [ ] Add colors to tags
+* [ ] Export data as CSV
+* [ ] Add week start customization to Settings
+* [ ] Add data import to Settings
+* [x] Add measurement comments
+
+## Bugs
+
+* [x] Add alert on point duplication
+* [ ] Make bounds on graphs pixel-perfect
+* [ ] Make tag editing wait on goal submit
+* [ ] Allow unit-less measurements
+* [ ] Allow value-less goals
+
+## General Usability
+
+* [ ] Improve form validation messages
+* [ ] Show measurment comments somewhere
+* [ ] When editing, show a better point header.
+* [ ] Screen orientation
+* [ ] Limit graph Panning on the left
+* [ ] Prevent future point input
+* [ ] Performance testing & enhancements
+  * [ ] Many points (10k)
+  * [ ] Wide date ranges (100 years)
+* [ ] Add screenshots
+* [ ] Make app store description
+* [ ] Improve GitHub README
+* [ ] Link to GitHub from Settings
+* [ ] Rename GitHub project
+
+## Tindeq analysis
+
+* [ ] Remove Tindeq permissions, if I decide against supporting Tindeq device
+* [ ] Auto-analyze and add reps from Tindeq
+* [ ] Integrate Tindeq with goal management
+* [ ] Improve connection so that we never get stuck
+* [ ] Tare with automatic disconnect/connect
 
 ## Screenshots
 

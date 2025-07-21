@@ -41,6 +41,7 @@ export type TagName = string;
 export type DataPoint = {
     time: number;
     value: number | object;
+    note?: string;
     tags: TagName[];
 };
 

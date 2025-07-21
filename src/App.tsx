@@ -92,8 +92,6 @@ const App = () => {
     },
   };
 
-  console.log(navigationTheme)
-
   return (
     <PaperProvider theme={theme == 'light' ? MD3LightTheme : blackBackground ? MD3BlackTheme : MD3DarkTheme}>
       <GestureHandlerRootView>

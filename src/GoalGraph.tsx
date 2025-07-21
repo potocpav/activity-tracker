@@ -46,25 +46,25 @@ const quartiles = (values: number[]) => {
   return {q0, q1, q2, q3, q4};
 };
 
-const toggleButton = (key: string, label: React.ReactNode, isActive: boolean, onPress: () => void, theme: any) => {
-  return (
-    <TouchableOpacity 
-      key={key}
-      style={{ 
-        padding: 8, 
-        marginHorizontal: 4, 
-        backgroundColor: isActive ? goalColor : theme.colors.surfaceVariant,
-        borderRadius: 6
-      }}
-      onPress={onPress}
-    >
-      <Text style={{ 
-        color: isActive ? theme.colors.onPrimary : theme.colors.onSurfaceVariant, 
-        fontWeight: 'bold' 
-      }}>{label}</Text>
-    </TouchableOpacity>
-  );
-}
+// const toggleButton = (key: string, label: React.ReactNode, isActive: boolean, onPress: () => void, theme: any) => {
+//   return (
+//     <TouchableOpacity 
+//       key={key}
+//       style={{ 
+//         padding: 8, 
+//         marginHorizontal: 4, 
+//         backgroundColor: isActive ? goalColor : theme.colors.surfaceVariant,
+//         borderRadius: 6
+//       }}
+//       onPress={onPress}
+//     >
+//       <Text style={{ 
+//         color: isActive ? theme.colors.onPrimary : theme.colors.onSurfaceVariant, 
+//         fontWeight: 'bold' 
+//       }}>{label}</Text>
+//     </TouchableOpacity>
+//   );
+// }
 
 const GoalGraph = ({ route }: { route: any }) => {
   const theme = useTheme();

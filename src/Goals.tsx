@@ -7,8 +7,8 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Menu, useTheme } from 'react-native-paper';
-import { FAB, Button } from 'react-native-paper';
-import useStore, { GoalType, SubUnit, Unit } from "./Store";
+import { Button } from 'react-native-paper';
+import useStore, { GoalType } from "./Store";
 import DraggableFlatList from 'react-native-draggable-flatlist'
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { renderValueSummary } from "./GoalData";
@@ -30,8 +30,14 @@ const Goals: React.FC<GoalsProps> = ({ navigation }) => {
     navigation.setOptions({
       // title: goal.name,
       headerRight: () => (
-        <Button compact={true} onPress={() => {setMenuVisible(!menuVisible)}}>
-        <AntDesign name="bars" size={24} color={theme.colors.onSurface} /></Button>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Button compact={true} onPress={() => navigation.navigate('EditGoal', { goalName: null })}>
+            <AntDesign name="plus" size={24} color={theme.colors.onSurface} />
+          </Button>
+          <Button compact={true} onPress={() => setMenuVisible(!menuVisible)}>
+            <AntDesign name="bars" size={24} color={theme.colors.onSurface} />
+          </Button>
+        </View>
       ),
     });
   }, [navigation, menuVisible, theme]);
@@ -85,13 +91,6 @@ const Goals: React.FC<GoalsProps> = ({ navigation }) => {
         renderItem={renderGoal}
         keyExtractor={(item) => item.name}
         contentContainerStyle={styles.listContainer}
-      />
-
-      <FAB
-        icon="plus"
-        style={[styles.fab, { backgroundColor: theme.colors.onSurface }]}
-        onPress={() => navigation.navigate('EditGoal', { goalName: null })}
-        color={theme.colors.surface}
       />
     </SafeAreaView>
   );

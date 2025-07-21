@@ -128,7 +128,7 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
         icon="plus"
         style={[styles.fab, { backgroundColor: goalColor }]}
         onPress={() => navigation.navigate("EditDataPoint", { goalName: goal.name, newDataPoint: true })}
-        color={theme.colors.onSurface}
+        color={theme.colors.surface}
       />
     </SafeAreaView>
   );
