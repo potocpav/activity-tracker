@@ -12,6 +12,7 @@ import { useTheme, DataTable, FAB } from 'react-native-paper';
 import useStore, { DataPoint, GoalType, Tag, Unit } from "./Store";
 import { darkPalette, lightPalette } from "./Color";
 import { renderTags } from "./GoalUtil";
+import TagMenu from "./TagMenu";
 const locale = NativeModules.I18nManager.localeIdentifier;
 
 type GoalDataProps = {
@@ -20,7 +21,7 @@ type GoalDataProps = {
 };
 
 export const formatDate = (date: Date) => {
-  return date.toLocaleDateString(locale, {year: "numeric",month: "short",day: "numeric"});
+  return date.toLocaleDateString(locale, { year: "numeric", month: "short", day: "numeric" });
   // return date.toUTCString();
 };
 
@@ -31,7 +32,7 @@ const formatTime = (date: Date) => {
   });
 };
 
-export const renderValueSummary = (value: any, unit: Unit, style: any, short=false) => {
+export const renderValueSummary = (value: any, unit: Unit, style: any, short = false) => {
   if (typeof value === "number" && typeof unit === "string") {
     return (
       <Text style={style}>{`${Math.round(value * 100) / 100} ${unit}`}</Text>
@@ -49,9 +50,9 @@ export const renderValueSummary = (value: any, unit: Unit, style: any, short=fal
     }
     return (
       // <View style={{flexDirection: 'column'}}>
-        parts.map((p: string, i: number) => (
-          <Text style={style} key={i}>{p}</Text>
-        ))
+      parts.map((p: string, i: number) => (
+        <Text style={style} key={i}>{p}</Text>
+      ))
       // </View>
     );
   } else {
@@ -85,12 +86,38 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
   const palette = themeState === "dark" ? darkPalette : lightPalette;
   const goalColor = palette[goal.color];
 
+  // Tag filter state
+  const [tags, setTags] = useState<{ name: string; state: "yes" | "no" | "maybe" }[]>(goal.tags.map((t: Tag) => ({ name: t.name, state: "maybe" })));
+  const [tagsMenuVisible, setTagsMenuVisible] = useState(false);
+
   if (!goal) {
     return <Text>Goal not found</Text>;
   }
 
+  // Filtering logic
+  const requiredTags = tags.filter((t) => t.state === "yes").map(t => t.name);
+  const negativeTags = tags.filter((t) => t.state === "no").map(t => t.name);
+  const filteredDataPoints = goal.dataPoints.filter((dataPoint: DataPoint) => {
+    const hasAllRequired = requiredTags.every(tag => dataPoint.tags.includes(tag));
+    const hasAnyNegative = negativeTags.some(tag => dataPoint.tags.includes(tag));
+    return hasAllRequired && !hasAnyNegative;
+  });
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      {goal.tags.length > 0 && (
+        <View style={{ padding: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start' }}>
+          <TagMenu
+            tags={tags}
+            setTags={setTags}
+            tagsMenuVisible={tagsMenuVisible}
+            setTagsMenuVisible={setTagsMenuVisible}
+            goalTags={goal.tags}
+            palette={palette}
+            themeColors={theme.colors}
+          />
+        </View>
+      )}
       <ScrollView style={styles.scrollView}>
         <DataTable>
           <DataTable.Header>
@@ -99,10 +126,10 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
             <DataTable.Title numeric>Value</DataTable.Title>
           </DataTable.Header>
 
-          {goal.dataPoints.slice().reverse().map((dataPoint: DataPoint, index: number) => (
+          {filteredDataPoints.slice().reverse().map((dataPoint: DataPoint, index: number) => (
             <TouchableOpacity
               key={index}
-              onPress={() => navigation.navigate("EditDataPoint", { goalName: goal.name, dataPointIndex: goal.dataPoints.length - 1 - index })}
+              onPress={() => navigation.navigate("EditDataPoint", { goalName: goal.name, dataPointIndex: goal.dataPoints.length - 1 - goal.dataPoints.indexOf(dataPoint) })}
             >
               <DataTable.Row>
                 <DataTable.Cell>{formatDate(new Date(dataPoint.time))}</DataTable.Cell>

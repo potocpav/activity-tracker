@@ -9,6 +9,7 @@ import { useAnimatedReaction, useSharedValue, withTiming } from "react-native-re
 import { binTime, binTimeSeries, BinSize } from "./GoalUtil";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { lightPalette, darkPalette } from "./Color";
+import TagMenu from "./TagMenu";
 
 const fontFamily = Platform.select({default: "sans-serif" });
 const font = matchFont({fontFamily: fontFamily, fontSize: 10});
@@ -52,7 +53,8 @@ const GoalGraph = ({ route }: { route: any }) => {
   const goals = useStore((state: any) => state.goals);
   const goal = goals.find((g: GoalType) => g.name === goalName);
   const themeState = useStore((state: any) => state.theme);
-  const goalColor = (themeState === "dark" ? darkPalette : lightPalette)[goal.color];
+  const palette = themeState === "dark" ? darkPalette : lightPalette;
+  const goalColor = palette[goal.color];
   
   if (!goal) {
     return <Text>Goal not found</Text>;
@@ -316,51 +318,15 @@ const GoalGraph = ({ route }: { route: any }) => {
           </Menu>
         )}
         {/* Tags menu */}
-        {goal.tags.length > 0 && (
-          <Menu
-            visible={tagsMenuVisible}
-            onDismiss={() => setTagsMenuVisible(false)}
-            anchor={
-              <Button compact={true} onPress={() => setTagsMenuVisible(true)} style={{ marginRight: 8 }}>
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  <Text style={{ marginRight: 10, color: theme.colors.onSurfaceVariant }}>
-                    <AntDesign name="filter" size={16} color={theme.colors.onSurfaceVariant} />
-                    {(() => {
-                      const yesTags = tags.filter(t => t.state === 'yes').map(t => t.name);
-                      const noTags = tags.filter(t => t.state === 'no').map(t => t.name);
-                      if (yesTags.length === 0 && noTags.length === 0) 
-                        return '';
-                      else
-                        return '*';
-                    })()}
-                  </Text>
-                  <AntDesign name="down" size={16} color={theme.colors.onSurfaceVariant} />
-                </View>
-              </Button>
-            }
-          >
-            {goal.tags.map((tag: Tag) => {
-              const state = tags.find((t) => t.name === tag.name)?.state;
-              let icon = undefined;
-              let title = tag.name;
-              if (state === 'yes') icon = 'check';
-              else if (state === 'no') icon = 'close';
-              return (
-                <Menu.Item
-                  key={tag.name}
-                  onPress={() => {
-                    setTags(tags.map((t) => t.name === tag.name ? {
-                      ...t,
-                      state: t.state === 'maybe' ? 'yes' : t.state === 'yes' ? 'no' : 'maybe'
-                    } : t));
-                  }}
-                  title={title}
-                  trailingIcon={icon}
-                />
-              );
-            })}
-          </Menu>
-        )}
+        <TagMenu
+          tags={tags}
+          setTags={setTags}
+          tagsMenuVisible={tagsMenuVisible}
+          setTagsMenuVisible={setTagsMenuVisible}
+          goalTags={goal.tags}
+          palette={palette} 
+          themeColors={theme.colors}
+        />
         {/* Graph type menu */}
         <Menu
           visible={graphTypeMenuVisible}

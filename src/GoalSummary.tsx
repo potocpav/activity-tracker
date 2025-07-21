@@ -36,11 +36,15 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
       <View style={[styles.goalInfo, { backgroundColor: theme.colors.surface }]}>  
         <Text style={[styles.goalDescription, { color: theme.colors.onSurface, textAlign: 'center' }]}>{goal.description}</Text>
       </View>
-      <Divider />
-      <View style={{padding: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
-        <Text style={{color: theme.colors.onSurfaceVariant, marginRight: 10}}>Tags:</Text>
+      {goal.tags.length > 0 && (
+        <>
+          <Divider />
+          <View style={{padding: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start'}}>
+            <Text style={{color: theme.colors.onSurfaceVariant, marginRight: 10}}>Tags:</Text>
         {renderTags(goal.tags, theme, palette)}
-      </View>
+          </View>
+        </>
+      )}
       <Divider />
       <View style={[styles.statsRow, { backgroundColor: theme.colors.surface }]}>  
         <View style={styles.statsColumn}>
