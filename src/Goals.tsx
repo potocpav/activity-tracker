@@ -53,7 +53,7 @@ const Goals: React.FC<GoalsProps> = ({ navigation }) => {
               {lastDataPoint ? (
                 renderValueSummary(lastDataPoint.value, item.unit, [styles.goalDescription, { color: palette[item.color] }], true)
               ) : (
-                <Text style={[styles.goalDescription, { color: theme.colors.onSurfaceVariant }]}>No data</Text>
+                <Text style={[styles.goalDescription, { color: palette[item.color] }]}>No data</Text>
               )}
             </View>
           <TouchableOpacity

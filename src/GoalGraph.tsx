@@ -509,7 +509,7 @@ const GoalGraph = ({ route }: { route: any }) => {
                           y={q2y - wcircle}
                           width={2 * wcircle}
                           height={2 * wcircle}
-                          color={theme.colors.onPrimary}
+                          color={theme.colors.surface}
                           r={wcircle}
                         />
                       </Fragment>

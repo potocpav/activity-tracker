@@ -10,6 +10,7 @@ import {
 import { useTheme, DataTable, FAB } from 'react-native-paper';
 import useStore, { DataPoint, GoalType, Unit } from "./Store";
 import EditDataPoint from "./EditDataPoint";
+import { darkPalette, lightPalette } from "./Color";
 
 type GoalDataProps = {
   navigation: any;
@@ -92,6 +93,8 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
   const { goalName } = route.params;
   const goals = useStore((state: any) => state.goals);
   const goal = goals.find((g: GoalType) => g.name === goalName);
+  const themeState = useStore((state: any) => state.theme);
+  const goalColor = (themeState === "dark" ? darkPalette : lightPalette)[goal.color];
 
   if (!goal) {
     return <Text>Goal not found</Text>;
@@ -123,9 +126,9 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
       </ScrollView>
       <FAB
         icon="plus"
-        style={[styles.fab, { backgroundColor: theme.colors.primary }]}
+        style={[styles.fab, { backgroundColor: goalColor }]}
         onPress={() => navigation.navigate("EditDataPoint", { goalName: goal.name, newDataPoint: true })}
-        color={theme.colors.onPrimary}
+        color={theme.colors.onSurface}
       />
     </SafeAreaView>
   );
