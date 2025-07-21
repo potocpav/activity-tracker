@@ -12,7 +12,7 @@ import useStore, { GoalType, SubUnit, Unit } from "./Store";
 import DraggableFlatList from 'react-native-draggable-flatlist'
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { renderValueSummary } from "./GoalData";
-
+import { lightPalette, darkPalette } from "./Color";
 
 type GoalsProps = {
   navigation: any;
@@ -23,6 +23,8 @@ const Goals: React.FC<GoalsProps> = ({ navigation }) => {
   const goals = useStore((state: any) => state.goals);
   const setGoals = useStore((state: any) => state.setGoals);
   const [menuVisible, setMenuVisible] = React.useState(false);
+  const themeState = useStore((state: any) => state.theme);
+  const palette = themeState === "dark" ? darkPalette : lightPalette;
 
   React.useEffect(() => {
     navigation.setOptions({
@@ -45,11 +47,11 @@ const Goals: React.FC<GoalsProps> = ({ navigation }) => {
       >
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.goalTitle, { color: theme.colors.onSurface }]}>{item.name}</Text>
+            <Text style={[styles.goalTitle, { color: palette[item.color] }]}>{item.name}</Text>
           </View>
           <View style={{ marginTop: 4 }}>
               {lastDataPoint ? (
-                renderValueSummary(lastDataPoint.value, item.unit, [styles.goalDescription, { color: theme.colors.primary }], true)
+                renderValueSummary(lastDataPoint.value, item.unit, [styles.goalDescription, { color: palette[item.color] }], true)
               ) : (
                 <Text style={[styles.goalDescription, { color: theme.colors.onSurfaceVariant }]}>No data</Text>
               )}
@@ -58,7 +60,7 @@ const Goals: React.FC<GoalsProps> = ({ navigation }) => {
             onPress={() => { navigation.navigate('EditDataPoint', { goalName: item.name, dataPointName: null, new: true }); }}
             style={{ marginLeft: 12, padding: 8 }}
           >
-            <AntDesign name="plus" size={24} color={theme.colors.primary} />
+            <AntDesign name="plus" size={24} color={palette[item.color]} />
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
@@ -87,9 +89,9 @@ const Goals: React.FC<GoalsProps> = ({ navigation }) => {
 
       <FAB
         icon="plus"
-        style={[styles.fab, { backgroundColor: theme.colors.primary }]}
+        style={[styles.fab, { backgroundColor: theme.colors.onSurface }]}
         onPress={() => navigation.navigate('EditGoal', { goalName: null })}
-        color={theme.colors.onPrimary}
+        color={theme.colors.surface}
       />
     </SafeAreaView>
   );

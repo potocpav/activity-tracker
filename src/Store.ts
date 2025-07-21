@@ -50,6 +50,7 @@ export type GoalType = {
   unit: Unit;
   dataPoints: DataPoint[];
   tags: Tag[];
+  color: number;
 };
 
 export type State = {
@@ -329,13 +330,21 @@ const useStore = create<State>()(
   {
     name: "store",
     storage: createJSONStorage(() => AsyncStorage),
-    version: 0,
+    version: 1,
     partialize: (state) => ({
       goals: state.goals,
       theme: state.theme,
       blackBackground: state.blackBackground,
     }),
+    migrate: (persisted: any, version) => {
+      if (version === 0) {
+        persisted.goals.forEach((goal: GoalType) => {
+          goal.color = 19;
+        });
+      }
     
+      return persisted
+    }
   }
 ));
 

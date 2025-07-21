@@ -14,6 +14,7 @@ import GoalData from "./GoalData";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { formatDate, renderValue } from "./GoalData";
 import GoalSummary from "./GoalSummary";
+import { lightPalette, darkPalette } from "./Color";
 
 
 const Tab = createMaterialTopTabNavigator();
@@ -47,6 +48,7 @@ const Goal: React.FC<GoalProps> = ({ navigation, route }) => {
 const GoalInner: React.FC<any> = ({ goal, navigation }) => {
   const goalName = goal.name;
   const theme = useTheme();
+  
   if (!goal) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surfaceVariant }]}>

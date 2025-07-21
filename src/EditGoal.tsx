@@ -12,6 +12,7 @@ import { TextInput, Button, Chip } from "react-native-paper";
 import useStore from "./Store";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import DraggableFlatList from 'react-native-draggable-flatlist';
+import { lightPalette, darkPalette } from './Color';
 type EditGoalProps = {
   navigation: any;
   route: any;
@@ -23,12 +24,14 @@ const defaultGoal: GoalType = {
   unit: "",
   dataPoints: [],
   tags: [],
+  color: 19,
 };
 
 const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
   const theme = useTheme();
   const { goalName } = route.params;
   const goals = useStore((state: any) => state.goals);
+  const themeState = useStore((state: any) => state.theme);
   const goal = goals.find((g: GoalType) => g.name === goalName) ?? defaultGoal;
   const updateGoal = useStore((state: any) => state.updateGoal);
   const deleteGoal = useStore((state: any) => state.deleteGoal);
@@ -46,6 +49,10 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
   const [tagDialogName, setTagDialogName] = useState("");
   const [tagDialogNameInput, setTagDialogNameInput] = useState("");
 
+  const [colorDialogVisible, setColorDialogVisible] = useState(false);
+  const [selectedColor, setSelectedColor] = useState(goal.color);
+
+  const palette = themeState === "dark" ? darkPalette : lightPalette;
 
   if (!goal) {
     return <Text>Goal not found</Text>;
@@ -63,7 +70,8 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
         ...goal,
         name: goalNameInput,
         description: goalDescriptionInput,
-        unit: unitInput
+        unit: unitInput,
+        color: selectedColor,
       };
       const goalName = goal.name === "" ? updatedGoal.name : goal.name;
       updateGoal(goalName, updatedGoal);
@@ -108,7 +116,7 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
         </>
       ),
     });
-  }, [navigation, theme, goal, goalNameInput, goalDescriptionInput, unitInput]);
+  }, [navigation, theme, goal, goalNameInput, goalDescriptionInput, unitInput, selectedColor]);
 
   const onUpdateTag = (action: "delete" | "update") => {
     if (tagDialogNameInput === "") {
@@ -135,16 +143,32 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
     }
   }
 
+  const handleColorSelect = (colorIx: number) => {
+    setSelectedColor(colorIx);
+    setColorDialogVisible(false);
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
       <ScrollView style={styles.content}>
         <View style={styles.inputContainer}>
-          <TextInput
-            label="Goal Name"
-            value={goalNameInput}
-            onChangeText={setGoalNameInput}
-            mode="outlined"
-          />
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={{ flex: 1 }}>
+              <TextInput
+                label="Goal Name"
+                value={goalNameInput}
+                onChangeText={setGoalNameInput}
+                mode="outlined"
+              />
+            </View>
+            <Button
+              onPress={() => setColorDialogVisible(true)}
+              compact={true}
+              style={{ marginLeft: 10 }}
+            >
+              <View style={{ width: 30, height: 30, borderRadius: 12, backgroundColor: palette[selectedColor], borderWidth: 1, borderColor: theme.colors.onBackground }} />
+            </Button>
+          </View>
         </View>
 
         <View style={styles.inputContainer}>
@@ -207,16 +231,52 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
         </View>
       </ScrollView>
       <Portal>
-          <Dialog visible={tagDialogVisible} onDismiss={() => setTagDialogVisible(false)}>
-            <Dialog.Content>
-              <TextInput label="Tag Name" value={tagDialogNameInput} onChangeText={setTagDialogNameInput} mode="outlined" />
-            </Dialog.Content>
-            <Dialog.Actions>
-              <Button onPress={() => onUpdateTag("delete")}><AntDesign name="delete" size={24} color={theme.colors.onSurface} /></Button>
-              <Button onPress={() => onUpdateTag("update")}><AntDesign name="check" size={24} color={theme.colors.onSurface} /></Button>
-            </Dialog.Actions>
-          </Dialog>
-        </Portal>
+        {/* Tag dialog (existing) */}
+        <Dialog visible={tagDialogVisible} onDismiss={() => setTagDialogVisible(false)}>
+          <Dialog.Content>
+            <TextInput label="Tag Name" value={tagDialogNameInput} onChangeText={setTagDialogNameInput} mode="outlined" />
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => onUpdateTag("delete")}><AntDesign name="delete" size={24} color={theme.colors.onSurface} /></Button>
+            <Button onPress={() => onUpdateTag("update")}><AntDesign name="check" size={24} color={theme.colors.onSurface} /></Button>
+          </Dialog.Actions>
+        </Dialog>
+        {/* Color picker dialog */}
+        <Dialog visible={colorDialogVisible} onDismiss={() => setColorDialogVisible(false)}>
+          <Dialog.Title>Pick a color</Dialog.Title>
+          <Dialog.Content>
+            <View style={{ flexDirection: 'column', alignItems: 'center' }}>
+              {[0, 1, 2, 3, 4].map(row => (
+                <View key={row} style={{ flexDirection: 'row', marginBottom: 8 }}>
+                  {palette.slice(row * 4, row * 4 + 4).map((color, idx) => (
+                    <Button
+                      key={idx}
+                      mode="contained"
+                      compact={true}
+                      onPress={() => handleColorSelect(row * 4 + idx)}
+                      style={{
+                        backgroundColor: color,
+                        marginHorizontal: 4,
+                        width: 40,
+                        height: 40,
+                        borderRadius: 15,
+                        borderWidth: selectedColor === row * 4 + idx ? 2 : 1,
+                        borderColor: selectedColor === row * 4 + idx ? theme.colors.primary : '#ccc',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        elevation: 2,
+                      }}
+                      contentStyle={{ width: 40, height: 40 }}
+                    >
+                      {selectedColor === row * 4 + idx ? <AntDesign name="check" size={20} color={theme.colors.surface} /> : null}
+                    </Button>
+                  ))}
+                </View>
+              ))}
+            </View>
+          </Dialog.Content>
+        </Dialog>
+      </Portal>
     </View>
   );
 };
@@ -236,6 +296,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "500",
     marginBottom: 8,
+  },
+  colorButton: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 48,
+    width: 48,
   },
 });
 

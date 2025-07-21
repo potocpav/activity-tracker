@@ -6,6 +6,7 @@ export const exampleGoals = [
       description: "Body weight measured in the morning before breakfast",
       unit: "kg",
       tags: [],
+      color: 10,
       dataPoints: 
         Array.from({ length: 50 }, (_, i) => ({
             time: new Date("2023-01-01").getTime() + 
@@ -19,6 +20,7 @@ export const exampleGoals = [
       description: "Body weight measured in the morning before breakfast",
       unit: "kg",
       tags: [],
+      color: 0,
       dataPoints: [
         {
           time: new Date("2025-07-08T00:00:00").getTime(),
@@ -61,6 +63,7 @@ export const exampleGoals = [
     {
       name: "Finger Strength (Example)",
       description: "Finger strength as measured using Tindeq Progressor",
+      color: 4,
       unit: [
         {
           name: "Mean",

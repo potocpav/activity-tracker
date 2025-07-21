@@ -8,6 +8,7 @@ import useStore, { GoalType, Tag } from "./Store";
 import { useAnimatedReaction, useSharedValue, withTiming } from "react-native-reanimated";
 import { binTime, binTimeSeries, BinSize } from "./GoalUtil";
 import AntDesign from '@expo/vector-icons/AntDesign';
+import { lightPalette, darkPalette } from "./Color";
 
 const fontFamily = Platform.select({default: "sans-serif" });
 const font = matchFont({fontFamily: fontFamily, fontSize: 10});
@@ -52,7 +53,7 @@ const toggleButton = (key: string, label: React.ReactNode, isActive: boolean, on
       style={{ 
         padding: 8, 
         marginHorizontal: 4, 
-        backgroundColor: isActive ? theme.colors.primary : theme.colors.surfaceVariant,
+        backgroundColor: isActive ? goalColor : theme.colors.surfaceVariant,
         borderRadius: 6
       }}
       onPress={onPress}
@@ -70,6 +71,8 @@ const GoalGraph = ({ route }: { route: any }) => {
   const { goalName } = route.params;
   const goals = useStore((state: any) => state.goals);
   const goal = goals.find((g: GoalType) => g.name === goalName);
+  const themeState = useStore((state: any) => state.theme);
+  const goalColor = (themeState === "dark" ? darkPalette : lightPalette)[goal.color];
   
   if (!goal) {
     return <Text>Goal not found</Text>;
@@ -257,7 +260,7 @@ const GoalGraph = ({ route }: { route: any }) => {
                 <Path
                   style="fill"
                   path={fill}
-                  color={theme.colors.primary}
+                  color={goalColor}
                 />
               </Fragment>
             );
@@ -490,7 +493,7 @@ const GoalGraph = ({ route }: { route: any }) => {
                           y={q1y}
                           width={2*w}
                           height={q3y - q1y}
-                          color={theme.colors.primary}
+                          color={goalColor}
                           r={w}
                         />
                         <RoundedRect
@@ -498,7 +501,7 @@ const GoalGraph = ({ route }: { route: any }) => {
                           y={q0y}
                           width={2*ws}
                           height={q4y - q0y}
-                          color={theme.colors.primary}
+                          color={goalColor}
                           r={ws}
                         />
                         <RoundedRect
@@ -525,7 +528,7 @@ const GoalGraph = ({ route }: { route: any }) => {
                 <>
                 <Line
                   points={points.mean}
-                  color={theme.colors.primary}
+                  color={goalColor}
                   strokeWidth={4}
                 />
                 <Scatter
@@ -540,7 +543,7 @@ const GoalGraph = ({ route }: { route: any }) => {
                   shape="circle"
                   radius={5}
                   style="fill"
-                  color={theme.colors.primary}
+                  color={goalColor}
                 />
                 </>
               );

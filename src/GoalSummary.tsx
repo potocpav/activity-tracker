@@ -3,6 +3,7 @@ import { SafeAreaView, StyleSheet, Text, View } from "react-native";
 import { useTheme, FAB, Divider } from 'react-native-paper';
 import useStore, { DataPoint, GoalType, Unit } from "./Store";
 import { renderValueSummary, formatDate } from "./GoalData";
+import { lightPalette, darkPalette } from "./Color";
 
 const renderUnit = (unit: Unit) => {
   if (typeof unit === "string") {
@@ -16,6 +17,8 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
   const { goalName } = route.params;
   const goals = useStore((state: any) => state.goals);
   const goal = goals.find((g: GoalType) => g.name === goalName);
+  const themeState = useStore((state: any) => state.theme);
+  const goalColor = (themeState === "dark" ? darkPalette : lightPalette)[goal.color];
 
   if (!goal) {
     return <Text>Goal not found</Text>;
@@ -34,16 +37,16 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
       <Divider />
       <View style={[styles.statsRow, { backgroundColor: theme.colors.surface }]}>  
         <View style={styles.statsColumn}>
-          <Text style={[styles.statsValue, { color: theme.colors.primary }]}>{numDataPoints}</Text>
+          <Text style={[styles.statsValue, { color: goalColor }]}>{numDataPoints}</Text>
           <Text style={[styles.statsLabel, { color: theme.colors.onSurfaceVariant }]}>Count</Text>
         </View>
         <View style={styles.statsColumn}>
-          <Text style={[styles.statsValue, { color: theme.colors.primary }]}>{distinctDayCount}</Text>
+          <Text style={[styles.statsValue, { color: goalColor }]}>{distinctDayCount}</Text>
           <Text style={[styles.statsLabel, { color: theme.colors.onSurfaceVariant }]}>Days</Text>
         </View>
         <View style={styles.statsColumn}>
           <View style={[styles.statsValueContainer]}>{lastDataPoint ? 
-            renderValueSummary(lastDataPoint.value, goal.unit, [styles.statsValue, { color: theme.colors.primary}]) : 
+            renderValueSummary(lastDataPoint.value, goal.unit, [styles.statsValue, { color: goalColor}]) : 
             <Text style={[styles.statsValue, { color: theme.colors.onSurfaceVariant }]}>-</Text>}</View>
           <Text style={[styles.statsLabel, { color: theme.colors.onSurfaceVariant }]}>Last</Text>
         </View>
@@ -51,7 +54,7 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
       <Divider />
       <FAB
         icon="plus"
-        style={[styles.fab, { backgroundColor: theme.colors.primary }]}
+        style={[styles.fab, { backgroundColor: goalColor }]}
         onPress={() => navigation.navigate("EditDataPoint", { goalName, newDataPoint: true })}
         color={theme.colors.onPrimary}
       />

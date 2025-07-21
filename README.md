@@ -1,8 +1,9 @@
-# Tindeq Analyzer
+# Workouts App
+
+**This app is work-in-progress, and I don't know how far I'll get before I get bored of it :D**
 
 A React Native mobile application for analyzing force measurements from the Tindeq Progressor device. The app provides real-time data visualization and analysis capabilities for strength training and rehabilitation purposes.
 
-**This app is work-in-progress, and I don't know how far I'll get before I get bored of it :D**
 
 ## Features
 
@@ -16,6 +17,7 @@ A React Native mobile application for analyzing force measurements from the Tind
 In order to make this app a full-featured management app for workout data, the following list of features must be implemented:
   
 * [ ] Goal Screen
+  * [x] Goal colors
   * [x] Goal list
     * [x] "Add point" button directly on the Goal list
     * [x] Show last data points in the list
