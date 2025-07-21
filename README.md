@@ -20,11 +20,11 @@ In order to make this app a full-featured management app for workout data, the f
 
 * [x] Add measurement comments
 * [x] Implement editing composite units (placeholder)
+* [x] Add colors to tags
 * [ ] Implement editing composite units
 * [ ] Allow adding graphs to Summary page
 * [ ] Allow adding values to Summary page
 * [ ] Event list filtering by tags
-* [ ] Add colors to tags
 * [ ] Export data as CSV
 * [ ] Add week start customization to Settings
 * [ ] Add data import to Settings

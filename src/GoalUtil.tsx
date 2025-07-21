@@ -1,3 +1,7 @@
+import { Tag } from "./Store";
+
+import { View, Text, StyleSheet } from "react-native";
+
 export type BinSize = "day" | "week" | "month" | "quarter" | "year";
 
 export const binTime = (binSize: BinSize, t0: number, i: number) => {
@@ -42,3 +46,36 @@ export const binTimeSeries = (binSize: BinSize, dataPoints: any[]) => {
   };
   return bins;
 };
+
+
+export const renderTags = (tags: Tag[], theme: any, palette: string[]) => {
+  if (tags.length === 0) return null;
+ 
+  return (
+    <View style={styles.tagsContainer}>
+      {tags.map((tag, index) => (
+        <View key={index} style={[styles.tag, { backgroundColor: palette[tag.color], borderColor: theme.colors.surface }]}> 
+          <Text style={[styles.tagText, { color: theme.colors.surface }]}>{tag.name}</Text>
+        </View>
+      ))}
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 4,
+  },
+  tag: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  tagText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+});

@@ -50,6 +50,8 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
   const [tagState, setTagState] = useState<SetTag[]>(goal.tags.map((t: Tag) => ({oldTagName: t.name, ...t})));
   const [tagDialogName, setTagDialogName] = useState("");
   const [tagDialogNameInput, setTagDialogNameInput] = useState("");
+  const [tagDialogColorInput, setTagDialogColorInput] = useState(19);
+  const [tagColorDialogVisible, setTagColorDialogVisible] = useState(false);
 
   const [colorDialogVisible, setColorDialogVisible] = useState(false);
   const [selectedColor, setSelectedColor] = useState(goal.color);
@@ -66,7 +68,7 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
     } else if (goalNameInput !== goal.name && goals.find((g: GoalType) => g.name === goalNameInput)) {
       Alert.alert("Error", "A goal with this name already exists");
     } else {
-      const updatedGoal = {
+      const updatedGoal = { 
         ...goal,
         name: goalNameInput,
         description: goalDescriptionInput,
@@ -108,9 +110,9 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
           return;
         } 
         if (tagDialogName === "") {
-            setTagState([...tagState, { oldTagName: null, name: tagDialogNameInput, color: 19 }]);
+            setTagState([...tagState, { oldTagName: null, name: tagDialogNameInput, color: tagDialogColorInput }]);
         } else {
-          setTagState(tagState.map((t: SetTag) => t.name === tagDialogName ? { ...t, name: tagDialogNameInput } : t));
+          setTagState(tagState.map((t: SetTag) => t.name === tagDialogName ? { ...t, name: tagDialogNameInput, color: tagDialogColorInput } : t));
         }
       }
       setTagDialogVisible(false);
@@ -120,6 +122,11 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
   const handleColorSelect = (colorIx: number) => {
     setSelectedColor(colorIx);
     setColorDialogVisible(false);
+  };
+
+  const handleTagColorSelect = (colorIx: number) => {
+    setTagDialogColorInput(colorIx);
+    setTagColorDialogVisible(false);
   };
 
   return (
@@ -224,12 +231,13 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
             keyExtractor={(item: SetTag) => item.name}
             renderItem={({ item, drag, isActive }: { item: SetTag, drag: () => void, isActive: boolean }) => (
               <Chip
-                onPress={() => { setTagDialogVisible(true); setTagDialogName(item.name); setTagDialogNameInput(item.name);}}
+                onPress={() => { setTagDialogVisible(true); setTagDialogName(item.name); setTagDialogNameInput(item.name); setTagDialogColorInput(item.color);}}
+                textStyle={{ color: theme.colors.surface }}
                 style={{
-                  // backgroundColor: item.color,
+                  backgroundColor: palette[item.color],
                   marginRight: 8,
                   marginBottom: 8,
-                  // opacity: isActive ? 0.7 : 1,
+                  opacity: isActive ? 0.7 : 1,
                 }}
                 onLongPress={drag}
               >
@@ -243,7 +251,7 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
             style={{ marginTop: 8 }}
           />
           <View style={{ flexDirection: 'row' }}>
-              <Chip onPress={() => { setTagDialogVisible(true); setTagDialogName(""); setTagDialogNameInput("");}}
+              <Chip onPress={() => { setTagDialogVisible(true); setTagDialogName(""); setTagDialogNameInput(""); setTagDialogColorInput(19);}}
                 mode="outlined"
                 style={{
                   marginRight: 8,
@@ -259,7 +267,18 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
         {/* Tag dialog (existing) */}
         <Dialog visible={tagDialogVisible} onDismiss={() => setTagDialogVisible(false)}>
           <Dialog.Content>
-            <TextInput label="Tag Name" value={tagDialogNameInput} onChangeText={setTagDialogNameInput} mode="outlined" />
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={{ flex: 1 }}>
+                <TextInput label="Tag Name" value={tagDialogNameInput} onChangeText={setTagDialogNameInput} mode="outlined" />
+              </View>
+              <Button
+                onPress={() => setTagColorDialogVisible(true)}
+                compact={true}
+                style={{ marginLeft: 10 }}
+            >
+              <View style={{ width: 30, height: 30, borderRadius: 12, backgroundColor: palette[tagDialogColorInput], borderWidth: 1, borderColor: theme.colors.onBackground }} />
+              </Button>
+            </View>
           </Dialog.Content>
           <Dialog.Actions>
             <Button onPress={() => onUpdateTag("delete")}><AntDesign name="delete" size={24} color={theme.colors.onSurface} /></Button>
@@ -273,6 +292,14 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
           selectedColor={selectedColor}
           onSelect={handleColorSelect}
           onDismiss={() => setColorDialogVisible(false)}
+          theme={theme}
+        />
+        <ColorPicker
+          visible={tagColorDialogVisible}
+          palette={palette}
+          selectedColor={tagDialogColorInput}
+          onSelect={handleTagColorSelect}
+          onDismiss={() => setTagColorDialogVisible(false)}
           theme={theme}
         />
       </Portal>

@@ -9,9 +9,9 @@ import {
   NativeModules,
 } from "react-native";
 import { useTheme, DataTable, FAB } from 'react-native-paper';
-import useStore, { DataPoint, GoalType, Unit } from "./Store";
+import useStore, { DataPoint, GoalType, Tag, Unit } from "./Store";
 import { darkPalette, lightPalette } from "./Color";
-
+import { renderTags } from "./GoalUtil";
 const locale = NativeModules.I18nManager.localeIdentifier;
 
 type GoalDataProps = {
@@ -76,27 +76,14 @@ export const renderValue = (value: any, unit: Unit) => {
   }
 };
 
-const renderTags = (tags: string[], theme: any) => {
-  if (tags.length === 0) return null;
-
-  return (
-    <View style={styles.tagsContainer}>
-      {tags.map((tag, index) => (
-        <View key={index} style={[styles.tag, { backgroundColor: theme.colors.surfaceVariant, borderColor: theme.colors.onSurfaceVariant }]}>
-          <Text style={[styles.tagText, { color: theme.colors.onSurfaceVariant }]}>{tag}</Text>
-        </View>
-      ))}
-    </View>
-  );
-};
-
 const GoalData = ({ navigation, route }: GoalDataProps) => {
   const theme = useTheme();
   const { goalName } = route.params;
   const goals = useStore((state: any) => state.goals);
   const goal = goals.find((g: GoalType) => g.name === goalName);
   const themeState = useStore((state: any) => state.theme);
-  const goalColor = (themeState === "dark" ? darkPalette : lightPalette)[goal.color];
+  const palette = themeState === "dark" ? darkPalette : lightPalette;
+  const goalColor = palette[goal.color];
 
   if (!goal) {
     return <Text>Goal not found</Text>;
@@ -119,7 +106,7 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
             >
               <DataTable.Row>
                 <DataTable.Cell>{formatDate(new Date(dataPoint.time))}</DataTable.Cell>
-                <DataTable.Cell>{renderTags(dataPoint.tags, theme)}</DataTable.Cell>
+                <DataTable.Cell>{renderTags(goal.tags.filter((t: Tag) => dataPoint.tags.includes(t.name)), theme, palette)}</DataTable.Cell>
                 <DataTable.Cell numeric>{renderValue(dataPoint.value, goal.unit)}</DataTable.Cell>
               </DataTable.Row>
             </TouchableOpacity>
@@ -148,22 +135,6 @@ const styles = StyleSheet.create({
     margin: 16,
     right: 0,
     bottom: 0,
-  },
-  tagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'flex-end',
-    gap: 4,
-  },
-  tag: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-  },
-  tagText: {
-    fontSize: 12,
-    fontWeight: '500',
   },
 });
 

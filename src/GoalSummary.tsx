@@ -4,6 +4,7 @@ import { useTheme, FAB, Divider } from 'react-native-paper';
 import useStore, { DataPoint, GoalType, Unit } from "./Store";
 import { renderValueSummary, formatDate } from "./GoalData";
 import { lightPalette, darkPalette } from "./Color";
+import { renderTags } from "./GoalUtil";
 
 const renderUnit = (unit: Unit) => {
   if (typeof unit === "string") {
@@ -18,7 +19,8 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
   const goals = useStore((state: any) => state.goals);
   const goal = goals.find((g: GoalType) => g.name === goalName);
   const themeState = useStore((state: any) => state.theme);
-  const goalColor = (themeState === "dark" ? darkPalette : lightPalette)[goal.color];
+  const palette = themeState === "dark" ? darkPalette : lightPalette;
+  const goalColor = palette[goal.color];
 
   if (!goal) {
     return <Text>Goal not found</Text>;
@@ -33,6 +35,11 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>    
       <View style={[styles.goalInfo, { backgroundColor: theme.colors.surface }]}>  
         <Text style={[styles.goalDescription, { color: theme.colors.onSurface, textAlign: 'center' }]}>{goal.description}</Text>
+      </View>
+      <Divider />
+      <View style={{padding: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
+        <Text style={{color: theme.colors.onSurfaceVariant, marginRight: 10}}>Tags:</Text>
+        {renderTags(goal.tags, theme, palette)}
       </View>
       <Divider />
       <View style={[styles.statsRow, { backgroundColor: theme.colors.surface }]}>  
@@ -56,7 +63,7 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
         icon="plus"
         style={[styles.fab, { backgroundColor: goalColor }]}
         onPress={() => navigation.navigate("EditDataPoint", { goalName, newDataPoint: true })}
-        color={theme.colors.onPrimary}
+        color={theme.colors.surface}
       />
     </SafeAreaView>
   );
