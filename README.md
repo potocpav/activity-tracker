@@ -1,22 +1,22 @@
 # Workouts App
 
-**This app is work-in-progress, and I don't know how far I'll get before I get bored of it :D**
+**This app is work-in-progress, and I don't know how far I'll get before I get bored of it. It is now useful to me, and I use it every day. But YMMV (-:**
 
-A React Native mobile application for analyzing force measurements from the Tindeq Progressor device. The app provides real-time data visualization and analysis capabilities for strength training and rehabilitation purposes.
+This app enables you to track your workouts, habits, body measurments, or other values.
 
 
 ## Features
 
-- **Bluetooth Low Energy (BLE) Connectivity**: Seamlessly connect to Tindeq Progressor devices
-- **Real-time Data Visualization**: Live chart display of force measurements over time
-- **Measurement Controls**: Start, stop, and tare scale functionality
-- **Data Display**: Real-time weight, time, and maximum weight tracking
+- **Multiple Workout Tracking**: Track any type of workout data with customizable units and values
+- **Flexible Data Visualization**: Analyze your progress with interactive charts, including box plots, line graphs, and histograms
+- **Simple and Intuitive**: Clean interface focused on quick data entry and easy analysis
+- **Smart Organization**: Tag your workouts and filter data to focus on what matters to you
 
 ## ToDo List
 
 In order to make this app a full-featured management app for workout data, the following list of features must be implemented:
   
-## Features
+### Features
 
 * [x] Add measurement comments
 * [x] Implement editing composite units (placeholder)
@@ -30,7 +30,7 @@ In order to make this app a full-featured management app for workout data, the f
 * [ ] Add week start customization to Settings
 * [ ] Add data import to Settings
 
-## Bugs
+### Bugs
 
 * [x] Add alert on point duplication
 * [x] Allow unit-less measurements
@@ -40,7 +40,7 @@ In order to make this app a full-featured management app for workout data, the f
 * [ ] Fix localization
 * [ ] Implement tag reordering
 
-## General Usability
+### General Usability
 
 * [x] When editing, show a better point header.
 * [x] Improve form validation messages
@@ -52,7 +52,7 @@ In order to make this app a full-featured management app for workout data, the f
   * [ ] Many points (10k)
   * [ ] Wide date ranges (100 years)
 
-## Publication
+### Publication
 
 * [ ] Add screenshots
 * [ ] Make app store description
@@ -60,7 +60,7 @@ In order to make this app a full-featured management app for workout data, the f
 * [ ] Link to GitHub from Settings
 * [ ] Rename GitHub project
 
-## Tindeq analysis
+### Tindeq analysis
 
 * [ ] Remove Tindeq permissions, if I decide against supporting Tindeq device
 * [ ] Auto-analyze and add reps from Tindeq
@@ -69,19 +69,9 @@ In order to make this app a full-featured management app for workout data, the f
 * [ ] Tare with automatic disconnect/connect
 
 ## Screenshots
-
-<table>
-  <tr>
-    <th>Main Screen</th>
-    <th>Connection</th>
-    <th>Live View</th>
-  </tr>
-  <tr>
-    <td><img src="screenshots/Screenshot_20250712_212750_Tindeq%20Analyzer.jpg" alt="Main Screen""></td>
-    <td><img src="screenshots/Screenshot_20250712_212758_Tindeq%20Analyzer.jpg" alt="Device Connection""></td>
-    <td><img src="screenshots/Screenshot_20250712_212823_Tindeq%20Analyzer.jpg" alt="Live View""></td>
-  </tr>
-</table>
+[![Main Screen](screenshots/Screenshot_20250712_212750_Tindeq%20Analyzer.thumb.jpg)](screenshots/Screenshot_20250712_212750_Tindeq%20Analyzer.jpg)
+[![Device Connection](screenshots/Screenshot_20250712_212758_Tindeq%20Analyzer.thumb.jpg)](screenshots/Screenshot_20250712_212758_Tindeq%20Analyzer.jpg)
+[![Live View](screenshots/Screenshot_20250712_212823_Tindeq%20Analyzer.thumb.jpg)](screenshots/Screenshot_20250712_212758_Tindeq%20Analyzer.jpg)
 
 ## Prerequisites
 
