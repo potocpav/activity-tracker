@@ -10,13 +10,15 @@ import {
 } from "react-native";
 import { useTheme, Menu, FAB, Button } from 'react-native-paper';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import useStore, { GoalType, SubUnit, Unit } from "./Store";
+import useStore, { DataPoint, GoalType, SubUnit, Tag, Unit } from "./Store";
 import GoalGraph from "./GoalGraph";
 import GoalData from "./GoalData";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { formatDate, renderValue } from "./GoalData";
 import GoalSummary from "./GoalSummary";
 import { lightPalette, darkPalette } from "./Color";
+import { File, Paths } from "expo-file-system/next";
+import * as Sharing from 'expo-sharing';
 
 
 const Tab = createMaterialTopTabNavigator();
@@ -45,6 +47,26 @@ const Goal: React.FC<GoalProps> = ({ navigation, route }) => {
   ) : (
     <Text></Text>
   )
+}
+
+const renderCsv = (data : (string | number | null)[][]) => {
+  return data.map((row) => {
+    var rowStr = "";
+    row.forEach((cell, ix) => {
+      if (typeof cell === "string") {
+        const escaped = cell.replace(/"/g, "\"\"");
+        rowStr += `"${escaped}"`;
+      } else if (typeof cell === "number") {
+        rowStr += cell.toString(); // no quoting for numbers
+      } else if (cell === null) {
+        // null is empty cell
+      }
+      if (ix < row.length - 1) {
+        rowStr += ",";
+      }
+    });
+    return rowStr;
+  }).join("\r\n");
 }
 
 const GoalInner: React.FC<any> = ({ goal, navigation }) => {
@@ -87,15 +109,51 @@ const GoalInner: React.FC<any> = ({ goal, navigation }) => {
     );
   }
 
-  const exportGoalCsv = () => {
-    console.log("Exporting goal CSV");
-    // const date = new Date();
-    // const dateStr = date.toISOString().split('T')[0];
-    // Share.share({
-    //   message: JSON.stringify(goal, null, 2),
-    //   title: `backup_${dateStr}.json`
-    // });
-    console.log("Data:", goal.dataPoints);
+  const exportGoalCsv = async () => {
+    const valueNames = (() => {
+      if (typeof goal.unit === "string") {
+        return [goal.unit];
+      } else {
+        return goal.unit.map((u: SubUnit) => u.name);
+      }
+    })();
+    const tagNames = goal.tags.map((t: Tag) => t.name);
+    const headerRow = ["Date", ...valueNames, ...tagNames];
+    var dataRows = goal.dataPoints.map((dp: DataPoint) => {
+      const values = (() => {
+        if (typeof goal.unit === "string" && typeof dp.value === "number") {
+          return [dp.value];
+        } else {
+          return goal.unit.map((u: SubUnit) => 
+            (typeof dp.value === "object" ? (dp.value as any)[u.name] ?? null : null));
+        }
+      })();
+      const tags = (() => {
+        return goal.tags.map((t: Tag) => dp.tags.includes(t.name) ? 1 : null);
+      })();
+      return [new Date(dp.time).toLocaleDateString(), ...values, ...tags];
+    });
+    const csv = renderCsv([headerRow, ...dataRows]);
+
+    // save to file and share
+    const date = new Date();
+    const dateStr = date.toISOString().split('T')[0];
+    const file = new File(Paths.cache, `workout-goal-${dateStr}.csv`);
+
+    try {
+      if (file.exists) {
+        file.delete();
+      }
+      file.create(); // can throw an error if the file already exists or no permission to create it
+      file.write(csv);
+
+      await Sharing.shareAsync(file.uri, {
+        dialogTitle: 'Export Workout Goal',
+        mimeType: 'text/csv',
+      });
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   React.useEffect(() => {

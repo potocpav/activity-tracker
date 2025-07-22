@@ -1,8 +1,12 @@
 import React from 'react';
-import { StyleSheet, ScrollView, Share } from 'react-native';
+import { StyleSheet, ScrollView, ToastAndroid } from 'react-native';
 import { List, Divider, Switch, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import useStore from './Store';
+import useStore, {version, partialize, migrate} from './Store';
+import { File, Paths } from 'expo-file-system/next';
+import * as DocumentPicker from 'expo-document-picker';
+import * as Sharing from 'expo-sharing';
+
 
 const Settings = () => {
   const theme = useTheme();
@@ -10,7 +14,53 @@ const Settings = () => {
   const setThemeState = useStore((state: any) => state.setTheme);
   const blackBackground = useStore((state: any) => state.blackBackground);
   const setBlackBackground = useStore((state: any) => state.setBlackBackground);
-  const goals = useStore((state: any) => state.goals);
+  const state = useStore((state: any) => state);
+  const setState = useStore((state: any) => state.setState);
+
+  const exportData = async () => {
+    const data = JSON.stringify({...partialize(state), version: version}, null, 2);
+    const date = new Date();
+    const dateStr = date.toISOString().split('T')[0];
+
+
+    const file = new File(Paths.cache, `workouts-${dateStr}.json`);
+    try {
+      if (file.exists) {
+        file.delete();
+      }
+      file.create(); // can throw an error if the file already exists or no permission to create it
+      file.write(data);
+
+      await Sharing.shareAsync(file.uri, {
+        dialogTitle: 'Export Workouts',
+        mimeType: 'application/json',
+      });
+    } catch (error) {
+      console.error(error);
+    }
+    if (file.exists) {
+      file.delete();
+    }
+  }
+
+  const importData = async () => {
+    const result = await DocumentPicker.getDocumentAsync({
+      type: 'application/json',
+      copyToCacheDirectory: true,
+    });
+    if (result.canceled) {
+      console.log('Document pick Canceled');
+    } else {
+      const asset = result.assets[0];
+      const file = new File(asset.uri);
+      const contents = file.text()
+      const json = JSON.parse(contents);
+      const migrated = migrate(json, json.version);
+      setState(migrated);
+      ToastAndroid.show("Data imported successfully", ToastAndroid.SHORT);
+      // TODO: sanity check and import the file
+    }
+  }
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -49,21 +99,14 @@ const Settings = () => {
             title="Data Export"
             description="Generate a backup file that contains all your data. This file can be imported back."
             left={(props) => <List.Icon {...props} icon="upload" />}
-            onPress={() => {
-              const date = new Date();
-              const dateStr = date.toISOString().split('T')[0];
-              Share.share({
-                message: JSON.stringify(goals, null, 2), 
-                title: `backup_${dateStr}.json`
-              });
-            }}
+            onPress={exportData}
           />
           <Divider />
           <List.Item
             title="Data Import"
             description="Import data from a backup file."
             left={(props) => <List.Icon {...props} icon="download" />}
-            onPress={() => {}}
+            onPress={importData}
           />
         </List.Section>
 

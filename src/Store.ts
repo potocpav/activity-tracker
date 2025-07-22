@@ -87,6 +87,31 @@ export type State = {
   updateGoalDataPoint: any;
 };
 
+export const version = 2;
+
+export const migrate = (persisted: any, version: number) => {
+  if (version <= 0) {
+    persisted.goals.forEach((goal: GoalType) => {
+      goal.color = 19;
+    });
+  }
+  if (version <= 1) {
+    persisted.goals.forEach((goal: GoalType) => {
+      goal.tags.forEach((tag: Tag) => {
+        tag.color = 19;
+      });
+    });
+  }
+  return persisted
+};
+
+// Save only the state that is needed to be saved
+export const partialize = (state: State) => ({
+  goals: state.goals,
+  theme: state.theme,
+  blackBackground: state.blackBackground,
+});
+
 const useStore = create<State>()(
   persist(
   (set, get) => ({
@@ -105,6 +130,10 @@ const useStore = create<State>()(
       blackBackground: false,
 
       requestPermissions: requestPermissions,
+
+      setState: (state: State) => {
+        set(state);
+      },
 
       setTheme: (theme: "light" | "dark") => {
         set({theme: theme});
@@ -357,28 +386,11 @@ const useStore = create<State>()(
   {
     name: "store",
     storage: createJSONStorage(() => AsyncStorage),
-    version: 2,
-    partialize: (state) => ({
-      goals: state.goals,
-      theme: state.theme,
-      blackBackground: state.blackBackground,
-    }),
-    migrate: (persisted: any, version) => {
-      if (version <= 0) {
-        persisted.goals.forEach((goal: GoalType) => {
-          goal.color = 19;
-        });
-      }
-      if (version <= 1) {
-        persisted.goals.forEach((goal: GoalType) => {
-          goal.tags.forEach((tag: Tag) => {
-            tag.color = 19;
-          });
-        });
-      }
-      return persisted
-    }
+    version: version,
+    partialize: partialize,
+    migrate: migrate,
   }
 ));
+
 
 export default useStore; 

@@ -22,14 +22,14 @@ In order to make this app a full-featured management app for workout data, the f
 * [x] Implement editing composite units (placeholder)
 * [x] Add colors to tags
 * [x] Event list filtering by tags
+* [x] Add data import to Settings
+* [x] Export data as CSV
 * [ ] Implement editing composite units
 * [ ] Allow value-less goals
 * [ ] Allow adding graphs to Summary page
 * [ ] Allow adding values to Summary page
-* [ ] Export data as CSV
-* [ ] Add week start customization to Settings
-* [ ] Add data import to Settings
 * [ ] Add Calendar page
+* [ ] Add week start customization to Settings
 
 ### Bugs
 
