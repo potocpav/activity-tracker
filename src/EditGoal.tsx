@@ -6,7 +6,7 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
-import { Dialog, Divider, Portal, useTheme } from 'react-native-paper';
+import { Dialog, Divider, Portal, SegmentedButtons, useTheme } from 'react-native-paper';
 import { GoalType, SetTag, Tag } from "./Store";
 import { TextInput, Button, Chip, ToggleButton } from "react-native-paper";
 import useStore from "./Store";
@@ -163,21 +163,23 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
           />
         </View>
         <View style={styles.inputContainer}>
-          <View style={{ flexDirection: 'row', justifyContent: 'center'}}>
-            <Button
-              mode={unitMode === 'single' ? 'contained' : 'outlined'}
-              onPress={() => setUnitMode('single')}
-              style={{ marginRight: 8, flex: 1 }}
-            >
-              Single value
-            </Button>
-            <Button
-              mode={unitMode === 'multiple' ? 'contained' : 'outlined'}
-              onPress={() => setUnitMode('multiple')}
-              style={{ flex: 1 }}
-            >
-              Multiple values
-            </Button>
+          <View style={{}}>
+            <SegmentedButtons
+              value={unitMode}
+              onValueChange={setUnitMode}
+              buttons={[               
+                {
+                  value: 'single',
+                  label: 'Single value',
+                  icon: 'counter',
+                },
+                {
+                  value: 'multiple',
+                  label: 'Multiple values',
+                  icon: 'numeric',
+                },
+              ]}
+            />
           </View>
         </View>
 

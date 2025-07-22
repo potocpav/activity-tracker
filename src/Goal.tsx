@@ -13,6 +13,7 @@ import { createMaterialTopTabNavigator } from '@react-navigation/material-top-ta
 import useStore, { DataPoint, GoalType, SubUnit, Tag, Unit } from "./Store";
 import GoalGraph from "./GoalGraph";
 import GoalData from "./GoalData";
+import GoalCalendar from "./GoalCalendar";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { formatDate, renderValue } from "./GoalData";
 import GoalSummary from "./GoalSummary";
@@ -187,6 +188,7 @@ const GoalInner: React.FC<any> = ({ goal, navigation }) => {
       <Tab.Navigator screenOptions={{swipeEnabled: false}}>
         <Tab.Screen name="Summary" component={GoalSummary} initialParams={{ goalName }} />
         <Tab.Screen name="Data" component={GoalData} initialParams={{ goalName }} />
+        <Tab.Screen name="Calendar" component={GoalCalendar} initialParams={{ goalName }} />
         <Tab.Screen name="Graph" component={GoalGraph} initialParams={{ goalName }} />
       </Tab.Navigator>
     </SafeAreaView>
