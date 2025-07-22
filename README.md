@@ -29,6 +29,7 @@ In order to make this app a full-featured management app for workout data, the f
 * [ ] Export data as CSV
 * [ ] Add week start customization to Settings
 * [ ] Add data import to Settings
+* [ ] Add Calendar page
 
 ### Bugs
 
@@ -69,9 +70,14 @@ In order to make this app a full-featured management app for workout data, the f
 * [ ] Tare with automatic disconnect/connect
 
 ## Screenshots
-[![Main Screen](screenshots/Screenshot_20250712_212750_Tindeq%20Analyzer.thumb.jpg)](screenshots/Screenshot_20250712_212750_Tindeq%20Analyzer.jpg)
-[![Device Connection](screenshots/Screenshot_20250712_212758_Tindeq%20Analyzer.thumb.jpg)](screenshots/Screenshot_20250712_212758_Tindeq%20Analyzer.jpg)
-[![Live View](screenshots/Screenshot_20250712_212823_Tindeq%20Analyzer.thumb.jpg)](screenshots/Screenshot_20250712_212758_Tindeq%20Analyzer.jpg)
+
+[![Screenshot 1](screenshots/sshot-1.thumb.jpg)](screenshots/sshot-1.jpg)
+[![Screenshot 2](screenshots/sshot-2.thumb.jpg)](screenshots/sshot-2.jpg)
+[![Screenshot 3](screenshots/sshot-3.thumb.jpg)](screenshots/sshot-3.jpg)
+[![Screenshot 4](screenshots/sshot-4.thumb.jpg)](screenshots/sshot-4.jpg)
+[![Screenshot 5](screenshots/sshot-5.thumb.jpg)](screenshots/sshot-5.jpg)
+[![Screenshot 6](screenshots/sshot-6.thumb.jpg)](screenshots/sshot-6.jpg)
+
 
 ## Prerequisites
 
