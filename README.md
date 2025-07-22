@@ -36,10 +36,10 @@ In order to make this app a full-featured management app for workout data, the f
 * [x] Add alert on point duplication
 * [x] Allow unit-less measurements
 * [x] Make tag editing wait on goal submit
+* [x] Implement tag reordering
 * [ ] Fix direct date input
 * [ ] Make bounds on graphs pixel-perfect
 * [ ] Fix localization
-* [ ] Implement tag reordering
 
 ### General Usability
 

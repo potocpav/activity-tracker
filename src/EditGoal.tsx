@@ -244,8 +244,8 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
                 {item.name}
               </Chip>
             )}
-            onDragEnd={() => {
-              console.log("Tag reordering is not implemented yet.")
+            onDragEnd={(data) => {
+              setTagState(data.data);
             }}
             contentContainerStyle={{ flexDirection: 'row' }}
             style={{ marginTop: 8 }}
