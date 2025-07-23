@@ -2,14 +2,16 @@ import React, { useRef } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, FlatList } from "react-native";
 import { useTheme } from 'react-native-paper';
 import useStore, { DataPoint } from "./Store";
-import { searchInterval } from "./GoalUtil";
-
+import { formatNumber, searchInterval } from "./GoalUtil";
+import { Value } from "./ValueMenu";
 type CalendarProps = {
   goalName: string;
   palette: string[];
   colorIndex: number;
   dataPoints: [DataPoint, number][];
   firstDpTime: number | null;
+  displayValue: Value;
+  subValue: string | null;
 };
 
 const ITEM_HEIGHT = 50;
@@ -17,7 +19,7 @@ const ITEM_MARGIN = 2;
 const ITEM_TOP_MARGIN = 4;
 
 
-const Calendar: React.FC<CalendarProps> = ({ goalName, palette, colorIndex, dataPoints, firstDpTime }) => {
+const Calendar: React.FC<CalendarProps> = ({ goalName, palette, colorIndex, dataPoints, firstDpTime, displayValue, subValue }) => {
   const theme = useTheme();
   const dayBackground = palette[colorIndex];
   const now = new Date();
@@ -28,8 +30,55 @@ const Calendar: React.FC<CalendarProps> = ({ goalName, palette, colorIndex, data
   const firstVisibleWeek = firstDpTime ? pastWeekStart(new Date(firstDpTime), 0) : lastVisibleWeek;
 
   const weekCount = Math.min(520, Math.max(10, 1 + Math.round((lastVisibleWeek.getTime() - firstVisibleWeek.getTime()) / (7 * 24 * 60 * 60 * 1000))));
-  
-  console.log(dataPoints);
+
+  const getValue = (value : number | object) => {
+    if (subValue && typeof value === 'object') {
+      return value[subValue as keyof typeof value] ?? null;
+    } else if (typeof value === 'number') {
+      return value;
+    } else {
+      return null;
+    }
+
+  }
+
+  const extractValue = (dps: DataPoint[]) => {
+    if (dps.length === 0) {
+      return null;
+    }
+    switch (displayValue) {
+      case "count":
+        return dps.length;
+      case "max":
+        {
+          let accum: number | null = null;
+          dps.forEach((dp) => {
+            const value = getValue(dp.value);
+            console.log(accum, value);
+            accum = value === null ? accum : accum === null ? value : Math.max(accum, value);
+          });
+          return accum;
+        }
+      case "mean":
+        {
+          let accum: number | null = null;
+          dps.forEach((dp) => {
+            const value = getValue(dp.value);
+            accum = value === null ? accum : accum === null ? value : accum + value;
+          });
+          return accum === null ? null : accum / dps.length;
+        } 
+      case "sum":
+        {
+          let accum: number | null = null;
+          dps.forEach((dp) => {
+            const value = getValue(dp.value);
+            accum = value === null ? accum : accum === null ? value : accum + value;
+          });
+          return accum;
+        }
+    }
+  }
 
   return (
     <FlatList
@@ -39,7 +88,6 @@ const Calendar: React.FC<CalendarProps> = ({ goalName, palette, colorIndex, data
       extraData={dataPoints}
       removeClippedSubviews={true}
       inverted={true}
-      initialNumToRender={2}
       windowSize={2}
       getItemLayout={(_, index) => (
         {length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index}
@@ -67,8 +115,10 @@ const Calendar: React.FC<CalendarProps> = ({ goalName, palette, colorIndex, data
                 return dpDate.getTime() - day.getTime();
               }
             });
-            const dayData = dayDataRange ? dataPoints.slice(dayDataRange.first, dayDataRange.last + 1) : [];
+            const dayDataAndIndex = dayDataRange ? dataPoints.slice(dayDataRange.first, dayDataRange.last + 1) : [];
+            const dayData = dayDataAndIndex.map(([dp, _]) => dp);
             const hasData = dayData.length > 0;
+            const value = extractValue(dayData);
             return (
             <TouchableOpacity
               style={[styles.daySquare, hasData ? 
@@ -86,7 +136,7 @@ const Calendar: React.FC<CalendarProps> = ({ goalName, palette, colorIndex, data
               {(dayIdx == 0) && <Text style={[styles.dayNumber, { color: theme.colors.outline, backgroundColor: theme.colors.background }]}>{day.getDate()}</Text>}
               
                 <Text style={[styles.value, { color: theme.colors.background }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>
-                  {hasData && dayData.length}
+                  {hasData && (value ? formatNumber(value) : '')}
                 </Text>
               </TouchableOpacity>
             );

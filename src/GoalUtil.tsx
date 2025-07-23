@@ -11,7 +11,7 @@ export const searchInterval = (data: any[], cmp: (x: any) => number) => {
   if (data.length === 0) {
     return null;
   }
-  
+
   let start = 0;
   let end = data.length - 1;
   let middle = 0;
@@ -59,6 +59,10 @@ export const searchInterval = (data: any[], cmp: (x: any) => number) => {
   }
 
   return {first: start, last: end};
+}
+
+export const formatNumber = (value: number) => {
+  return Math.round(value * 10) / 10;
 }
 
 export const binTime = (binSize: BinSize, t0: number, i: number) => {

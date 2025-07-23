@@ -14,6 +14,7 @@ import { darkPalette, lightPalette } from "./Color";
 import { renderTags } from "./GoalUtil";
 import TagMenu from "./TagMenu";
 import Calendar from "./Calendar";
+import ValueMenu, { Value } from "./ValueMenu";
 const locale = NativeModules.I18nManager.localeIdentifier;
 
 type GoalCalendarProps = {
@@ -23,13 +24,6 @@ type GoalCalendarProps = {
 
 export const formatDate = (date: Date) => {
   return date.toLocaleDateString(locale, { year: "numeric", month: "short", day: "numeric" });
-};
-
-const formatTime = (date: Date) => {
-  return date.toLocaleTimeString(locale, {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 };
 
 export const renderValueSummary = (value: any, unit: Unit, style: any, short = false) => {
@@ -85,6 +79,11 @@ const GoalCalendar = ({ navigation, route }: GoalCalendarProps) => {
   const [tags, setTags] = useState<{ name: string; state: "yes" | "no" | "maybe" }[]>(goal.tags.map((t: Tag) => ({ name: t.name, state: "maybe" })));
   const [tagsMenuVisible, setTagsMenuVisible] = useState(false);
 
+  const [displayValue, setDisplayValue] = useState<Value>("count");
+  const [valueMenuVisible, setValueMenuVisible] = useState(false);
+
+  const [subValue, setSubValue] = useState<string | null>(null);
+
   if (!goal) {
     return <Text>Goal not found</Text>;
   }
@@ -101,8 +100,8 @@ const GoalCalendar = ({ navigation, route }: GoalCalendarProps) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      {goal.tags.length > 0 && (
         <View style={{ padding: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start' }}>
+      {goal.tags.length > 0 && (
           <TagMenu
             tags={tags}
             setTags={setTags}
@@ -112,18 +111,23 @@ const GoalCalendar = ({ navigation, route }: GoalCalendarProps) => {
             palette={palette}
             themeColors={theme.colors}
           />
-          <TagMenu
-            tags={tags}
-            setTags={setTags}
-            menuVisible={tagsMenuVisible}
-            setMenuVisible={setTagsMenuVisible}
-            goalTags={goal.tags}
-            palette={palette}
+        )}
+          <ValueMenu
+            value={displayValue}
+            setValue={setDisplayValue}
+            menuVisible={valueMenuVisible}
+            setMenuVisible={setValueMenuVisible}
             themeColors={theme.colors}
           />
         </View>
-      )}
-        <Calendar goalName={goalName} palette={palette} colorIndex={goal.color} dataPoints={filteredDataPoints} firstDpTime={goal.dataPoints[0].time || null } />
+        <Calendar 
+          goalName={goalName} 
+          palette={palette} 
+          colorIndex={goal.color} 
+          dataPoints={filteredDataPoints} 
+          firstDpTime={goal.dataPoints[0].time || null } 
+          displayValue={displayValue}
+          subValue={subValue} />
     </SafeAreaView>
   );
 };

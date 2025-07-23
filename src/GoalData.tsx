@@ -136,7 +136,6 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
         style={styles.scrollView}
         data={filteredDataPoints}
         keyExtractor={([_, i]) => i.toString()}
-        initialNumToRender={2}
         windowSize={2}
         getItemLayout={(_, index) => (
           {length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index}
