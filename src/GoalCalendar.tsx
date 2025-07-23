@@ -106,26 +106,30 @@ const GoalCalendar = ({ navigation, route }: GoalCalendarProps) => {
           <TagMenu
             tags={tags}
             setTags={setTags}
-            tagsMenuVisible={tagsMenuVisible}
-            setTagsMenuVisible={setTagsMenuVisible}
+            menuVisible={tagsMenuVisible}
+            setMenuVisible={setTagsMenuVisible}
+            goalTags={goal.tags}
+            palette={palette}
+            themeColors={theme.colors}
+          />
+          <TagMenu
+            tags={tags}
+            setTags={setTags}
+            menuVisible={tagsMenuVisible}
+            setMenuVisible={setTagsMenuVisible}
             goalTags={goal.tags}
             palette={palette}
             themeColors={theme.colors}
           />
         </View>
       )}
-      <ScrollView style={styles.scrollView}>
-        <Calendar palette={palette} colorIndex={goal.color} />
-      </ScrollView>
+        <Calendar goalName={goalName} palette={palette} colorIndex={goal.color} dataPoints={filteredDataPoints} firstDpTime={goal.dataPoints[0].time || null } />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-  },
-  scrollView: {
     flex: 1,
   },
   fab: {

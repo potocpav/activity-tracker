@@ -321,8 +321,8 @@ const GoalGraph = ({ route }: { route: any }) => {
         <TagMenu
           tags={tags}
           setTags={setTags}
-          tagsMenuVisible={tagsMenuVisible}
-          setTagsMenuVisible={setTagsMenuVisible}
+          menuVisible={tagsMenuVisible}
+          setMenuVisible={setTagsMenuVisible}
           goalTags={goal.tags}
           palette={palette} 
           themeColors={theme.colors}

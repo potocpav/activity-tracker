@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
   NativeModules,
+  FlatList,
 } from "react-native";
 import { useTheme, DataTable, FAB } from 'react-native-paper';
 import useStore, { DataPoint, GoalType, Tag, Unit } from "./Store";
@@ -77,6 +78,8 @@ export const renderValue = (value: any, unit: Unit) => {
   }
 };
 
+const ITEM_HEIGHT = 50;
+
 const GoalData = ({ navigation, route }: GoalDataProps) => {
   const theme = useTheme();
   const { goalName } = route.params;
@@ -104,6 +107,8 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
       const hasAnyNegative = negativeTags.some(tag => dataPoint.tags.includes(tag));
       return hasAllRequired && !hasAnyNegative;
     })
+    .slice()
+    .reverse()
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -112,36 +117,42 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
           <TagMenu
             tags={tags}
             setTags={setTags}
-            tagsMenuVisible={tagsMenuVisible}
-            setTagsMenuVisible={setTagsMenuVisible}
+            menuVisible={tagsMenuVisible}
+            setMenuVisible={setTagsMenuVisible}
             goalTags={goal.tags}
             palette={palette}
             themeColors={theme.colors}
           />
         </View>
       )}
-      <ScrollView style={styles.scrollView}>
-        <DataTable>
-          <DataTable.Header>
-            <DataTable.Title>Date</DataTable.Title>
-            <DataTable.Title>Tags</DataTable.Title>
-            <DataTable.Title numeric>Value</DataTable.Title>
-          </DataTable.Header>
-
-          {filteredDataPoints.slice().reverse().map(([dataPoint, i]: [DataPoint, number]) => (
-            <TouchableOpacity
-              key={i}
-              onPress={() => navigation.navigate("EditDataPoint", { goalName: goal.name, dataPointIndex: i })}
-            >
-              <DataTable.Row>
-                <DataTable.Cell>{formatDate(new Date(dataPoint.time))}</DataTable.Cell>
-                <DataTable.Cell>{renderTags(goal.tags.filter((t: Tag) => dataPoint.tags.includes(t.name)), theme, palette)}</DataTable.Cell>
-                <DataTable.Cell numeric>{renderValue(dataPoint.value, goal.unit)}</DataTable.Cell>
-              </DataTable.Row>
-            </TouchableOpacity>
-          ))}
-        </DataTable>
-      </ScrollView>
+      <DataTable>
+        <DataTable.Header>
+          <DataTable.Title>Date</DataTable.Title>
+          <DataTable.Title>Tags</DataTable.Title>
+          <DataTable.Title numeric>Value</DataTable.Title>
+        </DataTable.Header>
+      </DataTable>
+      <FlatList
+        style={styles.scrollView}
+        data={filteredDataPoints}
+        keyExtractor={([_, i]) => i.toString()}
+        initialNumToRender={2}
+        windowSize={2}
+        getItemLayout={(_, index) => (
+          {length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index}
+        )}
+        renderItem={({ item: [dataPoint, i] }) => (
+          <TouchableOpacity
+            onPress={() => navigation.navigate("EditDataPoint", { goalName: goal.name, dataPointIndex: i })}
+          >
+            <DataTable.Row style={{ height: ITEM_HEIGHT }}>
+              <DataTable.Cell>{formatDate(new Date(dataPoint.time))}</DataTable.Cell>
+              <DataTable.Cell>{renderTags(goal.tags.filter((t: Tag) => dataPoint.tags.includes(t.name)), theme, palette)}</DataTable.Cell>
+              <DataTable.Cell numeric>{renderValue(dataPoint.value, goal.unit)}</DataTable.Cell>
+            </DataTable.Row>
+          </TouchableOpacity>
+        )}
+      />
       <FAB
         icon="plus"
         style={[styles.fab, { backgroundColor: goalColor }]}

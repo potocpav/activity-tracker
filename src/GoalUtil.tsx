@@ -4,6 +4,63 @@ import { View, Text, StyleSheet } from "react-native";
 
 export type BinSize = "day" | "week" | "month" | "quarter" | "year";
 
+// Returns the indices of the first and last elements in data that zero the condition `cmp`
+// Data must be sorted in ascending order, such that cmp is monotonic.
+// Returns null if no such element is found.
+export const searchInterval = (data: any[], cmp: (x: any) => number) => {
+  if (data.length === 0) {
+    return null;
+  }
+  
+  let start = 0;
+  let end = data.length - 1;
+  let middle = 0;
+  
+  while (start <= end) {
+    middle = Math.floor((start + end) / 2);
+    let cmpResult = cmp(data[middle]);
+    if (cmpResult < 0) {
+      start = middle + 1;
+    } else if (cmpResult > 0) {
+      end = middle - 1;
+    } else {
+      break;
+    }
+  }
+
+  // found one element (`middle`) for which cmp is zero
+  // now find the first element for which cmp is zero by linear search
+
+  if (cmp(data[middle]) !== 0) {
+    return null;
+  }
+
+  start = middle;
+  while (true) {
+    if (start  == 0) {
+      break;
+    } else if (cmp(data[start-1]) === 0) {
+      start--;
+    } else {
+      break;
+    }
+  }
+  
+
+  end = middle;
+  while (true) {
+    if (end == data.length - 1) {
+      break;
+    } else if (cmp(data[end+1]) === 0) {
+      end++;
+    } else {
+      break;
+    }
+  }
+
+  return {first: start, last: end};
+}
+
 export const binTime = (binSize: BinSize, t0: number, i: number) => {
   const t0Date = new Date(t0);
   if (binSize === "day") {

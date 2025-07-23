@@ -40,7 +40,6 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
         <>
           <Divider />
           <View style={{padding: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start'}}>
-            <Text style={{color: theme.colors.onSurfaceVariant, marginRight: 10}}>Tags:</Text>
         {renderTags(goal.tags, theme, palette)}
           </View>
         </>

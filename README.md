@@ -24,11 +24,11 @@ In order to make this app a full-featured management app for workout data, the f
 * [x] Event list filtering by tags
 * [x] Add data import to Settings
 * [x] Export data as CSV
+* [x] Add Calendar page
 * [ ] Implement editing composite units
 * [ ] Allow value-less goals
 * [ ] Allow adding graphs to Summary page
 * [ ] Allow adding values to Summary page
-* [ ] Add Calendar page
 * [ ] Add week start customization to Settings
 
 ### Bugs

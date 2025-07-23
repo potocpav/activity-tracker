@@ -7,8 +7,8 @@ import { Tag } from "./Store";
 interface TagMenuProps {
   tags: { name: string; state: "yes" | "no" | "maybe" }[];
   setTags: (tags: { name: string; state: "yes" | "no" | "maybe" }[]) => void;
-  tagsMenuVisible: boolean;
-  setTagsMenuVisible: (visible: boolean) => void;
+  menuVisible: boolean;
+  setMenuVisible: (visible: boolean) => void;
   goalTags: Tag[];
   palette: string[];
   themeColors: any;
@@ -17,8 +17,8 @@ interface TagMenuProps {
 const TagMenu: React.FC<TagMenuProps> = ({
   tags,
   setTags,
-  tagsMenuVisible,
-  setTagsMenuVisible,
+  menuVisible,
+  setMenuVisible,
   goalTags,
   palette,
   themeColors,
@@ -26,10 +26,10 @@ const TagMenu: React.FC<TagMenuProps> = ({
   return (
     goalTags.length > 0 && (
       <Menu
-        visible={tagsMenuVisible}
-        onDismiss={() => setTagsMenuVisible(false)}
+        visible={menuVisible}
+        onDismiss={() => setMenuVisible(false)}
         anchor={
-          <Button compact={true} onPress={() => setTagsMenuVisible(true)} style={{ marginRight: 8 }}>
+          <Button compact={true} onPress={() => setMenuVisible(true)} style={{ marginRight: 8 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Text style={{ marginRight: 10, color: themeColors.onSurfaceVariant }}>
                 <AntDesign name="filter" size={16} color={themeColors.onSurfaceVariant} />
