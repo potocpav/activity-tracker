@@ -54,7 +54,6 @@ const Calendar: React.FC<CalendarProps> = ({ goalName, palette, colorIndex, data
           let accum: number | null = null;
           dps.forEach((dp) => {
             const value = getValue(dp.value);
-            console.log(accum, value);
             accum = value === null ? accum : accum === null ? value : Math.max(accum, value);
           });
           return accum;

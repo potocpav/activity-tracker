@@ -30,6 +30,7 @@ In order to make this app a full-featured management app for workout data, the f
 * [ ] Allow adding graphs to Summary page
 * [ ] Allow adding values to Summary page
 * [ ] Add week start customization to Settings
+* [ ] Click-through calendar days
 
 ### Bugs
 

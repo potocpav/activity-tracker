@@ -48,9 +48,7 @@ const Settings = () => {
       type: 'application/json',
       copyToCacheDirectory: true,
     });
-    if (result.canceled) {
-      console.log('Document pick Canceled');
-    } else {
+    if (!result.canceled) {
       const asset = result.assets[0];
       const file = new File(asset.uri);
       const contents = file.text()
