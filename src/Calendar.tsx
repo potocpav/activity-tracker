@@ -17,6 +17,8 @@ type CalendarProps = {
 const ITEM_HEIGHT = 50;
 const ITEM_MARGIN = 2;
 const ITEM_TOP_MARGIN = 4;
+const MIN_WEEK_COUNT = 20;
+const MAX_WEEK_COUNT = 520;
 
 
 const Calendar: React.FC<CalendarProps> = ({ goalName, palette, colorIndex, dataPoints, firstDpTime, displayValue, subValue }) => {
@@ -29,7 +31,7 @@ const Calendar: React.FC<CalendarProps> = ({ goalName, palette, colorIndex, data
   const lastVisibleWeek = pastWeekStart(now, 0);
   const firstVisibleWeek = firstDpTime ? pastWeekStart(new Date(firstDpTime), 0) : lastVisibleWeek;
 
-  const weekCount = Math.min(520, Math.max(10, 1 + Math.round((lastVisibleWeek.getTime() - firstVisibleWeek.getTime()) / (7 * 24 * 60 * 60 * 1000))));
+  const weekCount = Math.min(MAX_WEEK_COUNT, Math.max(MIN_WEEK_COUNT, 1 + Math.round((lastVisibleWeek.getTime() - firstVisibleWeek.getTime()) / (7 * 24 * 60 * 60 * 1000))));
 
   const getValue = (value : number | object) => {
     if (subValue && typeof value === 'object') {
