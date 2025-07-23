@@ -19,7 +19,7 @@ const ITEM_TOP_MARGIN = 4;
 
 const Calendar: React.FC<CalendarProps> = ({ goalName, palette, colorIndex, dataPoints, firstDpTime }) => {
   const theme = useTheme();
-  const dayBackground = palette[colorIndex] + "60";
+  const dayBackground = palette[colorIndex];
   const now = new Date();
 
   const pastWeekStart = (date: Date, i: number) => new Date(date.getFullYear(), date.getMonth(), date.getDate() - date.getDay() - i * 7);
@@ -46,14 +46,13 @@ const Calendar: React.FC<CalendarProps> = ({ goalName, palette, colorIndex, data
       )}
       renderItem={({ item: weekIdx }) => {
         const weekStart = pastWeekStart(now, weekIdx);
-        const nextWeekStart = pastWeekStart(now, weekIdx - 1);
         return (
         <View style={styles.weekRow} key={weekIdx}>
           <View style={styles.monthLabelContainer}>
-            {(nextWeekStart.getDate() <= 7) && 
+            {(weekStart.getDate() <= 7) && 
               <Text style={[styles.monthLabel, { color: theme.colors.onSurfaceVariant }]}>{`${weekStart.toLocaleDateString('en-US', { month: 'short' })}`}</Text>}
-            {(nextWeekStart.getDate() <= 7 && nextWeekStart.getMonth() == 1) &&
-                <Text style={[styles.monthLabel, { color: theme.colors.onSurfaceVariant }]}>{`${nextWeekStart.toLocaleDateString('en-US', { year: 'numeric' })}`}</Text>}
+            {(weekStart.getDate() <= 7 && weekStart.getMonth() == 1) &&
+                <Text style={[styles.monthLabel, { color: theme.colors.onSurfaceVariant }]}>{`${weekStart.toLocaleDateString('en-US', { year: 'numeric' })}`}</Text>}
           </View>
           {[0,1,2,3,4,5,6].map((dayIdx) => {
             const day = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + dayIdx);
@@ -75,19 +74,18 @@ const Calendar: React.FC<CalendarProps> = ({ goalName, palette, colorIndex, data
               style={[styles.daySquare, hasData ? 
                 { 
                   backgroundColor: dayBackground, 
-                  borderColor: theme.colors.outline ,
                 } : 
                 {  
-                  borderColor: theme.colors.outlineVariant 
+                  backgroundColor: theme.colors.surfaceDisabled,
                 }
               ]}
               key={dayIdx}
               onPress={() => console.log('Day pressed:', dayIdx)}
               activeOpacity={0.3}
             >
-              <Text style={[styles.dayNumber, { color: theme.colors.outline, backgroundColor: theme.colors.background }]}>{day.getDate()}</Text>
+              {(dayIdx == 0) && <Text style={[styles.dayNumber, { color: theme.colors.outline, backgroundColor: theme.colors.background }]}>{day.getDate()}</Text>}
               
-                <Text style={[styles.value, { color: theme.colors.onBackground }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>
+                <Text style={[styles.value, { color: theme.colors.background }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>
                   {hasData && dayData.length}
                 </Text>
               </TouchableOpacity>
@@ -121,14 +119,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 4,
-    borderWidth: 1,
   },
   dayNumber: {
     position: 'absolute',
     fontSize: 8,
     marginBottom: 2,
-    marginTop: -40,
-    paddingHorizontal: 2,
+    marginTop: -35,
+    marginLeft: -33,
+    paddingHorizontal: 5,
+    paddingVertical: 3,
     borderRadius: 4,
   },
   value: {
