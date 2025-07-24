@@ -63,8 +63,10 @@ In order to make this app a full-featured management app for workout data, the f
 
 * [x] When editing, show a better point header.
 * [x] Improve form validation messages
-* [ ] Show measurment comments somewhere
-* [ ] Screen orientation
+* [x] Screen orientation
+* [ ] Screen orientation & responsive design tweaks
+* [ ] Show measurement comments somewhere
+* [ ] Show numbers on bar charts
 * [ ] Limit graph Panning on the left
 * [ ] Prevent future point input
 * [ ] Performance testing & enhancements
