@@ -9,12 +9,13 @@ import {
   NativeModules,
 } from "react-native";
 import { Chip, useTheme, TextInput, Button } from 'react-native-paper';
-import { SubUnit, GoalType } from "./StoreTypes";
+import { SubUnit, GoalType, dateToDateList, dateListToTime, DataPoint } from "./StoreTypes";
 import useStore from "./Store";
 import { DatePickerInput } from "react-native-paper-dates";
 import { CalendarDate } from "react-native-paper-dates/lib/typescript/Date/Calendar";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Ionicons from '@expo/vector-icons/Ionicons';
+
 type EditDataPointProps = {
   navigation: any;
   route: any;
@@ -28,26 +29,35 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   const goals = useStore((state: any) => state.goals);
   const goal = goals.find((g: GoalType) => g.name === goalName);
 
-  const dataPoint = dataPointIndex !== undefined ? goal?.dataPoints[dataPointIndex] : {
-    time: new Date().getTime(),
+  const dataPoint : DataPoint = dataPointIndex !== undefined ? goal?.dataPoints[dataPointIndex] : {
+    date: dateToDateList(new Date()),
     value: typeof goal.unit === "string" ?
       null :
       Object.fromEntries(goal.unit.map((u: SubUnit) => [u.name, null])),
     tags: []
   };
 
-
-  const dateTime = new Date(dataPoint.time);
+  
   if (!dataPoint) {
     return <Text>Data point not found</Text>;
   }
+  
+  const dateTime = new Date(...dataPoint.date);
 
   const updateGoalDataPoint = useStore((state: any) => state.updateGoalDataPoint);
   const deleteGoalDataPoint = useStore((state: any) => state.deleteGoalDataPoint);
   const [inputDate, setInputDate] = useState<CalendarDate | undefined>(dateTime);
   const [noteInput, setNoteInput] = useState<string>(dataPoint.note ?? "");
-  const inputValues = typeof goal.unit === "string" ? [{ subUnit: null, value: useState<string>(dataPoint.value?.toString() ?? "") }] :
-    goal.unit.map((u: SubUnit) => ({ subUnit: u, value: useState<string>(dataPoint.value[u.name]?.toString() ?? "") }));
+  const inputValues = typeof goal.unit === "string" ? 
+    [{ 
+      subUnit: null, 
+      value: useState<string>(dataPoint.value?.toString() ?? "") 
+    }] :
+    goal.unit.map((u: SubUnit) => ({ 
+      subUnit: u, 
+      value: useState<string>(
+        (dataPoint.value as Record<string, number | null>)[u.name]?.toString() ?? "")
+    }));
   const [inputTags, setInputTags] = useState<string[]>(dataPoint.tags);
 
   const toggleInputTag = (tag: string) => {
@@ -118,7 +128,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
 
   React.useEffect(() => {
     navigation.setOptions({
-      title: newDataPoint ? 'New data point' : `${new Date(dataPoint.time).toLocaleDateString(locale)} #${dataPointIndex + 1}`,
+      title: newDataPoint ? 'New data point' : `${new Date(...dataPoint.date).toLocaleDateString(locale)} #${dataPointIndex + 1}`,
       headerRight: () => (
         <>
           <Button compact={true} onPress={saveDataPointWrapper}><AntDesign name="check" size={24} color={theme.colors.onSurface} /></Button>

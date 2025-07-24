@@ -1,5 +1,5 @@
 
-import { GoalType, Stat, Unit } from "./StoreTypes";
+import { dateListToTime, GoalType, Stat, timeToDateList, Unit } from "./StoreTypes";
 
 export const defaultStats = (unit: Unit): Stat[] => {
   let subUnit: string | null = null;
@@ -83,7 +83,7 @@ const fingerStrengthExample: GoalType = {
   ],
   dataPoints: [
     {
-      time: new Date("2025-07-11T03:24:00").getTime(),
+      date: [2025, 7, 11],
       value: {
         Mean: 70,
         Max: 75,
@@ -92,7 +92,7 @@ const fingerStrengthExample: GoalType = {
       tags: ["left"],
     },
     {
-      time: new Date("2025-07-12T03:24:00").getTime(),
+      date: [2025, 7, 12],
       value: {
         Mean: 65,
         Max: null,
@@ -115,11 +115,13 @@ const bodyWeightExample: GoalType = {
   stats: defaultStats(bodyWeightUnit),
   dataPoints:
     Array.from({ length: 50 }, (_, i) => ({
-      time: new Date("2023-01-01").getTime() +
-        Math.random() * (new Date("2025-07-14").getTime() - new Date("2023-01-01").getTime()),
+      date: timeToDateList(
+        new Date("2023-01-01").getTime() +
+        Math.random() * (new Date("2025-07-14").getTime() - 
+        new Date("2023-01-01").getTime())),
       value: Math.round((70 + Math.random() * 2) * 10) / 10,
       tags: [],
-    })).sort((a, b) => a.time - b.time),
+    })).sort((a, b) => dateListToTime(a.date) - dateListToTime(b.date)),
 }
 
 const bodyWeightExample2: GoalType = {
@@ -131,37 +133,37 @@ const bodyWeightExample2: GoalType = {
   stats: defaultStats(bodyWeightUnit),
   dataPoints: [
     {
-      time: new Date("2025-07-08T00:00:00").getTime(),
+      date: [2025, 7, 8],
       value: 81.4,
       tags: [],
     },
     {
-      time: new Date("2025-07-09T00:00:00").getTime(),
+      date: [2025, 7, 9],
       value: 79.8,
       tags: [],
     },
     {
-      time: new Date("2025-07-10T00:00:00").getTime(),
+      date: [2025, 7, 10],
       value: 80.9,
       tags: [],
     },
     {
-      time: new Date("2025-07-11T00:00:00").getTime(),
+      date: [2025, 7, 11],
       value: 80.9,
       tags: [],
     },
     {
-      time: new Date("2025-07-12T00:00:00").getTime(),
+      date: [2025, 7, 12],
       value: 79.9,
       tags: [],
     },
     {
-      time: new Date("2025-07-13T00:00:00").getTime(),
+      date: [2025, 7, 13],
       value: 79.1,
       tags: [],
     },
     {
-      time: new Date("2025-07-14T00:00:00").getTime(),
+      date: [2025, 7, 14],
       value: 80.1,
       tags: [],
     },

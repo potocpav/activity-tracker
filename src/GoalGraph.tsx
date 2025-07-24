@@ -5,12 +5,14 @@ import { getTransformComponents, Line, Scatter, setScale, setTranslate, useChart
 import { CartesianChart } from "victory-native";
 import { matchFont, Path, RoundedRect, Skia } from "@shopify/react-native-skia";
 import useStore from "./Store";
-import { GoalType, Tag, TagFilter } from "./StoreTypes";
+import { DataPoint, dateListToTime, GoalType, Tag, TagFilter } from "./StoreTypes";
 import { useAnimatedReaction, useSharedValue, withTiming } from "react-native-reanimated";
-import { binTime, binTimeSeries, BinSize } from "./GoalUtil";
+import { binTime, binTimeSeries, BinSize, extractValue } from "./GoalUtil";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { lightPalette, darkPalette } from "./Color";
 import TagMenu from "./TagMenu";
+import SubUnitMenu from "./SubUnitMenu";
+import DropdownMenu from "./DropdownMenu";
 
 const fontFamily = Platform.select({ default: "sans-serif" });
 const font = matchFont({ fontFamily: fontFamily, fontSize: 10 });
@@ -63,7 +65,7 @@ const GoalGraph = ({ route }: { route: any }) => {
 
   const [binning, setBinning] = useState<"day" | "week" | "month" | "quarter" | "year">("day");
   const [binMenuVisible, setBinMenuVisible] = useState(false);
-  const [tags, setTags] = useState<TagFilter[]>(goal.tags.map((t: Tag) => ({ name: t.name, state: "maybe" })));
+  const [tags, setTags] = useState<TagFilter[]>([]);
   const [graphType, setGraphType] = useState<"box" | "bar-count" | "bar-sum" | "line-mean">("box");
   const graphTypes = ["box", "bar-count", "bar-sum", "line-mean"];
   const transformState = useChartTransformState({
@@ -76,28 +78,15 @@ const GoalGraph = ({ route }: { route: any }) => {
   const [tagsMenuVisible, setTagsMenuVisible] = useState(false);
   const [graphTypeMenuVisible, setGraphTypeMenuVisible] = useState(false);
 
-  const extractValue = (dataPoint: any) => {
-    const requiredTags = tags.filter((t) => t.state === "yes");
-    const negativeTags = tags.filter((t) => t.state === "no");
-    const hasAllRequiredTags = requiredTags.every((t) => dataPoint.tags.includes(t.name));
-    const hasAnyNegativeTags = negativeTags.some((t) => dataPoint.tags.includes(t.name));
-    if (hasAllRequiredTags && !hasAnyNegativeTags) {
-      const value = subUnitName ? dataPoint.value[subUnitName] : dataPoint.value;
-      return value;
-    } else {
-      return null;
-    }
-  }
-
   const now = new Date();
   const barWidth = 5;
   const barHeight = 5;
 
   var ticks = [];
   if (goal.dataPoints.length > 0) {
-    var tick_t = binTime(binning, goal.dataPoints[0].time, 0);
+    var tick_t = binTime(binning, dateListToTime(goal.dataPoints[0].date), 0);
     for (let i = 0; tick_t < now.getTime(); i++) {
-      tick_t = binTime(binning, goal.dataPoints[0].time, i);
+      tick_t = binTime(binning, dateListToTime(goal.dataPoints[0].date), i);
       ticks.push(tick_t);
       if (i > 1000) {
         break; // limit
@@ -107,7 +96,7 @@ const GoalGraph = ({ route }: { route: any }) => {
 
   const bins = binTimeSeries(binning, goal.dataPoints);
   const binStats: { t: number, q0: number, q1: number, q2: number, q3: number, q4: number, count: number, sum: number, mean: number, zero: number }[] = bins.map((bin) => {
-    const values = bin.values.map(extractValue).filter((v: number) => v !== null);
+    const values = bin.values.map((dp: DataPoint) => extractValue(dp, tags, subUnitName)).filter((v: number) => v !== null);
     if (values.length === 0) {
       return null
     } else {
@@ -260,64 +249,33 @@ const GoalGraph = ({ route }: { route: any }) => {
     quarter: "Quarter",
     year: "Year"
   };
+  const binningOptions = Object.entries(binningLabels).map(([key, label]) => ({ key, label }));
 
   return (
     <View style={{ flex: 1, padding: 10, backgroundColor: theme.colors.background }}>
       {/* Menus row */}
       <View key="menusRow" style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 5 }}>
         {/* Binning menu */}
-        <Menu
+        <DropdownMenu
+          options={binningOptions}
+          selectedKey={binning}
+          onSelect={(key) => {
+            resetTransform();
+            setBinning(key as typeof binning);
+          }}
           visible={binMenuVisible}
-          onDismiss={() => setBinMenuVisible(false)}
-          anchor={
-            <Button compact={true} onPress={() => setBinMenuVisible(true)} style={{ marginRight: 8 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Text style={{ marginRight: 10, color: theme.colors.onSurfaceVariant }}>{binningLabels[binning]}</Text>
-                <AntDesign name="down" size={16} color={theme.colors.onSurfaceVariant} />
-              </View>
-            </Button>
-          }
-        >
-          {Object.entries(binningLabels).map(([key, label]) => (
-            <Menu.Item
-              key={key}
-              onPress={() => {
-                setBinMenuVisible(false);
-                resetTransform();
-                setBinning(key as typeof binning);
-              }}
-              title={label}
-              trailingIcon={binning === key ? "check" : undefined}
-            />
-          ))}
-        </Menu>
+          setVisible={setBinMenuVisible}
+          themeColors={theme.colors}
+        />
         {/* SubUnit menu */}
-        {subUnitNames && (
-          <Menu
-            visible={subUnitMenuVisible}
-            onDismiss={() => setSubUnitMenuVisible(false)}
-            anchor={
-              <Button compact={true} onPress={() => setSubUnitMenuVisible(true)} style={{ marginRight: 8 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Text style={{ marginRight: 10, color: theme.colors.onSurfaceVariant }}>{subUnitName}</Text>
-                  <AntDesign name="down" size={16} color={theme.colors.onSurfaceVariant} />
-                </View>
-              </Button>
-            }
-          >
-            {subUnitNames.map((name: string) => (
-              <Menu.Item
-                key={name}
-                onPress={() => {
-                  setSubUnitMenuVisible(false);
-                  setSubUnitName(name);
-                }}
-                title={name}
-                trailingIcon={subUnitName === name ? "check" : undefined}
-              />
-            ))}
-          </Menu>
-        )}
+        <SubUnitMenu
+          subUnitNames={subUnitNames}
+          subUnitName={subUnitName}
+          setSubUnitName={setSubUnitName}
+          menuVisible={subUnitMenuVisible}
+          setMenuVisible={setSubUnitMenuVisible}
+          themeColors={theme.colors}
+        />
         {/* Tags menu */}
         <TagMenu
           tags={tags}

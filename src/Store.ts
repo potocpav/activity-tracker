@@ -19,12 +19,13 @@ import {
   Characteristic,
   Device,
 } from "react-native-ble-plx";
+import { dateListToTime, Stat, timeToDateList } from "./StoreTypes";
 import { defaultStats, exampleGoals } from "./ExampleData";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GoalType, Tag, DataPoint, SetTag, TagName, State } from "./StoreTypes";
 
-export const version = 3;
+export const version = 4;
 
 export const migrate = (persisted: any, version: number) => {
   if (version <= 0) {
@@ -42,6 +43,14 @@ export const migrate = (persisted: any, version: number) => {
   if (version <= 2) {
     persisted.goals.forEach((goal: GoalType) => {
       goal.stats = defaultStats(goal.unit);
+    });
+  }
+  if (version <= 3) {
+    persisted.goals.forEach((goal: GoalType) => {
+      goal.dataPoints.forEach((dp: any) => {
+        dp.date = timeToDateList(dp.time);
+        delete dp.time;
+      });
     });
   }
   return persisted
@@ -216,6 +225,29 @@ const useStore = create<State>()(
         });
       },
 
+      setGoalStats: (goalName: string, stats: Stat[]) => {
+        set((state: any) => {
+          const goals = state.goals.map((g: GoalType) => goalName === g.name ? { ...g, stats } : g);
+          return { goals };
+        });
+      },
+
+      setGoalStat: (goalName: string, statId: number, stat: Stat) => {
+        set((state: any) => {
+          const goals = state.goals.map((g: GoalType) => goalName === g.name ? { 
+            ...g, 
+            stats: g.stats.map((s: Stat, i: number) => i === statId ? stat : s) } : g);
+          return { goals };
+        });
+      },
+
+      deleteGoalStat: (goalName: string, statId: number) => {
+        set((state: any) => {
+          const goals = state.goals.map((g: GoalType) => goalName === g.name ? { ...g, stats: g.stats.filter((s: Stat, i: number) => i !== statId) } : g);
+          return { goals };
+        });
+      },
+
       setTags: (goalName: string, tags: SetTag[]) => {
         const newTagNames = tags.map((t: SetTag) => t.name);
         const oldTagNames = tags.map((t: SetTag) => t.oldTagName).filter((t: TagName | null) => t !== null);
@@ -300,7 +332,8 @@ const useStore = create<State>()(
               if (dataPointIndex !== undefined) {
                 updatedDataPoints.splice(dataPointIndex, 1);
               }
-              insertIndex = updatedDataPoints.findLastIndex((dp: DataPoint) => dp.time <= updatedDataPoint.time) + 1;
+              // TODO: use binary search to find insert index
+              insertIndex = updatedDataPoints.findLastIndex((dp: DataPoint) => dateListToTime(dp.date) <= dateListToTime(updatedDataPoint.date)) + 1;
               updatedDataPoints.splice(insertIndex, 0, updatedDataPoint);
               return { ...goal, dataPoints: updatedDataPoints };
             }

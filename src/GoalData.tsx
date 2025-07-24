@@ -33,19 +33,21 @@ const formatTime = (date: Date) => {
   });
 };
 
-export const renderValueSummary = (value: any, unit: Unit, style: any) => {
+export const renderValueSummary = (value: any, unit: Unit) => {
+  const suffix = unit === "" ? "" : " " + unit;
   if (value === null) {
     return "-"
   } else if (typeof value === "number" && typeof unit === "string") {
     return (
-      `${Math.round(value * 100) / 100} ${unit}`
+      `${Math.round(value * 100) / 100}${suffix}`
     );
   } else if (typeof value === "object" && typeof unit === "object") {
     // Handle complex units (like finger strength with mean, max, tut)
     var parts: string[] = [];
     unit.forEach((u: any) => {
       if (value[u.name] !== null && value[u.name] !== undefined) {
-        parts.push(`${value[u.name]} ${u.symbol}`);
+        const suffix = u.symbol === "" ? "" : " " + u.symbol;
+        parts.push(`${value[u.name]}${suffix}`);
       }
     });
     return ( // Only render the first part always
@@ -85,7 +87,7 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
   const goalColor = palette[goal.color];
 
   // Tag filter state
-  const [tags, setTags] = useState<{ name: string; state: "yes" | "no" | "maybe" }[]>(goal.tags.map((t: Tag) => ({ name: t.name, state: "maybe" })));
+  const [tags, setTags] = useState<{ name: string; state: "yes" | "no" }[]>([]);
   const [tagsMenuVisible, setTagsMenuVisible] = useState(false);
 
   if (!goal) {
@@ -95,7 +97,7 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
   // Filtering logic
   const requiredTags = tags.filter((t) => t.state === "yes").map(t => t.name);
   const negativeTags = tags.filter((t) => t.state === "no").map(t => t.name);
-  const filteredDataPoints = goal.dataPoints
+  const filteredDataPoints: [DataPoint, number][] = goal.dataPoints
     .map((o: DataPoint, i: number) => [o, i])
     .filter(([dataPoint, i]: [DataPoint, number]) => {
       const hasAllRequired = requiredTags.every(tag => dataPoint.tags.includes(tag));
@@ -140,7 +142,7 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
             onPress={() => navigation.navigate("EditDataPoint", { goalName: goal.name, dataPointIndex: i })}
           >
             <DataTable.Row style={{ height: ITEM_HEIGHT }}>
-              <DataTable.Cell>{formatDate(new Date(dataPoint.time))}</DataTable.Cell>
+              <DataTable.Cell>{formatDate(new Date(...dataPoint.date))}</DataTable.Cell>
               <DataTable.Cell>{renderTags(goal.tags.filter((t: Tag) => dataPoint.tags.includes(t.name)), theme, palette)}</DataTable.Cell>
               <DataTable.Cell numeric>{renderValue(dataPoint.value, goal.unit)}</DataTable.Cell>
             </DataTable.Row>

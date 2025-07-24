@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { useTheme } from 'react-native-paper';
 import useStore from "./Store";
-import { DataPoint, GoalType, Tag, Unit } from "./StoreTypes";
+import { DataPoint, dateListToTime, GoalType, Tag, Unit } from "./StoreTypes";
 import { darkPalette, lightPalette } from "./Color";
 import TagMenu from "./TagMenu";
 import Calendar from "./Calendar";
@@ -123,7 +123,7 @@ const GoalCalendar = ({ navigation, route }: GoalCalendarProps) => {
         palette={palette}
         colorIndex={goal.color}
         dataPoints={filteredDataPoints}
-        firstDpTime={goal.dataPoints[0]?.time || null}
+        firstDpDate={goal.dataPoints[0]?.date || null}
         displayValue={displayValue}
         subValue={subValue} />
     </SafeAreaView>

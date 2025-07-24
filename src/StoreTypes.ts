@@ -24,8 +24,11 @@ export type SetTag = {
 
 export type TagName = string;
 
+// Normalized [year, month, day] numbers
+export type DateList = [number, number, number];
+
 export type DataPoint = {
-  time: number;
+  date: DateList;
   value: number | object;
   note?: string;
   tags: TagName[];
@@ -33,15 +36,25 @@ export type DataPoint = {
 
 export type StatValue = "n_days" | "n_points" | "sum" | "mean" | "max" | "min" | "last";
 
+export const allStatValues : StatValue[] = [
+  "n_days", "n_points", "sum", "mean", "max", "min", "last"
+];
+
 export type StatPeriod = 
-  "today" | "this_week" | "this_month" | "this_year" |
-  "last_24_hours" | "last_7_days" | "last_30_days" | "last_365_days" |
-  "last_active_day" |
+  "today" | "last_active_day" | "this_week" | "this_month" | "this_year" |
+  "last_7_days" | "last_30_days" | "last_365_days" |
   "all_time";
+
+export const allStatPeriods : StatPeriod[] = [
+  "today", "last_active_day", "this_week", "this_month", "this_year",
+  "last_7_days", "last_30_days", "last_365_days",
+  "all_time"
+];
+
 
 export type TagFilter = {
   name: string;
-  state: "yes" | "no" | "maybe";
+  state: "yes" | "no";
 };
 
 export type Stat = {
@@ -87,4 +100,23 @@ export type State = {
   sampleBatteryVoltage: any;
   startStreamingData: any;
   updateGoalDataPoint: any;
+};
+
+
+export const dateToDateList = (date: Date): DateList => {
+    return [date.getFullYear(), date.getMonth(), date.getDate()];
+};
+
+export const normalizeDateList = (dateList: DateList): DateList => {
+    return dateToDateList(new Date(...dateList));
+};
+
+// TODO: move to a util file
+export const timeToDateList = (time: number): DateList => {
+    const date = new Date(time);
+    return [date.getFullYear(), date.getMonth(), date.getDate()];
+};
+
+export const dateListToTime = (dateList: DateList): number => {
+    return new Date(...dateList).getTime();
 };

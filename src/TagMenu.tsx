@@ -5,8 +5,8 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import { Tag } from "./StoreTypes";
 
 interface TagMenuProps {
-  tags: { name: string; state: "yes" | "no" | "maybe" }[];
-  setTags: (tags: { name: string; state: "yes" | "no" | "maybe" }[]) => void;
+  tags: { name: string; state: "yes" | "no" }[];
+  setTags: (tags: { name: string; state: "yes" | "no" }[]) => void;
   menuVisible: boolean;
   setMenuVisible: (visible: boolean) => void;
   goalTags: Tag[];
@@ -29,7 +29,14 @@ const TagMenu: React.FC<TagMenuProps> = ({
         visible={menuVisible}
         onDismiss={() => setMenuVisible(false)}
         anchor={
-          <Button compact={true} onPress={() => setMenuVisible(true)} style={{ marginRight: 8 }}>
+          <Button compact={true} onPress={() => setMenuVisible(true)} style={{ 
+            marginBottom: 10,
+            borderWidth: 1,
+            borderColor: themeColors.outline,
+            borderRadius: 4,
+            padding: 5,
+            backgroundColor: themeColors.surface,
+            }}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Text style={{ marginRight: 10, color: themeColors.onSurfaceVariant }}>
                 <AntDesign name="filter" size={16} color={themeColors.onSurfaceVariant} />
@@ -48,20 +55,27 @@ const TagMenu: React.FC<TagMenuProps> = ({
         }
       >
         {goalTags.map((tag: Tag) => {
-          const state = tags.find((t) => t.name === tag.name)?.state;
+          const state = tags.find((t) => t.name === tag.name)?.state ?? "maybe";
           let icon = undefined;
           let title = tag.name;
           if (state === 'yes') icon = 'check';
           else if (state === 'no') icon = 'close';
+          const newState : "yes" | "no" | "maybe" = state === 'maybe' ? 'yes' : state === 'yes' ? 'no' : 'maybe';
+          let newTags;
+          if (newState === 'maybe') {
+            newTags = tags.filter((t) => t.name !== tag.name);
+          } else if (tags.find((t) => t.name === tag.name)) {
+            newTags = tags.map((t) => t.name === tag.name ? {
+              ...t,
+              state: newState
+            } : t);
+          } else {
+            newTags = [...tags, { name: tag.name, state: newState }];
+          }
           return (
             <Menu.Item
               key={tag.name}
-              onPress={() => {
-                setTags(tags.map((t) => t.name === tag.name ? {
-                  ...t,
-                  state: t.state === 'maybe' ? 'yes' : t.state === 'yes' ? 'no' : 'maybe'
-                } : t));
-              }}
+              onPress={() => setTags(newTags)}
               title={title}
               trailingIcon={icon}
               titleStyle={{ color: palette[tag.color] }}

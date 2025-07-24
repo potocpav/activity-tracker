@@ -131,7 +131,7 @@ const GoalInner: React.FC<any> = ({ goal, navigation }) => {
       const tags = (() => {
         return goal.tags.map((t: Tag) => dp.tags.includes(t.name) ? 1 : null);
       })();
-      return [new Date(dp.time).toLocaleDateString(), ...values, ...tags];
+      return [new Date(...dp.date).toLocaleDateString(), ...values, ...tags];
     });
     const csv = renderCsv([headerRow, ...dataRows]);
 

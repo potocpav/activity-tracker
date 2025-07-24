@@ -1,18 +1,64 @@
 import React from "react";
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { useTheme, FAB, Divider, Portal, Dialog, Button } from 'react-native-paper';
+import { useTheme, FAB, Divider, Portal, Dialog, Button, TextInput } from 'react-native-paper';
 import useStore from "./Store";
-import { DataPoint, GoalType, Stat } from "./StoreTypes";
+import { DataPoint, DateList, dateToDateList, GoalType, Stat, StatPeriod, StatValue, TagFilter, Tag, allStatPeriods, allStatValues } from "./StoreTypes";
 import { renderValueSummary, formatDate } from "./GoalData";
 import { lightPalette, darkPalette } from "./Color";
-import { renderTags } from "./GoalUtil";
+import { renderTags, findZeroSlice, statPeriodCmp, extractValue, formatNumber } from "./GoalUtil";
+import TagMenu from "./TagMenu";
+import SubUnitMenu from "./SubUnitMenu";
+import DropdownMenu from "./DropdownMenu";
 
-const StatView = ({ label, value, styles, onPress }: { label: string, value: string, styles: any, onPress: () => void }) => {
+const calcStatValue = (stat: Stat, goal: GoalType) => {
+  const today = dateToDateList(new Date());
+  const lastActive = goal.dataPoints.length > 0 ?
+    goal.dataPoints[goal.dataPoints.length - 1].date :
+    null;
+  const periodSlice = findZeroSlice(
+    goal.dataPoints,
+    (dp: DataPoint) => statPeriodCmp(dp, stat.period, today, lastActive)
+  );
+  const periodDatedValues = goal
+    .dataPoints
+    .slice(...periodSlice)
+    .map((dp: DataPoint) => [dp.date, extractValue(dp, stat.tagFilters, stat.subUnit)])
+    .filter((v: any) => v[1] !== null);
+
+  const periodValues = periodDatedValues.map((v: any) => v[1]);
+  const periodDates = periodDatedValues.map((v: any) => v[0]);
+
+  let value;
+  if (stat.value === "n_days") {
+    value = new Set(periodDates.map((d: DateList) => d.join("-"))).size;
+  } else if (stat.value === "n_points") {
+    value = periodValues.length;
+  } else if (stat.value === "sum") {
+    value = periodValues.reduce((acc, v) => acc + v, 0);
+  } else if (stat.value === "mean") {
+    value = periodValues.reduce((acc, v) => acc + v, 0) / periodValues.length;
+  } else if (stat.value === "max") {
+    value = Math.max(...periodValues);
+  } else if (stat.value === "min") {
+    value = Math.min(...periodValues);
+  } else if (stat.value === "last") {
+    value = periodValues[periodValues.length - 1];
+  }
+  return value;
+}
+
+const StatView = ({ stat, goal, styles, onPress }: { stat: Stat, goal: GoalType, styles: any, onPress: () => void }) => {
+  const value = calcStatValue(stat, goal);
+  const unit = ["n_days", "n_points"].includes(stat.value) ? "" : goal.unit;
   return (
-    <TouchableOpacity style={styles.statContainer} onPress={onPress}>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statsLabel}>{label}</Text>
-    </TouchableOpacity>
+    <Button onPress={onPress}>
+      <View style={{ flex: 1, alignItems: 'center' }}>
+        {/* <Text style={styles.statValue}>{formatNumber(value)}</Text> */}
+        <Text style={styles.statValue}>{renderValueSummary(value, unit)}</Text>
+        <Text style={styles.statsLabel}>{stat.label}</Text>
+      {/* </TouchableOpacity> */}
+      </View>
+    </Button>
   );
 };
 
@@ -20,27 +66,51 @@ type EditStatDialogProps = {
   visible: boolean;
   onDismiss: () => void;
   stat: Stat;
+  goal: GoalType;
   color: string;
 };
 
-const EditStatDialog = ({
-  visible,
-  onDismiss,
-  stat,
-  color,
-}: EditStatDialogProps) => (
-  <Portal>
-    <Dialog visible={visible} onDismiss={onDismiss}>
-      <Dialog.Title>{stat.label}</Dialog.Title>
-      <Dialog.Content>
-        <Text style={{ fontSize: 24, fontWeight: 'bold', textAlign: 'center', color }}>ToDo</Text>
-      </Dialog.Content>
-      <Dialog.Actions>
-        <Button onPress={onDismiss}>Close</Button>
-      </Dialog.Actions>
-    </Dialog>
-  </Portal>
-);
+const periodToLabel = (period: StatPeriod): string => {
+  switch (period) {
+    case "today":
+      return "Today";
+    case "this_week":
+      return "This Week";
+    case "this_month":
+      return "This Month";
+    case "this_year":
+      return "This Year";
+    case "last_7_days":
+      return "Last 7 Days";
+    case "last_30_days":
+      return "Last 30 Days";
+    case "last_365_days":
+      return "Last 365 Days";
+    case "last_active_day":
+      return "Last Active Day";
+    case "all_time":
+      return "All Time";
+  }
+}
+
+const valueToLabel = (value: StatValue): string => {
+  switch (value) {
+    case "n_days":
+      return "# Days";
+    case "n_points":
+      return "# Points";
+    case "sum":
+      return "Sum";
+    case "mean":
+      return "Mean";
+    case "max":
+      return "Max";
+    case "min":
+      return "Min";
+    case "last":
+      return "Last";
+  }
+}
 
 const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => {
   const theme = useTheme();
@@ -50,12 +120,37 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
   const themeState = useStore((state: any) => state.theme);
   const palette = themeState === "dark" ? darkPalette : lightPalette;
   const goalColor = palette[goal.color];
+  const setGoalStat = useStore((state: any) => state.setGoalStat);
 
   const styles = getStyles(theme, goalColor);
+  const subUnitNames = typeof goal.unit === 'string' ? null : goal.unit.map((u: any) => u.name);
 
   // Dialog state
-  const [dialogVisible, setDialogVisible] = React.useState(false);
-  const [dialogStatId, setDialogStatId] = React.useState<number | null>(null);
+  const [statDialogVisible, setStatDialogVisible] = React.useState(false);
+  const [statDialogStatId, setStatDialogStatId] = React.useState<number | null>(null);
+
+  const [statDialogLabel, setStatDialogLabel] = React.useState<string>(statDialogStatId !== null ? goal.stats[statDialogStatId].label : "");
+  const [statDialogValue, setStatDialogValue] = React.useState<StatValue | null>(statDialogStatId !== null ? goal.stats[statDialogStatId].value : null);
+  const [statDialogSubUnit, setStatDialogSubUnit] = React.useState<string | null>(statDialogStatId !== null ? goal.stats[statDialogStatId].subUnit : null);
+  const [statDialogPeriod, setStatDialogPeriod] = React.useState<StatPeriod | null>(statDialogStatId !== null ? goal.stats[statDialogStatId].period : null);
+  const [statDialogTagFilters, setStatDialogTagFilters] = React.useState<TagFilter[]>(
+    statDialogStatId !== null ? goal.stats[statDialogStatId].tagFilters : []);
+
+  const [statDialogSubUnitMenuVisible, setStatDialogSubUnitMenuVisible] = React.useState(false);
+  const [statDialogTagsMenuVisible, setStatDialogTagsMenuVisible] = React.useState(false);
+  const [statDialogPeriodMenuVisible, setStatDialogPeriodMenuVisible] = React.useState(false);
+  const [statDialogValueMenuVisible, setStatDialogValueMenuVisible] = React.useState(false);
+
+  // Value to display in dialog
+  const dialogStat = (statDialogStatId !== null) && (statDialogValue !== null) && (statDialogPeriod !== null) ? 
+    { label: statDialogLabel,
+      value: statDialogValue,
+      subUnit: statDialogSubUnit,
+      period: statDialogPeriod,
+      tagFilters: statDialogTagFilters
+    } : null;
+
+
 
   if (!goal) {
     return <Text>Goal not found</Text>;
@@ -63,9 +158,13 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
 
   // Helper to open dialog
   const showStatDialog = (statId: number) => {
-    setDialogVisible(true);
-    setDialogStatId(statId);
-    console.log("showStatDialog", statId);
+    setStatDialogVisible(true);
+    setStatDialogStatId(statId);
+    setStatDialogLabel(goal.stats[statId].label);
+    setStatDialogValue(goal.stats[statId].value);
+    setStatDialogSubUnit(goal.stats[statId].subUnit);
+    setStatDialogPeriod(goal.stats[statId].period);
+    setStatDialogTagFilters(goal.stats[statId].tagFilters);
   };
 
   return (
@@ -84,7 +183,7 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
       <Divider />
       <View style={styles.statsGroup}>
         {goal.stats.map((stat: Stat, index: number) => (
-          <StatView key={index} label={stat.label} value={stat.value} styles={styles} onPress={() => showStatDialog(index)} />
+          <StatView key={index} stat={stat} goal={goal} styles={styles} onPress={() => showStatDialog(index)} />
         ))}
       </View>
       <Divider />
@@ -94,13 +193,91 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
         onPress={() => navigation.navigate("EditDataPoint", { goalName, newDataPoint: true })}
         color={theme.colors.surface}
       />
-      {dialogStatId !== null && ( 
-        <EditStatDialog
-          visible={dialogVisible}
-          onDismiss={() => setDialogVisible(false)}
-          stat={goal.stats[dialogStatId]}
-          color={goalColor}
-        />
+      {statDialogStatId !== null && (
+        <Portal>
+          <Dialog 
+            visible={statDialogVisible} 
+            style={{ 
+              backgroundColor: theme.colors.background, 
+            }}
+            onDismiss={() => {
+            setStatDialogVisible(false);
+            if (statDialogStatId !== null && dialogStat) {
+              setGoalStat(goalName, statDialogStatId, dialogStat);
+            }
+
+            }}>
+            {/* <Dialog.Title>{goal.stats[statDialogStatId].label}</Dialog.Title> */}
+
+            <Dialog.Content>
+              <TextInput
+                label="Label"
+                mode="outlined"
+                value={statDialogLabel}
+                onChangeText={setStatDialogLabel}
+                style={{ marginBottom: 5 }}
+              />
+
+              <View key="menusRow" style={styles.menusRow}>
+                  <SubUnitMenu
+                    subUnitNames={subUnitNames}
+                    subUnitName={statDialogSubUnit}
+                    setSubUnitName={setStatDialogSubUnit}
+                    menuVisible={statDialogSubUnitMenuVisible}
+                    setMenuVisible={setStatDialogSubUnitMenuVisible}
+                    themeColors={theme.colors}
+                  />
+              </View>
+
+              
+                {/* Period */}
+                  <DropdownMenu
+                    options={allStatPeriods.map((p: StatPeriod) => ({ key: p, label: periodToLabel(p) }))}
+                    selectedKey={statDialogPeriod || ""}
+                    onSelect={(key: string) => setStatDialogPeriod(key as StatPeriod)}
+                    visible={statDialogPeriodMenuVisible}
+                    setVisible={setStatDialogPeriodMenuVisible}
+                    label="Period"
+                    themeColors={theme.colors}
+                  />
+
+              {/* Value */}
+                  <DropdownMenu
+                    options={allStatValues.map((v: StatValue) => ({ key: v, label: valueToLabel(v) }))}
+                    selectedKey={statDialogValue || ""}
+                    onSelect={(key: string) => setStatDialogValue(key as StatValue)}
+                    visible={statDialogValueMenuVisible}
+                    setVisible={setStatDialogValueMenuVisible}
+                    label="Value"
+                    themeColors={theme.colors}
+                  />
+
+
+              {/* Tags */}
+                <TagMenu
+                  tags={statDialogTagFilters}
+                  setTags={setStatDialogTagFilters}
+                  menuVisible={statDialogTagsMenuVisible}
+                  setMenuVisible={setStatDialogTagsMenuVisible}
+                  goalTags={goal.tags}
+                  palette={palette}
+                  themeColors={theme.colors}
+                />
+
+              <View>
+                  {dialogStat && (
+                    <StatView
+                      stat={dialogStat}
+                      goal={goal}
+                      styles={styles}
+                      onPress={() => setStatDialogVisible(false)}
+                    />
+                  )}
+              </View>
+
+            </Dialog.Content>
+          </Dialog>
+        </Portal>
       )}
     </SafeAreaView>
   );
@@ -168,6 +345,12 @@ const getStyles = (theme: any, goalColor: string) => StyleSheet.create({
     right: 0,
     bottom: 0,
     backgroundColor: goalColor,
+  },
+  menusRow: {
+    flex: 1,
+    flexDirection: 'column',
+    alignItems: 'center',
+    marginBottom: 5,
   },
 });
 
