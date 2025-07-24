@@ -15,7 +15,7 @@ export const searchInterval = (data: any[], cmp: (x: any) => number) => {
   let start = 0;
   let end = data.length - 1;
   let middle = 0;
-  
+
   while (start <= end) {
     middle = Math.floor((start + end) / 2);
     let cmpResult = cmp(data[middle]);
@@ -37,28 +37,28 @@ export const searchInterval = (data: any[], cmp: (x: any) => number) => {
 
   start = middle;
   while (true) {
-    if (start  == 0) {
+    if (start == 0) {
       break;
-    } else if (cmp(data[start-1]) === 0) {
+    } else if (cmp(data[start - 1]) === 0) {
       start--;
     } else {
       break;
     }
   }
-  
+
 
   end = middle;
   while (true) {
     if (end == data.length - 1) {
       break;
-    } else if (cmp(data[end+1]) === 0) {
+    } else if (cmp(data[end + 1]) === 0) {
       end++;
     } else {
       break;
     }
   }
 
-  return {first: start, last: end};
+  return { first: start, last: end };
 }
 
 export const formatNumber = (value: number) => {
@@ -91,19 +91,19 @@ export const binTimeSeries = (binSize: BinSize, dataPoints: any[]) => {
   }
   const t0 = dataPoints[0].time;
 
-  var bins: {time: number, values: any[]}[] = [{time: binTime(binSize, t0, 0), values: []}];
+  var bins: { time: number, values: any[] }[] = [{ time: binTime(binSize, t0, 0), values: [] }];
   var binIx = 0;
   for (let i = 0; i < dataPoints.length; i++) {
     const dp = dataPoints[i];
     var newBin = false;
-    while (binTime(binSize, t0, binIx+1) <= dp.time) {
+    while (binTime(binSize, t0, binIx + 1) <= dp.time) {
       binIx++;
       newBin = true;
     }
     if (newBin) {
-      bins.push({time: binTime(binSize, t0, binIx), values: []});
+      bins.push({ time: binTime(binSize, t0, binIx), values: [] });
     }
-    bins[bins.length-1].values.push(dp);
+    bins[bins.length - 1].values.push(dp);
   };
   return bins;
 };
@@ -111,11 +111,11 @@ export const binTimeSeries = (binSize: BinSize, dataPoints: any[]) => {
 
 export const renderTags = (tags: Tag[], theme: any, palette: string[]) => {
   if (tags.length === 0) return null;
- 
+
   return (
     <View style={styles.tagsContainer}>
       {tags.map((tag, index) => (
-        <View key={index} style={[styles.tag, { backgroundColor: palette[tag.color], borderColor: theme.colors.surface }]}> 
+        <View key={index} style={[styles.tag, { backgroundColor: palette[tag.color], borderColor: theme.colors.surface }]}>
           <Text style={[styles.tagText, { color: theme.colors.surface }]}>{tag.name}</Text>
         </View>
       ))}

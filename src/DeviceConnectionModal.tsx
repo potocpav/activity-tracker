@@ -17,7 +17,7 @@ type DeviceModalProps = {
   navigation: any;
 };
 
-const DeviceModal: FC<DeviceModalProps> = ({navigation}) => {
+const DeviceModal: FC<DeviceModalProps> = ({ navigation }) => {
   const theme = useTheme();
   const allDevices = useStore((state: any) => state.allDevices);
   const connectToDevice = useStore((state: any) => state.connectToDevice);

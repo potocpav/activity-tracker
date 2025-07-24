@@ -1,15 +1,15 @@
 /* eslint-disable no-bitwise */
 import { create } from "zustand";
-import { 
-  requestPermissions, 
-  connectToDevice, 
-  disconnectDevice, 
+import {
+  requestPermissions,
+  connectToDevice,
+  disconnectDevice,
   scanForPeripherals,
-  extractData, 
-  tareScale, 
-  shutdown, 
-  stopMeasurement as stopMeasurementCommand, 
-  sampleBatteryVoltage, 
+  extractData,
+  tareScale,
+  shutdown,
+  stopMeasurement as stopMeasurementCommand,
+  sampleBatteryVoltage,
   startStreamingData,
   startMeasurement as startMeasurementCommand
 } from "./Ble";
@@ -27,8 +27,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 export type Unit = string | SubUnit[];
 
 export type SubUnit = {
-    name: string;
-    symbol: string;
+  name: string;
+  symbol: string;
 };
 
 export type Tag = {
@@ -37,7 +37,7 @@ export type Tag = {
 };
 
 export type SetTag = {
-  oldTagName : TagName | null;
+  oldTagName: TagName | null;
   name: TagName;
   color: number;
 }
@@ -45,10 +45,10 @@ export type SetTag = {
 export type TagName = string;
 
 export type DataPoint = {
-    time: number;
-    value: number | object;
-    note?: string;
-    tags: TagName[];
+  time: number;
+  value: number | object;
+  note?: string;
+  tags: TagName[];
 };
 
 export type GoalType = {
@@ -66,7 +66,7 @@ export type State = {
   connectedDevice: Device | null;
   subscription: Subscription | null;
 
-  dataPoints: {w: number, t: number}[];
+  dataPoints: { w: number, t: number }[];
 
   goals: GoalType[];
   theme: "light" | "dark";
@@ -114,13 +114,13 @@ export const partialize = (state: State) => ({
 
 const useStore = create<State>()(
   persist(
-  (set, get) => ({
+    (set, get) => ({
       // Bluetooth device related state
       allDevices: [],
       isConnected: false,
       connectedDevice: null,
       subscription: null,
-      
+
       // Measurement related state
       dataPoints: [],
 
@@ -136,49 +136,49 @@ const useStore = create<State>()(
       },
 
       setTheme: (theme: "light" | "dark") => {
-        set({theme: theme});
+        set({ theme: theme });
       },
 
       setBlackBackground: (blackBackground: boolean) => {
-        set({blackBackground: blackBackground});
+        set({ blackBackground: blackBackground });
       },
 
       connectToDevice: async (device: Device) => {
         try {
-            const deviceConnection = await connectToDevice(device);
-            set({connectedDevice: deviceConnection, isConnected: true});
-            deviceConnection.onDisconnected(async () => {
-                console.log("Device is disconnected asynchronously.");
-                set({isConnected: false});
-            });
+          const deviceConnection = await connectToDevice(device);
+          set({ connectedDevice: deviceConnection, isConnected: true });
+          deviceConnection.onDisconnected(async () => {
+            console.log("Device is disconnected asynchronously.");
+            set({ isConnected: false });
+          });
         } catch (e) {
-            console.log("FAILED TO CONNECT", e);
+          console.log("FAILED TO CONNECT", e);
         }
       },
 
       disconnectDevice: async () => {
         const connectedDevice: any = get().connectedDevice;
         if (connectedDevice) {
-            await disconnectDevice(connectedDevice);
-            set({isConnected: false});
+          await disconnectDevice(connectedDevice);
+          set({ isConnected: false });
         }
       },
 
       scanForPeripherals: () => {
         scanForPeripherals((device) => {
           const isDuplicteDevice = (devices: Device[], nextDevice: Device) => {
-              return devices.findIndex((device) => nextDevice.id === device.id) > -1;
-            };
+            return devices.findIndex((device) => nextDevice.id === device.id) > -1;
+          };
           set((state: any) => {
-              if (!isDuplicteDevice(state.allDevices, device)) {
-                  return {allDevices: [...state.allDevices, device]};
-              } else {
-                  return {};
-              }
+            if (!isDuplicteDevice(state.allDevices, device)) {
+              return { allDevices: [...state.allDevices, device] };
+            } else {
+              return {};
+            }
           });
         });
       },
-    
+
       onDataUpdate: (
         error: BleError | null,
         characteristic: Characteristic | null
@@ -198,61 +198,61 @@ const useStore = create<State>()(
       withDevice: (callback: (device: Device) => void) => {
         const device = get().connectedDevice;
         if (device) {
-            callback(device);
+          callback(device);
         } else {
-            console.log("No device connected");
+          console.log("No device connected");
         }
       },
 
       tareScale: async () => {
         get().withDevice(async (device: Device) => {
-            await tareScale(device);
+          await tareScale(device);
         });
       },
 
       startMeasurement: async () => {
         get().withDevice(async (device: Device) => {
-            set({dataPoints: []});
-            await startMeasurementCommand(device);
-            get().startStreamingData(device);
+          set({ dataPoints: [] });
+          await startMeasurementCommand(device);
+          get().startStreamingData(device);
         });
       },
-    
+
       stopMeasurement: async () => {
         get().withDevice(async (device: Device) => {
-            await stopMeasurementCommand(device);
-            get().subscription?.remove();
-            set({subscription: null});
+          await stopMeasurementCommand(device);
+          get().subscription?.remove();
+          set({ subscription: null });
         });
       },
-    
+
       shutdown: async () => {
         get().withDevice(async (device: Device) => {
-            await shutdown(device);
-            await get().disconnectDevice();
+          await shutdown(device);
+          await get().disconnectDevice();
         });
       },
-    
+
       sampleBatteryVoltage: async () => {
         get().withDevice(async (device: Device) => {
-            console.log("Sampling battery voltage");
-            await sampleBatteryVoltage(device);
+          console.log("Sampling battery voltage");
+          await sampleBatteryVoltage(device);
         });
       },
-    
+
       startStreamingData: () => {
         get().withDevice((device: Device) => {
           const subscription = startStreamingData(device, get().onDataUpdate);
-          set({subscription: subscription});
+          set({ subscription: subscription });
         });
       },
 
       resetGoals: () => {
-        set({goals: exampleGoals});
+        set({ goals: exampleGoals });
       },
 
       setGoals: (goals: GoalType[]) => {
-        set({goals: goals});
+        set({ goals: goals });
       },
 
       deleteGoal: (goalName: string) => {
@@ -285,12 +285,12 @@ const useStore = create<State>()(
           console.log("Old tag names must be unique");
           return;
         }
-        const newTags = tags.map((t: SetTag) => ({name: t.name, color: t.color}));
-        const updateTag = (tagName: TagName) => 
+        const newTags = tags.map((t: SetTag) => ({ name: t.name, color: t.color }));
+        const updateTag = (tagName: TagName) =>
           tags.find((t: SetTag) => t.oldTagName === tagName)?.name ?? null;
         set((state: any) => {
-          const goals = state.goals.map((goal: GoalType) => goal.name === goalName ? { 
-            ...goal, 
+          const goals = state.goals.map((goal: GoalType) => goal.name === goalName ? {
+            ...goal,
             tags: newTags,
             dataPoints: goal.dataPoints.map((dp: DataPoint) => ({
               ...dp,
@@ -325,7 +325,7 @@ const useStore = create<State>()(
           }
           const updateTags = (tags: Tag[], tagName: string) => {
             return tags.filter((t: Tag) => t.name !== tagName);
-          } 
+          }
           const goals = state.goals.map((goal: GoalType) => goal.name === goalName ? { ...goal, tags: updateTags(goal.tags, tagName), dataPoints: updateDataPoints(goal.dataPoints, tagName) } : goal);
           return { goals };
         });
@@ -339,8 +339,8 @@ const useStore = create<State>()(
           const updateDataPoints = (dataPoints: DataPoint[], oldTagName: string, newTagName: string) => {
             return dataPoints.map((dataPoint: DataPoint) => dataPoint.tags.includes(oldTagName) ? { ...dataPoint, tags: [...dataPoint.tags.filter((t: string) => t !== oldTagName), newTagName] } : dataPoint);
           }
-          const goals = state.goals.map((goal: GoalType) => goal.name === goalName ? { 
-            ...goal, 
+          const goals = state.goals.map((goal: GoalType) => goal.name === goalName ? {
+            ...goal,
             tags: updateTags(goal.tags, tagName, newTagName),
             dataPoints: updateDataPoints(goal.dataPoints, tagName, newTagName)
           } : goal);
@@ -373,7 +373,7 @@ const useStore = create<State>()(
         set((state: any) => {
           const goals = state.goals.map((goal: GoalType) => {
             if (goal.name === goalName) {
-              const updatedDataPoints = [...goal.dataPoints]; 
+              const updatedDataPoints = [...goal.dataPoints];
               updatedDataPoints.splice(dataPointIndex, 1);
               return { ...goal, dataPoints: updatedDataPoints };
             }
@@ -383,14 +383,14 @@ const useStore = create<State>()(
         });
       },
     }),
-  {
-    name: "store",
-    storage: createJSONStorage(() => AsyncStorage),
-    version: version,
-    partialize: partialize,
-    migrate: migrate,
-  }
-));
+    {
+      name: "store",
+      storage: createJSONStorage(() => AsyncStorage),
+      version: version,
+      partialize: partialize,
+      migrate: migrate,
+    }
+  ));
 
 
 export default useStore; 

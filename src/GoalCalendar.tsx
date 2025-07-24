@@ -100,8 +100,8 @@ const GoalCalendar = ({ navigation, route }: GoalCalendarProps) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-        <View style={{ padding: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start' }}>
-      {goal.tags.length > 0 && (
+      <View style={{ padding: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start' }}>
+        {goal.tags.length > 0 && (
           <TagMenu
             tags={tags}
             setTags={setTags}
@@ -112,22 +112,22 @@ const GoalCalendar = ({ navigation, route }: GoalCalendarProps) => {
             themeColors={theme.colors}
           />
         )}
-          <ValueMenu
-            value={displayValue}
-            setValue={setDisplayValue}
-            menuVisible={valueMenuVisible}
-            setMenuVisible={setValueMenuVisible}
-            themeColors={theme.colors}
-          />
-        </View>
-        <Calendar 
-          goalName={goalName} 
-          palette={palette} 
-          colorIndex={goal.color} 
-          dataPoints={filteredDataPoints} 
-          firstDpTime={goal.dataPoints[0]?.time || null } 
-          displayValue={displayValue}
-          subValue={subValue} />
+        <ValueMenu
+          value={displayValue}
+          setValue={setDisplayValue}
+          menuVisible={valueMenuVisible}
+          setMenuVisible={setValueMenuVisible}
+          themeColors={theme.colors}
+        />
+      </View>
+      <Calendar
+        goalName={goalName}
+        palette={palette}
+        colorIndex={goal.color}
+        dataPoints={filteredDataPoints}
+        firstDpTime={goal.dataPoints[0]?.time || null}
+        displayValue={displayValue}
+        subValue={subValue} />
     </SafeAreaView>
   );
 };

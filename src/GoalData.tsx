@@ -138,7 +138,7 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
         keyExtractor={([_, i]) => i.toString()}
         windowSize={2}
         getItemLayout={(_, index) => (
-          {length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index}
+          { length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index }
         )}
         renderItem={({ item: [dataPoint, i] }) => (
           <TouchableOpacity

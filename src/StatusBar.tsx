@@ -13,28 +13,28 @@ type StatusBarProps = {
 };
 
 
-const StatusBar: React.FC<StatusBarProps> = ({navigation}) => {
-    const theme = useTheme();
-    const connectedDevice = useStore((state: any) => state.connectedDevice);
-    const isConnected = useStore((state: any) => state.isConnected);
-    const requestPermissions = useStore((state: any) => state.requestPermissions);
-    const scanForPeripherals = useStore((state: any) => state.scanForPeripherals);
-    const disconnectDevice = useStore((state: any) => state.disconnectDevice);
+const StatusBar: React.FC<StatusBarProps> = ({ navigation }) => {
+  const theme = useTheme();
+  const connectedDevice = useStore((state: any) => state.connectedDevice);
+  const isConnected = useStore((state: any) => state.isConnected);
+  const requestPermissions = useStore((state: any) => state.requestPermissions);
+  const scanForPeripherals = useStore((state: any) => state.scanForPeripherals);
+  const disconnectDevice = useStore((state: any) => state.disconnectDevice);
 
-    const scanForDevices = async () => {
-        const isPermissionsEnabled = await requestPermissions();
-        if (isPermissionsEnabled) {
-            scanForPeripherals();
-        }
-    };
-    
-    
-    const openModal = async () => {
-        scanForDevices();
-        navigation.navigate('ConnectDevice');
-    };
+  const scanForDevices = async () => {
+    const isPermissionsEnabled = await requestPermissions();
+    if (isPermissionsEnabled) {
+      scanForPeripherals();
+    }
+  };
 
-    return (
+
+  const openModal = async () => {
+    scanForDevices();
+    navigation.navigate('ConnectDevice');
+  };
+
+  return (
     <View style={[styles.statusBar, { backgroundColor: theme.colors.surface, borderBottomColor: theme.colors.outline }]}>
       <View style={styles.statusInfo}>
         <View style={[styles.statusIndicator, { backgroundColor: isConnected ? theme.colors.primary : theme.colors.error }]} />
@@ -42,12 +42,12 @@ const StatusBar: React.FC<StatusBarProps> = ({navigation}) => {
           {isConnected ? `Connected: ${connectedDevice.name}` : 'Disconnected'}
         </Text>
       </View>
-      <TouchableOpacity 
-        onPress={isConnected ? disconnectDevice : openModal} 
+      <TouchableOpacity
+        onPress={isConnected ? disconnectDevice : openModal}
         style={
-            [styles.statusButton, 
-            { backgroundColor: isConnected ? theme.colors.error : theme.colors.primary }
-        ]}
+          [styles.statusButton,
+          { backgroundColor: isConnected ? theme.colors.error : theme.colors.primary }
+          ]}
       >
         <Text style={[styles.statusButtonText, { color: isConnected ? theme.colors.onError : theme.colors.onPrimary }]}>
           {isConnected ? 'Disconnect' : 'Connect'}

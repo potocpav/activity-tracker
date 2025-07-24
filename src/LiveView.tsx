@@ -11,20 +11,20 @@ import { useTheme } from 'react-native-paper';
 import StatusBar from "./StatusBar";
 import useStore from "./Store";
 import { CartesianChart, Line } from "victory-native";
-import {matchFont} from "@shopify/react-native-skia";
+import { matchFont } from "@shopify/react-native-skia";
 
-const fontFamily = Platform.select({default: "sans-serif" });
-const font = matchFont({fontFamily: fontFamily});
+const fontFamily = Platform.select({ default: "sans-serif" });
+const font = matchFont({ fontFamily: fontFamily });
 
 type LiveViewProps = {
   navigation: any;
   route: any;
 };
 
-const LiveView: React.FC<LiveViewProps> = ({navigation}) => {
+const LiveView: React.FC<LiveViewProps> = ({ navigation }) => {
   const theme = useTheme();
   const isConnected = useStore((state: any) => state.isConnected);
-  const dataPoints : {w: number, t: number}[] = useStore((state: any) => state.dataPoints);
+  const dataPoints: { w: number, t: number }[] = useStore((state: any) => state.dataPoints);
   const startMeasurement = useStore((state: any) => state.startMeasurement);
   const stopMeasurement = useStore((state: any) => state.stopMeasurement);
   const tareScale = useStore((state: any) => state.tareScale);
@@ -36,7 +36,7 @@ const LiveView: React.FC<LiveViewProps> = ({navigation}) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surfaceVariant }]}>
-      <StatusBar navigation={navigation}/>
+      <StatusBar navigation={navigation} />
 
       {isConnected ? (
         <>
@@ -54,13 +54,13 @@ const LiveView: React.FC<LiveViewProps> = ({navigation}) => {
               </TouchableOpacity>
             </View>
           </View>
-          
+
           {/* Weight and Time Display Section */}
           <View style={[styles.weightSection, { backgroundColor: theme.colors.surface }]}>
             <View style={styles.measurementRow}>
               <View style={styles.measurementColumn}>
                 <Text style={[styles.measurementLabel, { color: theme.colors.onSurface }]}>Weight:</Text>
-                <Text 
+                <Text
                   style={[styles.measurementValue, { color: theme.colors.onSurface }]}
                   numberOfLines={1}
                   adjustsFontSizeToFit={true}
@@ -70,7 +70,7 @@ const LiveView: React.FC<LiveViewProps> = ({navigation}) => {
               </View>
               <View style={styles.measurementColumn}>
                 <Text style={[styles.measurementLabel, { color: theme.colors.onSurface }]}>Time:</Text>
-                <Text 
+                <Text
                   style={[styles.measurementValue, { color: theme.colors.onSurface }]}
                   numberOfLines={1}
                   adjustsFontSizeToFit={true}
@@ -88,9 +88,9 @@ const LiveView: React.FC<LiveViewProps> = ({navigation}) => {
               </View>
             </View>
             <View style={{ width: '100%', flex: 1 }}>
-              <CartesianChart 
-                data={dataPoints} 
-                xKey="t" 
+              <CartesianChart
+                data={dataPoints}
+                xKey="t"
                 yKeys={["w"]}
                 frame={{
                   lineWidth: 1,
@@ -112,16 +112,16 @@ const LiveView: React.FC<LiveViewProps> = ({navigation}) => {
                   //   tickCount: 10,
                   // }
                 ]}
-                >              
+              >
                 {({ points }) => (
                   //👇 pass a PointsArray to the Line component, as well as options.
                   <>
-                  <Line
-                    points={points.w}
-                    color={theme.colors.onSurface}
-                    strokeWidth={2}
-                  />
-                </>
+                    <Line
+                      points={points.w}
+                      color={theme.colors.onSurface}
+                      strokeWidth={2}
+                    />
+                  </>
                 )}
               </CartesianChart>
             </View>

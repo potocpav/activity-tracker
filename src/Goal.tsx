@@ -50,7 +50,7 @@ const Goal: React.FC<GoalProps> = ({ navigation, route }) => {
   )
 }
 
-const renderCsv = (data : (string | number | null)[][]) => {
+const renderCsv = (data: (string | number | null)[][]) => {
   return data.map((row) => {
     var rowStr = "";
     row.forEach((cell, ix) => {
@@ -75,7 +75,7 @@ const GoalInner: React.FC<any> = ({ goal, navigation }) => {
   const theme = useTheme();
   const [menuVisible, setMenuVisible] = React.useState(false);
   const deleteGoal = useStore((state: any) => state.deleteGoal);
-  
+
   if (!goal) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surfaceVariant }]}>
@@ -102,7 +102,7 @@ const GoalInner: React.FC<any> = ({ goal, navigation }) => {
             deleteGoal(goal.name);
             navigation.reset({
               index: 0,
-              routes: [{name: 'Goals'}],
+              routes: [{ name: 'Goals' }],
             });
           }
         }
@@ -125,7 +125,7 @@ const GoalInner: React.FC<any> = ({ goal, navigation }) => {
         if (typeof goal.unit === "string" && typeof dp.value === "number") {
           return [dp.value];
         } else {
-          return goal.unit.map((u: SubUnit) => 
+          return goal.unit.map((u: SubUnit) =>
             (typeof dp.value === "object" ? (dp.value as any)[u.name] ?? null : null));
         }
       })();
@@ -175,17 +175,17 @@ const GoalInner: React.FC<any> = ({ goal, navigation }) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surfaceVariant }]}>
-      <View style={{ position: 'absolute', top: 10, right: 0}}>
+      <View style={{ position: 'absolute', top: 10, right: 0 }}>
         <Menu
           visible={menuVisible}
           onDismiss={() => setMenuVisible(false)}
-          anchor={<View style={{width: 1, height: 1}}/>}
+          anchor={<View style={{ width: 1, height: 1 }} />}
         >
-          <Menu.Item onPress={() => {setMenuVisible(false); exportGoalCsv()}} title="Export" /> 
-          <Menu.Item onPress={() => {setMenuVisible(false); deleteGoalWrapper()}} title="Delete" /> 
+          <Menu.Item onPress={() => { setMenuVisible(false); exportGoalCsv() }} title="Export" />
+          <Menu.Item onPress={() => { setMenuVisible(false); deleteGoalWrapper() }} title="Delete" />
         </Menu>
       </View>
-      <Tab.Navigator screenOptions={{swipeEnabled: false}}>
+      <Tab.Navigator screenOptions={{ swipeEnabled: false }}>
         <Tab.Screen name="Summary" component={GoalSummary} initialParams={{ goalName }} />
         <Tab.Screen name="Data" component={GoalData} initialParams={{ goalName }} />
         <Tab.Screen name="Calendar" component={GoalCalendar} initialParams={{ goalName }} />

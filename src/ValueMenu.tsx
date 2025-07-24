@@ -24,32 +24,32 @@ const ValueMenu: React.FC<ValueMenuProps> = ({
 }) => {
   return (
     <Menu
-        visible={menuVisible}
-        onDismiss={() => setMenuVisible(false)}
-        anchor={
-          <Button compact={true} onPress={() => setMenuVisible(true)} style={{ marginRight: 8 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={{ marginRight: 10, color: themeColors.onSurfaceVariant }}>
-                {value}
-              </Text>
-              <AntDesign name="down" size={16} color={themeColors.onSurfaceVariant} />
-            </View>
-          </Button>
-        }
-      >
-        {valueList.map((v: Value) => {
-          return (
-            <Menu.Item
-              key={v}
-              onPress={() => {
-                setMenuVisible(false);
-                setValue(v);
-              }}
-              title={v}
-            />
-          );
-        })}
-      </Menu>
+      visible={menuVisible}
+      onDismiss={() => setMenuVisible(false)}
+      anchor={
+        <Button compact={true} onPress={() => setMenuVisible(true)} style={{ marginRight: 8 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={{ marginRight: 10, color: themeColors.onSurfaceVariant }}>
+              {value}
+            </Text>
+            <AntDesign name="down" size={16} color={themeColors.onSurfaceVariant} />
+          </View>
+        </Button>
+      }
+    >
+      {valueList.map((v: Value) => {
+        return (
+          <Menu.Item
+            key={v}
+            onPress={() => {
+              setMenuVisible(false);
+              setValue(v);
+            }}
+            title={v}
+          />
+        );
+      })}
+    </Menu>
   );
 };
 

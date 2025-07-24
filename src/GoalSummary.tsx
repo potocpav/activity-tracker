@@ -32,20 +32,20 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
 
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>    
-      <View style={[styles.goalInfo, { backgroundColor: theme.colors.surface }]}>  
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <View style={[styles.goalInfo, { backgroundColor: theme.colors.surface }]}>
         <Text style={[styles.goalDescription, { color: theme.colors.onSurface, textAlign: 'center' }]}>{goal.description}</Text>
       </View>
       {goal.tags.length > 0 && (
         <>
           <Divider />
-          <View style={{padding: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start'}}>
-        {renderTags(goal.tags, theme, palette)}
+          <View style={{ padding: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start' }}>
+            {renderTags(goal.tags, theme, palette)}
           </View>
         </>
       )}
       <Divider />
-      <View style={[styles.statsRow, { backgroundColor: theme.colors.surface }]}>  
+      <View style={[styles.statsRow, { backgroundColor: theme.colors.surface }]}>
         <View style={styles.statsColumn}>
           <Text style={[styles.statsValue, { color: goalColor }]}>{numDataPoints}</Text>
           <Text style={[styles.statsLabel, { color: theme.colors.onSurfaceVariant }]}>Count</Text>
@@ -55,8 +55,8 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
           <Text style={[styles.statsLabel, { color: theme.colors.onSurfaceVariant }]}>Days</Text>
         </View>
         <View style={styles.statsColumn}>
-          <View style={[styles.statsValueContainer]}>{lastDataPoint ? 
-            renderValueSummary(lastDataPoint.value, goal.unit, [styles.statsValue, { color: goalColor}]) : 
+          <View style={[styles.statsValueContainer]}>{lastDataPoint ?
+            renderValueSummary(lastDataPoint.value, goal.unit, [styles.statsValue, { color: goalColor }]) :
             <Text style={[styles.statsValue, { color: theme.colors.onSurfaceVariant }]}>-</Text>}</View>
           <Text style={[styles.statsLabel, { color: theme.colors.onSurfaceVariant }]}>Last</Text>
         </View>

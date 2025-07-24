@@ -56,12 +56,12 @@ const Goals: React.FC<GoalsProps> = ({ navigation }) => {
             <Text style={[styles.goalTitle, { color: palette[item.color] }]}>{item.name}</Text>
           </View>
           <View style={{ marginTop: 4 }}>
-              {lastDataPoint ? (
-                renderValueSummary(lastDataPoint.value, item.unit, [styles.goalDescription, { color: palette[item.color] }], true)
-              ) : (
-                <Text style={[styles.goalDescription, { color: palette[item.color] }]}>No data</Text>
-              )}
-            </View>
+            {lastDataPoint ? (
+              renderValueSummary(lastDataPoint.value, item.unit, [styles.goalDescription, { color: palette[item.color] }], true)
+            ) : (
+              <Text style={[styles.goalDescription, { color: palette[item.color] }]}>No data</Text>
+            )}
+          </View>
           <TouchableOpacity
             onPress={() => { navigation.navigate('EditDataPoint', { goalName: item.name, dataPointName: null, new: true }); }}
             style={{ marginLeft: 12, padding: 8 }}
@@ -75,16 +75,16 @@ const Goals: React.FC<GoalsProps> = ({ navigation }) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <View style={{ position: 'absolute', top: 10, right: 0}}>
+      <View style={{ position: 'absolute', top: 10, right: 0 }}>
         <Menu
           visible={menuVisible}
           onDismiss={() => setMenuVisible(false)}
-          anchor={<View style={{width: 1, height: 1}}/>}
+          anchor={<View style={{ width: 1, height: 1 }} />}
         >
-            <Menu.Item onPress={() => {setMenuVisible(false); navigation.navigate('Live View')}} title="Tindeq Live View" />
-            <Menu.Item onPress={() => {setMenuVisible(false); navigation.navigate('Settings')}} title="Settings" />
-          </Menu>
-        </View>
+          <Menu.Item onPress={() => { setMenuVisible(false); navigation.navigate('Live View') }} title="Tindeq Live View" />
+          <Menu.Item onPress={() => { setMenuVisible(false); navigation.navigate('Settings') }} title="Settings" />
+        </Menu>
+      </View>
       <DraggableFlatList
         data={goals}
         onDragEnd={({ data }) => setGoals(data)}

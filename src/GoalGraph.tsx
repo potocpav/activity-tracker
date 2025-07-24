@@ -3,7 +3,7 @@ import { View, Text, Platform, TouchableOpacity } from "react-native";
 import { Chip, useTheme, Menu, Button } from 'react-native-paper';
 import { getTransformComponents, Line, Scatter, setScale, setTranslate, useChartTransformState } from "victory-native";
 import { CartesianChart } from "victory-native";
-import {matchFont, Path, RoundedRect, Skia} from "@shopify/react-native-skia";
+import { matchFont, Path, RoundedRect, Skia } from "@shopify/react-native-skia";
 import useStore, { GoalType, Tag } from "./Store";
 import { useAnimatedReaction, useSharedValue, withTiming } from "react-native-reanimated";
 import { binTime, binTimeSeries, BinSize } from "./GoalUtil";
@@ -11,8 +11,8 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import { lightPalette, darkPalette } from "./Color";
 import TagMenu from "./TagMenu";
 
-const fontFamily = Platform.select({default: "sans-serif" });
-const font = matchFont({fontFamily: fontFamily, fontSize: 10});
+const fontFamily = Platform.select({ default: "sans-serif" });
+const font = matchFont({ fontFamily: fontFamily, fontSize: 10 });
 
 const approximateBinSize = (binSize: BinSize) => {
   const day = 24 * 60 * 60 * 1000;
@@ -44,7 +44,7 @@ const quartiles = (values: number[]) => {
   const q2 = floatIndex(0.5 * (vs.length - 1));
   const q3 = floatIndex(0.75 * (vs.length - 1));
   const q4 = vs[vs.length - 1];
-  return {q0, q1, q2, q3, q4};
+  return { q0, q1, q2, q3, q4 };
 };
 
 const GoalGraph = ({ route }: { route: any }) => {
@@ -55,14 +55,14 @@ const GoalGraph = ({ route }: { route: any }) => {
   const themeState = useStore((state: any) => state.theme);
   const palette = themeState === "dark" ? darkPalette : lightPalette;
   const goalColor = palette[goal.color];
-  
+
   if (!goal) {
     return <Text>Goal not found</Text>;
   }
 
   const [binning, setBinning] = useState<"day" | "week" | "month" | "quarter" | "year">("day");
   const [binMenuVisible, setBinMenuVisible] = useState(false);
-  const [tags, setTags] = useState<{name: string, state: "yes" | "no" | "maybe"}[]>(goal.tags.map((t: Tag) => ({name: t.name, state: "maybe"})));
+  const [tags, setTags] = useState<{ name: string, state: "yes" | "no" | "maybe" }[]>(goal.tags.map((t: Tag) => ({ name: t.name, state: "maybe" })));
   const [graphType, setGraphType] = useState<"box" | "bar-count" | "bar-sum" | "line-mean">("box");
   const graphTypes = ["box", "bar-count", "bar-sum", "line-mean"];
   const transformState = useChartTransformState({
@@ -91,7 +91,7 @@ const GoalGraph = ({ route }: { route: any }) => {
   const now = new Date();
   const barWidth = 5;
   const barHeight = 5;
-  
+
   var ticks = [];
   if (goal.dataPoints.length > 0) {
     var tick_t = binTime(binning, goal.dataPoints[0].time, 0);
@@ -105,7 +105,7 @@ const GoalGraph = ({ route }: { route: any }) => {
   }
 
   const bins = binTimeSeries(binning, goal.dataPoints);
-  const binStats : {t: number, q0: number, q1: number, q2: number, q3: number, q4: number, count: number, sum: number, mean: number, zero: number}[] = bins.map((bin) => {
+  const binStats: { t: number, q0: number, q1: number, q2: number, q3: number, q4: number, count: number, sum: number, mean: number, zero: number }[] = bins.map((bin) => {
     const values = bin.values.map(extractValue).filter((v: number) => v !== null);
     if (values.length === 0) {
       return null
@@ -121,7 +121,7 @@ const GoalGraph = ({ route }: { route: any }) => {
     }
   }).filter((b) => b !== null);
 
-  var yKeys : (keyof typeof binStats[number])[]; 
+  var yKeys: (keyof typeof binStats[number])[];
   if (graphType === "box") {
     yKeys = ["q0", "q1", "q2", "q3", "q4"];
   } else if (graphType === "bar-count") {
@@ -136,26 +136,26 @@ const GoalGraph = ({ route }: { route: any }) => {
 
   const graphLabel = (gType: any) => {
     if (gType === "box") {
-      return (<View style={{flexDirection: 'row', alignItems: 'center'}}><AntDesign name="barchart" size={24} color={theme.colors.onSurfaceVariant} /><Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Box</Text></View>);
+      return (<View style={{ flexDirection: 'row', alignItems: 'center' }}><AntDesign name="barchart" size={24} color={theme.colors.onSurfaceVariant} /><Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Box</Text></View>);
     } else if (gType === "bar-count") {
-      return (<View style={{flexDirection: 'row', alignItems: 'center'}}><AntDesign name="barschart" size={24} color={theme.colors.onSurfaceVariant} /><Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Count</Text></View>);
+      return (<View style={{ flexDirection: 'row', alignItems: 'center' }}><AntDesign name="barschart" size={24} color={theme.colors.onSurfaceVariant} /><Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Count</Text></View>);
     } else if (gType === "bar-sum") {
-      return (<View style={{flexDirection: 'row', alignItems: 'center'}}><AntDesign name="barschart" size={24} color={theme.colors.onSurfaceVariant} /><Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Sum</Text></View>);
+      return (<View style={{ flexDirection: 'row', alignItems: 'center' }}><AntDesign name="barschart" size={24} color={theme.colors.onSurfaceVariant} /><Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Sum</Text></View>);
     } else if (gType === "line-mean") {
-      return (<View style={{flexDirection: 'row', alignItems: 'center'}}><AntDesign name="linechart" size={24} color={theme.colors.onSurfaceVariant} /><Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Mean</Text></View>);
+      return (<View style={{ flexDirection: 'row', alignItems: 'center' }}><AntDesign name="linechart" size={24} color={theme.colors.onSurfaceVariant} /><Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Mean</Text></View>);
     }
   }
 
-  const {domain, viewport} : {domain: {x: [number, number], y?: [number, number]}, viewport: {x: [number, number]}} = (() => {
+  const { domain, viewport }: { domain: { x: [number, number], y?: [number, number] }, viewport: { x: [number, number] } } = (() => {
     const firstBinTime = bins.length ? bins[0].time : now.getTime();
     const lastBinTime = bins.length ? bins[bins.length - 1].time : now.getTime();
     const nowBin = binTime(binning, now.getTime(), 0);
     const t1 = Math.max(lastBinTime, nowBin) + approximateBinSize(binning) / 2;
     const t0view = t1 - approximateBinSize(binning) * 15;
     const t0 = Math.min(firstBinTime - approximateBinSize(binning) / 2, t0view);
-    
-    var domain : {x: [number, number], y?: [number, number]} = {x: [t0, t1]};
-    var viewport : {x: [number, number]} = {x: [t0view, t1]};
+
+    var domain: { x: [number, number], y?: [number, number] } = { x: [t0, t1] };
+    var viewport: { x: [number, number] } = { x: [t0view, t1] };
     if (graphType === "box") {
       const [ymin, ymax] = [Math.min(...binStats.map((b) => b.q0)), Math.max(...binStats.map((b) => b.q4))];
       domain.y = [ymin - (ymax - ymin) * 0.05, ymax + (ymax - ymin) * 0.05];
@@ -168,7 +168,7 @@ const GoalGraph = ({ route }: { route: any }) => {
     } else {
       throw new Error("Invalid graph type");
     }
-    return {domain, viewport};
+    return { domain, viewport };
   })();
 
 
@@ -183,7 +183,7 @@ const GoalGraph = ({ route }: { route: any }) => {
     tx.value = withTiming(0);
   }
 
-    // transformState.matrix.value = setScale(transformState.matrix.value, 1, 1);
+  // transformState.matrix.value = setScale(transformState.matrix.value, 1, 1);
   // transformState.matrix.value = setTranslate(transformState.matrix.value, 0, 0);
 
   // enforce limits when panning
@@ -224,18 +224,18 @@ const GoalGraph = ({ route }: { route: any }) => {
     return (
       <>
         {(() => {
-        const elements = [];
-        for (let i = 0; i < values.length; i++) {
-          const val = values[i];
-          const [vx, vy] = [val.x, val.y ?? NaN];
-          const w = barWidth;
+          const elements = [];
+          for (let i = 0; i < values.length; i++) {
+            const val = values[i];
+            const [vx, vy] = [val.x, val.y ?? NaN];
+            const w = barWidth;
 
             const fill = Skia.Path.Make();
             fill.moveTo(vx - w, vy);
             fill.lineTo(vx + w, vy);
             fill.lineTo(vx + w, zero[i].y ?? NaN);
             fill.lineTo(vx - w, zero[i].y ?? NaN);
-            fill.close()        
+            fill.close()
 
             elements.push(
               <Fragment key={"" + i}>
@@ -246,10 +246,10 @@ const GoalGraph = ({ route }: { route: any }) => {
                 />
               </Fragment>
             );
-        }
-        return elements;
-      })()}
-    </>);
+          }
+          return elements;
+        })()}
+      </>);
   }
 
   const binningLabels: Record<typeof binning, string> = {
@@ -270,10 +270,10 @@ const GoalGraph = ({ route }: { route: any }) => {
           onDismiss={() => setBinMenuVisible(false)}
           anchor={
             <Button compact={true} onPress={() => setBinMenuVisible(true)} style={{ marginRight: 8 }}>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Text style={{ marginRight: 10, color: theme.colors.onSurfaceVariant }}>{binningLabels[binning]}</Text>
                 <AntDesign name="down" size={16} color={theme.colors.onSurfaceVariant} />
-      </View>
+              </View>
             </Button>
           }
         >
@@ -297,7 +297,7 @@ const GoalGraph = ({ route }: { route: any }) => {
             onDismiss={() => setSubUnitMenuVisible(false)}
             anchor={
               <Button compact={true} onPress={() => setSubUnitMenuVisible(true)} style={{ marginRight: 8 }}>
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                   <Text style={{ marginRight: 10, color: theme.colors.onSurfaceVariant }}>{subUnitName}</Text>
                   <AntDesign name="down" size={16} color={theme.colors.onSurfaceVariant} />
                 </View>
@@ -324,7 +324,7 @@ const GoalGraph = ({ route }: { route: any }) => {
           menuVisible={tagsMenuVisible}
           setMenuVisible={setTagsMenuVisible}
           goalTags={goal.tags}
-          palette={palette} 
+          palette={palette}
           themeColors={theme.colors}
         />
         {/* Graph type menu */}
@@ -333,7 +333,7 @@ const GoalGraph = ({ route }: { route: any }) => {
           onDismiss={() => setGraphTypeMenuVisible(false)}
           anchor={
             <Button compact={true} onPress={() => setGraphTypeMenuVisible(true)}>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 {graphLabel(graphType)}
                 <AntDesign name="down" size={16} color={theme.colors.onSurfaceVariant} style={{ marginLeft: 6 }} />
               </View>
@@ -347,25 +347,25 @@ const GoalGraph = ({ route }: { route: any }) => {
                 setGraphTypeMenuVisible(false);
                 setGraphType(type as "box" | "bar-count" | "bar-sum" | "line-mean");
               }}
-              title={<View style={{flexDirection: 'row', alignItems: 'center'}}>{graphLabel(type)}</View>}
+              title={<View style={{ flexDirection: 'row', alignItems: 'center' }}>{graphLabel(type)}</View>}
               trailingIcon={graphType === type ? "check" : undefined}
             />
           ))}
         </Menu>
       </View>
 
-      <View key="goalGraph" style={{height: '50%', width: '100%'}}>
-        <CartesianChart 
-          data={binStats} 
+      <View key="goalGraph" style={{ height: '50%', width: '100%' }}>
+        <CartesianChart
+          data={binStats}
           transformState={transformState}
           transformConfig={{
             pan: { dimensions: "x" },
             pinch: { enabled: false }
           }}
-          padding={{bottom: 10}}
+          padding={{ bottom: 10 }}
           domain={domain}
           viewport={viewport}
-          xKey="t" 
+          xKey="t"
           yKeys={yKeys}
           // frame={{
           //   lineWidth: 0,
@@ -409,62 +409,62 @@ const GoalGraph = ({ route }: { route: any }) => {
               labelColor: theme.colors.outline,
             },
           ]}
-          >
+        >
           {({ points }) => {
             if (graphType === "box") {
               return (
                 <>
                   {(() => {
-                  const elements = [];
-                  for (let i = 0; i < points.q0.length; i++) {
-                    const w = barWidth;
-                    const ws = w*0.4;
-                    const wcircle = w * 0.5;
+                    const elements = [];
+                    for (let i = 0; i < points.q0.length; i++) {
+                      const w = barWidth;
+                      const ws = w * 0.4;
+                      const wcircle = w * 0.5;
 
-                    const q0 = points.q0[i];
-                    const q1 = points.q1[i];
-                    const q2 = points.q2[i];
-                    const q3 = points.q3[i];
-                    const q4 = points.q4[i];
-                    const [q0x, q0y] = [q0.x, q0.y ?? NaN];
-                    const [q2x, q2y] = [q2.x, q2.y ?? NaN];
-                    var [q1x, q1y] = [q1.x, Math.max(q1.y ?? NaN, q2y + w)];
-                    var [q3x, q3y] = [q3.x, Math.min(q3.y ?? NaN, q2y - w)];
-                    const [q4x, q4y] = [q4.x, q4.y ?? NaN];
+                      const q0 = points.q0[i];
+                      const q1 = points.q1[i];
+                      const q2 = points.q2[i];
+                      const q3 = points.q3[i];
+                      const q4 = points.q4[i];
+                      const [q0x, q0y] = [q0.x, q0.y ?? NaN];
+                      const [q2x, q2y] = [q2.x, q2.y ?? NaN];
+                      var [q1x, q1y] = [q1.x, Math.max(q1.y ?? NaN, q2y + w)];
+                      var [q3x, q3y] = [q3.x, Math.min(q3.y ?? NaN, q2y - w)];
+                      const [q4x, q4y] = [q4.x, q4.y ?? NaN];
 
-                    elements.push(
-                      <Fragment key={"" + i}>
-                        <RoundedRect
-                          x={q1x - w}
-                          y={q1y}
-                          width={2*w}
-                          height={q3y - q1y}
-                          color={goalColor}
-                          r={w}
-                        />
-                        <RoundedRect
-                          x={q0x - ws}
-                          y={q0y}
-                          width={2*ws}
-                          height={q4y - q0y}
-                          color={goalColor}
-                          r={ws}
-                        />
-                        <RoundedRect
-                          x={q2x - wcircle}
-                          y={q2y - wcircle}
-                          width={2 * wcircle}
-                          height={2 * wcircle}
-                          color={theme.colors.surface}
-                          r={wcircle}
-                        />
-                      </Fragment>
-                    );
-                  }
-                  return elements;
-                })()}
-              </>
-            );
+                      elements.push(
+                        <Fragment key={"" + i}>
+                          <RoundedRect
+                            x={q1x - w}
+                            y={q1y}
+                            width={2 * w}
+                            height={q3y - q1y}
+                            color={goalColor}
+                            r={w}
+                          />
+                          <RoundedRect
+                            x={q0x - ws}
+                            y={q0y}
+                            width={2 * ws}
+                            height={q4y - q0y}
+                            color={goalColor}
+                            r={ws}
+                          />
+                          <RoundedRect
+                            x={q2x - wcircle}
+                            y={q2y - wcircle}
+                            width={2 * wcircle}
+                            height={2 * wcircle}
+                            color={theme.colors.surface}
+                            r={wcircle}
+                          />
+                        </Fragment>
+                      );
+                    }
+                    return elements;
+                  })()}
+                </>
+              );
             } else if (graphType === "bar-count") {
               return barPlot(points.count, points.zero);
             } else if (graphType === "bar-sum") {
@@ -472,25 +472,25 @@ const GoalGraph = ({ route }: { route: any }) => {
             } else if (graphType === "line-mean") {
               return (
                 <>
-                <Line
-                  points={points.mean}
-                  color={goalColor}
-                  strokeWidth={4}
-                />
-                <Scatter
-                  points={points.mean}
-                  shape="circle"
-                  radius={7}
-                  style="fill"
-                  color={theme.colors.surface}
-                />                
-                <Scatter
-                  points={points.mean}
-                  shape="circle"
-                  radius={5}
-                  style="fill"
-                  color={goalColor}
-                />
+                  <Line
+                    points={points.mean}
+                    color={goalColor}
+                    strokeWidth={4}
+                  />
+                  <Scatter
+                    points={points.mean}
+                    shape="circle"
+                    radius={7}
+                    style="fill"
+                    color={theme.colors.surface}
+                  />
+                  <Scatter
+                    points={points.mean}
+                    shape="circle"
+                    radius={5}
+                    style="fill"
+                    color={goalColor}
+                  />
                 </>
               );
             }

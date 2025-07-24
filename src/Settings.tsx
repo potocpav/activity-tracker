@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, ScrollView, ToastAndroid } from 'react-native';
 import { List, Divider, Switch, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import useStore, {version, partialize, migrate} from './Store';
+import useStore, { version, partialize, migrate } from './Store';
 import { File, Paths } from 'expo-file-system/next';
 import * as DocumentPicker from 'expo-document-picker';
 import * as Sharing from 'expo-sharing';
@@ -18,7 +18,7 @@ const Settings = () => {
   const setState = useStore((state: any) => state.setState);
 
   const exportData = async () => {
-    const data = JSON.stringify({...partialize(state), version: version}, null, 2);
+    const data = JSON.stringify({ ...partialize(state), version: version }, null, 2);
     const date = new Date();
     const dateStr = date.toISOString().split('T')[0];
 
@@ -76,7 +76,7 @@ const Settings = () => {
                 onValueChange={() => setThemeState(themeState == 'dark' ? 'light' : 'dark')}
               />
             )}
-          />          
+          />
           <List.Item
             title="Use pure black in dark theme"
             description="Replaces gray backgrounds with pure black in dark theme. Reduces battery usage in phones with AMOLED screens."
@@ -115,7 +115,7 @@ const Settings = () => {
             description="Get help and find answers"
             left={(props) => <List.Icon {...props} icon="help-circle" />}
             right={(props) => <List.Icon {...props} icon="chevron-right" />}
-            onPress={() => {}}
+            onPress={() => { }}
           />
           <Divider />
           <List.Item
@@ -123,7 +123,7 @@ const Settings = () => {
             description="Get in touch with our support team"
             left={(props) => <List.Icon {...props} icon="message" />}
             right={(props) => <List.Icon {...props} icon="chevron-right" />}
-            onPress={() => {}}
+            onPress={() => { }}
           />
           <Divider />
           <List.Item
@@ -131,7 +131,7 @@ const Settings = () => {
             description="App version and information"
             left={(props) => <List.Icon {...props} icon="information" />}
             right={(props) => <List.Icon {...props} icon="chevron-right" />}
-            onPress={() => {}}
+            onPress={() => { }}
           />
         </List.Section>
       </ScrollView>

@@ -28,7 +28,7 @@ const defaultGoal: GoalType = {
   color: 19,
 };
 
-const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
+const EditGoal: FC<EditGoalProps> = ({ navigation, route }) => {
   const theme = useTheme();
   const { goalName } = route.params;
   const goals = useStore((state: any) => state.goals);
@@ -36,7 +36,7 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
   const goal = goals.find((g: GoalType) => g.name === goalName) ?? defaultGoal;
   const updateGoal = useStore((state: any) => state.updateGoal);
   const setTags = useStore((state: any) => state.setTags);
-  
+
   const [goalNameInput, setGoalNameInput] = useState(goal.name);
   const [goalDescriptionInput, setGoalDescriptionInput] = useState(goal.description);
   const [unitInput, setUnitInput] = useState(goal.unit);
@@ -47,7 +47,7 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
   ]);
 
   const [tagDialogVisible, setTagDialogVisible] = useState(false);
-  const [tagState, setTagState] = useState<SetTag[]>(goal.tags.map((t: Tag) => ({oldTagName: t.name, ...t})));
+  const [tagState, setTagState] = useState<SetTag[]>(goal.tags.map((t: Tag) => ({ oldTagName: t.name, ...t })));
   const [tagDialogName, setTagDialogName] = useState("");
   const [tagDialogNameInput, setTagDialogNameInput] = useState("");
   const [tagDialogColorInput, setTagDialogColorInput] = useState(19);
@@ -68,21 +68,21 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
     } else if (goalNameInput !== goal.name && goals.find((g: GoalType) => g.name === goalNameInput)) {
       Alert.alert("Error", "A goal with this name already exists");
     } else {
-      const updatedGoal = { 
+      const updatedGoal = {
         ...goal,
         name: goalNameInput,
         description: goalDescriptionInput,
         unit: unitInput,
         color: selectedColor,
-      }; 
+      };
       const goalName = goal.name === "" ? updatedGoal.name : goal.name;
       updateGoal(goalName, updatedGoal);
       setTags(updatedGoal.name, tagState);
       navigation.reset(
         {
-        index: 0,
-        routes: [{name: 'Goals'}, {name: 'Goal', params: { goalName: updatedGoal.name }}],
-      });
+          index: 0,
+          routes: [{ name: 'Goals' }, { name: 'Goal', params: { goalName: updatedGoal.name } }],
+        });
     }
   }
 
@@ -91,7 +91,7 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
       title: goal.name,
       headerRight: () => (
         <>
-        <Button compact={true} onPress={saveGoal}><AntDesign name="check" size={24} color={theme.colors.onSurface} /></Button>        
+          <Button compact={true} onPress={saveGoal}><AntDesign name="check" size={24} color={theme.colors.onSurface} /></Button>
         </>
       ),
     });
@@ -108,9 +108,9 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
         if (tagDialogNameInput !== tagDialogName && existingTagNames.includes(tagDialogNameInput)) {
           Alert.alert("Error", "A tag with this name already exists");
           return;
-        } 
+        }
         if (tagDialogName === "") {
-            setTagState([...tagState, { oldTagName: null, name: tagDialogNameInput, color: tagDialogColorInput }]);
+          setTagState([...tagState, { oldTagName: null, name: tagDialogNameInput, color: tagDialogColorInput }]);
         } else {
           setTagState(tagState.map((t: SetTag) => t.name === tagDialogName ? { ...t, name: tagDialogNameInput, color: tagDialogColorInput } : t));
         }
@@ -167,7 +167,7 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
             <SegmentedButtons
               value={unitMode}
               onValueChange={setUnitMode}
-              buttons={[               
+              buttons={[
                 {
                   value: 'single',
                   label: 'Single value',
@@ -233,7 +233,7 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
             keyExtractor={(item: SetTag) => item.name}
             renderItem={({ item, drag, isActive }: { item: SetTag, drag: () => void, isActive: boolean }) => (
               <Chip
-                onPress={() => { setTagDialogVisible(true); setTagDialogName(item.name); setTagDialogNameInput(item.name); setTagDialogColorInput(item.color);}}
+                onPress={() => { setTagDialogVisible(true); setTagDialogName(item.name); setTagDialogNameInput(item.name); setTagDialogColorInput(item.color); }}
                 textStyle={{ color: theme.colors.surface }}
                 style={{
                   backgroundColor: palette[item.color],
@@ -253,15 +253,15 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
             style={{ marginTop: 8 }}
           />
           <View style={{ flexDirection: 'row' }}>
-              <Chip onPress={() => { setTagDialogVisible(true); setTagDialogName(""); setTagDialogNameInput(""); setTagDialogColorInput(19);}}
-                mode="outlined"
-                style={{
-                  marginRight: 8,
-                  marginBottom: 8,
-                }}
-              >
-                +
-              </Chip>
+            <Chip onPress={() => { setTagDialogVisible(true); setTagDialogName(""); setTagDialogNameInput(""); setTagDialogColorInput(19); }}
+              mode="outlined"
+              style={{
+                marginRight: 8,
+                marginBottom: 8,
+              }}
+            >
+              +
+            </Chip>
           </View>
         </View>
       </ScrollView>
@@ -277,8 +277,8 @@ const EditGoal: FC<EditGoalProps> = ({navigation, route}) => {
                 onPress={() => setTagColorDialogVisible(true)}
                 compact={true}
                 style={{ marginLeft: 10 }}
-            >
-              <View style={{ width: 30, height: 30, borderRadius: 12, backgroundColor: palette[tagDialogColorInput], borderWidth: 1, borderColor: theme.colors.onBackground }} />
+              >
+                <View style={{ width: 30, height: 30, borderRadius: 12, backgroundColor: palette[tagDialogColorInput], borderWidth: 1, borderColor: theme.colors.onBackground }} />
               </Button>
             </View>
           </Dialog.Content>

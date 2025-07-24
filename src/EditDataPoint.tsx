@@ -23,34 +23,34 @@ type EditDataPointProps = {
 
 const locale = NativeModules.I18nManager.localeIdentifier;
 
-const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
+const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   const theme = useTheme();
   const { goalName, dataPointIndex, newDataPoint } = route.params;
   const goals = useStore((state: any) => state.goals);
   const goal = goals.find((g: GoalType) => g.name === goalName);
-  
+
   const dataPoint = dataPointIndex !== undefined ? goal?.dataPoints[dataPointIndex] : {
-    time: new Date().getTime(), 
-    value: typeof goal.unit === "string" ? 
-      null : 
-      Object.fromEntries(goal.unit.map((u: SubUnit) => [u.name, null])), 
+    time: new Date().getTime(),
+    value: typeof goal.unit === "string" ?
+      null :
+      Object.fromEntries(goal.unit.map((u: SubUnit) => [u.name, null])),
     tags: []
   };
-  
+
 
   const dateTime = new Date(dataPoint.time);
   if (!dataPoint) {
     return <Text>Data point not found</Text>;
   }
-  
+
   const updateGoalDataPoint = useStore((state: any) => state.updateGoalDataPoint);
   const deleteGoalDataPoint = useStore((state: any) => state.deleteGoalDataPoint);
   const [inputDate, setInputDate] = useState<CalendarDate | undefined>(dateTime);
   const [noteInput, setNoteInput] = useState<string>(dataPoint.note ?? "");
-  const inputValues = typeof goal.unit === "string" ? [{subUnit: null, value: useState<string>(dataPoint.value?.toString() ?? "")}] : 
-    goal.unit.map((u: SubUnit) => ({subUnit: u, value: useState<string>(dataPoint.value[u.name]?.toString() ?? "")}));
+  const inputValues = typeof goal.unit === "string" ? [{ subUnit: null, value: useState<string>(dataPoint.value?.toString() ?? "") }] :
+    goal.unit.map((u: SubUnit) => ({ subUnit: u, value: useState<string>(dataPoint.value[u.name]?.toString() ?? "") }));
   const [inputTags, setInputTags] = useState<string[]>(dataPoint.tags);
-  
+
   const toggleInputTag = (tag: string) => {
     setInputTags(inputTags.includes(tag) ? inputTags.filter((t: string) => t !== tag) : [...inputTags, tag]);
   }
@@ -61,72 +61,72 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
   };
 
   const saveDataPointWrapper = () => {
-      var newValue: any = {};
-      var hasNonEmptyValue = false;
-      var hasNonNumbervalue = false;
-      if (typeof goal.unit === "string") {
-        newValue = parseFloat(inputValues[0].value[0]);
-        if (inputValues[0].value[0] === "") {
-          newValue = null;
-        } else if (isNaN(newValue)) { 
-          newValue = null;
-          hasNonNumbervalue = true;
+    var newValue: any = {};
+    var hasNonEmptyValue = false;
+    var hasNonNumbervalue = false;
+    if (typeof goal.unit === "string") {
+      newValue = parseFloat(inputValues[0].value[0]);
+      if (inputValues[0].value[0] === "") {
+        newValue = null;
+      } else if (isNaN(newValue)) {
+        newValue = null;
+        hasNonNumbervalue = true;
+      } else {
+        hasNonEmptyValue = true;
+      }
+    } else {
+      for (const inputValue of inputValues) {
+        if (inputValue.value[0] === "") {
+          newValue[inputValue.subUnit.name] = null;
         } else {
           hasNonEmptyValue = true;
-        }
-      } else {
-        for (const inputValue of inputValues) {
-          if (inputValue.value[0] === "") {
-            newValue[inputValue.subUnit.name] = null;
-          } else {
-            hasNonEmptyValue = true;
-            const value = parseFloat(inputValue.value[0]);
-            if (isNaN(value)) {
-              newValue = null;
-              hasNonNumbervalue = true;
-              break;
-            }
-            newValue[inputValue.subUnit.name] = value;
+          const value = parseFloat(inputValue.value[0]);
+          if (isNaN(value)) {
+            newValue = null;
+            hasNonNumbervalue = true;
+            break;
           }
+          newValue[inputValue.subUnit.name] = value;
         }
       }
+    }
 
-      if (!inputDate) {
-        Alert.alert("Date is required");
-      } else if (hasNonNumbervalue) {
-        Alert.alert("Value must be a number");
-      } else if (!hasNonEmptyValue) {
-        Alert.alert("Value is required");
-      } else {
-        const newTime = new Date(inputDate?.getFullYear(), inputDate?.getMonth(), inputDate?.getDate()).getTime();
-        const note = noteInput === "" ? {} : {"note": noteInput};
-        const newIndex = updateGoalDataPoint(goalName, newDataPoint ? undefined : dataPointIndex, {
-          time: newTime,
-          value: newValue,
-          tags: inputTags,
-          ...note,
-        });
-        navigation.goBack();
-        return newIndex
-      }
-    };
+    if (!inputDate) {
+      Alert.alert("Date is required");
+    } else if (hasNonNumbervalue) {
+      Alert.alert("Value must be a number");
+    } else if (!hasNonEmptyValue) {
+      Alert.alert("Value is required");
+    } else {
+      const newTime = new Date(inputDate?.getFullYear(), inputDate?.getMonth(), inputDate?.getDate()).getTime();
+      const note = noteInput === "" ? {} : { "note": noteInput };
+      const newIndex = updateGoalDataPoint(goalName, newDataPoint ? undefined : dataPointIndex, {
+        time: newTime,
+        value: newValue,
+        tags: inputTags,
+        ...note,
+      });
+      navigation.goBack();
+      return newIndex
+    }
+  };
 
   const duplicateDataPointWrapper = () => {
     const newIndex = saveDataPointWrapper();
     ToastAndroid.show('Data point saved', ToastAndroid.SHORT);
     navigation.navigate("EditDataPoint", { goalName, dataPointIndex: newIndex, newDataPoint: true });
   };
-  
+
   React.useEffect(() => {
     navigation.setOptions({
       title: newDataPoint ? 'New data point' : `${new Date(dataPoint.time).toLocaleDateString(locale)} #${dataPointIndex + 1}`,
       headerRight: () => (
         <>
-        <Button compact={true} onPress={saveDataPointWrapper}><AntDesign name="check" size={24} color={theme.colors.onSurface} /></Button>
-        <Button compact={true} onPress={duplicateDataPointWrapper}><Ionicons name="duplicate-outline" size={24} color={theme.colors.onSurface} /></Button>
-        {dataPointIndex !== undefined && (
-          <Button compact={true} onPress={deleteDataPointWrapper}><AntDesign name="delete" size={24} color={theme.colors.onSurface} /></Button>
-        )}
+          <Button compact={true} onPress={saveDataPointWrapper}><AntDesign name="check" size={24} color={theme.colors.onSurface} /></Button>
+          <Button compact={true} onPress={duplicateDataPointWrapper}><Ionicons name="duplicate-outline" size={24} color={theme.colors.onSurface} /></Button>
+          {dataPointIndex !== undefined && (
+            <Button compact={true} onPress={deleteDataPointWrapper}><AntDesign name="delete" size={24} color={theme.colors.onSurface} /></Button>
+          )}
         </>
       ),
     });
@@ -135,35 +135,35 @@ const EditDataPoint: FC<EditDataPointProps> = ({navigation, route}) => {
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
       <ScrollView style={styles.content}>
-      <View style={styles.pickerContainer}>
-        <DatePickerInput
-          locale={locale}
-          value={inputDate}
-          onChange={(d) => {setInputDate(d);}}
-          inputMode="start"
-          mode="outlined"
-          label="Date"
-        />
-      </View>
-
-      <View style={styles.inputContainer}>
-        {inputValues.map((inputValue: {subUnit: SubUnit | null, value: [string, (text: string) => void]}) => (
-          <TextInput
-            key={inputValue.subUnit?.name ?? "value"}
-            label={inputValue.subUnit ? `${inputValue.subUnit.name} [${inputValue.subUnit.symbol}]` : `Value ${goal.unit ? `[${goal.unit}]` : "-"}`}
-            value={inputValue.value[0] ?? ""}
-            onChangeText={text => inputValue.value[1](text)}
-            keyboardType="numeric"
+        <View style={styles.pickerContainer}>
+          <DatePickerInput
+            locale={locale}
+            value={inputDate}
+            onChange={(d) => { setInputDate(d); }}
+            inputMode="start"
             mode="outlined"
-            style={{
-              marginBottom: 10,
-            }}
-          />      
-        ))}
-      </View>
+            label="Date"
+          />
+        </View>
 
-      <View style={styles.inputContainer}>
-        <TextInput
+        <View style={styles.inputContainer}>
+          {inputValues.map((inputValue: { subUnit: SubUnit | null, value: [string, (text: string) => void] }) => (
+            <TextInput
+              key={inputValue.subUnit?.name ?? "value"}
+              label={inputValue.subUnit ? `${inputValue.subUnit.name} [${inputValue.subUnit.symbol}]` : `Value ${goal.unit ? `[${goal.unit}]` : "-"}`}
+              value={inputValue.value[0] ?? ""}
+              onChangeText={text => inputValue.value[1](text)}
+              keyboardType="numeric"
+              mode="outlined"
+              style={{
+                marginBottom: 10,
+              }}
+            />
+          ))}
+        </View>
+
+        <View style={styles.inputContainer}>
+          <TextInput
             label="Note"
             value={noteInput}
             onChangeText={setNoteInput}

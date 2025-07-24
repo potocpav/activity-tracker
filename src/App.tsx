@@ -4,8 +4,8 @@ import {
   StyleSheet,
   StatusBar,
 } from "react-native";
-import {NavigationContainer, DefaultTheme, DarkTheme} from '@react-navigation/native';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LiveView from "./LiveView";
 import Goals from "./Goals";
 import useStore from "./Store";
@@ -95,58 +95,58 @@ const App = () => {
   return (
     <PaperProvider theme={theme == 'light' ? MD3LightTheme : blackBackground ? MD3BlackTheme : MD3DarkTheme}>
       <GestureHandlerRootView>
-      <StatusBar barStyle={theme == 'light' ? "dark-content" : "light-content"} backgroundColor={theme == 'light' ? "#f2f2f2" : blackBackground ? "#000000" : "#121212"} />
-      <SafeAreaView style={[styles.container, { backgroundColor: theme == 'light' ? "#f2f2f2" : blackBackground ? "#000000" : "#121212" }]}>
-        <NavigationContainer theme={navigationTheme}>
-          <Stack.Navigator
-            screenOptions={theme == 'dark' && blackBackground ? {
-              headerStyle: {
-                backgroundColor: "#000000",
-              },
-              // headerTintColor: theme == 'light' ? "#000000" : "#ffffff",
-            } : {}}
-          >
-            <Stack.Group>
-              <Stack.Screen 
-                name="Goals" 
-                component={Goals} 
-                options={{title: "Goals"}}
+        <StatusBar barStyle={theme == 'light' ? "dark-content" : "light-content"} backgroundColor={theme == 'light' ? "#f2f2f2" : blackBackground ? "#000000" : "#121212"} />
+        <SafeAreaView style={[styles.container, { backgroundColor: theme == 'light' ? "#f2f2f2" : blackBackground ? "#000000" : "#121212" }]}>
+          <NavigationContainer theme={navigationTheme}>
+            <Stack.Navigator
+              screenOptions={theme == 'dark' && blackBackground ? {
+                headerStyle: {
+                  backgroundColor: "#000000",
+                },
+                // headerTintColor: theme == 'light' ? "#000000" : "#ffffff",
+              } : {}}
+            >
+              <Stack.Group>
+                <Stack.Screen
+                  name="Goals"
+                  component={Goals}
+                  options={{ title: "Goals" }}
                 />
-              <Stack.Screen 
-                name="Live View" 
-                component={LiveView} 
-                options={{title: "Live View"}}
+                <Stack.Screen
+                  name="Live View"
+                  component={LiveView}
+                  options={{ title: "Live View" }}
                 />
-              <Stack.Screen 
-                name="Goal" 
-                component={Goal} 
+                <Stack.Screen
+                  name="Goal"
+                  component={Goal}
                 />
-              <Stack.Screen 
-                name="Settings" 
-                component={Settings} 
-                options={{title: "Settings"}}
+                <Stack.Screen
+                  name="Settings"
+                  component={Settings}
+                  options={{ title: "Settings" }}
                 />
-            </Stack.Group>
-            <Stack.Group screenOptions={{presentation: 'modal'}}>
-              <Stack.Screen 
-                name="ConnectDevice" 
-                component={DeviceModal} 
-                options={{title: "Connect to a Device"}}
+              </Stack.Group>
+              <Stack.Group screenOptions={{ presentation: 'modal' }}>
+                <Stack.Screen
+                  name="ConnectDevice"
+                  component={DeviceModal}
+                  options={{ title: "Connect to a Device" }}
                 />
-              <Stack.Screen 
-                name="EditDataPoint" 
-                component={EditDataPoint} 
-                options={{title: "Edit Data Point"}}
+                <Stack.Screen
+                  name="EditDataPoint"
+                  component={EditDataPoint}
+                  options={{ title: "Edit Data Point" }}
                 />
-              <Stack.Screen 
-                name="EditGoal" 
-                component={EditGoal} 
-                options={{title: "Edit Goal"}}
+                <Stack.Screen
+                  name="EditGoal"
+                  component={EditGoal}
+                  options={{ title: "Edit Goal" }}
                 />
-            </Stack.Group>
-          </Stack.Navigator>
-        </NavigationContainer>
-      </SafeAreaView>
+              </Stack.Group>
+            </Stack.Navigator>
+          </NavigationContainer>
+        </SafeAreaView>
       </GestureHandlerRootView>
     </PaperProvider>
   );
