@@ -125,7 +125,7 @@ const GoalCalendar = ({ navigation, route }: GoalCalendarProps) => {
           palette={palette} 
           colorIndex={goal.color} 
           dataPoints={filteredDataPoints} 
-          firstDpTime={goal.dataPoints[0].time || null } 
+          firstDpTime={goal.dataPoints[0]?.time || null } 
           displayValue={displayValue}
           subValue={subValue} />
     </SafeAreaView>

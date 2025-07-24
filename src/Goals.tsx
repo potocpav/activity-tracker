@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
     margin: 10,
   },
   goalCard: {
-    padding: 6,
+    padding: 4,
   },
   goalTitle: {
     fontSize: 16,
