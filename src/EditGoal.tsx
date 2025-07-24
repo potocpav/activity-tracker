@@ -6,26 +6,18 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
-import { Dialog, Divider, Portal, SegmentedButtons, useTheme } from 'react-native-paper';
-import { GoalType, SetTag, Tag } from "./Store";
-import { TextInput, Button, Chip, ToggleButton } from "react-native-paper";
+import { Dialog, Portal, SegmentedButtons, useTheme } from 'react-native-paper';
+import { GoalType, SetTag, Tag } from "./StoreTypes";
+import { TextInput, Button, Chip } from "react-native-paper";
 import useStore from "./Store";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import { lightPalette, darkPalette } from './Color';
 import ColorPicker from './ColorPicker';
+import { defaultGoal } from "./ExampleData";
 type EditGoalProps = {
   navigation: any;
   route: any;
-};
-
-const defaultGoal: GoalType = {
-  name: "",
-  description: "",
-  unit: "",
-  dataPoints: [],
-  tags: [],
-  color: 19,
 };
 
 const EditGoal: FC<EditGoalProps> = ({ navigation, route }) => {

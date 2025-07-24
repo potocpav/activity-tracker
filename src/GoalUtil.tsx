@@ -1,4 +1,4 @@
-import { Tag } from "./Store";
+import { Tag } from "./StoreTypes";
 
 import { View, Text, StyleSheet } from "react-native";
 

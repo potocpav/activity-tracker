@@ -1,7 +1,7 @@
-import React, { useRef } from "react";
+import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, FlatList } from "react-native";
 import { useTheme } from 'react-native-paper';
-import useStore, { DataPoint } from "./Store";
+import { DataPoint } from "./StoreTypes";
 import { formatNumber, searchInterval } from "./GoalUtil";
 import { Value } from "./ValueMenu";
 type CalendarProps = {

@@ -1,10 +1,11 @@
 import React, { Fragment, useState } from "react";
-import { View, Text, Platform, TouchableOpacity } from "react-native";
-import { Chip, useTheme, Menu, Button } from 'react-native-paper';
+import { View, Text, Platform } from "react-native";
+import { useTheme, Menu, Button } from 'react-native-paper';
 import { getTransformComponents, Line, Scatter, setScale, setTranslate, useChartTransformState } from "victory-native";
 import { CartesianChart } from "victory-native";
 import { matchFont, Path, RoundedRect, Skia } from "@shopify/react-native-skia";
-import useStore, { GoalType, Tag } from "./Store";
+import useStore from "./Store";
+import { GoalType, Tag, TagFilter } from "./StoreTypes";
 import { useAnimatedReaction, useSharedValue, withTiming } from "react-native-reanimated";
 import { binTime, binTimeSeries, BinSize } from "./GoalUtil";
 import AntDesign from '@expo/vector-icons/AntDesign';
@@ -62,7 +63,7 @@ const GoalGraph = ({ route }: { route: any }) => {
 
   const [binning, setBinning] = useState<"day" | "week" | "month" | "quarter" | "year">("day");
   const [binMenuVisible, setBinMenuVisible] = useState(false);
-  const [tags, setTags] = useState<{ name: string, state: "yes" | "no" | "maybe" }[]>(goal.tags.map((t: Tag) => ({ name: t.name, state: "maybe" })));
+  const [tags, setTags] = useState<TagFilter[]>(goal.tags.map((t: Tag) => ({ name: t.name, state: "maybe" })));
   const [graphType, setGraphType] = useState<"box" | "bar-count" | "bar-sum" | "line-mean">("box");
   const graphTypes = ["box", "bar-count", "bar-sum", "line-mean"];
   const transformState = useChartTransformState({

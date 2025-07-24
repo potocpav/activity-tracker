@@ -38,6 +38,8 @@ In order to make this app a full-featured management app for workout data, the f
 * [x] Allow unit-less measurements
 * [x] Make tag editing wait on goal submit
 * [x] Implement tag reordering
+* [ ] Migrate time (miliseconds) to date [y, m, d]
+* [ ] When editing points, preserve their position within a day
 * [ ] Fix direct date input
 * [ ] Make bounds on graphs pixel-perfect
 * [ ] Fix localization
@@ -56,6 +58,7 @@ In order to make this app a full-featured management app for workout data, the f
 
 ### Publication
 
+* [ ] Rebrand to "Activities" / "Activity Tracker"
 * [ ] Add screenshots
 * [ ] Make app store description
 * [ ] Improve GitHub README

@@ -5,12 +5,12 @@ import {
   Text,
   View,
   TouchableOpacity,
-  ScrollView,
   NativeModules,
   FlatList,
 } from "react-native";
 import { useTheme, DataTable, FAB } from 'react-native-paper';
-import useStore, { DataPoint, GoalType, Tag, Unit } from "./Store";
+import useStore from "./Store";
+import { DataPoint, GoalType, Tag, Unit } from "./StoreTypes";
 import { darkPalette, lightPalette } from "./Color";
 import { renderTags } from "./GoalUtil";
 import TagMenu from "./TagMenu";
@@ -33,10 +33,12 @@ const formatTime = (date: Date) => {
   });
 };
 
-export const renderValueSummary = (value: any, unit: Unit, style: any, short = false) => {
-  if (typeof value === "number" && typeof unit === "string") {
+export const renderValueSummary = (value: any, unit: Unit, style: any) => {
+  if (value === null) {
+    return "-"
+  } else if (typeof value === "number" && typeof unit === "string") {
     return (
-      <Text style={style}>{`${Math.round(value * 100) / 100} ${unit}`}</Text>
+      `${Math.round(value * 100) / 100} ${unit}`
     );
   } else if (typeof value === "object" && typeof unit === "object") {
     // Handle complex units (like finger strength with mean, max, tut)
@@ -46,18 +48,11 @@ export const renderValueSummary = (value: any, unit: Unit, style: any, short = f
         parts.push(`${value[u.name]} ${u.symbol}`);
       }
     });
-    if (short) {
-      parts = parts.slice(0, 1);
-    }
-    return (
-      // <View style={{flexDirection: 'column'}}>
-      parts.map((p: string, i: number) => (
-        <Text style={style} key={i}>{p}</Text>
-      ))
-      // </View>
+    return ( // Only render the first part always
+      parts[0]
     );
   } else {
-    return <Text style={style}>-</Text>
+    return "-"
   }
 };
 

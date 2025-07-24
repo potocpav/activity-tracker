@@ -4,14 +4,12 @@ import {
   StyleSheet,
   Text,
   View,
-  TouchableOpacity,
-  ScrollView,
   NativeModules,
 } from "react-native";
-import { useTheme, DataTable, FAB } from 'react-native-paper';
-import useStore, { DataPoint, GoalType, Tag, Unit } from "./Store";
+import { useTheme } from 'react-native-paper';
+import useStore from "./Store";
+import { DataPoint, GoalType, Tag, Unit } from "./StoreTypes";
 import { darkPalette, lightPalette } from "./Color";
-import { renderTags } from "./GoalUtil";
 import TagMenu from "./TagMenu";
 import Calendar from "./Calendar";
 import ValueMenu, { Value } from "./ValueMenu";

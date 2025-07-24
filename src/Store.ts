@@ -18,76 +18,13 @@ import {
   BleError,
   Characteristic,
   Device,
-  Subscription,
 } from "react-native-ble-plx";
-import { exampleGoals } from "./ExampleData";
+import { defaultStats, exampleGoals } from "./ExampleData";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { GoalType, Tag, DataPoint, SetTag, TagName, State } from "./StoreTypes";
 
-export type Unit = string | SubUnit[];
-
-export type SubUnit = {
-  name: string;
-  symbol: string;
-};
-
-export type Tag = {
-  name: TagName;
-  color: number;
-};
-
-export type SetTag = {
-  oldTagName: TagName | null;
-  name: TagName;
-  color: number;
-}
-
-export type TagName = string;
-
-export type DataPoint = {
-  time: number;
-  value: number | object;
-  note?: string;
-  tags: TagName[];
-};
-
-export type GoalType = {
-  name: string;
-  description: string;
-  unit: Unit;
-  dataPoints: DataPoint[];
-  tags: Tag[];
-  color: number;
-};
-
-export type State = {
-  allDevices: Device[];
-  isConnected: boolean;
-  connectedDevice: Device | null;
-  subscription: Subscription | null;
-
-  dataPoints: { w: number, t: number }[];
-
-  goals: GoalType[];
-  theme: "light" | "dark";
-  blackBackground: boolean;
-
-  requestPermissions: any;
-  connectToDevice: any;
-  disconnectDevice: any;
-  scanForPeripherals: any;
-  onDataUpdate: any;
-  withDevice: any;
-  tareScale: any;
-  startMeasurement: any;
-  stopMeasurement: any;
-  shutdown: any;
-  sampleBatteryVoltage: any;
-  startStreamingData: any;
-  updateGoalDataPoint: any;
-};
-
-export const version = 2;
+export const version = 3;
 
 export const migrate = (persisted: any, version: number) => {
   if (version <= 0) {
@@ -100,6 +37,11 @@ export const migrate = (persisted: any, version: number) => {
       goal.tags.forEach((tag: Tag) => {
         tag.color = 19;
       });
+    });
+  }
+  if (version <= 2) {
+    persisted.goals.forEach((goal: GoalType) => {
+      goal.stats = defaultStats(goal.unit);
     });
   }
   return persisted

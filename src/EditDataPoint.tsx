@@ -9,13 +9,12 @@ import {
   NativeModules,
 } from "react-native";
 import { Chip, useTheme, TextInput, Button } from 'react-native-paper';
-import { SubUnit, GoalType } from "./Store";
+import { SubUnit, GoalType } from "./StoreTypes";
 import useStore from "./Store";
 import { DatePickerInput } from "react-native-paper-dates";
 import { CalendarDate } from "react-native-paper-dates/lib/typescript/Date/Calendar";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { lightPalette, darkPalette } from "./Color";
 type EditDataPointProps = {
   navigation: any;
   route: any;

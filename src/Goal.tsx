@@ -10,14 +10,13 @@ import {
 } from "react-native";
 import { useTheme, Menu, FAB, Button } from 'react-native-paper';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import useStore, { DataPoint, GoalType, SubUnit, Tag, Unit } from "./Store";
+import useStore from "./Store";
+import {DataPoint, GoalType, SubUnit, Tag, Unit} from "./StoreTypes";
 import GoalGraph from "./GoalGraph";
 import GoalData from "./GoalData";
 import GoalCalendar from "./GoalCalendar";
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { formatDate, renderValue } from "./GoalData";
 import GoalSummary from "./GoalSummary";
-import { lightPalette, darkPalette } from "./Color";
 import { File, Paths } from "expo-file-system/next";
 import * as Sharing from 'expo-sharing';
 

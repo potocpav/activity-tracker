@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text } from "react-native";
 import { Menu, Button } from 'react-native-paper';
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { Tag } from "./Store";
+import { Tag } from "./StoreTypes";
 
 interface TagMenuProps {
   tags: { name: string; state: "yes" | "no" | "maybe" }[];

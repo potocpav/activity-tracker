@@ -8,7 +8,8 @@ import {
 } from "react-native";
 import { Menu, useTheme } from 'react-native-paper';
 import { Button } from 'react-native-paper';
-import useStore, { GoalType } from "./Store";
+import useStore from "./Store";
+import { GoalType } from "./StoreTypes";
 import DraggableFlatList from 'react-native-draggable-flatlist'
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { renderValueSummary } from "./GoalData";
@@ -57,7 +58,7 @@ const Goals: React.FC<GoalsProps> = ({ navigation }) => {
           </View>
           <View style={{ marginTop: 4 }}>
             {lastDataPoint ? (
-              renderValueSummary(lastDataPoint.value, item.unit, [styles.goalDescription, { color: palette[item.color] }], true)
+              renderValueSummary(lastDataPoint.value, item.unit, [styles.goalDescription, { color: palette[item.color] }])
             ) : (
               <Text style={[styles.goalDescription, { color: palette[item.color] }]}>No data</Text>
             )}

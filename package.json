@@ -21,6 +21,9 @@
     "expo": "53.0.20",
     "expo-dev-client": "~5.2.4",
     "expo-device": "~7.1.4",
+    "expo-document-picker": "~13.1.6",
+    "expo-file-system": "~18.1.11",
+    "expo-sharing": "~13.1.5",
     "expo-status-bar": "~2.2.3",
     "react": "19.0.0",
     "react-native": "0.79.5",
@@ -33,13 +36,11 @@
     "react-native-paper": "^5.14.5",
     "react-native-paper-dates": "^0.22.47",
     "react-native-reanimated": "~3.17.4",
+    "react-native-reanimated-dnd": "^1.1.0",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
     "victory-native": "^41.17.4",
-    "zustand": "^5.0.6",
-    "expo-sharing": "~13.1.5",
-    "expo-file-system": "~18.1.11",
-    "expo-document-picker": "~13.1.6"
+    "zustand": "^5.0.6"
   },
   "devDependencies": {
     "@babel/core": "^7.27.7",
