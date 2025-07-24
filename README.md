@@ -32,8 +32,8 @@ In order to make this app a full-featured management app for workout data, the f
   * [ ] Deleting
   * [ ] Editing
 * [ ] Stat values in Summary page:
-   * [ ] Adding
-   * [ ] Deleting
+   * [x] Adding
+   * [x] Deleting
    * [x] Editing
    * [ ] Dragging
  * [ ] Calendars in Summary page

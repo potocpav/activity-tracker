@@ -9,6 +9,7 @@ import { renderTags, findZeroSlice, statPeriodCmp, extractValue, formatNumber } 
 import TagMenu from "./TagMenu";
 import SubUnitMenu from "./SubUnitMenu";
 import DropdownMenu from "./DropdownMenu";
+import AntDesign from '@expo/vector-icons/AntDesign';
 
 const calcStatValue = (stat: Stat, goal: GoalType) => {
   const today = dateToDateList(new Date());
@@ -120,7 +121,10 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
   const themeState = useStore((state: any) => state.theme);
   const palette = themeState === "dark" ? darkPalette : lightPalette;
   const goalColor = palette[goal.color];
+  const addGoalStat = useStore((state: any) => state.addGoalStat);
   const setGoalStat = useStore((state: any) => state.setGoalStat);
+  const deleteGoalStat = useStore((state: any) => state.deleteGoalStat);
+  const setGoalStats = useStore((state: any) => state.setGoalStats);
 
   const styles = getStyles(theme, goalColor);
   const subUnitNames = typeof goal.unit === 'string' ? null : goal.unit.map((u: any) => u.name);
@@ -142,7 +146,7 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
   const [statDialogValueMenuVisible, setStatDialogValueMenuVisible] = React.useState(false);
 
   // Value to display in dialog
-  const dialogStat = (statDialogStatId !== null) && (statDialogValue !== null) && (statDialogPeriod !== null) ? 
+  const dialogStat = (statDialogValue !== null) && (statDialogPeriod !== null) ? 
     { label: statDialogLabel,
       value: statDialogValue,
       subUnit: statDialogSubUnit,
@@ -157,15 +161,26 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
   }
 
   // Helper to open dialog
-  const showStatDialog = (statId: number) => {
-    setStatDialogVisible(true);
-    setStatDialogStatId(statId);
-    setStatDialogLabel(goal.stats[statId].label);
-    setStatDialogValue(goal.stats[statId].value);
-    setStatDialogSubUnit(goal.stats[statId].subUnit);
-    setStatDialogPeriod(goal.stats[statId].period);
-    setStatDialogTagFilters(goal.stats[statId].tagFilters);
+  const showStatDialog = (statId: number | null) => {
+      setStatDialogVisible(true);
+      setStatDialogStatId(statId);
+      setStatDialogLabel(statId !== null ? goal.stats[statId].label : "New Stat");
+      setStatDialogValue(statId !== null ? goal.stats[statId].value : "mean");
+      setStatDialogSubUnit(statId !== null ? goal.stats[statId].subUnit : typeof goal.unit === 'string' ? goal.unit : goal.unit[0].name);
+      setStatDialogPeriod(statId !== null ? goal.stats[statId].period : "day");
+      setStatDialogTagFilters(statId !== null ? goal.stats[statId].tagFilters : []);
   };
+
+  const dismissStatDialog = () => {
+    setStatDialogVisible(false);
+    if (dialogStat !== null) {
+      if (statDialogStatId === null) { 
+        addGoalStat(goalName, dialogStat);
+      } else {
+        setGoalStat(goalName, statDialogStatId, dialogStat);
+      }
+    }
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -186,6 +201,14 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
           <StatView key={index} stat={stat} goal={goal} styles={styles} onPress={() => showStatDialog(index)} />
         ))}
       </View>
+      <View style={styles.statsGroup}>
+        <Button onPress={() => {
+          showStatDialog(null);
+        }
+        }>
+          <AntDesign name="plus" size={24} color={theme.colors.onSurface} />
+        </Button>
+      </View>
       <Divider />
       <FAB
         icon="plus"
@@ -193,30 +216,38 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
         onPress={() => navigation.navigate("EditDataPoint", { goalName, newDataPoint: true })}
         color={theme.colors.surface}
       />
-      {statDialogStatId !== null && (
+      {(
         <Portal>
           <Dialog 
             visible={statDialogVisible} 
             style={{ 
               backgroundColor: theme.colors.background, 
             }}
-            onDismiss={() => {
-            setStatDialogVisible(false);
-            if (statDialogStatId !== null && dialogStat) {
-              setGoalStat(goalName, statDialogStatId, dialogStat);
-            }
-
-            }}>
+            onDismiss={dismissStatDialog}
+          >
             {/* <Dialog.Title>{goal.stats[statDialogStatId].label}</Dialog.Title> */}
 
             <Dialog.Content>
-              <TextInput
-                label="Label"
-                mode="outlined"
-                value={statDialogLabel}
-                onChangeText={setStatDialogLabel}
-                style={{ marginBottom: 5 }}
-              />
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 5 }}>
+                <TextInput
+                  label="Label"
+                  mode="outlined"
+                  value={statDialogLabel}
+                  onChangeText={setStatDialogLabel}
+                  style={{ flex: 1, marginBottom: 0 }}
+                />
+                <Button
+                  compact={true}
+                  onPress={() => { 
+                    deleteGoalStat(goalName, statDialogStatId);
+                    setStatDialogStatId(null);
+                    setStatDialogVisible(false);
+                  }}
+                  style={{ marginLeft: 8 }}
+                >
+                  <AntDesign name="delete" size={22} color={theme.colors.onSurface} />
+                </Button>
+              </View>
 
               <View key="menusRow" style={styles.menusRow}>
                   <SubUnitMenu

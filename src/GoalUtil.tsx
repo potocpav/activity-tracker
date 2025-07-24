@@ -49,7 +49,7 @@ export const statPeriodCmp = (
   if (lo && hi) {
     return dateBetween(dp.date, lo, hi) ? 0 : cmpDateList(dp.date, lo);
   } else {
-    console.log("unreachable");
+    // don't match
     return -1;
   }
 }

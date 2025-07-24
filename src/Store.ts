@@ -241,6 +241,13 @@ const useStore = create<State>()(
         });
       },
 
+      addGoalStat: (goalName: string, stat: Stat) => {
+        set((state: any) => {
+          const goals = state.goals.map((g: GoalType) => goalName === g.name ? { ...g, stats: [...g.stats, stat] } : g);
+          return { goals };
+        });
+      },
+
       deleteGoalStat: (goalName: string, statId: number) => {
         set((state: any) => {
           const goals = state.goals.map((g: GoalType) => goalName === g.name ? { ...g, stats: g.stats.filter((s: Stat, i: number) => i !== statId) } : g);
