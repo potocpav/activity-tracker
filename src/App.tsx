@@ -20,8 +20,8 @@ import {
   MD3DarkTheme,
   adaptNavigationTheme,
 } from 'react-native-paper';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import GoalData from "./GoalData";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 const { LightTheme, DarkTheme: PaperDarkTheme } = adaptNavigationTheme({
   reactNavigationLight: DefaultTheme,

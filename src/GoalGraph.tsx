@@ -252,67 +252,7 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
 
   return (
     <View style={{ flex: 1, padding: 10, marginVertical: 16, backgroundColor: theme.colors.background }}>
-      {/* Menus row */}
-      <View key="menusRow" style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 5 }}>
-        {/* Binning menu */}
-        <DropdownMenu
-          options={binningOptions}
-          selectedKey={binning}
-          onSelect={(key) => {
-            resetTransform();
-            setBinning(key as typeof binning);
-          }}
-          visible={binMenuVisible}
-          setVisible={setBinMenuVisible}
-          themeColors={theme.colors}
-        />
-        {/* SubUnit menu */}
-        <SubUnitMenu
-          subUnitNames={subUnitNames}
-          subUnitName={subUnitName}
-          setSubUnitName={setSubUnitName}
-          menuVisible={subUnitMenuVisible}
-          setMenuVisible={setSubUnitMenuVisible}
-          themeColors={theme.colors}
-        />
-        {/* Tags menu */}
-        <TagMenu
-          tags={tags}
-          setTags={setTags}
-          menuVisible={tagsMenuVisible}
-          setMenuVisible={setTagsMenuVisible}
-          goalTags={goal.tags}
-          palette={palette}
-          themeColors={theme.colors}
-        />
-        {/* Graph type menu */}
-        <Menu
-          visible={graphTypeMenuVisible}
-          onDismiss={() => setGraphTypeMenuVisible(false)}
-          anchor={
-            <Button compact={true} onPress={() => setGraphTypeMenuVisible(true)}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                {graphLabel(graphType)}
-                <AntDesign name="down" size={16} color={theme.colors.onSurfaceVariant} style={{ marginLeft: 6 }} />
-              </View>
-            </Button>
-          }
-        >
-          {graphTypes.map((type) => (
-            <Menu.Item
-              key={type}
-              onPress={() => {
-                setGraphTypeMenuVisible(false);
-                setGraphType(type as "box" | "bar-count" | "bar-sum" | "line-mean");
-              }}
-              title={<View style={{ flexDirection: 'row', alignItems: 'center' }}>{graphLabel(type)}</View>}
-              trailingIcon={graphType === type ? "check" : undefined}
-            />
-          ))}
-        </Menu>
-      </View>
-
-      <View key="goalGraph" style={{ height: 300, width: '100%' }}>
+       <View key="goalGraph" style={{ height: 300, width: '100%' }}>
         <CartesianChart
           data={binStats}
           transformState={transformState}
@@ -454,6 +394,64 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
             }
           }}
         </CartesianChart>
+      </View>
+      <View key="menusRow" style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 5 }}>
+        {/* Binning menu */}
+        <DropdownMenu
+          options={binningOptions}
+          selectedKey={binning}
+          onSelect={(key) => {
+            resetTransform();
+            setBinning(key as typeof binning);
+          }}
+          visible={binMenuVisible}
+          setVisible={setBinMenuVisible}
+          themeColors={theme.colors}
+        />
+        {/* SubUnit menu */}
+        <SubUnitMenu
+          subUnitNames={subUnitNames}
+          subUnitName={subUnitName}
+          setSubUnitName={setSubUnitName}
+          menuVisible={subUnitMenuVisible}
+          setMenuVisible={setSubUnitMenuVisible}
+          themeColors={theme.colors}
+        />
+        {/* Tags menu */}
+        <TagMenu
+          tags={tags}
+          setTags={setTags}
+          menuVisible={tagsMenuVisible}
+          setMenuVisible={setTagsMenuVisible}
+          goalTags={goal.tags}
+          palette={palette}
+          themeColors={theme.colors}
+        />
+        {/* Graph type menu */}
+        <Menu
+          visible={graphTypeMenuVisible}
+          onDismiss={() => setGraphTypeMenuVisible(false)}
+          anchor={
+            <Button compact={true} onPress={() => setGraphTypeMenuVisible(true)}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                {graphLabel(graphType)}
+                <AntDesign name="down" size={16} color={theme.colors.onSurfaceVariant} style={{ marginLeft: 6 }} />
+              </View>
+            </Button>
+          }
+        >
+          {graphTypes.map((type) => (
+            <Menu.Item
+              key={type}
+              onPress={() => {
+                setGraphTypeMenuVisible(false);
+                setGraphType(type as "box" | "bar-count" | "bar-sum" | "line-mean");
+              }}
+              title={<View style={{ flexDirection: 'row', alignItems: 'center' }}>{graphLabel(type)}</View>}
+              trailingIcon={graphType === type ? "check" : undefined}
+            />
+          ))}
+        </Menu>
       </View>
     </View>
   );

@@ -1,5 +1,5 @@
 import React from "react";
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Animated, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useTheme, FAB, Divider, Portal, Dialog, Button, TextInput } from 'react-native-paper';
 import useStore from "./Store";
 import { DataPoint, DateList, dateToDateList, GoalType, Stat, StatPeriod, StatValue, TagFilter, Tag, allStatPeriods, allStatValues } from "./StoreTypes";
@@ -12,6 +12,8 @@ import DropdownMenu from "./DropdownMenu";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import GoalGraph from "./GoalGraph";
 import GoalCalendar from "./GoalCalendar";
+import { DropProvider, Draggable, Droppable, DropProviderRef } from 'react-native-reanimated-dnd';
+import { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 
 const calcStatValue = (stat: Stat, goal: GoalType) => {
   const today = dateToDateList(new Date());
@@ -59,7 +61,7 @@ const StatView = ({ stat, goal, styles, onPress }: { stat: Stat, goal: GoalType,
         {/* <Text style={styles.statValue}>{formatNumber(value)}</Text> */}
         <Text style={styles.statValue}>{renderValueSummary(value, unit)}</Text>
         <Text style={styles.statsLabel}>{stat.label}</Text>
-      {/* </TouchableOpacity> */}
+        {/* </TouchableOpacity> */}
       </View>
     </Button>
   );
@@ -147,8 +149,9 @@ const GoalSummary = ({ navigation, goalName }: { navigation: any, goalName: stri
   const [statDialogValueMenuVisible, setStatDialogValueMenuVisible] = React.useState(false);
 
   // Value to display in dialog
-  const dialogStat = (statDialogValue !== null) && (statDialogPeriod !== null) ? 
-    { label: statDialogLabel,
+  const dialogStat = (statDialogValue !== null) && (statDialogPeriod !== null) ?
+    {
+      label: statDialogLabel,
       value: statDialogValue,
       subUnit: statDialogSubUnit,
       period: statDialogPeriod,
@@ -163,58 +166,96 @@ const GoalSummary = ({ navigation, goalName }: { navigation: any, goalName: stri
 
   // Helper to open dialog
   const showStatDialog = (statId: number | null) => {
-      setStatDialogVisible(true);
-      setStatDialogStatId(statId);
-      setStatDialogLabel(statId !== null ? goal.stats[statId].label : "New Stat");
-      setStatDialogValue(statId !== null ? goal.stats[statId].value : "mean");
-      setStatDialogSubUnit(statId !== null ? goal.stats[statId].subUnit : typeof goal.unit === 'string' ? goal.unit : goal.unit[0].name);
-      setStatDialogPeriod(statId !== null ? goal.stats[statId].period : "day");
-      setStatDialogTagFilters(statId !== null ? goal.stats[statId].tagFilters : []);
+    setStatDialogVisible(true);
+    setStatDialogStatId(statId);
+    setStatDialogLabel(statId !== null ? goal.stats[statId].label : "New Stat");
+    setStatDialogValue(statId !== null ? goal.stats[statId].value : "mean");
+    setStatDialogSubUnit(statId !== null ? goal.stats[statId].subUnit : typeof goal.unit === 'string' ? goal.unit : goal.unit[0].name);
+    setStatDialogPeriod(statId !== null ? goal.stats[statId].period : "day");
+    setStatDialogTagFilters(statId !== null ? goal.stats[statId].tagFilters : []);
   };
 
   const dismissStatDialog = () => {
     setStatDialogVisible(false);
     if (dialogStat !== null) {
-      if (statDialogStatId === null) { 
+      if (statDialogStatId === null) {
         addGoalStat(goalName, dialogStat);
       } else {
         setGoalStat(goalName, statDialogStatId, dialogStat);
       }
     }
   }
+  const dropProviderRef = React.useRef<DropProviderRef>(null);
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView>
-      <View style={styles.goalInfo}>
-        <Text style={styles.goalDescription}>{goal.description}</Text>
-      </View>
-      {goal.tags.length > 0 && (
-        <>
-          <Divider />
-          <View style={styles.tagsRow}>
-            {renderTags(goal.tags, theme, palette)}
+      <ScrollView onLayout={() => {
+        // Trigger update after scroll view layout
+        dropProviderRef.current?.requestPositionUpdate();
+      }}>
+        <View style={styles.goalInfo}>
+          <Text style={styles.goalDescription}>{goal.description}</Text>
+        </View>
+        {goal.tags.length > 0 && (
+          <>
+            <Divider />
+            <View style={styles.tagsRow}>
+              {renderTags(goal.tags, theme, palette)}
+            </View>
+          </>
+        )}
+        <Divider />
+
+        { /* Stats */}
+        <DropProvider ref={dropProviderRef}>
+          <View style={styles.statsGroup}>
+            {goal.stats.map((stat: Stat, index: number) => (
+              <View key={`stat-${index}`}>
+                <View style={{ flex: 1, width: 100, height: 100}}>
+                {/* <Droppable key={`stat-${index}`} droppableId={`stat-${index}`} onDrop={() => { console.log("dropped", index) }}> */}
+                  {/* <Draggable 
+                    data={{ id: '1', name: 'Task 1' }} 
+                    onDragStart={() => {
+                      console.log("drag start");
+                    }}
+                    onDragEnd={() => {
+                      console.log("drag end");
+                    }}
+                    animationFunction={(toValue) => {
+                    'worklet';
+                    return withSpring(toValue, {
+                      damping: 150,
+                      stiffness: 1500
+                    })
+                  }}> */}
+                    <StatView key={index} stat={stat} goal={goal} styles={styles} onPress={() => showStatDialog(index)} />
+                  {/* </Draggable>
+                </Droppable> */}
+                {/* </Animated.View> */}
+                </View>
+              </View>
+            ))}
           </View>
-        </>
-      )}
-      <Divider />
-      <View style={styles.statsGroup}>
-        {goal.stats.map((stat: Stat, index: number) => (
-          <StatView key={index} stat={stat} goal={goal} styles={styles} onPress={() => showStatDialog(index)} />
-        ))}
-      </View>
-      <View style={styles.statsGroup}>
-        <Button onPress={() => {
-          showStatDialog(null);
-        }
-        }>
-          <AntDesign name="plus" size={24} color={theme.colors.onSurface} />
-        </Button>
-      </View>
-      <Divider />
-      <GoalCalendar navigation={navigation} goalName={goalName} />
-      {/* <Divider /> */}
-      <GoalGraph goalName={goalName} />
+        </DropProvider>
+
+        { /* Add Stat */}
+        <View style={styles.statsGroup}>
+          <Button onPress={() => {
+            showStatDialog(null);
+          }
+          }>
+            <AntDesign name="plus" size={24} color={theme.colors.onSurface} />
+          </Button>
+        </View>
+
+        <Divider />
+
+        <GoalCalendar navigation={navigation} goalName={goalName} />
+
+        <GoalGraph goalName={goalName} />
+
+        <View style={{ height: 50 }} />
+
       </ScrollView>
       <FAB
         icon="plus"
@@ -224,10 +265,10 @@ const GoalSummary = ({ navigation, goalName }: { navigation: any, goalName: stri
       />
       {(
         <Portal>
-          <Dialog 
-            visible={statDialogVisible} 
-            style={{ 
-              backgroundColor: theme.colors.background, 
+          <Dialog
+            visible={statDialogVisible}
+            style={{
+              backgroundColor: theme.colors.background,
             }}
             onDismiss={dismissStatDialog}
           >
@@ -244,7 +285,7 @@ const GoalSummary = ({ navigation, goalName }: { navigation: any, goalName: stri
                 />
                 <Button
                   compact={true}
-                  onPress={() => { 
+                  onPress={() => {
                     deleteGoalStat(goalName, statDialogStatId);
                     setStatDialogStatId(null);
                     setStatDialogVisible(false);
@@ -256,60 +297,60 @@ const GoalSummary = ({ navigation, goalName }: { navigation: any, goalName: stri
               </View>
 
               <View key="menusRow" style={styles.menusRow}>
-                  <SubUnitMenu
-                    subUnitNames={subUnitNames}
-                    subUnitName={statDialogSubUnit}
-                    setSubUnitName={setStatDialogSubUnit}
-                    menuVisible={statDialogSubUnitMenuVisible}
-                    setMenuVisible={setStatDialogSubUnitMenuVisible}
-                    themeColors={theme.colors}
-                  />
+                <SubUnitMenu
+                  subUnitNames={subUnitNames}
+                  subUnitName={statDialogSubUnit}
+                  setSubUnitName={setStatDialogSubUnit}
+                  menuVisible={statDialogSubUnitMenuVisible}
+                  setMenuVisible={setStatDialogSubUnitMenuVisible}
+                  themeColors={theme.colors}
+                />
               </View>
 
-              
-                {/* Period */}
-                  <DropdownMenu
-                    options={allStatPeriods.map((p: StatPeriod) => ({ key: p, label: periodToLabel(p) }))}
-                    selectedKey={statDialogPeriod || ""}
-                    onSelect={(key: string) => setStatDialogPeriod(key as StatPeriod)}
-                    visible={statDialogPeriodMenuVisible}
-                    setVisible={setStatDialogPeriodMenuVisible}
-                    label="Period"
-                    themeColors={theme.colors}
-                  />
+
+              {/* Period */}
+              <DropdownMenu
+                options={allStatPeriods.map((p: StatPeriod) => ({ key: p, label: periodToLabel(p) }))}
+                selectedKey={statDialogPeriod || ""}
+                onSelect={(key: string) => setStatDialogPeriod(key as StatPeriod)}
+                visible={statDialogPeriodMenuVisible}
+                setVisible={setStatDialogPeriodMenuVisible}
+                label="Period"
+                themeColors={theme.colors}
+              />
 
               {/* Value */}
-                  <DropdownMenu
-                    options={allStatValues.map((v: StatValue) => ({ key: v, label: valueToLabel(v) }))}
-                    selectedKey={statDialogValue || ""}
-                    onSelect={(key: string) => setStatDialogValue(key as StatValue)}
-                    visible={statDialogValueMenuVisible}
-                    setVisible={setStatDialogValueMenuVisible}
-                    label="Value"
-                    themeColors={theme.colors}
-                  />
+              <DropdownMenu
+                options={allStatValues.map((v: StatValue) => ({ key: v, label: valueToLabel(v) }))}
+                selectedKey={statDialogValue || ""}
+                onSelect={(key: string) => setStatDialogValue(key as StatValue)}
+                visible={statDialogValueMenuVisible}
+                setVisible={setStatDialogValueMenuVisible}
+                label="Value"
+                themeColors={theme.colors}
+              />
 
 
               {/* Tags */}
-                <TagMenu
-                  tags={statDialogTagFilters}
-                  setTags={setStatDialogTagFilters}
-                  menuVisible={statDialogTagsMenuVisible}
-                  setMenuVisible={setStatDialogTagsMenuVisible}
-                  goalTags={goal.tags}
-                  palette={palette}
-                  themeColors={theme.colors}
-                />
+              <TagMenu
+                tags={statDialogTagFilters}
+                setTags={setStatDialogTagFilters}
+                menuVisible={statDialogTagsMenuVisible}
+                setMenuVisible={setStatDialogTagsMenuVisible}
+                goalTags={goal.tags}
+                palette={palette}
+                themeColors={theme.colors}
+              />
 
               <View>
-                  {dialogStat && (
-                    <StatView
-                      stat={dialogStat}
-                      goal={goal}
-                      styles={styles}
-                      onPress={() => setStatDialogVisible(false)}
-                    />
-                  )}
+                {dialogStat && (
+                  <StatView
+                    stat={dialogStat}
+                    goal={goal}
+                    styles={styles}
+                    onPress={() => setStatDialogVisible(false)}
+                  />
+                )}
               </View>
 
             </Dialog.Content>

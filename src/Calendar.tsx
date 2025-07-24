@@ -15,9 +15,8 @@ type CalendarProps = {
   subValue: string | null;
 };
 
-const ITEM_WIDTH = 38;
-const ITEM_MARGIN = 4;
-const ITEM_LEFT_MARGIN = 0;
+const ITEM_WIDTH = 35;
+const ITEM_MARGIN = 1;
 const MIN_WEEK_COUNT = 14;
 const MAX_WEEK_COUNT = 520;
 
@@ -165,12 +164,10 @@ const styles = StyleSheet.create({
     width: ITEM_WIDTH,
   },
   daySquare: {
-    width: ITEM_WIDTH - ITEM_MARGIN - ITEM_LEFT_MARGIN,
-    height: ITEM_WIDTH - ITEM_MARGIN,
+    width: ITEM_WIDTH - ITEM_MARGIN * 2,
+    height: ITEM_WIDTH - ITEM_MARGIN * 2,
     borderRadius: 8,
-    marginHorizontal: ITEM_MARGIN,
-    marginBottom: ITEM_MARGIN,
-    marginLeft: ITEM_LEFT_MARGIN,
+    margin: ITEM_MARGIN,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 4,
@@ -179,10 +176,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     fontSize: 8,
     marginBottom: 2,
-    marginTop: -35,
-    marginLeft: -33,
-    paddingHorizontal: 5,
-    paddingVertical: 3,
+    marginTop: -30,
+    marginLeft: -25,
+    paddingHorizontal: 3,
+    paddingVertical: 1,
     borderRadius: 4,
   },
   value: {

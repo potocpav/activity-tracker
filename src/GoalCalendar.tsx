@@ -97,6 +97,15 @@ const GoalCalendar = ({ navigation, goalName }: GoalCalendarProps) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <Calendar
+        navigation={navigation}
+        goalName={goalName}
+        palette={palette}
+        colorIndex={goal.color}
+        dataPoints={filteredDataPoints}
+        firstDpDate={goal.dataPoints[0]?.date || null}
+        displayValue={displayValue}
+        subValue={subValue} />
       <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
         {goal.tags.length > 0 && (
           <TagMenu
@@ -117,15 +126,6 @@ const GoalCalendar = ({ navigation, goalName }: GoalCalendarProps) => {
           themeColors={theme.colors}
         />
       </View>
-      <Calendar
-        navigation={navigation}
-        goalName={goalName}
-        palette={palette}
-        colorIndex={goal.color}
-        dataPoints={filteredDataPoints}
-        firstDpDate={goal.dataPoints[0]?.date || null}
-        displayValue={displayValue}
-        subValue={subValue} />
     </SafeAreaView>
   );
 };
@@ -134,12 +134,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     marginVertical: 16,
-  },
-  fab: {
-    position: 'absolute',
-    margin: 16,
-    right: 0,
-    bottom: 0,
   },
 });
 
