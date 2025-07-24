@@ -101,7 +101,7 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
   let dps: [DataPoint, number][] = goal.dataPoints.map((o: DataPoint, i: number) => [o, i]);
   // filter only daily points
   if (day) {
-    const daySlice = findZeroSlice(dps, (dp) => dayCmp(dp, day));
+    const daySlice = findZeroSlice(dps, (dp) => dayCmp(dp[0], day));
     const dayDataAndIndex = dps.slice(...daySlice);
     dps = dayDataAndIndex;
   }

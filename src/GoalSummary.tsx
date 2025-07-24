@@ -5,7 +5,7 @@ import useStore from "./Store";
 import { DataPoint, DateList, dateToDateList, GoalType, Stat, StatPeriod, StatValue, TagFilter, Tag, allStatPeriods, allStatValues } from "./StoreTypes";
 import { renderValueSummary, formatDate } from "./GoalData";
 import { lightPalette, darkPalette } from "./Color";
-import { renderTags, findZeroSlice, statPeriodCmp, extractValue, formatNumber, valueToLabel, periodToLabel } from "./GoalUtil";
+import { renderTags, findZeroSlice, statPeriodCmp, extractValue, formatNumber, valueToLabel, periodToLabel, extractStatValue } from "./GoalUtil";
 import TagMenu from "./TagMenu";
 import SubUnitMenu from "./SubUnitMenu";
 import DropdownMenu from "./DropdownMenu";
@@ -24,32 +24,7 @@ const calcStatValue = (stat: Stat, goal: GoalType) => {
     goal.dataPoints,
     (dp: DataPoint) => statPeriodCmp(dp, stat.period, today, lastActive)
   );
-  const periodDatedValues = goal
-    .dataPoints
-    .slice(...periodSlice)
-    .map((dp: DataPoint) => [dp.date, extractValue(dp, stat.tagFilters, stat.subUnit)])
-    .filter((v: any) => v[1] !== null);
-
-  const periodValues = periodDatedValues.map((v: any) => v[1]);
-  const periodDates = periodDatedValues.map((v: any) => v[0]);
-
-  let value;
-  if (stat.value === "n_days") {
-    value = new Set(periodDates.map((d: DateList) => d.join("-"))).size;
-  } else if (stat.value === "n_points") {
-    value = periodValues.length;
-  } else if (stat.value === "sum") {
-    value = periodValues.reduce((acc, v) => acc + v, 0);
-  } else if (stat.value === "mean") {
-    value = periodValues.reduce((acc, v) => acc + v, 0) / periodValues.length;
-  } else if (stat.value === "max") {
-    value = Math.max(...periodValues);
-  } else if (stat.value === "min") {
-    value = Math.min(...periodValues);
-  } else if (stat.value === "last") {
-    value = periodValues[periodValues.length - 1];
-  }
-  return value;
+  return extractStatValue(goal.dataPoints.slice(...periodSlice), stat.tagFilters, stat.subUnit, stat.value);
 }
 
 const StatView = ({ stat, goal, styles, onPress }: { stat: Stat, goal: GoalType, styles: any, onPress: () => void }) => {

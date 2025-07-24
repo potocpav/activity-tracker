@@ -85,16 +85,6 @@ const GoalCalendar = ({ navigation, goalName }: GoalCalendarProps) => {
     return <Text>Goal not found</Text>;
   }
 
-  const requiredTags = goal.calendar.tagFilters.filter((t: any) => t.state === "yes").map((t: any) => t.name);
-  const negativeTags = goal.calendar.tagFilters.filter((t: any) => t.state === "no").map((t: any) => t.name);
-  const filteredDataPoints = goal.dataPoints
-    .map((o: DataPoint, i: number) => [o, i])
-    .filter(([dataPoint, i]: [DataPoint, number]) => {
-      const hasAllRequired = requiredTags.every((tag: string) => dataPoint.tags.includes(tag));
-      const hasAnyNegative = negativeTags.some((tag: string) => dataPoint.tags.includes(tag));
-      return hasAllRequired && !hasAnyNegative;
-    })
-
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Calendar
@@ -102,10 +92,10 @@ const GoalCalendar = ({ navigation, goalName }: GoalCalendarProps) => {
         goalName={goalName}
         palette={palette}
         colorIndex={goal.color}
-        dataPoints={filteredDataPoints}
+        dataPoints={goal.dataPoints}
         firstDpDate={goal.dataPoints[0]?.date || null}
-        displayValue={goal.calendar.value}
-        subValue={subValue} />
+        calendarProps={goal.calendar}
+         />
       <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
         {goal.tags.length > 0 && (
           <TagMenu

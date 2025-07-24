@@ -1,19 +1,17 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, FlatList } from "react-native";
 import { useTheme } from 'react-native-paper';
-import { DataPoint, dateListToTime, dateToDateList, normalizeDateList, timeToDateList, DateList } from "./StoreTypes";
-import { formatNumber, findZeroSlice, dayCmp } from "./GoalUtil";
-import { StatValue } from "./StoreTypes";
+import { DataPoint, dateListToTime, dateToDateList, normalizeDateList, timeToDateList, DateList, CalendarProps } from "./StoreTypes";
+import { formatNumber, findZeroSlice, dayCmp, extractStatValue } from "./GoalUtil";
 
-type CalendarProps = {
+type CalendarComponentProps = {
   navigation: any;
   goalName: string;
   palette: string[];
   colorIndex: number;
-  dataPoints: [DataPoint, number][];
+  dataPoints: DataPoint[];
   firstDpDate: DateList | null;
-  displayValue: StatValue;
-  subValue: string | null;
+  calendarProps: CalendarProps;
 };
 
 const ITEM_WIDTH = 35;
@@ -22,7 +20,7 @@ const MIN_WEEK_COUNT = 14;
 const MAX_WEEK_COUNT = 520;
 
 
-const Calendar: React.FC<CalendarProps> = ({ navigation, goalName, palette, colorIndex, dataPoints, firstDpDate, displayValue, subValue }) => {
+const Calendar: React.FC<CalendarComponentProps> = ({ navigation, goalName, palette, colorIndex, dataPoints, firstDpDate, calendarProps }) => {
   const theme = useTheme();
   const dayBackground = palette[colorIndex];
   const now = new Date();
@@ -33,55 +31,6 @@ const Calendar: React.FC<CalendarProps> = ({ navigation, goalName, palette, colo
   const firstVisibleWeek = firstDpDate ? pastWeekStart(new Date(...firstDpDate), 0) : lastVisibleWeek;
 
   const weekCount = Math.min(MAX_WEEK_COUNT, Math.max(MIN_WEEK_COUNT, 1 + Math.round((lastVisibleWeek.getTime() - firstVisibleWeek.getTime()) / (7 * 24 * 60 * 60 * 1000))));
-
-  const getValue = (value: number | object) => {
-    if (subValue && typeof value === 'object') {
-      return value[subValue as keyof typeof value] ?? null;
-    } else if (typeof value === 'number') {
-      return value;
-    } else {
-      return null;
-    }
-
-  }
-
-  // TODO: deduplicate with Summary calculation
-  const extractValue = (dps: DataPoint[]) => {
-    if (dps.length === 0) {
-      return null;
-    }
-    switch (displayValue) {
-      case "n_points":
-        return dps.length;
-      case "max":
-        {
-          let accum: number | null = null;
-          dps.forEach((dp) => {
-            const value = getValue(dp.value);
-            accum = value === null ? accum : accum === null ? value : Math.max(accum, value);
-          });
-          return accum;
-        }
-      case "mean":
-        {
-          let accum: number | null = null;
-          dps.forEach((dp) => {
-            const value = getValue(dp.value);
-            accum = value === null ? accum : accum === null ? value : accum + value;
-          });
-          return accum === null ? null : accum / dps.length;
-        }
-      case "sum":
-        {
-          let accum: number | null = null;
-          dps.forEach((dp) => {
-            const value = getValue(dp.value);
-            accum = value === null ? accum : accum === null ? value : accum + value;
-          });
-          return accum;
-        }
-    }
-  }
 
   return (
     <FlatList
@@ -112,10 +61,10 @@ const Calendar: React.FC<CalendarProps> = ({ navigation, goalName, palette, colo
                 return;
               }
               const daySlice = findZeroSlice(dataPoints, (dp) => dayCmp(dp, day));
-              const dayDataAndIndex = dataPoints.slice(...daySlice);
+              const dayDataAndIndex: [DataPoint, number][] = dataPoints.map((dp: DataPoint, i: number): [DataPoint, number] => [dp, i]).slice(...daySlice);
               const dayData = dayDataAndIndex.map(([dp, _]) => dp);
               const hasData = dayData.length > 0;
-              const value = extractValue(dayData);
+              const value = extractStatValue(dayData, calendarProps.tagFilters, calendarProps.subUnit, calendarProps.value);
               return (
                 <TouchableOpacity
                   style={[styles.daySquare, hasData ?

@@ -1,10 +1,10 @@
-import { Tag, StatPeriod, DataPoint, DateList, dateListToTime, normalizeDateList, TagFilter, StatValue } from "./StoreTypes";
+import { Tag, StatPeriod, DataPoint, DateList, dateListToTime, normalizeDateList, TagFilter, StatValue, Stat } from "./StoreTypes";
 import { View, Text, StyleSheet } from "react-native";
 
 export type BinSize = "day" | "week" | "month" | "quarter" | "year";
 
-export const dayCmp = (dp: [DataPoint, number], day: DateList) => {
-  return cmpDateList(dp[0].date, day);
+export const dayCmp = (dp: DataPoint, day: DateList) => {
+  return cmpDateList(dp.date, day);
 }
 
 export const cmpDateList = (d1: DateList, d2: DateList) => {
@@ -177,6 +177,33 @@ export const binTimeSeries = (binSize: BinSize, dataPoints: any[]) => {
   };
   return bins;
 };
+
+export const extractStatValue = (dataPoints: DataPoint[], tagFilters: TagFilter[], subUnitName: string | null, statValue: StatValue) => {
+  const periodDatedValues = dataPoints
+    .map((dp: DataPoint) => [dp.date, extractValue(dp, tagFilters, subUnitName)])
+    .filter((v: any) => v[1] !== null);
+
+  const periodValues = periodDatedValues.map((v: any) => v[1]);
+  const periodDates = periodDatedValues.map((v: any) => v[0]);
+
+  let value;
+  if (statValue === "n_days") {
+    value = new Set(periodDates.map((d: DateList) => d.join("-"))).size;
+  } else if (statValue === "n_points") {
+    value = periodValues.length;
+  } else if (statValue === "sum") {
+    value = periodValues.reduce((acc, v) => acc + v, 0);
+  } else if (statValue === "mean") {
+    value = periodValues.reduce((acc, v) => acc + v, 0) / periodValues.length;
+  } else if (statValue === "max") {
+    value = Math.max(...periodValues);
+  } else if (statValue === "min") {
+    value = Math.min(...periodValues);
+  } else if (statValue === "last") {
+    value = periodValues[periodValues.length - 1];
+  }
+  return value;
+}
 
 
 export const renderTags = (tags: Tag[], theme: any, palette: string[]) => {
