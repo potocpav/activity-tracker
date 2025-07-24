@@ -107,10 +107,10 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
     } else if (!hasNonEmptyValue) {
       Alert.alert("Value is required");
     } else {
-      const newTime = new Date(inputDate?.getFullYear(), inputDate?.getMonth(), inputDate?.getDate()).getTime();
+      const newDate = dateToDateList(inputDate);
       const note = noteInput === "" ? {} : { "note": noteInput };
       const newIndex = updateGoalDataPoint(goalName, newDataPoint ? undefined : dataPointIndex, {
-        time: newTime,
+        date: newDate,
         value: newValue,
         tags: inputTags,
         ...note,

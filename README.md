@@ -27,10 +27,25 @@ In order to make this app a full-featured management app for workout data, the f
 * [x] Add Calendar page
 * [ ] Implement editing composite units
 * [ ] Allow value-less goals
-* [ ] Allow adding graphs to Summary page
-* [ ] Allow adding values to Summary page
+* [ ] Graphs in Summary page
+  * [ ] Adding
+  * [ ] Deleting
+  * [ ] Editing
+* [ ] Stat values in Summary page:
+   * [ ] Adding
+   * [ ] Deleting
+   * [x] Editing
+   * [ ] Dragging
+ * [ ] Calendars in Summary page
+   * [ ] Adding
+   * [ ] Deleting
+   * [ ] Editing
 * [ ] Add week start customization to Settings
 * [ ] Click-through calendar days
+  * [ ] Show data list for the day
+  * [ ] Adding a point
+  * [ ] Dragging points
+* [ ] Use the first summary value in Goals.tsx
 
 ### Bugs
 
