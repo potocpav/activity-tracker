@@ -1,64 +1,91 @@
-import { Tag } from "./StoreTypes";
-
+import { Tag, StatPeriod, DataPoint } from "./StoreTypes";
 import { View, Text, StyleSheet } from "react-native";
 
 export type BinSize = "day" | "week" | "month" | "quarter" | "year";
 
-// Returns the indices of the first and last elements in data that zero the condition `cmp`
+export const dayCmp = (dp: [DataPoint, number], day: Date) => {
+  const dpDate = new Date(dp[0].time);
+  if (dpDate.getFullYear() == day.getFullYear() && dpDate.getMonth() == day.getMonth() && dpDate.getDate() == day.getDate()) {
+    return 0;
+  } else {
+    return dpDate.getTime() - day.getTime();
+  }
+}
+
+// export type StatPeriod = 
+//   "today" | "this_week" | "this_month" | "this_year" |
+//   "last_24_hours" | "last_7_days" | "last_30_days" | "last_365_days" |
+//   "last_active_day" |
+//   "all_time";
+
+// export const statPeriodCmp = (dp: any, period: StatPeriod) => {
+//   const dpDate = new Date(dp[0].time);
+//   const now = new Date();
+//   const periodStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  
+// }
+
+// Returns the indices of the slice in data that zero the condition `cmp`
 // Data must be sorted in ascending order, such that cmp is monotonic.
-// Returns null if no such element is found.
-export const searchInterval = (data: any[], cmp: (x: any) => number) => {
+export const findZeroSlice = (data: any[], cmp: (x: any) => number): [number, number] => {
   if (data.length === 0) {
-    return null;
+    return [0, 0];
   }
 
-  let start = 0;
-  let end = data.length - 1;
-  let middle = 0;
+  let cmpResultFirst = cmp(data[0]);
+  let cmpResultLast = cmp(data[data.length - 1]);
+  if (cmpResultFirst > 0) {
+    return [0, 0];
+  } else if (cmpResultLast < 0) {
+    return [data.length, data.length];
+  } 
 
-  while (start <= end) {
-    middle = Math.floor((start + end) / 2);
-    let cmpResult = cmp(data[middle]);
-    if (cmpResult < 0) {
-      start = middle + 1;
-    } else if (cmpResult > 0) {
-      end = middle - 1;
-    } else {
-      break;
+  // start is within range
+    
+  let startLo = 0;
+  let startHi = data.length - 1;
+  
+  let endLo = 0;
+  let endHi = data.length - 1;
+
+  if (cmpResultFirst === 0) {
+    startLo = 0;
+    startHi = 0;
+  } else {
+    // start is not 0, we must binary search for it, while updating bounds for `end`
+    while (startLo < startHi) {
+      const mid = Math.floor((startLo + startHi) / 2);
+      let cmpResult = cmp(data[mid]);
+      if (cmpResult < 0) {
+        startLo = mid + 1;
+        endLo = startLo;
+      } else if (cmpResult > 0) {
+        startHi = mid;
+        endHi = startHi;
+      } else {
+        startHi = mid;
+        endLo = startHi;
+      }
     }
   }
 
-  // found one element (`middle`) for which cmp is zero
-  // now find the first element for which cmp is zero by linear search
-
-  if (cmp(data[middle]) !== 0) {
-    return null;
-  }
-
-  start = middle;
-  while (true) {
-    if (start == 0) {
-      break;
-    } else if (cmp(data[start - 1]) === 0) {
-      start--;
-    } else {
-      break;
+  if (cmpResultLast === 0) {
+    endLo = data.length;
+    endHi = data.length;
+  } else {
+    // end is not data.length, we must binary search for it
+    while (endLo < endHi) {
+      const mid = Math.floor((endLo + endHi) / 2);
+      let cmpResult = cmp(data[mid]);
+      if (cmpResult <= 0) {
+        endLo = mid + 1;
+      } else {
+        endHi = mid;
+      }
     }
   }
 
-
-  end = middle;
-  while (true) {
-    if (end == data.length - 1) {
-      break;
-    } else if (cmp(data[end + 1]) === 0) {
-      end++;
-    } else {
-      break;
-    }
-  }
-
-  return { first: start, last: end };
+  return [startLo, endLo];
 }
 
 export const formatNumber = (value: number) => {

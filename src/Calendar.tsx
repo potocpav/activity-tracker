@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, FlatList } from "react-native";
 import { useTheme } from 'react-native-paper';
 import { DataPoint } from "./StoreTypes";
-import { formatNumber, searchInterval } from "./GoalUtil";
+import { formatNumber, findZeroSlice, dayCmp } from "./GoalUtil";
 import { Value } from "./ValueMenu";
 type CalendarProps = {
   goalName: string;
@@ -108,15 +108,8 @@ const Calendar: React.FC<CalendarProps> = ({ goalName, palette, colorIndex, data
               if (day > now) {
                 return;
               }
-              const dayDataRange = searchInterval(dataPoints, (dp) => {
-                const dpDate = new Date(dp[0].time);
-                if (dpDate.getFullYear() == day.getFullYear() && dpDate.getMonth() == day.getMonth() && dpDate.getDate() == day.getDate()) {
-                  return 0;
-                } else {
-                  return dpDate.getTime() - day.getTime();
-                }
-              });
-              const dayDataAndIndex = dayDataRange ? dataPoints.slice(dayDataRange.first, dayDataRange.last + 1) : [];
+              const daySlice = findZeroSlice(dataPoints, (dp) => dayCmp(dp, day));
+              const dayDataAndIndex = dataPoints.slice(...daySlice);
               const dayData = dayDataAndIndex.map(([dp, _]) => dp);
               const hasData = dayData.length > 0;
               const value = extractValue(dayData);

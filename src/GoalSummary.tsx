@@ -2,19 +2,45 @@ import React from "react";
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useTheme, FAB, Divider, Portal, Dialog, Button } from 'react-native-paper';
 import useStore from "./Store";
-import { DataPoint, GoalType } from "./StoreTypes";
+import { DataPoint, GoalType, Stat } from "./StoreTypes";
 import { renderValueSummary, formatDate } from "./GoalData";
 import { lightPalette, darkPalette } from "./Color";
 import { renderTags } from "./GoalUtil";
 
-const Stat = ({ label, value, styles, onPress }: { label: string, value: string, styles: any, onPress: () => void }) => {
+const StatView = ({ label, value, styles, onPress }: { label: string, value: string, styles: any, onPress: () => void }) => {
   return (
     <TouchableOpacity style={styles.statContainer} onPress={onPress}>
-        <Text style={styles.statValue}>{value}</Text>
-        <Text style={styles.statsLabel}>{label}</Text>
+      <Text style={styles.statValue}>{value}</Text>
+      <Text style={styles.statsLabel}>{label}</Text>
     </TouchableOpacity>
   );
 };
+
+type EditStatDialogProps = {
+  visible: boolean;
+  onDismiss: () => void;
+  stat: Stat;
+  color: string;
+};
+
+const EditStatDialog = ({
+  visible,
+  onDismiss,
+  stat,
+  color,
+}: EditStatDialogProps) => (
+  <Portal>
+    <Dialog visible={visible} onDismiss={onDismiss}>
+      <Dialog.Title>{stat.label}</Dialog.Title>
+      <Dialog.Content>
+        <Text style={{ fontSize: 24, fontWeight: 'bold', textAlign: 'center', color }}>ToDo</Text>
+      </Dialog.Content>
+      <Dialog.Actions>
+        <Button onPress={onDismiss}>Close</Button>
+      </Dialog.Actions>
+    </Dialog>
+  </Portal>
+);
 
 const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => {
   const theme = useTheme();
@@ -29,22 +55,17 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
 
   // Dialog state
   const [dialogVisible, setDialogVisible] = React.useState(false);
-  const [dialogLabel, setDialogLabel] = React.useState("");
-  const [dialogValue, setDialogValue] = React.useState("");
+  const [dialogStatId, setDialogStatId] = React.useState<number | null>(null);
 
   if (!goal) {
     return <Text>Goal not found</Text>;
   }
 
-  const numDataPoints = goal.dataPoints.length;
-  const lastDataPoint = numDataPoints > 0 ? goal.dataPoints[numDataPoints - 1] : null;
-  const distinctDayCount = new Set(goal.dataPoints.map((dp: DataPoint) => formatDate(new Date(dp.time)))).size;
-
   // Helper to open dialog
-  const showStatDialog = (label: string, value: string) => {
-    setDialogLabel(label);
-    setDialogValue(value);
+  const showStatDialog = (statId: number) => {
     setDialogVisible(true);
+    setDialogStatId(statId);
+    console.log("showStatDialog", statId);
   };
 
   return (
@@ -62,9 +83,9 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
       )}
       <Divider />
       <View style={styles.statsGroup}>
-        <Stat label="Count" value={numDataPoints.toString()} styles={styles} onPress={() => showStatDialog("Count", numDataPoints.toString())} /> 
-        <Stat label="Days" value={distinctDayCount.toString()} styles={styles} onPress={() => showStatDialog("Days", distinctDayCount.toString())} />
-        <Stat label="Last" value={renderValueSummary(lastDataPoint?.value, goal.unit, [styles.statValue])} styles={styles} onPress={() => showStatDialog("Last", renderValueSummary(lastDataPoint?.value, goal.unit, [styles.statValue]))} />
+        {goal.stats.map((stat: Stat, index: number) => (
+          <StatView key={index} label={stat.label} value={stat.value} styles={styles} onPress={() => showStatDialog(index)} />
+        ))}
       </View>
       <Divider />
       <FAB
@@ -73,17 +94,14 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
         onPress={() => navigation.navigate("EditDataPoint", { goalName, newDataPoint: true })}
         color={theme.colors.surface}
       />
-      <Portal>
-        <Dialog visible={dialogVisible} onDismiss={() => setDialogVisible(false)}>
-          <Dialog.Title>{dialogLabel}</Dialog.Title>
-          <Dialog.Content>
-            <Text style={{ fontSize: 24, fontWeight: 'bold', textAlign: 'center', color: goalColor }}>{dialogValue}</Text>
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button onPress={() => setDialogVisible(false)}>Close</Button>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
+      {dialogStatId !== null && ( 
+        <EditStatDialog
+          visible={dialogVisible}
+          onDismiss={() => setDialogVisible(false)}
+          stat={goal.stats[dialogStatId]}
+          color={goalColor}
+        />
+      )}
     </SafeAreaView>
   );
 };
