@@ -6,7 +6,7 @@ import { Tag } from "./StoreTypes";
 
 interface TagMenuProps {
   tags: { name: string; state: "yes" | "no" }[];
-  setTags: (tags: { name: string; state: "yes" | "no" }[]) => void;
+  onChange: (tags: { name: string; state: "yes" | "no" }[]) => void;
   menuVisible: boolean;
   setMenuVisible: (visible: boolean) => void;
   goalTags: Tag[];
@@ -16,7 +16,7 @@ interface TagMenuProps {
 
 const TagMenu: React.FC<TagMenuProps> = ({
   tags,
-  setTags,
+  onChange,
   menuVisible,
   setMenuVisible,
   goalTags,
@@ -71,7 +71,7 @@ const TagMenu: React.FC<TagMenuProps> = ({
           return (
             <Menu.Item
               key={tag.name}
-              onPress={() => setTags(newTags)}
+              onPress={() => onChange(newTags)}
               title={title}
               trailingIcon={icon}
               titleStyle={{ color: palette[tag.color] }}

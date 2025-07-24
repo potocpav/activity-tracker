@@ -1,4 +1,4 @@
-import { Tag, StatPeriod, DataPoint, DateList, dateListToTime, normalizeDateList, TagFilter } from "./StoreTypes";
+import { Tag, StatPeriod, DataPoint, DateList, dateListToTime, normalizeDateList, TagFilter, StatValue } from "./StoreTypes";
 import { View, Text, StyleSheet } from "react-native";
 
 export type BinSize = "day" | "week" | "month" | "quarter" | "year";
@@ -66,6 +66,7 @@ export const extractValue = (dataPoint: DataPoint, tagFiters: TagFilter[], subUn
     return null;
   }
 }
+
 
 // Returns the indices of the slice in data that zero the condition `cmp`
 // Data must be sorted in ascending order, such that (x)=>signum(cmp(x)) is monotonic.
@@ -191,6 +192,48 @@ export const renderTags = (tags: Tag[], theme: any, palette: string[]) => {
     </View>
   );
 };
+
+export const periodToLabel = (period: StatPeriod): string => {
+  switch (period) {
+    case "today":
+      return "Today";
+    case "this_week":
+      return "This Week";
+    case "this_month":
+      return "This Month";
+    case "this_year":
+      return "This Year";
+    case "last_7_days":
+      return "Last 7 Days";
+    case "last_30_days":
+      return "Last 30 Days";
+    case "last_365_days":
+      return "Last 365 Days";
+    case "last_active_day":
+      return "Last Active Day";
+    case "all_time":
+      return "All Time";
+  }
+}
+
+export const valueToLabel = (value: StatValue): string => {
+  switch (value) {
+    case "n_days":
+      return "# Days";
+    case "n_points":
+      return "# Points";
+    case "sum":
+      return "Sum";
+    case "mean":
+      return "Mean";
+    case "max":
+      return "Max";
+    case "min":
+      return "Min";
+    case "last":
+      return "Last";
+  }
+}
 
 const styles = StyleSheet.create({
   tagsContainer: {

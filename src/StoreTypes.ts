@@ -65,6 +65,26 @@ export type Stat = {
   tagFilters: TagFilter[];
 };
 
+export type CalendarProps = {
+  label: string;
+  value: StatValue;
+  tagFilters: TagFilter[];
+  subUnit: string | null
+};
+
+export type GraphType = "box" | "bar-count" | "bar-sum" | "line-mean";
+
+export const graphTypes : GraphType[] = [
+  "box", "bar-count", "bar-sum", "line-mean"
+];
+
+export type GraphProps = {
+  label: string;
+  tagFilters: TagFilter[];
+  subUnit: string | null;
+  graphType: GraphType;
+};
+
 export type GoalType = {
   name: string;
   description: string;
@@ -73,6 +93,8 @@ export type GoalType = {
   tags: Tag[];
   color: number;
   stats: Stat[];
+  calendar: CalendarProps;
+  graph: GraphProps;
 };
 
 export type State = {

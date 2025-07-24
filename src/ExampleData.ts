@@ -1,39 +1,56 @@
 
-import { dateListToTime, GoalType, Stat, timeToDateList, Unit } from "./StoreTypes";
+import { CalendarProps, dateListToTime, GoalType, GraphProps, Stat, timeToDateList, Unit } from "./StoreTypes";
+
+const firstSubUnit = (unit: Unit): string | null => {
+  if (typeof unit === "string") {
+    return null;
+  }
+  return unit[0].name;
+}
 
 export const defaultStats = (unit: Unit): Stat[] => {
-  let subUnit: string | null = null;
-  if (typeof unit === "string") {
-    subUnit = null;
-  } else {
-    subUnit = unit[0].name;
-  }
   return [
     {
       label: "Count",
       value: "n_points",
-      subUnit: subUnit,
+      subUnit: firstSubUnit(unit),
       period: "all_time",
       tagFilters: [],
     },
     {
       label: "Days",
       value: "n_days",
-      subUnit: subUnit,
+      subUnit: firstSubUnit(unit),
       period: "all_time",
       tagFilters: [],
     },
     {
       label: "Last",
       value: "last",
-      subUnit: subUnit,
+      subUnit: firstSubUnit(unit),
       period: "last_active_day",
       tagFilters: [],
     },
   ];
 };
 
+export const defaultCalendar = (unit: Unit): CalendarProps => {
+  return {
+    label: "Count",
+    value: "n_points",
+    subUnit: firstSubUnit(unit),
+    tagFilters: [],
+  };
+};
 
+export const defaultGraph = (unit: Unit): GraphProps => {
+  return {
+    label: "",
+    subUnit: firstSubUnit(unit),
+    tagFilters: [],
+    graphType: "box",
+  };
+};
 
 export const defaultGoal: GoalType = {
   name: "",
@@ -43,6 +60,8 @@ export const defaultGoal: GoalType = {
   tags: [],
   color: 19,
   stats: defaultStats(""),
+  calendar: defaultCalendar(""),
+  graph: defaultGraph(""),
 };
 
 
@@ -65,8 +84,10 @@ const fingerStrengthExample: GoalType = {
   name: "Finger Strength (Example)",
   description: "Finger strength as measured using Tindeq Progressor",
   color: 4,
-  stats: defaultStats(fingerStrengthUnit),
   unit: fingerStrengthUnit,
+  stats: defaultStats(fingerStrengthUnit),
+  calendar: defaultCalendar(fingerStrengthUnit),
+  graph: defaultGraph(fingerStrengthUnit),
   tags: [
     {
       name: "left",
@@ -113,6 +134,8 @@ const bodyWeightExample: GoalType = {
   tags: [],
   color: 10,
   stats: defaultStats(bodyWeightUnit),
+  calendar: defaultCalendar(bodyWeightUnit),
+  graph: defaultGraph(bodyWeightUnit),
   dataPoints:
     Array.from({ length: 50 }, (_, i) => ({
       date: timeToDateList(
@@ -131,6 +154,8 @@ const bodyWeightExample2: GoalType = {
   tags: [],
   color: 0,
   stats: defaultStats(bodyWeightUnit),
+  calendar: defaultCalendar(bodyWeightUnit),
+  graph: defaultGraph(bodyWeightUnit),
   dataPoints: [
     {
       date: [2025, 7, 8],

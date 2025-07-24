@@ -19,13 +19,13 @@ import {
   Characteristic,
   Device,
 } from "react-native-ble-plx";
-import { dateListToTime, Stat, timeToDateList } from "./StoreTypes";
-import { defaultStats, exampleGoals } from "./ExampleData";
+import { CalendarProps, dateListToTime, GraphProps, Stat, timeToDateList } from "./StoreTypes";
+import { defaultGraph, defaultCalendar, defaultStats, exampleGoals } from "./ExampleData";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GoalType, Tag, DataPoint, SetTag, TagName, State } from "./StoreTypes";
 
-export const version = 4;
+export const version = 5;
 
 export const migrate = (persisted: any, version: number) => {
   if (version <= 0) {
@@ -51,6 +51,12 @@ export const migrate = (persisted: any, version: number) => {
         dp.date = timeToDateList(dp.time);
         delete dp.time;
       });
+    });
+  }
+  if (version <= 4) {
+    persisted.goals.forEach((goal: GoalType) => {
+      goal.calendar = defaultCalendar(goal.unit);
+      goal.graph = defaultGraph(goal.unit);
     });
   }
   return persisted
@@ -222,6 +228,20 @@ const useStore = create<State>()(
           } else {
             return { goals: [...state.goals, goal] };
           }
+        });
+      },
+
+      setGoalCalendar: (goalName: string, calendar: CalendarProps) => {
+        set((state: any) => {
+          const goals = state.goals.map((g: GoalType) => goalName === g.name ? { ...g, calendar } : g);
+          return { goals };
+        });
+      },
+
+      setGoalGraph: (goalName: string, graph: GraphProps) => {
+        set((state: any) => {
+          const goals = state.goals.map((g: GoalType) => goalName === g.name ? { ...g, graph } : g);
+          return { goals };
         });
       },
 

@@ -5,7 +5,7 @@ import { getTransformComponents, Line, Scatter, setScale, setTranslate, useChart
 import { CartesianChart } from "victory-native";
 import { matchFont, Path, RoundedRect, Skia } from "@shopify/react-native-skia";
 import useStore from "./Store";
-import { DataPoint, dateListToTime, GoalType, Tag, TagFilter } from "./StoreTypes";
+import { DataPoint, dateListToTime, GoalType, GraphType, graphTypes, Tag, TagFilter } from "./StoreTypes";
 import { useAnimatedReaction, useSharedValue, withTiming } from "react-native-reanimated";
 import { binTime, binTimeSeries, BinSize, extractValue } from "./GoalUtil";
 import AntDesign from '@expo/vector-icons/AntDesign';
@@ -62,11 +62,12 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
     return <Text>Goal not found</Text>;
   }
 
+  const setGoalGraph = useStore((state: any) => state.setGoalGraph);
+
   const [binning, setBinning] = useState<"day" | "week" | "month" | "quarter" | "year">("day");
   const [binMenuVisible, setBinMenuVisible] = useState(false);
   const [tags, setTags] = useState<TagFilter[]>([]);
-  const [graphType, setGraphType] = useState<"box" | "bar-count" | "bar-sum" | "line-mean">("box");
-  const graphTypes = ["box", "bar-count", "bar-sum", "line-mean"];
+  const [graphType, setGraphType] = useState<GraphType>("box");
   const transformState = useChartTransformState({
     scaleX: 1.0, // Initial X-axis scale
     scaleY: 1.0, // Initial Y-axis scale
@@ -420,7 +421,7 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
         {/* Tags menu */}
         <TagMenu
           tags={tags}
-          setTags={setTags}
+          onChange={(tags) => setTags(tags)}
           menuVisible={tagsMenuVisible}
           setMenuVisible={setTagsMenuVisible}
           goalTags={goal.tags}
@@ -445,7 +446,7 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
               key={type}
               onPress={() => {
                 setGraphTypeMenuVisible(false);
-                setGraphType(type as "box" | "bar-count" | "bar-sum" | "line-mean");
+                setGraphType(type as GraphType);
               }}
               title={<View style={{ flexDirection: 'row', alignItems: 'center' }}>{graphLabel(type)}</View>}
               trailingIcon={graphType === type ? "check" : undefined}

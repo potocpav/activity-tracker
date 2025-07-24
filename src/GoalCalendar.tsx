@@ -8,11 +8,11 @@ import {
 } from "react-native";
 import { useTheme } from 'react-native-paper';
 import useStore from "./Store";
-import { DataPoint, dateListToTime, GoalType, Tag, Unit } from "./StoreTypes";
+import { DataPoint, dateListToTime, GoalType, Tag, TagFilter, Unit, StatValue } from "./StoreTypes";
 import { darkPalette, lightPalette } from "./Color";
 import TagMenu from "./TagMenu";
 import Calendar from "./Calendar";
-import ValueMenu, { Value } from "./ValueMenu";
+import ValueMenu from "./ValueMenu";
 const locale = NativeModules.I18nManager.localeIdentifier;
 
 type GoalCalendarProps = {
@@ -73,10 +73,10 @@ const GoalCalendar = ({ navigation, goalName }: GoalCalendarProps) => {
   const palette = themeState === "dark" ? darkPalette : lightPalette;
   const goalColor = palette[goal.color];
 
-  const [tags, setTags] = useState<{ name: string; state: "yes" | "no" }[]>([]);
+  const setGoalCalendar = useStore((state: any) => state.setGoalCalendar);
+
   const [tagsMenuVisible, setTagsMenuVisible] = useState(false);
 
-  const [displayValue, setDisplayValue] = useState<Value>("Count");
   const [valueMenuVisible, setValueMenuVisible] = useState(false);
 
   const [subValue, setSubValue] = useState<string | null>(null);
@@ -85,13 +85,13 @@ const GoalCalendar = ({ navigation, goalName }: GoalCalendarProps) => {
     return <Text>Goal not found</Text>;
   }
 
-  const requiredTags = tags.filter((t) => t.state === "yes").map(t => t.name);
-  const negativeTags = tags.filter((t) => t.state === "no").map(t => t.name);
+  const requiredTags = goal.calendar.tagFilters.filter((t: any) => t.state === "yes").map((t: any) => t.name);
+  const negativeTags = goal.calendar.tagFilters.filter((t: any) => t.state === "no").map((t: any) => t.name);
   const filteredDataPoints = goal.dataPoints
     .map((o: DataPoint, i: number) => [o, i])
     .filter(([dataPoint, i]: [DataPoint, number]) => {
-      const hasAllRequired = requiredTags.every(tag => dataPoint.tags.includes(tag));
-      const hasAnyNegative = negativeTags.some(tag => dataPoint.tags.includes(tag));
+      const hasAllRequired = requiredTags.every((tag: string) => dataPoint.tags.includes(tag));
+      const hasAnyNegative = negativeTags.some((tag: string) => dataPoint.tags.includes(tag));
       return hasAllRequired && !hasAnyNegative;
     })
 
@@ -104,13 +104,15 @@ const GoalCalendar = ({ navigation, goalName }: GoalCalendarProps) => {
         colorIndex={goal.color}
         dataPoints={filteredDataPoints}
         firstDpDate={goal.dataPoints[0]?.date || null}
-        displayValue={displayValue}
+        displayValue={goal.calendar.value}
         subValue={subValue} />
       <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
         {goal.tags.length > 0 && (
           <TagMenu
-            tags={tags}
-            setTags={setTags}
+            tags={goal.calendar.tagFilters}
+            onChange={(tags) => {
+              setGoalCalendar(goalName, { ...goal.calendar, tagFilters: tags });
+            }}
             menuVisible={tagsMenuVisible}
             setMenuVisible={setTagsMenuVisible}
             goalTags={goal.tags}
@@ -119,11 +121,12 @@ const GoalCalendar = ({ navigation, goalName }: GoalCalendarProps) => {
           />
         )}
         <ValueMenu
-          value={displayValue}
-          setValue={setDisplayValue}
+          value={goal.calendar.value}
+          onChange={(v: StatValue) => setGoalCalendar(goalName, { ...goal.calendar, value: v })}
           menuVisible={valueMenuVisible}
           setMenuVisible={setValueMenuVisible}
           themeColors={theme.colors}
+          valueList={["n_points", "sum", "mean", "max", "min", "last"]}
         />
       </View>
     </SafeAreaView>

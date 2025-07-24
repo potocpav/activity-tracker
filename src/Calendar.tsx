@@ -3,7 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity, FlatList } from "react-native
 import { useTheme } from 'react-native-paper';
 import { DataPoint, dateListToTime, dateToDateList, normalizeDateList, timeToDateList, DateList } from "./StoreTypes";
 import { formatNumber, findZeroSlice, dayCmp } from "./GoalUtil";
-import { Value } from "./ValueMenu";
+import { StatValue } from "./StoreTypes";
+
 type CalendarProps = {
   navigation: any;
   goalName: string;
@@ -11,7 +12,7 @@ type CalendarProps = {
   colorIndex: number;
   dataPoints: [DataPoint, number][];
   firstDpDate: DateList | null;
-  displayValue: Value;
+  displayValue: StatValue;
   subValue: string | null;
 };
 
@@ -44,14 +45,15 @@ const Calendar: React.FC<CalendarProps> = ({ navigation, goalName, palette, colo
 
   }
 
+  // TODO: deduplicate with Summary calculation
   const extractValue = (dps: DataPoint[]) => {
     if (dps.length === 0) {
       return null;
     }
     switch (displayValue) {
-      case "Count":
+      case "n_points":
         return dps.length;
-      case "Max":
+      case "max":
         {
           let accum: number | null = null;
           dps.forEach((dp) => {
@@ -60,7 +62,7 @@ const Calendar: React.FC<CalendarProps> = ({ navigation, goalName, palette, colo
           });
           return accum;
         }
-      case "Mean":
+      case "mean":
         {
           let accum: number | null = null;
           dps.forEach((dp) => {
@@ -69,7 +71,7 @@ const Calendar: React.FC<CalendarProps> = ({ navigation, goalName, palette, colo
           });
           return accum === null ? null : accum / dps.length;
         }
-      case "Sum":
+      case "sum":
         {
           let accum: number | null = null;
           dps.forEach((dp) => {

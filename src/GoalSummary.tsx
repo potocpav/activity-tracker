@@ -5,7 +5,7 @@ import useStore from "./Store";
 import { DataPoint, DateList, dateToDateList, GoalType, Stat, StatPeriod, StatValue, TagFilter, Tag, allStatPeriods, allStatValues } from "./StoreTypes";
 import { renderValueSummary, formatDate } from "./GoalData";
 import { lightPalette, darkPalette } from "./Color";
-import { renderTags, findZeroSlice, statPeriodCmp, extractValue, formatNumber } from "./GoalUtil";
+import { renderTags, findZeroSlice, statPeriodCmp, extractValue, formatNumber, valueToLabel, periodToLabel } from "./GoalUtil";
 import TagMenu from "./TagMenu";
 import SubUnitMenu from "./SubUnitMenu";
 import DropdownMenu from "./DropdownMenu";
@@ -75,47 +75,6 @@ type EditStatDialogProps = {
   color: string;
 };
 
-const periodToLabel = (period: StatPeriod): string => {
-  switch (period) {
-    case "today":
-      return "Today";
-    case "this_week":
-      return "This Week";
-    case "this_month":
-      return "This Month";
-    case "this_year":
-      return "This Year";
-    case "last_7_days":
-      return "Last 7 Days";
-    case "last_30_days":
-      return "Last 30 Days";
-    case "last_365_days":
-      return "Last 365 Days";
-    case "last_active_day":
-      return "Last Active Day";
-    case "all_time":
-      return "All Time";
-  }
-}
-
-const valueToLabel = (value: StatValue): string => {
-  switch (value) {
-    case "n_days":
-      return "# Days";
-    case "n_points":
-      return "# Points";
-    case "sum":
-      return "Sum";
-    case "mean":
-      return "Mean";
-    case "max":
-      return "Max";
-    case "min":
-      return "Min";
-    case "last":
-      return "Last";
-  }
-}
 
 const GoalSummary = ({ navigation, goalName }: { navigation: any, goalName: string }) => {
   const theme = useTheme();
@@ -334,7 +293,7 @@ const GoalSummary = ({ navigation, goalName }: { navigation: any, goalName: stri
               {/* Tags */}
               <TagMenu
                 tags={statDialogTagFilters}
-                setTags={setStatDialogTagFilters}
+                onChange={(tags) => setStatDialogTagFilters(tags)}
                 menuVisible={statDialogTagsMenuVisible}
                 setMenuVisible={setStatDialogTagsMenuVisible}
                 goalTags={goal.tags}

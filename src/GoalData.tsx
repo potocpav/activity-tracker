@@ -100,9 +100,7 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
   
   let dps: [DataPoint, number][] = goal.dataPoints.map((o: DataPoint, i: number) => [o, i]);
   // filter only daily points
-  console.log(dps);
   if (day) {
-    console.log(day);
     const daySlice = findZeroSlice(dps, (dp) => dayCmp(dp, day));
     const dayDataAndIndex = dps.slice(...daySlice);
     dps = dayDataAndIndex;
@@ -123,7 +121,7 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
         <View style={{ padding: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start' }}>
           <TagMenu
             tags={tags}
-            setTags={setTags}
+            onChange={(tags) => setTags(tags)}
             menuVisible={tagsMenuVisible}
             setMenuVisible={setTagsMenuVisible}
             goalTags={goal.tags}
