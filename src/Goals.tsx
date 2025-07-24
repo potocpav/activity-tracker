@@ -26,12 +26,13 @@ const Goals: React.FC<GoalsProps> = ({ navigation }) => {
   const [menuVisible, setMenuVisible] = React.useState(false);
   const themeState = useStore((state: any) => state.theme);
   const palette = themeState === "dark" ? darkPalette : lightPalette;
+  const styles = getStyles(theme);
 
   React.useEffect(() => {
     navigation.setOptions({
       // title: goal.name,
       headerRight: () => (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <View style={styles.headerRightContainer}>
           <Button compact={true} onPress={() => navigation.navigate('EditGoal', { goalName: null })}>
             <AntDesign name="plus" size={24} color={theme.colors.onSurface} />
           </Button>
@@ -47,25 +48,23 @@ const Goals: React.FC<GoalsProps> = ({ navigation }) => {
     const lastDataPoint = item.dataPoints && item.dataPoints.length > 0 ? item.dataPoints[item.dataPoints.length - 1] : null;
     return (
       <TouchableOpacity
-        style={[styles.goalCard, { backgroundColor: theme.colors.surface }]}
+        style={[styles.goalCard, styles.goalCardSurface]}
         onPress={() => navigation.navigate('Goal', { goalName: item.name })}
         onLongPress={drag}
         activeOpacity={0.7}
       >
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <View style={{ flex: 1 }}>
+        <View style={styles.goalRow}>
+          <View style={styles.goalTitleContainer}>
             <Text style={[styles.goalTitle, { color: palette[item.color] }]}>{item.name}</Text>
           </View>
-          <View style={{ marginTop: 4 }}>
-            {lastDataPoint ? (
-              renderValueSummary(lastDataPoint.value, item.unit, [styles.goalDescription, { color: palette[item.color] }])
-            ) : (
-              <Text style={[styles.goalDescription, { color: palette[item.color] }]}>No data</Text>
-            )}
+          <View style={styles.goalDescriptionContainer}>
+            <Text style={[styles.goalDescription, { color: palette[item.color] }]}>
+              {renderValueSummary(lastDataPoint?.value, item.unit, [styles.goalDescription, { color: palette[item.color] }])}
+            </Text>
           </View>
           <TouchableOpacity
             onPress={() => { navigation.navigate('EditDataPoint', { goalName: item.name, dataPointName: null, new: true }); }}
-            style={{ marginLeft: 12, padding: 8 }}
+            style={styles.addDataPointButton}
           >
             <AntDesign name="plus" size={24} color={palette[item.color]} />
           </TouchableOpacity>
@@ -75,12 +74,12 @@ const Goals: React.FC<GoalsProps> = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <View style={{ position: 'absolute', top: 10, right: 0 }}>
+    <SafeAreaView style={[styles.container, styles.background]}>
+      <View style={styles.menuContainer}>
         <Menu
           visible={menuVisible}
           onDismiss={() => setMenuVisible(false)}
-          anchor={<View style={{ width: 1, height: 1 }} />}
+          anchor={<View style={styles.menuAnchor} />}
         >
           <Menu.Item onPress={() => { setMenuVisible(false); navigation.navigate('Live View') }} title="Tindeq Live View" />
           <Menu.Item onPress={() => { setMenuVisible(false); navigation.navigate('Settings') }} title="Settings" />
@@ -97,15 +96,36 @@ const Goals: React.FC<GoalsProps> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
+  },
+  background: {
+    backgroundColor: theme.colors.background,
   },
   listContainer: {
     margin: 10,
   },
   goalCard: {
     padding: 4,
+  },
+  goalCardSurface: {
+    backgroundColor: theme.colors.surface,
+  },
+  goalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  goalTitleContainer: {
+    flex: 1,
+  },
+  goalDescriptionContainer: {
+    marginTop: 4,
+  },
+  addDataPointButton: {
+    marginLeft: 12,
+    padding: 8,
   },
   goalTitle: {
     fontSize: 16,
@@ -119,6 +139,19 @@ const styles = StyleSheet.create({
     margin: 16,
     right: 0,
     bottom: 0,
+  },
+  headerRightContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  menuContainer: {
+    position: 'absolute',
+    top: 10,
+    right: 0,
+  },
+  menuAnchor: {
+    width: 1,
+    height: 1,
   },
 });
 
