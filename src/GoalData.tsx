@@ -12,7 +12,7 @@ import { useTheme, DataTable, FAB } from 'react-native-paper';
 import useStore from "./Store";
 import { DataPoint, GoalType, Tag, Unit } from "./StoreTypes";
 import { darkPalette, lightPalette } from "./Color";
-import { renderTags } from "./GoalUtil";
+import { dayCmp, findZeroSlice, renderTags } from "./GoalUtil";
 import TagMenu from "./TagMenu";
 const locale = NativeModules.I18nManager.localeIdentifier;
 
@@ -79,7 +79,7 @@ const ITEM_HEIGHT = 50;
 
 const GoalData = ({ navigation, route }: GoalDataProps) => {
   const theme = useTheme();
-  const { goalName } = route.params;
+  const { goalName, day } = route.params;
   const goals = useStore((state: any) => state.goals);
   const goal = goals.find((g: GoalType) => g.name === goalName);
   const themeState = useStore((state: any) => state.theme);
@@ -97,8 +97,18 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
   // Filtering logic
   const requiredTags = tags.filter((t) => t.state === "yes").map(t => t.name);
   const negativeTags = tags.filter((t) => t.state === "no").map(t => t.name);
-  const filteredDataPoints: [DataPoint, number][] = goal.dataPoints
-    .map((o: DataPoint, i: number) => [o, i])
+  
+  let dps: [DataPoint, number][] = goal.dataPoints.map((o: DataPoint, i: number) => [o, i]);
+  // filter only daily points
+  console.log(dps);
+  if (day) {
+    console.log(day);
+    const daySlice = findZeroSlice(dps, (dp) => dayCmp(dp, day));
+    const dayDataAndIndex = dps.slice(...daySlice);
+    dps = dayDataAndIndex;
+  }
+
+  const filteredDataPoints: [DataPoint, number][] = dps
     .filter(([dataPoint, i]: [DataPoint, number]) => {
       const hasAllRequired = requiredTags.every(tag => dataPoint.tags.includes(tag));
       const hasAnyNegative = negativeTags.some(tag => dataPoint.tags.includes(tag));
@@ -124,7 +134,9 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
       )}
       <DataTable>
         <DataTable.Header>
-          <DataTable.Title>Date</DataTable.Title>
+          { day ? null : (
+            <DataTable.Title>Date</DataTable.Title>
+          )}
           <DataTable.Title>Tags</DataTable.Title>
           <DataTable.Title numeric>Value</DataTable.Title>
         </DataTable.Header>
@@ -142,7 +154,9 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
             onPress={() => navigation.navigate("EditDataPoint", { goalName: goal.name, dataPointIndex: i })}
           >
             <DataTable.Row style={{ height: ITEM_HEIGHT }}>
-              <DataTable.Cell>{formatDate(new Date(...dataPoint.date))}</DataTable.Cell>
+              {day ? null : (
+                <DataTable.Cell>{formatDate(new Date(...dataPoint.date))}</DataTable.Cell>
+              )}
               <DataTable.Cell>{renderTags(goal.tags.filter((t: Tag) => dataPoint.tags.includes(t.name)), theme, palette)}</DataTable.Cell>
               <DataTable.Cell numeric>{renderValue(dataPoint.value, goal.unit)}</DataTable.Cell>
             </DataTable.Row>
@@ -152,7 +166,7 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
       <FAB
         icon="plus"
         style={[styles.fab, { backgroundColor: goalColor }]}
-        onPress={() => navigation.navigate("EditDataPoint", { goalName: goal.name, newDataPoint: true })}
+        onPress={() => navigation.navigate("EditDataPoint", { goalName: goal.name, newDataPoint: true, newDataPointDate: day })}
         color={theme.colors.surface}
       />
     </SafeAreaView>

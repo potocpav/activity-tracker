@@ -25,27 +25,14 @@ In order to make this app a full-featured management app for workout data, the f
 * [x] Add data import to Settings
 * [x] Export data as CSV
 * [x] Add Calendar page
+* [x] Calendar in Summary page
+* [x] Graph in Summary page
 * [ ] Implement editing composite units
 * [ ] Allow value-less goals
-* [ ] Graphs in Summary page
-  * [ ] Adding
-  * [ ] Deleting
-  * [ ] Editing
-* [ ] Stat values in Summary page:
-   * [x] Adding
-   * [x] Deleting
-   * [x] Editing
-   * [ ] Dragging
- * [ ] Calendars in Summary page
-   * [ ] Adding
-   * [ ] Deleting
-   * [ ] Editing
-* [ ] Add week start customization to Settings
-* [ ] Click-through calendar days
-  * [ ] Show data list for the day
-  * [ ] Adding a point
-  * [ ] Dragging points
+* [ ] Dragging stat values in Summary page
 * [ ] Use the first summary value in Goals.tsx
+* [ ] Add week start customization to Settings
+* [ ] Dragging points in Day View
 
 ### Bugs
 
@@ -57,13 +44,17 @@ In order to make this app a full-featured management app for workout data, the f
 * [ ] When editing points, preserve their position within a day
 * [ ] Fix direct date input
 * [ ] Make bounds on graphs pixel-perfect
-* [ ] Fix localization
+* [ ] Fix localization (date display)
+* [ ] Update event filters in Summary page (summaries, calendar, graph)
+  * [ ] when goal tags change
+  * [ ] when goal unit changes
 
 ### General Usability
 
 * [x] When editing, show a better point header.
 * [x] Improve form validation messages
 * [x] Screen orientation
+* [ ] Polish stat editing and dragging
 * [ ] Screen orientation & responsive design tweaks
 * [ ] Show measurement comments somewhere
 * [ ] Show numbers on bar charts

@@ -25,12 +25,12 @@ const locale = NativeModules.I18nManager.localeIdentifier;
 
 const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   const theme = useTheme();
-  const { goalName, dataPointIndex, newDataPoint } = route.params;
+  const { goalName, dataPointIndex, newDataPoint, newDataPointDate } = route.params;
   const goals = useStore((state: any) => state.goals);
   const goal = goals.find((g: GoalType) => g.name === goalName);
 
   const dataPoint : DataPoint = dataPointIndex !== undefined ? goal?.dataPoints[dataPointIndex] : {
-    date: dateToDateList(new Date()),
+    date: dateToDateList(newDataPointDate ? new Date(newDataPointDate[0], newDataPointDate[1], newDataPointDate[2]) : new Date()),
     value: typeof goal.unit === "string" ?
       null :
       Object.fromEntries(goal.unit.map((u: SubUnit) => [u.name, null])),

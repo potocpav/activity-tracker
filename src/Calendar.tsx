@@ -5,6 +5,7 @@ import { DataPoint, dateListToTime, dateToDateList, normalizeDateList, timeToDat
 import { formatNumber, findZeroSlice, dayCmp } from "./GoalUtil";
 import { Value } from "./ValueMenu";
 type CalendarProps = {
+  navigation: any;
   goalName: string;
   palette: string[];
   colorIndex: number;
@@ -14,14 +15,14 @@ type CalendarProps = {
   subValue: string | null;
 };
 
-const ITEM_HEIGHT = 50;
-const ITEM_MARGIN = 2;
-const ITEM_TOP_MARGIN = 4;
-const MIN_WEEK_COUNT = 20;
+const ITEM_WIDTH = 38;
+const ITEM_MARGIN = 4;
+const ITEM_LEFT_MARGIN = 0;
+const MIN_WEEK_COUNT = 14;
 const MAX_WEEK_COUNT = 520;
 
 
-const Calendar: React.FC<CalendarProps> = ({ goalName, palette, colorIndex, dataPoints, firstDpDate, displayValue, subValue }) => {
+const Calendar: React.FC<CalendarProps> = ({ navigation, goalName, palette, colorIndex, dataPoints, firstDpDate, displayValue, subValue }) => {
   const theme = useTheme();
   const dayBackground = palette[colorIndex];
   const now = new Date();
@@ -90,13 +91,14 @@ const Calendar: React.FC<CalendarProps> = ({ goalName, palette, colorIndex, data
       removeClippedSubviews={true}
       inverted={true}
       windowSize={2}
+      horizontal={true}
       getItemLayout={(_, index) => (
-        { length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index }
+        { length: ITEM_WIDTH, offset: ITEM_WIDTH * index, index }
       )}
       renderItem={({ item: weekIdx }) => {
         const weekStart = pastWeekStart(now, weekIdx);
         return (
-          <View style={styles.weekRow} key={weekIdx}>
+          <View style={styles.weekColumn} key={weekIdx}>
             <View style={styles.monthLabelContainer}>
               {(weekStart.getDate() <= 7) &&
                 <Text style={[styles.monthLabel, { color: theme.colors.onSurfaceVariant }]}>{`${weekStart.toLocaleDateString('en-US', { month: 'short' })}`}</Text>}
@@ -124,7 +126,13 @@ const Calendar: React.FC<CalendarProps> = ({ goalName, palette, colorIndex, data
                     }
                   ]}
                   key={dayIdx}
-                  onPress={() => console.log('Day pressed:', dayIdx)}
+                  onPress={() => {
+                    if (hasData) {
+                      navigation.navigate("GoalData", { goalName, day });
+                    } else {
+                      navigation.navigate("EditDataPoint", { goalName, newDataPoint: true, newDataPointDate: day });
+                    }
+                  }}
                   activeOpacity={0.3}
                 >
                   {(dayIdx == 0) && 
@@ -152,17 +160,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginVertical: 16,
   },
-  weekRow: {
-    flexDirection: 'row',
-    height: ITEM_HEIGHT,
+  weekColumn: {
+    flexDirection: 'column',
+    width: ITEM_WIDTH,
   },
   daySquare: {
-    width: 44,
-    height: ITEM_HEIGHT - ITEM_MARGIN - ITEM_TOP_MARGIN,
+    width: ITEM_WIDTH - ITEM_MARGIN - ITEM_LEFT_MARGIN,
+    height: ITEM_WIDTH - ITEM_MARGIN,
     borderRadius: 8,
     marginHorizontal: ITEM_MARGIN,
     marginBottom: ITEM_MARGIN,
-    marginTop: ITEM_TOP_MARGIN,
+    marginLeft: ITEM_LEFT_MARGIN,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 4,
@@ -180,13 +188,11 @@ const styles = StyleSheet.create({
   value: {
     position: 'absolute',
     fontSize: 15,
-    fontWeight: 'bold',
-    // marginTop: 10,
   },
   monthLabelContainer: {
-    width: 36,
-    alignItems: 'flex-end',
-    justifyContent: 'center',
+    height: 25,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
     marginRight: 4,
   },
   monthLabel: {

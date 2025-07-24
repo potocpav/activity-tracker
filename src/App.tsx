@@ -21,6 +21,7 @@ import {
   adaptNavigationTheme,
 } from 'react-native-paper';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import GoalData from "./GoalData";
 
 const { LightTheme, DarkTheme: PaperDarkTheme } = adaptNavigationTheme({
   reactNavigationLight: DefaultTheme,
@@ -120,6 +121,11 @@ const App = () => {
                 <Stack.Screen
                   name="Goal"
                   component={Goal}
+                />
+                <Stack.Screen
+                  name="GoalData"
+                  component={GoalData}
+                  options={{ title: "Data Points" }}
                 />
                 <Stack.Screen
                   name="Settings"

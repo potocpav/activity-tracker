@@ -1,38 +1,22 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   SafeAreaView,
   StyleSheet,
   Text,
   View,
-  TouchableOpacity,
   Alert,
-  Share,
 } from "react-native";
-import { useTheme, Menu, FAB, Button } from 'react-native-paper';
-import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+import { useTheme, Menu, Button } from 'react-native-paper';
 import useStore from "./Store";
 import {DataPoint, GoalType, SubUnit, Tag, Unit} from "./StoreTypes";
-import GoalGraph from "./GoalGraph";
-import GoalData from "./GoalData";
-import GoalCalendar from "./GoalCalendar";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import GoalSummary from "./GoalSummary";
 import { File, Paths } from "expo-file-system/next";
 import * as Sharing from 'expo-sharing';
 
-
-const Tab = createMaterialTopTabNavigator();
-
 type GoalProps = {
   navigation: any;
   route: any;
-};
-
-const renderUnit = (unit: Unit) => {
-  if (typeof unit === "string") {
-    return "[" + unit + "]";
-  }
-  return unit.map((u: SubUnit) => u.name + " [" + u.symbol + "]").join(", ");
 };
 
 
@@ -180,16 +164,12 @@ const GoalInner: React.FC<any> = ({ goal, navigation }) => {
           onDismiss={() => setMenuVisible(false)}
           anchor={<View style={{ width: 1, height: 1 }} />}
         >
+          <Menu.Item onPress={() => { setMenuVisible(false); navigation.navigate("GoalData", { goalName }) }} title="Data Points" />
           <Menu.Item onPress={() => { setMenuVisible(false); exportGoalCsv() }} title="Export" />
           <Menu.Item onPress={() => { setMenuVisible(false); deleteGoalWrapper() }} title="Delete" />
         </Menu>
       </View>
-      <Tab.Navigator screenOptions={{ swipeEnabled: false }}>
-        <Tab.Screen name="Summary" component={GoalSummary} initialParams={{ goalName }} />
-        <Tab.Screen name="Data" component={GoalData} initialParams={{ goalName }} />
-        <Tab.Screen name="Calendar" component={GoalCalendar} initialParams={{ goalName }} />
-        <Tab.Screen name="Graph" component={GoalGraph} initialParams={{ goalName }} />
-      </Tab.Navigator>
+      <GoalSummary goalName={goalName} navigation={navigation} />
     </SafeAreaView>
   );
 };

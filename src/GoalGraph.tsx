@@ -50,9 +50,8 @@ const quartiles = (values: number[]) => {
   return { q0, q1, q2, q3, q4 };
 };
 
-const GoalGraph = ({ route }: { route: any }) => {
+const GoalGraph = ({ goalName }: { goalName: string }) => {
   const theme = useTheme();
-  const { goalName } = route.params;
   const goals = useStore((state: any) => state.goals);
   const goal = goals.find((g: GoalType) => g.name === goalName);
   const themeState = useStore((state: any) => state.theme);
@@ -252,7 +251,7 @@ const GoalGraph = ({ route }: { route: any }) => {
   const binningOptions = Object.entries(binningLabels).map(([key, label]) => ({ key, label }));
 
   return (
-    <View style={{ flex: 1, padding: 10, backgroundColor: theme.colors.background }}>
+    <View style={{ flex: 1, padding: 10, marginVertical: 16, backgroundColor: theme.colors.background }}>
       {/* Menus row */}
       <View key="menusRow" style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 5 }}>
         {/* Binning menu */}
@@ -313,7 +312,7 @@ const GoalGraph = ({ route }: { route: any }) => {
         </Menu>
       </View>
 
-      <View key="goalGraph" style={{ height: '50%', width: '100%' }}>
+      <View key="goalGraph" style={{ height: 300, width: '100%' }}>
         <CartesianChart
           data={binStats}
           transformState={transformState}

@@ -1,5 +1,5 @@
 import React from "react";
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useTheme, FAB, Divider, Portal, Dialog, Button, TextInput } from 'react-native-paper';
 import useStore from "./Store";
 import { DataPoint, DateList, dateToDateList, GoalType, Stat, StatPeriod, StatValue, TagFilter, Tag, allStatPeriods, allStatValues } from "./StoreTypes";
@@ -10,6 +10,8 @@ import TagMenu from "./TagMenu";
 import SubUnitMenu from "./SubUnitMenu";
 import DropdownMenu from "./DropdownMenu";
 import AntDesign from '@expo/vector-icons/AntDesign';
+import GoalGraph from "./GoalGraph";
+import GoalCalendar from "./GoalCalendar";
 
 const calcStatValue = (stat: Stat, goal: GoalType) => {
   const today = dateToDateList(new Date());
@@ -113,9 +115,8 @@ const valueToLabel = (value: StatValue): string => {
   }
 }
 
-const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => {
+const GoalSummary = ({ navigation, goalName }: { navigation: any, goalName: string }) => {
   const theme = useTheme();
-  const { goalName } = route.params;
   const goals = useStore((state: any) => state.goals);
   const goal = goals.find((g: GoalType) => g.name === goalName);
   const themeState = useStore((state: any) => state.theme);
@@ -184,6 +185,7 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
 
   return (
     <SafeAreaView style={styles.container}>
+      <ScrollView>
       <View style={styles.goalInfo}>
         <Text style={styles.goalDescription}>{goal.description}</Text>
       </View>
@@ -210,6 +212,10 @@ const GoalSummary = ({ navigation, route }: { navigation: any, route: any }) => 
         </Button>
       </View>
       <Divider />
+      <GoalCalendar navigation={navigation} goalName={goalName} />
+      {/* <Divider /> */}
+      <GoalGraph goalName={goalName} />
+      </ScrollView>
       <FAB
         icon="plus"
         style={styles.fab}

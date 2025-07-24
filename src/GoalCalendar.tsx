@@ -17,7 +17,7 @@ const locale = NativeModules.I18nManager.localeIdentifier;
 
 type GoalCalendarProps = {
   navigation: any;
-  route: any;
+  goalName: string;
 };
 
 export const formatDate = (date: Date) => {
@@ -65,16 +65,15 @@ export const renderValue = (value: any, unit: Unit) => {
   }
 };
 
-const GoalCalendar = ({ navigation, route }: GoalCalendarProps) => {
+const GoalCalendar = ({ navigation, goalName }: GoalCalendarProps) => {
   const theme = useTheme();
-  const { goalName } = route.params;
   const goals = useStore((state: any) => state.goals);
   const goal = goals.find((g: GoalType) => g.name === goalName);
   const themeState = useStore((state: any) => state.theme);
   const palette = themeState === "dark" ? darkPalette : lightPalette;
   const goalColor = palette[goal.color];
 
-  const [tags, setTags] = useState<{ name: string; state: "yes" | "no" | "maybe" }[]>(goal.tags.map((t: Tag) => ({ name: t.name, state: "maybe" })));
+  const [tags, setTags] = useState<{ name: string; state: "yes" | "no" }[]>([]);
   const [tagsMenuVisible, setTagsMenuVisible] = useState(false);
 
   const [displayValue, setDisplayValue] = useState<Value>("Count");
@@ -98,7 +97,7 @@ const GoalCalendar = ({ navigation, route }: GoalCalendarProps) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <View style={{ padding: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start' }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
         {goal.tags.length > 0 && (
           <TagMenu
             tags={tags}
@@ -119,6 +118,7 @@ const GoalCalendar = ({ navigation, route }: GoalCalendarProps) => {
         />
       </View>
       <Calendar
+        navigation={navigation}
         goalName={goalName}
         palette={palette}
         colorIndex={goal.color}
@@ -133,6 +133,7 @@ const GoalCalendar = ({ navigation, route }: GoalCalendarProps) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    marginVertical: 16,
   },
   fab: {
     position: 'absolute',

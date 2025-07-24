@@ -30,10 +30,6 @@ const TagMenu: React.FC<TagMenuProps> = ({
         onDismiss={() => setMenuVisible(false)}
         anchor={
           <Button compact={true} onPress={() => setMenuVisible(true)} style={{ 
-            marginBottom: 10,
-            borderWidth: 1,
-            borderColor: themeColors.outline,
-            borderRadius: 4,
             padding: 5,
             backgroundColor: themeColors.surface,
             }}>

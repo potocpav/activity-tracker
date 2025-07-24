@@ -35,10 +35,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
       anchor={
         <Button compact={true} onPress={() => setVisible(true)} style={{ 
           backgroundColor: themeColors.surface,
-          borderRadius: 4,
           padding: 5,
-          marginBottom: 10,
-          borderWidth: 1,
           borderColor: themeColors.outline,
         }}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
