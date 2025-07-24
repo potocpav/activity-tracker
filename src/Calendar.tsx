@@ -49,9 +49,9 @@ const Calendar: React.FC<CalendarProps> = ({ goalName, palette, colorIndex, data
       return null;
     }
     switch (displayValue) {
-      case "count":
+      case "Count":
         return dps.length;
-      case "max":
+      case "Max":
         {
           let accum: number | null = null;
           dps.forEach((dp) => {
@@ -60,7 +60,7 @@ const Calendar: React.FC<CalendarProps> = ({ goalName, palette, colorIndex, data
           });
           return accum;
         }
-      case "mean":
+      case "Mean":
         {
           let accum: number | null = null;
           dps.forEach((dp) => {
@@ -69,7 +69,7 @@ const Calendar: React.FC<CalendarProps> = ({ goalName, palette, colorIndex, data
           });
           return accum === null ? null : accum / dps.length;
         }
-      case "sum":
+      case "Sum":
         {
           let accum: number | null = null;
           dps.forEach((dp) => {

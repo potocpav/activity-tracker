@@ -79,7 +79,7 @@ const GoalCalendar = ({ navigation, route }: GoalCalendarProps) => {
   const [tags, setTags] = useState<{ name: string; state: "yes" | "no" | "maybe" }[]>(goal.tags.map((t: Tag) => ({ name: t.name, state: "maybe" })));
   const [tagsMenuVisible, setTagsMenuVisible] = useState(false);
 
-  const [displayValue, setDisplayValue] = useState<Value>("count");
+  const [displayValue, setDisplayValue] = useState<Value>("Count");
   const [valueMenuVisible, setValueMenuVisible] = useState(false);
 
   const [subValue, setSubValue] = useState<string | null>(null);

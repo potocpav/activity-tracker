@@ -3,7 +3,7 @@ import { View, Text } from "react-native";
 import { Menu, Button } from 'react-native-paper';
 import AntDesign from '@expo/vector-icons/AntDesign';
 
-export type Value = "count" | "max" | "mean" | "sum"
+export type Value = "Count" | "Max" | "Mean" | "Sum"
 
 interface ValueMenuProps {
   menuVisible: boolean
@@ -13,7 +13,7 @@ interface ValueMenuProps {
   themeColors: any
 }
 
-const valueList: Value[] = ["count", "max", "mean", "sum"]
+const valueList: Value[] = ["Count", "Max", "Mean", "Sum"]
 
 const ValueMenu: React.FC<ValueMenuProps> = ({
   menuVisible,
