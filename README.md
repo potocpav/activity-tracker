@@ -18,12 +18,11 @@ In order to make this app a full-featured management app for workout data, the f
   
 ### Features
 
-* [ ] Graph settings persistence
+* [x] Graph settings persistence
 * [ ] Implement editing composite units
 * [ ] Allow value-less goals
 * [ ] Dragging stat values in Summary page
 * [ ] Use the first summary value in Goals.tsx
-* [ ] Add week start customization to Settings
 * [ ] Dragging points in Day View
 
 ### Bugs
@@ -44,6 +43,7 @@ In order to make this app a full-featured management app for workout data, the f
 * [ ] Limit graph Panning on the left
 * [ ] Make bounds on graphs pixel-perfect
 * [ ] Prevent future & far past point input
+* [ ] Add week start customization to Settings
 * [ ] Performance testing & enhancements
   * [ ] Many points (10k)
   * [ ] Wide date ranges (100 years)

@@ -151,7 +151,8 @@ export const binTime = (binSize: BinSize, t0: number, i: number) => {
   } else if (binSize === "year") {
     return new Date(t0Date.getFullYear() + i, 0, 1, 0).getTime();
   } else {
-    throw new Error("Invalid bin size");
+    console.log("Invalid bin size: " + binSize);
+    throw new Error("Invalid bin size: " + binSize);
   }
 };
 

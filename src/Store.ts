@@ -25,7 +25,7 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GoalType, Tag, DataPoint, SetTag, TagName, State } from "./StoreTypes";
 
-export const version = 5;
+export const version = 6;
 
 export const migrate = (persisted: any, version: number) => {
   if (version <= 0) {
@@ -57,6 +57,11 @@ export const migrate = (persisted: any, version: number) => {
     persisted.goals.forEach((goal: GoalType) => {
       goal.calendar = defaultCalendar(goal.unit);
       goal.graph = defaultGraph(goal.unit);
+    });
+  }
+  if (version <= 5) {
+    persisted.goals.forEach((goal: GoalType) => {
+      goal.graph.binSize = "day";
     });
   }
   return persisted

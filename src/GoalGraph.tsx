@@ -30,7 +30,8 @@ const approximateBinSize = (binSize: BinSize) => {
   } else if (binSize === "year") {
     return 365 * day;
   } else {
-    throw new Error("Invalid bin size");
+    console.log("Invalid bin size: " + binSize);
+    throw new Error("Invalid bin size: " + binSize);
   }
 }
 
@@ -64,29 +65,25 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
 
   const setGoalGraph = useStore((state: any) => state.setGoalGraph);
 
-  const [binning, setBinning] = useState<"day" | "week" | "month" | "quarter" | "year">("day");
-  const [binMenuVisible, setBinMenuVisible] = useState(false);
-  const [tags, setTags] = useState<TagFilter[]>([]);
-  const [graphType, setGraphType] = useState<GraphType>("box");
   const transformState = useChartTransformState({
     scaleX: 1.0, // Initial X-axis scale
     scaleY: 1.0, // Initial Y-axis scale
   }).state;
   const subUnitNames = typeof goal.unit === 'string' ? null : goal.unit.map((u: any) => u.name);
-  const [subUnitName, setSubUnitName] = useState(subUnitNames?.[0] || null);
+
+  const [binMenuVisible, setBinMenuVisible] = useState(false);
   const [subUnitMenuVisible, setSubUnitMenuVisible] = useState(false);
   const [tagsMenuVisible, setTagsMenuVisible] = useState(false);
   const [graphTypeMenuVisible, setGraphTypeMenuVisible] = useState(false);
 
   const now = new Date();
   const barWidth = 5;
-  const barHeight = 5;
 
   var ticks = [];
   if (goal.dataPoints.length > 0) {
-    var tick_t = binTime(binning, dateListToTime(goal.dataPoints[0].date), 0);
+    var tick_t = binTime(goal.graph.binSize, dateListToTime(goal.dataPoints[0].date), 0);
     for (let i = 0; tick_t < now.getTime(); i++) {
-      tick_t = binTime(binning, dateListToTime(goal.dataPoints[0].date), i);
+      tick_t = binTime(goal.graph.binSize, dateListToTime(goal.dataPoints[0].date), i);
       ticks.push(tick_t);
       if (i > 1000) {
         break; // limit
@@ -94,9 +91,9 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
     }
   }
 
-  const bins = binTimeSeries(binning, goal.dataPoints);
+  const bins = binTimeSeries(goal.graph.binSize, goal.dataPoints);
   const binStats: { t: number, q0: number, q1: number, q2: number, q3: number, q4: number, count: number, sum: number, mean: number, zero: number }[] = bins.map((bin) => {
-    const values = bin.values.map((dp: DataPoint) => extractValue(dp, tags, subUnitName)).filter((v: number) => v !== null);
+    const values = bin.values.map((dp: DataPoint) => extractValue(dp, goal.graph.tagFilters, goal.graph.subUnitName)).filter((v: number) => v !== null);
     if (values.length === 0) {
       return null
     } else {
@@ -112,13 +109,13 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
   }).filter((b) => b !== null);
 
   var yKeys: (keyof typeof binStats[number])[];
-  if (graphType === "box") {
+  if (goal.graph.graphType === "box") {
     yKeys = ["q0", "q1", "q2", "q3", "q4"];
-  } else if (graphType === "bar-count") {
+  } else if (goal.graph.graphType === "bar-count") {
     yKeys = ["count", "zero"];
-  } else if (graphType === "bar-sum") {
+  } else if (goal.graph.graphType === "bar-sum") {
     yKeys = ["sum", "zero"];
-  } else if (graphType === "line-mean") {
+  } else if (goal.graph.graphType === "line-mean") {
     yKeys = ["mean"];
   } else {
     throw new Error("Invalid graph type");
@@ -126,34 +123,54 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
 
   const graphLabel = (gType: any) => {
     if (gType === "box") {
-      return (<View style={{ flexDirection: 'row', alignItems: 'center' }}><AntDesign name="barchart" size={24} color={theme.colors.onSurfaceVariant} /><Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Box</Text></View>);
+      return (
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <AntDesign name="barchart" size={24} color={theme.colors.onSurfaceVariant} />
+            <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Box</Text>
+        </View>
+      );
     } else if (gType === "bar-count") {
-      return (<View style={{ flexDirection: 'row', alignItems: 'center' }}><AntDesign name="barschart" size={24} color={theme.colors.onSurfaceVariant} /><Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Count</Text></View>);
+      return (
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <AntDesign name="barschart" size={24} color={theme.colors.onSurfaceVariant} />
+            <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Count</Text>
+        </View>
+      );
     } else if (gType === "bar-sum") {
-      return (<View style={{ flexDirection: 'row', alignItems: 'center' }}><AntDesign name="barschart" size={24} color={theme.colors.onSurfaceVariant} /><Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Sum</Text></View>);
+      return (
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <AntDesign name="barschart" size={24} color={theme.colors.onSurfaceVariant} />
+            <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Sum</Text>
+        </View>
+      );
     } else if (gType === "line-mean") {
-      return (<View style={{ flexDirection: 'row', alignItems: 'center' }}><AntDesign name="linechart" size={24} color={theme.colors.onSurfaceVariant} /><Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Mean</Text></View>);
+      return (
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <AntDesign name="linechart" size={24} color={theme.colors.onSurfaceVariant} />
+            <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Mean</Text>
+        </View>
+      );
     }
   }
 
   const { domain, viewport }: { domain: { x: [number, number], y?: [number, number] }, viewport: { x: [number, number] } } = (() => {
     const firstBinTime = bins.length ? bins[0].time : now.getTime();
     const lastBinTime = bins.length ? bins[bins.length - 1].time : now.getTime();
-    const nowBin = binTime(binning, now.getTime(), 0);
-    const t1 = Math.max(lastBinTime, nowBin) + approximateBinSize(binning) / 2;
-    const t0view = t1 - approximateBinSize(binning) * 15;
-    const t0 = Math.min(firstBinTime - approximateBinSize(binning) / 2, t0view);
+    const nowBin = binTime(goal.graph.binSize, now.getTime(), 0);
+    const t1 = Math.max(lastBinTime, nowBin) + approximateBinSize(goal.graph.binSize) / 2;
+    const t0view = t1 - approximateBinSize(goal.graph.binSize) * 15;
+    const t0 = Math.min(firstBinTime - approximateBinSize(goal.graph.binSize) / 2, t0view);
 
     var domain: { x: [number, number], y?: [number, number] } = { x: [t0, t1] };
     var viewport: { x: [number, number] } = { x: [t0view, t1] };
-    if (graphType === "box") {
+    if (goal.graph.graphType === "box") {
       const [ymin, ymax] = [Math.min(...binStats.map((b) => b.q0)), Math.max(...binStats.map((b) => b.q4))];
       domain.y = [ymin - (ymax - ymin) * 0.05, ymax + (ymax - ymin) * 0.05];
-    } else if (graphType === "bar-count") {
+    } else if (goal.graph.graphType === "bar-count") {
       domain.y = [0, Math.max(...binStats.map((b) => b.count))];
-    } else if (graphType === "bar-sum") {
+    } else if (goal.graph.graphType === "bar-sum") {
       domain.y = [0, Math.max(...binStats.map((b) => b.sum))];
-    } else if (graphType === "line-mean") {
+    } else if (goal.graph.graphType === "line-mean") {
       domain.y = [Math.min(...binStats.map((b) => b.mean)), Math.max(...binStats.map((b) => b.mean))];
     } else {
       throw new Error("Invalid graph type");
@@ -242,7 +259,7 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
       </>);
   }
 
-  const binningLabels: Record<typeof binning, string> = {
+  const binningLabels: Record<typeof goal.graph.binSize, string> = {
     day: "Day",
     week: "Week",
     month: "Month",
@@ -280,17 +297,17 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
 
             formatXLabel: (t: number) => {
               const d = new Date(t);
-              if (binning === "day") {
+              if (goal.graph.binSize === "day") {
                 return "" + d.getDate();
-              } else if (binning === "week") {
+              } else if (goal.graph.binSize === "week") {
                 return "" + (d.getDate() + 1);
-              } else if (binning === "month") {
+              } else if (goal.graph.binSize === "month") {
                 const m = d.getMonth() + 1;
                 return m > 1 ? `${m}` : `'${d.getFullYear() % 100}`;
-              } else if (binning === "quarter") {
+              } else if (goal.graph.binSize === "quarter") {
                 const q = d.getMonth() / 3 + 1;
                 return q > 1 ? `q${q}` : `'${d.getFullYear() % 100}`;
-              } else if (binning === "year") {
+              } else if (goal.graph.binSize === "year") {
                 return "" + d.getFullYear();
               } else {
                 throw new Error("Invalid bin size");
@@ -310,7 +327,7 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
           ]}
         >
           {({ points }) => {
-            if (graphType === "box") {
+            if (goal.graph.graphType === "box") {
               return (
                 <>
                   {(() => {
@@ -364,11 +381,11 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
                   })()}
                 </>
               );
-            } else if (graphType === "bar-count") {
+            } else if (goal.graph.graphType === "bar-count") {
               return barPlot(points.count, points.zero);
-            } else if (graphType === "bar-sum") {
+            } else if (goal.graph.graphType === "bar-sum") {
               return barPlot(points.sum, points.zero);
-            } else if (graphType === "line-mean") {
+            } else if (goal.graph.graphType === "line-mean") {
               return (
                 <>
                   <Line
@@ -400,10 +417,10 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
         {/* Binning menu */}
         <DropdownMenu
           options={binningOptions}
-          selectedKey={binning}
+          selectedKey={goal.graph.binSize}
           onSelect={(key) => {
             resetTransform();
-            setBinning(key as typeof binning);
+            setGoalGraph(goalName, { ...goal.graph, binSize: key as BinSize });
           }}
           visible={binMenuVisible}
           setVisible={setBinMenuVisible}
@@ -412,16 +429,16 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
         {/* SubUnit menu */}
         <SubUnitMenu
           subUnitNames={subUnitNames}
-          subUnitName={subUnitName}
-          setSubUnitName={setSubUnitName}
+          subUnitName={goal.graph.subUnitName}
+          setSubUnitName={(name) => setGoalGraph(goalName, { ...goal.graph, subUnitName: name })}
           menuVisible={subUnitMenuVisible}
           setMenuVisible={setSubUnitMenuVisible}
           themeColors={theme.colors}
         />
         {/* Tags menu */}
         <TagMenu
-          tags={tags}
-          onChange={(tags) => setTags(tags)}
+          tags={goal.graph.tagFilters}
+          onChange={(tags) => setGoalGraph(goalName, { ...goal.graph, tagFilters: tags })}
           menuVisible={tagsMenuVisible}
           setMenuVisible={setTagsMenuVisible}
           goalTags={goal.tags}
@@ -435,7 +452,7 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
           anchor={
             <Button compact={true} onPress={() => setGraphTypeMenuVisible(true)}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                {graphLabel(graphType)}
+                {graphLabel(goal.graph.graphType)}
                 <AntDesign name="down" size={16} color={theme.colors.onSurfaceVariant} style={{ marginLeft: 6 }} />
               </View>
             </Button>
@@ -446,10 +463,10 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
               key={type}
               onPress={() => {
                 setGraphTypeMenuVisible(false);
-                setGraphType(type as GraphType);
+                setGoalGraph(goalName, { ...goal.graph, graphType: type as GraphType });
               }}
               title={<View style={{ flexDirection: 'row', alignItems: 'center' }}>{graphLabel(type)}</View>}
-              trailingIcon={graphType === type ? "check" : undefined}
+              trailingIcon={goal.graph.graphType === type ? "check" : undefined}
             />
           ))}
         </Menu>

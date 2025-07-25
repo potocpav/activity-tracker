@@ -78,11 +78,18 @@ export const graphTypes : GraphType[] = [
   "box", "bar-count", "bar-sum", "line-mean"
 ];
 
+export type BinSize = "day" | "week" | "month" | "quarter" | "year";
+
+export const binSizes : BinSize[] = [
+  "day", "week", "month", "quarter", "year"
+];
+
 export type GraphProps = {
   label: string;
   tagFilters: TagFilter[];
   subUnit: string | null;
   graphType: GraphType;
+  binSize: BinSize;
 };
 
 export type GoalType = {
