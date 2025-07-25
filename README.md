@@ -18,15 +18,7 @@ In order to make this app a full-featured management app for workout data, the f
   
 ### Features
 
-* [x] Add measurement comments
-* [x] Implement editing composite units (placeholder)
-* [x] Add colors to tags
-* [x] Event list filtering by tags
-* [x] Add data import to Settings
-* [x] Export data as CSV
-* [x] Add Calendar page
-* [x] Calendar in Summary page
-* [x] Graph in Summary page
+* [ ] Graph settings persistence
 * [ ] Implement editing composite units
 * [ ] Allow value-less goals
 * [ ] Dragging stat values in Summary page
@@ -36,14 +28,8 @@ In order to make this app a full-featured management app for workout data, the f
 
 ### Bugs
 
-* [x] Add alert on point duplication
-* [x] Allow unit-less measurements
-* [x] Make tag editing wait on goal submit
-* [x] Implement tag reordering
-* [ ] Migrate time (miliseconds) to date [y, m, d]
 * [ ] When editing points, preserve their position within a day
 * [ ] Fix direct date input
-* [ ] Make bounds on graphs pixel-perfect
 * [ ] Fix localization (date display)
 * [ ] Update event filters in Summary page (summaries, calendar, graph)
   * [ ] when goal tags change
@@ -51,15 +37,13 @@ In order to make this app a full-featured management app for workout data, the f
 
 ### General Usability
 
-* [x] When editing, show a better point header.
-* [x] Improve form validation messages
-* [x] Screen orientation
 * [ ] Polish stat editing and dragging
 * [ ] Screen orientation & responsive design tweaks
 * [ ] Show measurement comments somewhere
 * [ ] Show numbers on bar charts
 * [ ] Limit graph Panning on the left
-* [ ] Prevent future point input
+* [ ] Make bounds on graphs pixel-perfect
+* [ ] Prevent future & far past point input
 * [ ] Performance testing & enhancements
   * [ ] Many points (10k)
   * [ ] Wide date ranges (100 years)
