@@ -1,5 +1,5 @@
 import React from "react";
-import { Animated, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Animated, FlatList, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, Pressable } from "react-native";
 import { useTheme, FAB, Divider, Portal, Dialog, Button, TextInput } from 'react-native-paper';
 import useStore from "./Store";
 import { GoalType, Stat, StatPeriod, StatValue, TagFilter, Tag, allStatPeriods, allStatValues } from "./StoreTypes";
@@ -12,21 +12,31 @@ import DropdownMenu from "./DropdownMenu";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import GoalGraph from "./GoalGraph";
 import GoalCalendar from "./GoalCalendar";
-import { DropProvider, Draggable, Droppable, DropProviderRef } from 'react-native-reanimated-dnd';
+import { Sortable, SortableItem, DropProviderRef } from 'react-native-reanimated-dnd';
 import { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
+import DraggableFlatList from "react-native-draggable-flatlist";
 
 
 const StatView = ({ stat, goal, styles, onPress }: { stat: Stat, goal: GoalType, styles: any, onPress: () => void }) => {
   const value = calcStatValue(stat, goal);
   const unit = ["n_days", "n_points"].includes(stat.value) ? "" : goal.unit;
   return (
-    <TouchableOpacity style={styles.statInnerContainer} onPress={onPress}>
+    <Pressable 
+      // style={styles.statInnerContainer} 
+      onPress={onPress}
+      style={({pressed}) => [
+        styles.statInnerContainer,
+        {
+          opacity: pressed ? 0.5 : 1,
+        },
+      ]}
+      >
       <View style={{ flex: 1, flexDirection: 'column', alignItems: 'center' }}>
         {/* <Text style={styles.statValue}>{formatNumber(value)}</Text> */}
         <Text style={styles.statValue}>{renderValueSummary(value, unit)}</Text>
         <Text style={styles.statsLabel}>{stat.label}</Text>
       </View>
-    </TouchableOpacity>
+    </Pressable>
   );
 };
 
@@ -107,9 +117,11 @@ const GoalSummary = ({ navigation, goalName }: { navigation: any, goalName: stri
         // Trigger update after scroll view layout
         dropProviderRef.current?.requestPositionUpdate();
       }}>
-        <View style={styles.goalInfo}>
-          <Text style={styles.goalDescription}>{goal.description}</Text>
-        </View>
+        {goal.description && (
+          <View style={styles.goalInfo}>
+            <Text style={styles.goalDescription}>{goal.description}</Text>
+          </View>
+        )}
         {goal.tags.length > 0 && (
           <>
             <Divider />
@@ -121,44 +133,58 @@ const GoalSummary = ({ navigation, goalName }: { navigation: any, goalName: stri
         <Divider />
 
         { /* Stats */}
-        <DropProvider ref={dropProviderRef}>
-          <View style={styles.statsGroup}>
-            {goal.stats.map((stat: Stat, index: number) => (
-              <View style={styles.statContainer} key={`stat-${index}`}>
-                {/* <Droppable key={`stat-${index}`} droppableId={`stat-${index}`} onDrop={() => { console.log("dropped", index) }}> */}
-                  {/* <Draggable 
-                    data={{ id: '1', name: 'Task 1' }} 
-                    onDragStart={() => {
-                      console.log("drag start");
-                    }}
-                    onDragEnd={() => {
-                      console.log("drag end");
-                    }}
-                    animationFunction={(toValue) => {
-                    'worklet';
-                    return withSpring(toValue, {
-                      damping: 150,
-                      stiffness: 1500
-                    })
-                  }}> */}
-                    <StatView key={index} stat={stat} goal={goal} styles={styles} onPress={() => showStatDialog(index)} />
-                  {/* </Draggable>
-                </Droppable> */}
-                {/* </Animated.View> */}
-                {/* </View> */}
+          {/* <View style={{ position: 'absolute', zIndex: 1000, top: 0, bottom: 0, left: 0, right: 0 }}>
+            <DropProvider >
+              <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: 'red', top: 0, bottom: 0 }}>
+                <Text style={styles.statsLabel}>Stats</Text>
               </View>
-            ))}
+            </DropProvider>
+          </View> */}
+
+          <View 
+            style={styles.statsGroup}
+            >
+              {goal.stats.map((stat: Stat, index: number) => (
+                <StatView key={index} stat={stat} goal={goal} styles={styles} onPress={() => 
+                  showStatDialog(index)} />
+              ))}
+
+            {goal.stats.length > 0 && (
+              <Pressable
+                onPress={() => {
+                  showStatDialog(null);
+              }}
+              style={({pressed}) => [
+                {
+                  margin: 8,
+                  position: 'absolute',
+                  right: 0,
+                  top: 20,
+                  opacity: pressed ? 0.5 : 1,
+                },
+              ]}
+            >
+              <View style={{position: 'absolute', right: 0, bottom: 0 }}>
+                <AntDesign name="plus" size={24} color={theme.colors.outlineVariant} />
+              </View>
+            </Pressable>
+          )}
           </View>
-        </DropProvider>
 
         { /* Add Stat */}
-        <View style={styles.statsGroup}>
-          <Button onPress={() => {
-            showStatDialog(null);
-          }
-          }>
-            <AntDesign name="plus" size={24} color={theme.colors.onSurface} />
-          </Button>
+        <View style={{margin: 10, flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end'}}>
+          <Pressable
+            onPress={() => {
+              showStatDialog(null);
+            }}
+            style={({pressed}) => [
+              {
+                opacity: pressed ? 0.5 : 1,
+              },
+            ]}
+          >
+            <AntDesign name="plus" size={24} color={theme.colors.outlineVariant} />
+          </Pressable>
         </View>
 
         <Divider />
@@ -301,7 +327,7 @@ const getStyles = (theme: any, goalColor: string) => StyleSheet.create({
   },
   statsGroup: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    // justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
@@ -309,15 +335,15 @@ const getStyles = (theme: any, goalColor: string) => StyleSheet.create({
   },
   statContainer: {
     flex: 1,
-    justifyContent: 'space-around',
+    // justifyContent: 'space-around',
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'blue',
+    borderColor: 'green',
   },
   statInnerContainer: {
     flex: 1,
-    justifyContent: 'space-around',
+    // justifyContent: 'space-around',
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
