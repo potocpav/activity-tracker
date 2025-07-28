@@ -2,10 +2,10 @@ import React from "react";
 import { Animated, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useTheme, FAB, Divider, Portal, Dialog, Button, TextInput } from 'react-native-paper';
 import useStore from "./Store";
-import { DataPoint, DateList, dateToDateList, GoalType, Stat, StatPeriod, StatValue, TagFilter, Tag, allStatPeriods, allStatValues } from "./StoreTypes";
+import { GoalType, Stat, StatPeriod, StatValue, TagFilter, Tag, allStatPeriods, allStatValues } from "./StoreTypes";
 import { renderValueSummary, formatDate } from "./GoalData";
 import { lightPalette, darkPalette } from "./Color";
-import { renderTags, findZeroSlice, statPeriodCmp, extractValue, formatNumber, valueToLabel, periodToLabel, extractStatValue } from "./GoalUtil";
+import { renderTags, valueToLabel, periodToLabel, calcStatValue } from "./GoalUtil";
 import TagMenu from "./TagMenu";
 import SubUnitMenu from "./SubUnitMenu";
 import DropdownMenu from "./DropdownMenu";
@@ -15,39 +15,19 @@ import GoalCalendar from "./GoalCalendar";
 import { DropProvider, Draggable, Droppable, DropProviderRef } from 'react-native-reanimated-dnd';
 import { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 
-const calcStatValue = (stat: Stat, goal: GoalType) => {
-  const today = dateToDateList(new Date());
-  const lastActive = goal.dataPoints.length > 0 ?
-    goal.dataPoints[goal.dataPoints.length - 1].date :
-    null;
-  const periodSlice = findZeroSlice(
-    goal.dataPoints,
-    (dp: DataPoint) => statPeriodCmp(dp, stat.period, today, lastActive)
-  );
-  return extractStatValue(goal.dataPoints.slice(...periodSlice), stat.tagFilters, stat.subUnit, stat.value);
-}
 
 const StatView = ({ stat, goal, styles, onPress }: { stat: Stat, goal: GoalType, styles: any, onPress: () => void }) => {
   const value = calcStatValue(stat, goal);
   const unit = ["n_days", "n_points"].includes(stat.value) ? "" : goal.unit;
   return (
-    <Button onPress={onPress}>
-      <View style={{ flex: 1, alignItems: 'center' }}>
+    <TouchableOpacity style={styles.statInnerContainer} onPress={onPress}>
+      <View style={{ flex: 1, flexDirection: 'column', alignItems: 'center' }}>
         {/* <Text style={styles.statValue}>{formatNumber(value)}</Text> */}
         <Text style={styles.statValue}>{renderValueSummary(value, unit)}</Text>
         <Text style={styles.statsLabel}>{stat.label}</Text>
-        {/* </TouchableOpacity> */}
       </View>
-    </Button>
+    </TouchableOpacity>
   );
-};
-
-type EditStatDialogProps = {
-  visible: boolean;
-  onDismiss: () => void;
-  stat: Stat;
-  goal: GoalType;
-  color: string;
 };
 
 
@@ -144,8 +124,7 @@ const GoalSummary = ({ navigation, goalName }: { navigation: any, goalName: stri
         <DropProvider ref={dropProviderRef}>
           <View style={styles.statsGroup}>
             {goal.stats.map((stat: Stat, index: number) => (
-              <View key={`stat-${index}`}>
-                <View style={{ flex: 1, width: 100, height: 100}}>
+              <View style={styles.statContainer} key={`stat-${index}`}>
                 {/* <Droppable key={`stat-${index}`} droppableId={`stat-${index}`} onDrop={() => { console.log("dropped", index) }}> */}
                   {/* <Draggable 
                     data={{ id: '1', name: 'Task 1' }} 
@@ -166,7 +145,7 @@ const GoalSummary = ({ navigation, goalName }: { navigation: any, goalName: stri
                   {/* </Draggable>
                 </Droppable> */}
                 {/* </Animated.View> */}
-                </View>
+                {/* </View> */}
               </View>
             ))}
           </View>
@@ -324,17 +303,29 @@ const getStyles = (theme: any, goalColor: string) => StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    paddingVertical: 18,
     backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: 'red',
   },
   statContainer: {
     flex: 1,
+    justifyContent: 'space-around',
+    flexDirection: 'row',
     alignItems: 'center',
-    width: 100,
+    borderWidth: 1,
+    borderColor: 'blue',
+  },
+  statInnerContainer: {
+    flex: 1,
+    justifyContent: 'space-around',
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'blue',
+    paddingVertical: 18,
   },
   statsLabel: {
     fontSize: 16,
-    marginBottom: 4,
     color: theme.colors.onSurfaceVariant,
   },
   statValue: {

@@ -14,6 +14,7 @@ import DraggableFlatList from 'react-native-draggable-flatlist'
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { renderValueSummary } from "./GoalData";
 import { lightPalette, darkPalette } from "./Color";
+import { calcStatValue } from "./GoalUtil";
 
 type GoalsProps = {
   navigation: any;
@@ -45,7 +46,8 @@ const Goals: React.FC<GoalsProps> = ({ navigation }) => {
   }, [navigation, menuVisible, theme]);
 
   const renderGoal = ({ item, drag }: { item: GoalType, drag: () => void }) => {
-    const lastDataPoint = item.dataPoints && item.dataPoints.length > 0 ? item.dataPoints[item.dataPoints.length - 1] : null;
+    const value = calcStatValue(item.stats[0], item);
+    const unit = ["n_days", "n_points"].includes(item.stats[0].value) ? "" : item.unit;
     return (
       <TouchableOpacity
         style={[styles.goalCard, styles.goalCardSurface]}
@@ -59,7 +61,7 @@ const Goals: React.FC<GoalsProps> = ({ navigation }) => {
           </View>
           <View style={styles.goalDescriptionContainer}>
             <Text style={[styles.goalDescription, { color: palette[item.color] }]}>
-              {renderValueSummary(lastDataPoint?.value, item.unit)}
+              {renderValueSummary(value, unit)}
             </Text>
           </View>
           <TouchableOpacity

@@ -164,7 +164,7 @@ const GoalInner: React.FC<any> = ({ goal, navigation }) => {
           onDismiss={() => setMenuVisible(false)}
           anchor={<View style={{ width: 1, height: 1 }} />}
         >
-          <Menu.Item onPress={() => { setMenuVisible(false); navigation.navigate("GoalData", { goalName }) }} title="Data Points" />
+          <Menu.Item onPress={() => { setMenuVisible(false); navigation.navigate("GoalData", { goalName }) }} title="Data" />
           <Menu.Item onPress={() => { setMenuVisible(false); exportGoalCsv() }} title="Export" />
           <Menu.Item onPress={() => { setMenuVisible(false); deleteGoalWrapper() }} title="Delete" />
         </Menu>

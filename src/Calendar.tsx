@@ -91,7 +91,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, goalName, pale
                   </Text>}
 
                   <Text style={[styles.value, { color: theme.colors.background }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>
-                    {hasData && (value ? formatNumber(value) : '')}
+                    {hasData && (value !== null ? formatNumber(value) : '-')}
                   </Text>
                 </TouchableOpacity>
               );

@@ -1,4 +1,5 @@
-import { Tag, StatPeriod, DataPoint, DateList, dateListToTime, normalizeDateList, TagFilter, StatValue, Stat } from "./StoreTypes";
+
+import { Tag, StatPeriod, DataPoint, DateList, dateListToTime, normalizeDateList, TagFilter, StatValue, Stat, dateToDateList, GoalType } from "./StoreTypes";
 import { View, Text, StyleSheet } from "react-native";
 
 export type BinSize = "day" | "week" | "month" | "quarter" | "year";
@@ -65,6 +66,19 @@ export const extractValue = (dataPoint: DataPoint, tagFiters: TagFilter[], subUn
   } else {
     return null;
   }
+}
+
+
+export const calcStatValue = (stat: Stat, goal: GoalType) => {
+  const today = dateToDateList(new Date());
+  const lastActive = goal.dataPoints.length > 0 ?
+    goal.dataPoints[goal.dataPoints.length - 1].date :
+    null;
+  const periodSlice = findZeroSlice(
+    goal.dataPoints,
+    (dp: DataPoint) => statPeriodCmp(dp, stat.period, today, lastActive)
+  );
+  return extractStatValue(goal.dataPoints.slice(...periodSlice), stat.tagFilters, stat.subUnit, stat.value);
 }
 
 
@@ -203,7 +217,7 @@ export const extractStatValue = (dataPoints: DataPoint[], tagFilters: TagFilter[
   } else if (statValue === "last") {
     value = periodValues[periodValues.length - 1];
   }
-  return value;
+  return Number.isFinite(value) ? value : null;
 }
 
 

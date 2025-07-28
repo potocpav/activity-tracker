@@ -49,6 +49,7 @@ export const defaultGraph = (unit: Unit): GraphProps => {
     subUnit: firstSubUnit(unit),
     tagFilters: [],
     graphType: "box",
+    binSize: "day",
   };
 };
 

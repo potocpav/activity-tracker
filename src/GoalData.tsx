@@ -45,9 +45,11 @@ export const renderValueSummary = (value: any, unit: Unit) => {
     // Handle complex units (like finger strength with mean, max, tut)
     var parts: string[] = [];
     unit.forEach((u: any) => {
-      if (value[u.name] !== null && value[u.name] !== undefined) {
+      if (value[u.name] !== null) {
         const suffix = u.symbol === "" ? "" : " " + u.symbol;
         parts.push(`${value[u.name]}${suffix}`);
+      } else {
+        parts.push("-");
       }
     });
     return ( // Only render the first part always
