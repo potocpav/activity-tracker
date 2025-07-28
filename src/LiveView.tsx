@@ -63,7 +63,7 @@ const LiveView: React.FC<LiveViewProps> = ({ navigation }) => {
                 <Text
                   style={[styles.measurementValue, { color: theme.colors.onSurface }]}
                   numberOfLines={1}
-                  adjustsFontSizeToFit={true}
+                  adjustsFontSizeToFit
                 >
                   {weight ? weight.toFixed(1) : '-'}
                 </Text>
@@ -73,7 +73,7 @@ const LiveView: React.FC<LiveViewProps> = ({ navigation }) => {
                 <Text
                   style={[styles.measurementValue, { color: theme.colors.onSurface }]}
                   numberOfLines={1}
-                  adjustsFontSizeToFit={true}
+                  adjustsFontSizeToFit
                 >
                   {time ? time.toFixed(1) : '-'}
                 </Text>

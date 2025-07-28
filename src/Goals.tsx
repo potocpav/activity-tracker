@@ -46,8 +46,8 @@ const Goals: React.FC<GoalsProps> = ({ navigation }) => {
   }, [navigation, menuVisible, theme]);
 
   const renderGoal = ({ item, drag }: { item: GoalType, drag: () => void }) => {
-    const value = item.stats.length > 0 ? calcStatValue(item.stats[0], item) : null;
-    const unit = item.stats.length > 0 ? ["n_days", "n_points"].includes(item.stats[0].value) ? "" : item.unit : "";
+    const value = item.stats.length > 0 && item.stats[0].length > 0 ? calcStatValue(item.stats[0][0], item) : null;
+    const unit = item.stats.length > 0 && item.stats[0].length > 0 ? ["n_days", "n_points"].includes(item.stats[0][0].value) ? "" : item.unit : "";
     return (
       <TouchableOpacity
         style={[styles.goalCard, styles.goalCardSurface]}

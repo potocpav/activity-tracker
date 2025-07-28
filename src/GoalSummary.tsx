@@ -12,9 +12,6 @@ import DropdownMenu from "./DropdownMenu";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import GoalGraph from "./GoalGraph";
 import GoalCalendar from "./GoalCalendar";
-import { Sortable, SortableItem, DropProviderRef } from 'react-native-reanimated-dnd';
-import { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
-import DraggableFlatList from "react-native-draggable-flatlist";
 
 
 const StatView = ({ stat, goal, styles, onPress }: { stat: Stat, goal: GoalType, styles: any, onPress: () => void }) => {
@@ -33,8 +30,8 @@ const StatView = ({ stat, goal, styles, onPress }: { stat: Stat, goal: GoalType,
       >
       <View style={{ flex: 1, flexDirection: 'column', alignItems: 'center' }}>
         {/* <Text style={styles.statValue}>{formatNumber(value)}</Text> */}
-        <Text style={styles.statValue}>{renderValueSummary(value, unit)}</Text>
-        <Text style={styles.statsLabel}>{stat.label}</Text>
+        <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>{renderValueSummary(value, unit)}</Text>
+        <Text style={styles.statsLabel} numberOfLines={2} adjustsFontSizeToFit>{stat.label}</Text>
       </View>
     </Pressable>
   );
@@ -51,21 +48,21 @@ const GoalSummary = ({ navigation, goalName }: { navigation: any, goalName: stri
   const addGoalStat = useStore((state: any) => state.addGoalStat);
   const setGoalStat = useStore((state: any) => state.setGoalStat);
   const deleteGoalStat = useStore((state: any) => state.deleteGoalStat);
-  const setGoalStats = useStore((state: any) => state.setGoalStats);
 
   const styles = getStyles(theme, goalColor);
   const subUnitNames = typeof goal.unit === 'string' ? null : goal.unit.map((u: any) => u.name);
 
   // Dialog state
   const [statDialogVisible, setStatDialogVisible] = React.useState(false);
-  const [statDialogStatId, setStatDialogStatId] = React.useState<number | null>(null);
+  const [statDialogStatRowId, setStatDialogStatRowId] = React.useState<number | null>(null);
+  const [statDialogStatColId, setStatDialogStatColId] = React.useState<number | null>(null);
 
-  const [statDialogLabel, setStatDialogLabel] = React.useState<string>(statDialogStatId !== null ? goal.stats[statDialogStatId].label : "");
-  const [statDialogValue, setStatDialogValue] = React.useState<StatValue | null>(statDialogStatId !== null ? goal.stats[statDialogStatId].value : null);
-  const [statDialogSubUnit, setStatDialogSubUnit] = React.useState<string | null>(statDialogStatId !== null ? goal.stats[statDialogStatId].subUnit : null);
-  const [statDialogPeriod, setStatDialogPeriod] = React.useState<StatPeriod | null>(statDialogStatId !== null ? goal.stats[statDialogStatId].period : null);
+  const [statDialogLabel, setStatDialogLabel] = React.useState<string>(statDialogStatRowId !== null && statDialogStatColId !== null ? goal.stats[statDialogStatRowId][statDialogStatColId].label : "");
+  const [statDialogValue, setStatDialogValue] = React.useState<StatValue | null>(statDialogStatRowId !== null && statDialogStatColId !== null ? goal.stats[statDialogStatRowId][statDialogStatColId].value : null);
+  const [statDialogSubUnit, setStatDialogSubUnit] = React.useState<string | null>(statDialogStatRowId !== null && statDialogStatColId !== null ? goal.stats[statDialogStatRowId][statDialogStatColId].subUnit : null);
+  const [statDialogPeriod, setStatDialogPeriod] = React.useState<StatPeriod | null>(statDialogStatRowId !== null && statDialogStatColId !== null ? goal.stats[statDialogStatRowId][statDialogStatColId].period : null);
   const [statDialogTagFilters, setStatDialogTagFilters] = React.useState<TagFilter[]>(
-    statDialogStatId !== null ? goal.stats[statDialogStatId].tagFilters : []);
+    statDialogStatRowId !== null && statDialogStatColId !== null ? goal.stats[statDialogStatRowId][statDialogStatColId].tagFilters : []);
 
   const [statDialogSubUnitMenuVisible, setStatDialogSubUnitMenuVisible] = React.useState(false);
   const [statDialogTagsMenuVisible, setStatDialogTagsMenuVisible] = React.useState(false);
@@ -89,34 +86,35 @@ const GoalSummary = ({ navigation, goalName }: { navigation: any, goalName: stri
   }
 
   // Helper to open dialog
-  const showStatDialog = (statId: number | null) => {
+  const showStatDialog = (statRowId: number | null, statColId: number | null) => {
     setStatDialogVisible(true);
-    setStatDialogStatId(statId);
-    setStatDialogLabel(statId !== null ? goal.stats[statId].label : "New Stat");
-    setStatDialogValue(statId !== null ? goal.stats[statId].value : "mean");
-    setStatDialogSubUnit(statId !== null ? goal.stats[statId].subUnit : typeof goal.unit === 'string' ? goal.unit : goal.unit[0].name);
-    setStatDialogPeriod(statId !== null ? goal.stats[statId].period : "day");
-    setStatDialogTagFilters(statId !== null ? goal.stats[statId].tagFilters : []);
+    setStatDialogStatRowId(statRowId);
+    setStatDialogStatColId(statColId);
+    setStatDialogLabel(statRowId !== null && statColId !== null ? goal.stats[statRowId][statColId].label : "New Stat");
+    setStatDialogValue(statRowId !== null && statColId !== null ? goal.stats[statRowId][statColId].value : "mean");
+    setStatDialogSubUnit(statRowId !== null && statColId !== null ? goal.stats[statRowId][statColId].subUnit : typeof goal.unit === 'string' ? goal.unit : goal.unit[0].name);
+    setStatDialogPeriod(statRowId !== null && statColId !== null ? goal.stats[statRowId][statColId].period : "day");
+    setStatDialogTagFilters(statRowId !== null && statColId !== null ? goal.stats[statRowId][statColId].tagFilters : []);
   };
 
   const dismissStatDialog = () => {
     setStatDialogVisible(false);
     if (dialogStat !== null) {
-      if (statDialogStatId === null) {
-        addGoalStat(goalName, dialogStat);
+      if (statDialogStatRowId === null) {
+        addGoalStat(goalName, dialogStat, null);
       } else {
-        setGoalStat(goalName, statDialogStatId, dialogStat);
+        if (statDialogStatColId === null) {
+          addGoalStat(goalName, dialogStat, statDialogStatRowId);
+        } else {
+          setGoalStat(goalName, statDialogStatRowId, statDialogStatColId, dialogStat);
+        }
       }
     }
   }
-  const dropProviderRef = React.useRef<DropProviderRef>(null);
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView onLayout={() => {
-        // Trigger update after scroll view layout
-        dropProviderRef.current?.requestPositionUpdate();
-      }}>
+      <ScrollView>
         {goal.description && (
           <View style={styles.goalInfo}>
             <Text style={styles.goalDescription}>{goal.description}</Text>
@@ -132,33 +130,26 @@ const GoalSummary = ({ navigation, goalName }: { navigation: any, goalName: stri
         )}
         <Divider />
 
-        { /* Stats */}
-          {/* <View style={{ position: 'absolute', zIndex: 1000, top: 0, bottom: 0, left: 0, right: 0 }}>
-            <DropProvider >
-              <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: 'red', top: 0, bottom: 0 }}>
-                <Text style={styles.statsLabel}>Stats</Text>
-              </View>
-            </DropProvider>
-          </View> */}
-
+        {goal.stats.map((statRow: Stat[], rowIndex: number) => (
           <View 
+            key={rowIndex}
             style={styles.statsGroup}
             >
-              {goal.stats.map((stat: Stat, index: number) => (
+              {statRow.map((stat: Stat, index: number) => (
                 <StatView key={index} stat={stat} goal={goal} styles={styles} onPress={() => 
-                  showStatDialog(index)} />
+                  showStatDialog(rowIndex, index)} />
               ))}
 
-            {goal.stats.length > 0 && (
+            {statRow.length > 0 && (
               <Pressable
                 onPress={() => {
-                  showStatDialog(null);
+                  showStatDialog(rowIndex, null);
               }}
               style={({pressed}) => [
                 {
                   margin: 8,
                   position: 'absolute',
-                  right: 0,
+                  right: -10,
                   top: 20,
                   opacity: pressed ? 0.5 : 1,
                 },
@@ -168,14 +159,15 @@ const GoalSummary = ({ navigation, goalName }: { navigation: any, goalName: stri
                 <AntDesign name="plus" size={24} color={theme.colors.outlineVariant} />
               </View>
             </Pressable>
-          )}
+            )}
           </View>
+        ))}
 
         { /* Add Stat */}
         <View style={{margin: 10, flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end'}}>
           <Pressable
             onPress={() => {
-              showStatDialog(null);
+              showStatDialog(null, null);
             }}
             style={({pressed}) => [
               {
@@ -225,8 +217,9 @@ const GoalSummary = ({ navigation, goalName }: { navigation: any, goalName: stri
                 <Button
                   compact={true}
                   onPress={() => {
-                    deleteGoalStat(goalName, statDialogStatId);
-                    setStatDialogStatId(null);
+                    deleteGoalStat(goalName, statDialogStatRowId, statDialogStatColId);
+                    setStatDialogStatRowId(null);
+                    setStatDialogStatColId(null);
                     setStatDialogVisible(false);
                   }}
                   style={{ marginLeft: 8 }}
@@ -322,32 +315,28 @@ const getStyles = (theme: any, goalColor: string) => StyleSheet.create({
   tagsRow: {
     padding: 10,
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'flex-start',
   },
   statsGroup: {
     flexDirection: 'row',
+    marginHorizontal: 10,
     // justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: 'red',
   },
   statContainer: {
     flex: 1,
     // justifyContent: 'space-around',
     flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'green',
+    alignItems: 'flex-start',
   },
   statInnerContainer: {
     flex: 1,
     // justifyContent: 'space-around',
     flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'blue',
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
     paddingVertical: 18,
   },
   statsLabel: {

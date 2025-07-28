@@ -25,7 +25,7 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GoalType, Tag, DataPoint, SetTag, TagName, State } from "./StoreTypes";
 
-export const version = 6;
+export const version = 8;
 
 export const migrate = (persisted: any, version: number) => {
   if (version <= 0) {
@@ -64,6 +64,14 @@ export const migrate = (persisted: any, version: number) => {
       goal.graph.binSize = "day";
     });
   }
+  if (version <= 7) {
+    persisted.goals.forEach((goal: any) => {
+      if (goal.stats.length > 0 && typeof goal.stats[0] === 'object') {
+        goal.stats = [goal.stats];
+      }
+    });
+  }
+  
   return persisted
 };
 
@@ -257,25 +265,57 @@ const useStore = create<State>()(
         });
       },
 
-      setGoalStat: (goalName: string, statId: number, stat: Stat) => {
+      setGoalStat: (goalName: string, statRowId: number, statColId: number, stat: Stat) => {
         set((state: any) => {
-          const goals = state.goals.map((g: GoalType) => goalName === g.name ? { 
-            ...g, 
-            stats: g.stats.map((s: Stat, i: number) => i === statId ? stat : s) } : g);
+          const goals = state.goals.map((g: GoalType) => 
+            goalName === g.name 
+              ? { 
+                ...g, 
+                stats: g.stats.map((s: Stat[], i: number) => 
+                  i === statRowId 
+                    ? s.map((s: Stat, j: number) => 
+                      j === statColId ? stat : s) 
+                    : s
+                )
+                } 
+              : g
+          );
           return { goals };
         });
       },
 
-      addGoalStat: (goalName: string, stat: Stat) => {
+      addGoalStat: (goalName: string, stat: Stat, statRowId: number | null) => {
         set((state: any) => {
-          const goals = state.goals.map((g: GoalType) => goalName === g.name ? { ...g, stats: [...g.stats, stat] } : g);
+          const goals = state.goals.map((g: GoalType) => 
+            goalName === g.name 
+              ? { 
+                ...g, 
+                stats: statRowId === null 
+                  ? [...g.stats, [stat]] 
+                  : g.stats.map((s: Stat[], i: number) => 
+                    i === statRowId 
+                      ? [...s, stat] 
+                      : s
+                  )
+              } 
+              : g);
           return { goals };
         });
       },
 
-      deleteGoalStat: (goalName: string, statId: number) => {
+      deleteGoalStat: (goalName: string, statRowId: number, statColId: number) => {
         set((state: any) => {
-          const goals = state.goals.map((g: GoalType) => goalName === g.name ? { ...g, stats: g.stats.filter((s: Stat, i: number) => i !== statId) } : g);
+          const goals = state.goals.map((g: GoalType) => 
+            goalName === g.name 
+              ? { 
+                ...g, 
+                stats: g.stats.map((s: Stat[], i: number) => 
+                  i === statRowId 
+                    ? s.filter((s: Stat, j: number) => j !== statColId) 
+                    : s
+                )
+              } 
+              : g);
           return { goals };
         });
       },

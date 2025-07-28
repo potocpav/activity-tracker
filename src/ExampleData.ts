@@ -8,8 +8,8 @@ const firstSubUnit = (unit: Unit): string | null => {
   return unit[0].name;
 }
 
-export const defaultStats = (unit: Unit): Stat[] => {
-  return [
+export const defaultStats = (unit: Unit): Stat[][] => {
+  return [[
     {
       label: "Count",
       value: "n_points",
@@ -31,7 +31,7 @@ export const defaultStats = (unit: Unit): Stat[] => {
       period: "last_active_day",
       tagFilters: [],
     },
-  ];
+  ]];
 };
 
 export const defaultCalendar = (unit: Unit): CalendarProps => {
