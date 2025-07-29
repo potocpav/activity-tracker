@@ -72,6 +72,7 @@ const GoalCalendar = ({ navigation, goalName }: GoalCalendarProps) => {
   const themeState = useStore((state: any) => state.theme);
   const palette = themeState === "dark" ? darkPalette : lightPalette;
   const goalColor = palette[goal.color];
+  const weekStart = useStore((state: any) => state.weekStart);
 
   const setGoalCalendar = useStore((state: any) => state.setGoalCalendar);
 
@@ -94,6 +95,7 @@ const GoalCalendar = ({ navigation, goalName }: GoalCalendarProps) => {
         colorIndex={goal.color}
         dataPoints={goal.dataPoints}
         firstDpDate={goal.dataPoints[0]?.date || null}
+        weekStart={weekStart}
         calendarProps={goal.calendar}
          />
       <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>

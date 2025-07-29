@@ -115,6 +115,7 @@ export type State = {
   goals: GoalType[];
   theme: "light" | "dark";
   blackBackground: boolean;
+  weekStart: "sunday" | "monday";
 
   requestPermissions: any;
   connectToDevice: any;

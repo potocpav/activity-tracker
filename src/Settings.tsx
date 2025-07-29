@@ -14,6 +14,8 @@ const Settings = () => {
   const setThemeState = useStore((state: any) => state.setTheme);
   const blackBackground = useStore((state: any) => state.blackBackground);
   const setBlackBackground = useStore((state: any) => state.setBlackBackground);
+  const weekStart = useStore((state: any) => state.weekStart);
+  const setWeekStart = useStore((state: any) => state.setWeekStart);
   const state = useStore((state: any) => state);
   const setState = useStore((state: any) => state.setState);
 
@@ -88,6 +90,12 @@ const Settings = () => {
                 onValueChange={() => setBlackBackground(!blackBackground)}
               />
             )}
+          />
+          <List.Item
+            title="First day of the week"
+            description={weekStart == 'sunday' ? 'Sunday' : 'Monday'}
+            onPress={() => setWeekStart(weekStart == 'sunday' ? 'monday' : 'sunday')}
+            left={(props) => <List.Icon {...props} icon="calendar" />}
           />
         </List.Section>
 

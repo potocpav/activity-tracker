@@ -11,6 +11,7 @@ type CalendarComponentProps = {
   colorIndex: number;
   dataPoints: DataPoint[];
   firstDpDate: DateList | null;
+  weekStart: "sunday" | "monday";
   calendarProps: CalendarProps;
 };
 
@@ -20,12 +21,12 @@ const MIN_WEEK_COUNT = 14;
 const MAX_WEEK_COUNT = 520;
 
 
-const Calendar: React.FC<CalendarComponentProps> = ({ navigation, goalName, palette, colorIndex, dataPoints, firstDpDate, calendarProps }) => {
+const Calendar: React.FC<CalendarComponentProps> = ({ navigation, goalName, palette, colorIndex, dataPoints, firstDpDate, weekStart, calendarProps }) => {
   const theme = useTheme();
   const dayBackground = palette[colorIndex];
   const now = new Date();
 
-  const pastWeekStart = (date: Date, i: number) => new Date(date.getFullYear(), date.getMonth(), date.getDate() - date.getDay() - i * 7);
+  const pastWeekStart = (date: Date, i: number) => new Date(date.getFullYear(), date.getMonth(), date.getDate() - date.getDay() - i * 7 + (weekStart == "sunday" ? 0 : 1));
 
   const lastVisibleWeek = pastWeekStart(now, 0);
   const firstVisibleWeek = firstDpDate ? pastWeekStart(new Date(...firstDpDate), 0) : lastVisibleWeek;
@@ -72,7 +73,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, goalName, pale
                       backgroundColor: dayBackground,
                     } :
                     {
-                      backgroundColor: theme.colors.surfaceDisabled,
+                      backgroundColor: [0, 6].includes((weekStart.getDay() + dayIdx) % 7) ? theme.colors.surfaceDisabled : theme.colors.backdrop,
                     }
                   ]}
                   key={dayIdx}

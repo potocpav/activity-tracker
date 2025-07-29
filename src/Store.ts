@@ -19,13 +19,14 @@ import {
   Characteristic,
   Device,
 } from "react-native-ble-plx";
-import { CalendarProps, dateListToTime, GraphProps, Stat, timeToDateList } from "./StoreTypes";
+import { CalendarProps, dateListToTime, GraphProps, Stat, TagFilter, timeToDateList } from "./StoreTypes";
 import { defaultGraph, defaultCalendar, defaultStats, exampleGoals } from "./ExampleData";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GoalType, Tag, DataPoint, SetTag, TagName, State } from "./StoreTypes";
+import { findZeroSlice, dayCmp } from "./GoalUtil";
 
-export const version = 8;
+export const version = 9;
 
 export const migrate = (persisted: any, version: number) => {
   if (version <= 0) {
@@ -71,7 +72,9 @@ export const migrate = (persisted: any, version: number) => {
       }
     });
   }
-  
+  if (version <= 8) {
+    persisted.weekStart = "monday";
+  }
   return persisted
 };
 
@@ -98,7 +101,7 @@ const useStore = create<State>()(
       goals: exampleGoals,
       theme: "light",
       blackBackground: false,
-
+      weekStart: "monday",
       requestPermissions: requestPermissions,
 
       setState: (state: State) => {
@@ -111,6 +114,10 @@ const useStore = create<State>()(
 
       setBlackBackground: (blackBackground: boolean) => {
         set({ blackBackground: blackBackground });
+      },
+
+      setWeekStart: (weekStart: "sunday" | "monday") => {
+        set({ weekStart: weekStart });
       },
 
       connectToDevice: async (device: Device) => {
@@ -331,16 +338,37 @@ const useStore = create<State>()(
           console.log("Old tag names must be unique");
           return;
         }
+
         const newTags = tags.map((t: SetTag) => ({ name: t.name, color: t.color }));
         const updateTag = (tagName: TagName) =>
           tags.find((t: SetTag) => t.oldTagName === tagName)?.name ?? null;
+        const updateTags = (tags: TagName[]) =>
+          tags.map((t: TagName) => updateTag(t)).filter((t: TagName | null) => t !== null);
+        const updateTagFilters = (tagFilters: TagFilter[]) =>
+          tagFilters.map((tf: TagFilter) => ({
+            ...tf,
+            name: updateTag(tf.name)
+          })).filter((tf: any) => tf.name !== null);
+
         set((state: any) => {
           const goals = state.goals.map((goal: GoalType) => goal.name === goalName ? {
             ...goal,
             tags: newTags,
+            calendar: {
+              ...goal.calendar,
+              tagFilters: updateTagFilters(goal.calendar.tagFilters)
+            },
+            graph: {
+              ...goal.graph,
+              tagFilters: updateTagFilters(goal.graph.tagFilters)
+            },
+            stats: goal.stats.map((stat: Stat[]) => stat.map((s: Stat) => ({
+              ...s,
+              tagFilters: updateTagFilters(s.tagFilters)
+            }))),
             dataPoints: goal.dataPoints.map((dp: DataPoint) => ({
               ...dp,
-              tags: dp.tags.map((t: TagName) => updateTag(t)).filter((t: TagName | null) => t !== null)
+              tags: updateTags(dp.tags)
             }))
           } : goal);
           return { goals };
@@ -402,11 +430,20 @@ const useStore = create<State>()(
             if (goal.name === goalName) {
               const updatedDataPoints = [...goal.dataPoints];
               if (dataPointIndex !== undefined) {
-                updatedDataPoints.splice(dataPointIndex, 1);
+                if (dayCmp(updatedDataPoint, updatedDataPoints[dataPointIndex].date) == 0) {
+                  // if date is the same, update in place
+                  updatedDataPoints[dataPointIndex] = updatedDataPoint;
+                } else {
+                  // if date is different, remove the old data point and insert the new one as the last element in the new day
+                  updatedDataPoints.splice(dataPointIndex, 1);
+                  const insertIndex = findZeroSlice(updatedDataPoints, (dp: DataPoint) => dayCmp(dp, updatedDataPoint.date))[1];
+                  updatedDataPoints.splice(insertIndex, 0, updatedDataPoint);
+                }
+              } else {
+                // if data point index is undefined, insert the new data point as the last element in the new day
+                const insertIndex = findZeroSlice(updatedDataPoints, (dp: DataPoint) => dayCmp(dp, updatedDataPoint.date))[1];
+                updatedDataPoints.splice(insertIndex, 0, updatedDataPoint);
               }
-              // TODO: use binary search to find insert index
-              insertIndex = updatedDataPoints.findLastIndex((dp: DataPoint) => dateListToTime(dp.date) <= dateListToTime(updatedDataPoint.date)) + 1;
-              updatedDataPoints.splice(insertIndex, 0, updatedDataPoint);
               return { ...goal, dataPoints: updatedDataPoints };
             }
             return goal;

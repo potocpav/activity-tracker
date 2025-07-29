@@ -14,6 +14,7 @@ import { DataPoint, GoalType, Tag, Unit } from "./StoreTypes";
 import { darkPalette, lightPalette } from "./Color";
 import { dayCmp, findZeroSlice, renderTags } from "./GoalUtil";
 import TagMenu from "./TagMenu";
+import DraggableFlatList from "react-native-draggable-flatlist";
 const locale = NativeModules.I18nManager.localeIdentifier;
 
 type GoalDataProps = {
@@ -138,6 +139,7 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
             <DataTable.Title>Date</DataTable.Title>
           )}
           <DataTable.Title>Tags</DataTable.Title>
+          <DataTable.Title>Note</DataTable.Title>
           <DataTable.Title numeric>Value</DataTable.Title>
         </DataTable.Header>
       </DataTable>
@@ -158,6 +160,7 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
                 <DataTable.Cell>{formatDate(new Date(...dataPoint.date))}</DataTable.Cell>
               )}
               <DataTable.Cell>{renderTags(goal.tags.filter((t: Tag) => dataPoint.tags.includes(t.name)), theme, palette)}</DataTable.Cell>
+              <DataTable.Cell>{dataPoint.note ? dataPoint.note : null}</DataTable.Cell>
               <DataTable.Cell numeric>{renderValue(dataPoint.value, goal.unit)}</DataTable.Cell>
             </DataTable.Row>
           </TouchableOpacity>

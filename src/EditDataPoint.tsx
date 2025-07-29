@@ -15,6 +15,7 @@ import { DatePickerInput } from "react-native-paper-dates";
 import { CalendarDate } from "react-native-paper-dates/lib/typescript/Date/Calendar";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { cmpDateList } from "./GoalUtil";
 
 type EditDataPointProps = {
   navigation: any;
@@ -108,15 +109,22 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
       Alert.alert("Value is required");
     } else {
       const newDate = dateToDateList(inputDate);
-      const note = noteInput === "" ? {} : { "note": noteInput };
-      const newIndex = updateGoalDataPoint(goalName, newDataPoint ? undefined : dataPointIndex, {
-        date: newDate,
-        value: newValue,
-        tags: inputTags,
-        ...note,
-      });
-      navigation.goBack();
-      return newIndex
+      const today = dateToDateList(new Date());
+      if (cmpDateList(newDate, today) > 0) {
+        Alert.alert("Date cannot be in the future");
+      } else if (cmpDateList(newDate, [2000, 0, 0]) < 0) {
+        Alert.alert("Date must be from this millenium");
+      } else {
+        const note = noteInput === "" ? {} : { "note": noteInput };
+        const newIndex = updateGoalDataPoint(goalName, newDataPoint ? undefined : dataPointIndex, {
+          date: newDate,
+          value: newValue,
+          tags: inputTags,
+          ...note,
+        });
+        navigation.goBack();
+        return newIndex;
+      }
     }
   };
 

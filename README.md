@@ -17,36 +17,27 @@ This app enables you to track your workouts, habits, body measurments, or other 
 In order to make this app a full-featured management app for workout data, the following list of features must be implemented:
   
 ### Features
-
-* [x] Graph settings persistence
+  
 * [ ] Implement editing composite units
+  * [ ] Update event filters in Summary page when composite units change
 * [ ] Allow value-less goals
-* [ ] Dragging stat values in Summary page
-* [ ] Use the first summary value in Goals.tsx
 * [ ] Dragging points in Day View
 
 ### Bugs
 
-* [ ] When editing points, preserve their position within a day
 * [ ] Fix direct date input
 * [ ] Fix localization (date display)
-* [ ] Update event filters in Summary page (summaries, calendar, graph)
-  * [ ] when goal tags change
-  * [ ] when goal unit changes
 
 ### General Usability
 
 * [ ] Polish stat editing and dragging
 * [ ] Screen orientation & responsive design tweaks
-* [ ] Show measurement comments somewhere
 * [ ] Show numbers on bar charts
 * [ ] Limit graph Panning on the left
-* [ ] Make bounds on graphs pixel-perfect
-* [ ] Prevent future & far past point input
-* [ ] Add week start customization to Settings
+* [ ] Make bounds on graphs pixel-perfect. Currently, 5% of vertical range is added as a padding for box chart, which is just a rough approximation to the real calculation, which should add screen-space pixel padding appropriately.
 * [ ] Performance testing & enhancements
   * [ ] Many points (10k)
-  * [ ] Wide date ranges (100 years)
+  * [ ] Wide date ranges (25 years)
 
 ### Publication
 
