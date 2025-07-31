@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Workouts",
-    "slug": "workout-tracker",
+    "name": "Activities",
+    "slug": "activity-tracker",
     "version": "1.0.0",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -12,7 +12,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.pavelpotocek.workouttracker"
+      "bundleIdentifier": "com.pavelpotocek.activitytracker"
     },
     "android": {
       "adaptiveIcon": {
@@ -24,7 +24,7 @@
         "android.permission.BLUETOOTH_ADMIN",
         "android.permission.BLUETOOTH_CONNECT"
       ],
-      "package": "com.pavelpotocek.workouttracker"
+      "package": "com.pavelpotocek.activitytracker"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -44,7 +44,6 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "3738fb5a-ab12-4854-8cd0-bfece19c9a98"
       }
     }
   }

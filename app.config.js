@@ -4,26 +4,26 @@ const IS_PREVIEW = process.env.APP_VARIANT === 'preview';
 
 const getUniqueIdentifier = () => {
     if (IS_DEV) {
-      return 'com.pavelpotocek.workouttracker.dev';
+      return 'com.pavelpotocek.activitytracker.dev';
     }
   
     if (IS_PREVIEW) {
-      return 'com.pavelpotocek.workouttracker.preview';
+      return 'com.pavelpotocek.activitytracker.preview';
     }
   
-    return 'com.pavelpotocek.workouttracker';
+    return 'com.pavelpotocek.activitytracker';
   };
   
   const getAppName = () => {
     if (IS_DEV) {
-      return 'Workouts (Dev)';
+      return 'Activities (Dev)';
     }
   
     if (IS_PREVIEW) {
-      return 'Workouts';
+      return 'Activities (Preview)';
     }
   
-    return 'Workouts';
+    return 'Activities';
   };
 
   const getIconBackground = () => {

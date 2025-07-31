@@ -1,4 +1,4 @@
-# Workouts App
+# Activity Tracker App
 
 **This app is work-in-progress, and I don't know how far I'll get before I get bored of it. It is now useful to me, and I use it every day. But YMMV (-:**
 
@@ -7,14 +7,14 @@ This app enables you to track your workouts, habits, body measurments, or other 
 
 ## Features
 
-- **Multiple Workout Tracking**: Track any type of workout data with customizable units and values
+- **Multiple Activities Tracking**: Track any type of activity data with customizable units and values
 - **Flexible Data Visualization**: Analyze your progress with interactive charts, including box plots, line graphs, and histograms
 - **Simple and Intuitive**: Clean interface focused on quick data entry and easy analysis
-- **Smart Organization**: Tag your workouts and filter data to focus on what matters to you
+- **Smart Organization**: Tag your activities and filter data to focus on what matters to you
 
 ## ToDo List
 
-In order to make this app a full-featured management app for workout data, the following list of features must be implemented:
+In order to make this app a full-featured management app for activity data, the following list of features must be implemented:
   
 ### Features
   

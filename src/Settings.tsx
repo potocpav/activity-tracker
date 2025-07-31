@@ -25,7 +25,7 @@ const Settings = () => {
     const dateStr = date.toISOString().split('T')[0];
 
 
-    const file = new File(Paths.cache, `workouts-${dateStr}.json`);
+    const file = new File(Paths.cache, `activities-${dateStr}.json`);
     try {
       if (file.exists) {
         file.delete();
@@ -34,7 +34,7 @@ const Settings = () => {
       file.write(data);
 
       await Sharing.shareAsync(file.uri, {
-        dialogTitle: 'Export Workouts',
+        dialogTitle: 'Export Activities',
         mimeType: 'application/json',
       });
     } catch (error) {
