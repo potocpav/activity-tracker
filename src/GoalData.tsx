@@ -111,8 +111,8 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
 
   const filteredDataPoints: [DataPoint, number][] = dps
     .filter(([dataPoint, i]: [DataPoint, number]) => {
-      const hasAllRequired = requiredTags.every(tag => dataPoint.tags.includes(tag));
-      const hasAnyNegative = negativeTags.some(tag => dataPoint.tags.includes(tag));
+      const hasAllRequired = requiredTags.every(tag => (dataPoint.tags ?? []).includes(tag));
+      const hasAnyNegative = negativeTags.some(tag => (dataPoint.tags ?? []).includes(tag));
       return hasAllRequired && !hasAnyNegative;
     })
     .slice()
@@ -159,7 +159,7 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
               {day ? null : (
                 <DataTable.Cell>{formatDate(new Date(...dataPoint.date))}</DataTable.Cell>
               )}
-              <DataTable.Cell>{renderTags(goal.tags.filter((t: Tag) => dataPoint.tags.includes(t.name)), theme, palette)}</DataTable.Cell>
+              <DataTable.Cell>{renderTags(goal.tags.filter((t: Tag) => (dataPoint.tags ?? []).includes(t.name)), theme, palette)}</DataTable.Cell>
               <DataTable.Cell>{dataPoint.note ? dataPoint.note : null}</DataTable.Cell>
               <DataTable.Cell numeric>{renderValue(dataPoint.value, goal.unit)}</DataTable.Cell>
             </DataTable.Row>

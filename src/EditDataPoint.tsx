@@ -59,7 +59,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
       value: useState<string>(
         (dataPoint.value as Record<string, number | null>)[u.name]?.toString() ?? "")
     }));
-  const [inputTags, setInputTags] = useState<string[]>(dataPoint.tags);
+  const [inputTags, setInputTags] = useState<string[]>(dataPoint.tags ?? []);
 
   const toggleInputTag = (tag: string) => {
     setInputTags(inputTags.includes(tag) ? inputTags.filter((t: string) => t !== tag) : [...inputTags, tag]);

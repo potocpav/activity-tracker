@@ -92,8 +92,16 @@ const EditGoal: FC<EditGoalProps> = ({ navigation, route }) => {
     } else if (goalNameInput !== goal.name && goals.find((g: GoalType) => g.name === goalNameInput)) {
       Alert.alert("Error", "A goal with this name already exists");
     } else {
+      if (unitMode === 'multiple' && multiUnitInput.findIndex((u) => u.name === "") !== -1) {
+        Alert.alert("Error", "All value names must be non-empty");
+        return;
+      } else if (unitMode === 'multiple' && new Set(multiUnitInput.map(u => u.name)).size !== multiUnitInput.length) {
+        Alert.alert("Error", "All value names must be unique");
+        return;
+      }
+
       let dataLossAlert = (callback: () => void) => {
-        Alert.alert("Warning", "Some numerical data may be lost.", [
+        Alert.alert("Warning", "Some numerical data may be lost.\n\nConsider backing up your data.", [
           { text: 'Cancel', style: 'cancel' },
           { text: 'Continue', onPress: () => {
             callback();

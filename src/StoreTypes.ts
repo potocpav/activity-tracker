@@ -46,9 +46,9 @@ export type DateList = [number, number, number];
 
 export type DataPoint = {
   date: DateList;
-  value: number | object;
+  value?: number | object;
   note?: string;
-  tags: TagName[];
+  tags?: TagName[];
 };
 
 export type StatValue = "n_days" | "n_points" | "sum" | "mean" | "max" | "min" | "last";

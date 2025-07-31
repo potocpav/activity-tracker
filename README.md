@@ -18,9 +18,11 @@ In order to make this app a full-featured management app for workout data, the f
   
 ### Features
   
-* [ ] Implement editing composite units
-  * [ ] Update event filters in Summary page when composite units change
-* [ ] Allow value-less goals
+* [x] Allow value-less goals
+  * [ ] Make value display & input better for value-less goals
+* [x] Implement editing composite units
+  * [x] Update event filters in Summary page when composite units change
+  * [ ] Testing & bug fixes
 * [ ] Dragging points in Day View
 
 ### Bugs
@@ -30,11 +32,11 @@ In order to make this app a full-featured management app for workout data, the f
 
 ### General Usability
 
+* [x] Show numbers on bar charts
+* [x] Improve bounds on graphs 
 * [ ] Polish stat editing and dragging
 * [ ] Screen orientation & responsive design tweaks
-* [ ] Show numbers on bar charts
 * [ ] Limit graph Panning on the left
-* [ ] Make bounds on graphs pixel-perfect. Currently, 5% of vertical range is added as a padding for box chart, which is just a rough approximation to the real calculation, which should add screen-space pixel padding appropriately.
 * [ ] Performance testing & enhancements
   * [ ] Many points (10k)
   * [ ] Wide date ranges (25 years)

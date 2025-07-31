@@ -329,8 +329,9 @@ const useStore = create<State>()(
 
       setUnit: (goalName: string, unit: null | string | { name: string, symbol: string, oldName?: null | string }[]) => {
         set((state: any) => {
-          console.log("Setting unit. Previous unit:", state.goals.find((g: GoalType) => g.name === goalName)?.unit);
-          console.log("New unit:", unit);
+          console.log("Setting unit.");
+          console.log("    Previous unit:", JSON.stringify(state.goals.find((g: GoalType) => g.name === goalName)?.unit));
+          console.log("    New unit:     ", JSON.stringify(unit));
           const goal = state.goals.find((g: GoalType) => g.name === goalName);
           if (!goal) {
             console.log("Goal not found");
@@ -388,9 +389,10 @@ const useStore = create<State>()(
 
           // update data points
           const newDataPoints = goal.dataPoints.map((dp: DataPoint) => {
+            let {value, ...dpValueless} = dp;
             const newDpValue = mapDpValue(dp.value);
             return {
-              ...dp,
+              ...dpValueless ,
               ...(newDpValue !== undefined ? {value: newDpValue} : {}),
             }
           });
@@ -419,15 +421,16 @@ const useStore = create<State>()(
             subUnit: setSubUnitName(s.subUnit)
           })));
 
-          const goals = state.goals.map((g: GoalType) => goalName === g.name ? { 
-            ...g, 
+          const newGoal = {
+            ...goal,
             unit,
             dataPoints: newDataPoints,
             calendar: newCalendar,
             graph: newGraph,
             stats: newStats
-          } : g);
-          return { goals };
+          };
+          console.log("New goal:", JSON.stringify(newGoal, null, 2));
+          return { goals: [...state.goals.filter((g: GoalType) => g.name !== goalName), newGoal] };
         });
       },
 
@@ -446,8 +449,18 @@ const useStore = create<State>()(
         const newTags = tags.map((t: SetTag) => ({ name: t.name, color: t.color }));
         const updateTag = (tagName: TagName) =>
           tags.find((t: SetTag) => t.oldTagName === tagName)?.name ?? null;
-        const updateTags = (tags: TagName[]) =>
-          tags.map((t: TagName) => updateTag(t)).filter((t: TagName | null) => t !== null);
+        const updateTags = (tags: TagName[] | undefined) => {
+          if (tags === undefined) {
+            return undefined;
+          } else {
+            const newTags = tags.map((t: TagName) => updateTag(t)).filter((t: TagName | null) => t !== null);
+            if (newTags.length > 0) {
+              return newTags
+            } else {
+              return undefined;
+            }
+          }
+        };
         const updateTagFilters = (tagFilters: TagFilter[]) =>
           tagFilters.map((tf: TagFilter) => ({
             ...tf,
@@ -470,10 +483,17 @@ const useStore = create<State>()(
               ...s,
               tagFilters: updateTagFilters(s.tagFilters)
             }))),
-            dataPoints: goal.dataPoints.map((dp: DataPoint) => ({
-              ...dp,
-              tags: updateTags(dp.tags)
-            }))
+            dataPoints: goal.dataPoints.map((dp: DataPoint) => {
+              const newTags = updateTags(dp.tags);
+              if (newTags === undefined) {
+                return dp;
+              } else {
+                return {
+                  ...dp,
+                  tags: newTags
+                }
+              }
+            })
           } : goal);
           return { goals };
         });
@@ -498,13 +518,29 @@ const useStore = create<State>()(
 
       deleteTag: (goalName: string, tagName: string) => {
         set((state: any) => {
-          const updateDataPoints = (dataPoints: DataPoint[], tagName: string) => {
-            return dataPoints.map((dataPoint: DataPoint) => dataPoint.tags.includes(tagName) ? { ...dataPoint, tags: dataPoint.tags.filter((t: string) => t !== tagName) } : dataPoint);
+          const updateDataPoints = (dataPoints: DataPoint[]) => {
+            return dataPoints.map((dataPoint: DataPoint) => {
+              if (dataPoint.tags == undefined) {
+                return dataPoint;
+              } else {
+                const newTags = dataPoint.tags.filter((t: string) => t !== tagName);
+                if (newTags.length > 0) {
+                  return { ...dataPoint, tags: newTags };
+                } else {
+                  return dataPoint;
+                }
+              }
+            });
           }
-          const updateTags = (tags: Tag[], tagName: string) => {
+          const updateTags = (tags: Tag[]) => {
             return tags.filter((t: Tag) => t.name !== tagName);
           }
-          const goals = state.goals.map((goal: GoalType) => goal.name === goalName ? { ...goal, tags: updateTags(goal.tags, tagName), dataPoints: updateDataPoints(goal.dataPoints, tagName) } : goal);
+          const goals = state.goals.map((goal: GoalType) => goal.name === goalName ? 
+            { 
+              ...goal, 
+              tags: updateTags(goal.tags), 
+              dataPoints: updateDataPoints(goal.dataPoints) 
+            } : goal);
           return { goals };
         });
       },
@@ -515,7 +551,13 @@ const useStore = create<State>()(
             return tags.map((tag: Tag) => tag.name === oldTagName ? { ...tag, name: newTagName } : tag);
           }
           const updateDataPoints = (dataPoints: DataPoint[], oldTagName: string, newTagName: string) => {
-            return dataPoints.map((dataPoint: DataPoint) => dataPoint.tags.includes(oldTagName) ? { ...dataPoint, tags: [...dataPoint.tags.filter((t: string) => t !== oldTagName), newTagName] } : dataPoint);
+            return dataPoints.map((dataPoint: DataPoint) => {
+              if (dataPoint.tags !== undefined) {
+                return dataPoint.tags.includes(oldTagName) ? { ...dataPoint, tags: [...dataPoint.tags.filter((t: string) => t !== oldTagName), newTagName] } : dataPoint;
+              } else {
+                return dataPoint;
+              }
+            });
           }
           const goals = state.goals.map((goal: GoalType) => goal.name === goalName ? {
             ...goal,
