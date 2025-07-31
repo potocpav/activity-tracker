@@ -93,7 +93,7 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
 
   const bins = binTimeSeries(goal.graph.binSize, goal.dataPoints);
   const binStats: { t: number, q0: number, q1: number, q2: number, q3: number, q4: number, count: number, sum: number, mean: number, zero: number }[] = bins.map((bin) => {
-    const values = bin.values.map((dp: DataPoint) => extractValue(dp, goal.graph.tagFilters, goal.graph.subUnitName)).filter((v: number) => v !== null);
+    const values = bin.values.map((dp: DataPoint) => extractValue(dp, goal.graph.tagFilters, goal.graph.subUnitName)).filter((v: number | null) => v !== null);
     if (values.length === 0) {
       return null
     } else {

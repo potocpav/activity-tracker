@@ -397,14 +397,22 @@ const useStore = create<State>()(
             }
           });
 
+          let newCalendarValue;
+          if (unit === null) {
+            newCalendarValue = "n_points";
+          } else {
+            newCalendarValue = goal.calendar.value;
+          }
+
           // update calendar, graph, and stats
           const newCalendar = {
             ...goal.calendar,
+            value: newCalendarValue,
             subUnit: setSubUnitName(goal.calendar.subUnit)
           };
           
           let newGraphType;
-          if (goal.unit === null || typeof goal.unit === 'string') {
+          if (unit === null || typeof unit === 'string') {
             newGraphType = "bar-count";
           } else  {
             newGraphType = goal.graph.graphType;
@@ -579,15 +587,16 @@ const useStore = create<State>()(
                 if (dayCmp(updatedDataPoint, updatedDataPoints[dataPointIndex].date) == 0) {
                   // if date is the same, update in place
                   updatedDataPoints[dataPointIndex] = updatedDataPoint;
+                  insertIndex = dataPointIndex;
                 } else {
                   // if date is different, remove the old data point and insert the new one as the last element in the new day
                   updatedDataPoints.splice(dataPointIndex, 1);
-                  const insertIndex = findZeroSlice(updatedDataPoints, (dp: DataPoint) => dayCmp(dp, updatedDataPoint.date))[1];
+                  insertIndex = findZeroSlice(updatedDataPoints, (dp: DataPoint) => dayCmp(dp, updatedDataPoint.date))[1];
                   updatedDataPoints.splice(insertIndex, 0, updatedDataPoint);
                 }
               } else {
                 // if data point index is undefined, insert the new data point as the last element in the new day
-                const insertIndex = findZeroSlice(updatedDataPoints, (dp: DataPoint) => dayCmp(dp, updatedDataPoint.date))[1];
+                insertIndex = findZeroSlice(updatedDataPoints, (dp: DataPoint) => dayCmp(dp, updatedDataPoint.date))[1];
                 updatedDataPoints.splice(insertIndex, 0, updatedDataPoint);
               }
               return { ...goal, dataPoints: updatedDataPoints };

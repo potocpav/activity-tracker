@@ -71,15 +71,11 @@ const GoalCalendar = ({ navigation, goalName }: GoalCalendarProps) => {
   const goal = goals.find((g: GoalType) => g.name === goalName);
   const themeState = useStore((state: any) => state.theme);
   const palette = themeState === "dark" ? darkPalette : lightPalette;
-  const goalColor = palette[goal.color];
-  const weekStart = useStore((state: any) => state.weekStart);
 
   const setGoalCalendar = useStore((state: any) => state.setGoalCalendar);
 
   const [tagsMenuVisible, setTagsMenuVisible] = useState(false);
-
   const [valueMenuVisible, setValueMenuVisible] = useState(false);
-
   const [subValue, setSubValue] = useState<string | null>(null);
 
   if (!goal) {
@@ -88,16 +84,7 @@ const GoalCalendar = ({ navigation, goalName }: GoalCalendarProps) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <Calendar
-        navigation={navigation}
-        goalName={goalName}
-        palette={palette}
-        colorIndex={goal.color}
-        dataPoints={goal.dataPoints}
-        firstDpDate={goal.dataPoints[0]?.date || null}
-        weekStart={weekStart}
-        calendarProps={goal.calendar}
-         />
+      <Calendar navigation={navigation} goalName={goalName}/>
       <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
         {goal.tags.length > 0 && (
           <TagMenu
@@ -112,14 +99,14 @@ const GoalCalendar = ({ navigation, goalName }: GoalCalendarProps) => {
             themeColors={theme.colors}
           />
         )}
-        <ValueMenu
+        {goal.unit !== null && <ValueMenu
           value={goal.calendar.value}
           onChange={(v: StatValue) => setGoalCalendar(goalName, { ...goal.calendar, value: v })}
           menuVisible={valueMenuVisible}
           setMenuVisible={setValueMenuVisible}
           themeColors={theme.colors}
           valueList={["n_points", "sum", "mean", "max", "min", "last"]}
-        />
+        />}
       </View>
     </SafeAreaView>
   );

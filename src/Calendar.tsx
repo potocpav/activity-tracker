@@ -1,18 +1,14 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, FlatList } from "react-native";
 import { useTheme } from 'react-native-paper';
-import { DataPoint, dateListToTime, dateToDateList, normalizeDateList, timeToDateList, DateList, CalendarProps } from "./StoreTypes";
-import { formatNumber, findZeroSlice, dayCmp, extractStatValue } from "./GoalUtil";
+import { DataPoint, dateListToTime, dateToDateList, normalizeDateList, timeToDateList, DateList, CalendarProps, GoalType, TagFilter } from "./StoreTypes";
+import { formatNumber, findZeroSlice, dayCmp, extractStatValue, extractValue } from "./GoalUtil";
+import useStore from "./Store";
+import { lightPalette, darkPalette } from "./Color";
 
 type CalendarComponentProps = {
   navigation: any;
   goalName: string;
-  palette: string[];
-  colorIndex: number;
-  dataPoints: DataPoint[];
-  firstDpDate: DateList | null;
-  weekStart: "sunday" | "monday";
-  calendarProps: CalendarProps;
 };
 
 const ITEM_WIDTH = 35;
@@ -21,13 +17,21 @@ const MIN_WEEK_COUNT = 14;
 const MAX_WEEK_COUNT = 520;
 
 
-const Calendar: React.FC<CalendarComponentProps> = ({ navigation, goalName, palette, colorIndex, dataPoints, firstDpDate, weekStart, calendarProps }) => {
+const Calendar: React.FC<CalendarComponentProps> = ({ navigation, goalName }) => {
   const theme = useTheme();
-  const dayBackground = palette[colorIndex];
+  const goals = useStore((state: any) => state.goals);
+  const goal = goals.find((g: GoalType) => g.name === goalName);
+  const themeState = useStore((state: any) => state.theme);
+  const palette = themeState === "dark" ? darkPalette : lightPalette;
+  const dayBackground = palette[goal.color];
+  const weekStart = useStore((state: any) => state.weekStart);
+  const updateGoalDataPoint = useStore((state: any) => state.updateGoalDataPoint);
+  const deleteGoalDataPoint = useStore((state: any) => state.deleteGoalDataPoint);
+  
   const now = new Date();
-
   const pastWeekStart = (date: Date, i: number) => new Date(date.getFullYear(), date.getMonth(), date.getDate() - date.getDay() - i * 7 + (weekStart == "sunday" ? 0 : 1));
 
+  const firstDpDate: DateList | null = goal.dataPoints[0]?.date || null;
   const lastVisibleWeek = pastWeekStart(now, 0);
   const firstVisibleWeek = firstDpDate ? pastWeekStart(new Date(...firstDpDate), 0) : lastVisibleWeek;
 
@@ -38,7 +42,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, goalName, pale
       data={Array.from({ length: weekCount }, (_, i) => i)}
       keyExtractor={(_, id) => id.toString()}
       style={styles.scrollView}
-      extraData={dataPoints}
+      extraData={goal.dataPoints}
       removeClippedSubviews={true}
       inverted={true}
       windowSize={2}
@@ -61,11 +65,15 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, goalName, pale
               if (dateListToTime(day) > now.getTime()) {
                 return;
               }
-              const daySlice = findZeroSlice(dataPoints, (dp) => dayCmp(dp, day));
-              const dayDataAndIndex: [DataPoint, number][] = dataPoints.map((dp: DataPoint, i: number): [DataPoint, number] => [dp, i]).slice(...daySlice);
+              const daySlice = findZeroSlice(goal.dataPoints, (dp) => dayCmp(dp, day));
+              const dayDataAndIndex: [DataPoint, number][] = goal.dataPoints.map((dp: DataPoint, i: number): [DataPoint, number] => [dp, i]).slice(...daySlice);
               const dayData = dayDataAndIndex.map(([dp, _]) => dp);
-              const hasData = dayData.length > 0;
-              const value = extractStatValue(dayData, calendarProps.tagFilters, calendarProps.subUnit, calendarProps.value);
+              const positiveTags = goal.calendar.tagFilters.filter((t: TagFilter) => t.state === "yes").map((t: TagFilter) => t.name);
+              const filteredValues: any[] = dayData
+                .map((dp: DataPoint) => [dp.date, extractValue(dp, goal.calendar.tagFilters, goal.calendar.subUnit)])
+                .filter((v: any) => v[1] !== null);
+              const value = extractStatValue(filteredValues, goal.calendar.value);
+              const hasData = filteredValues.length > 0;
               return (
                 <TouchableOpacity
                   style={[styles.daySquare, hasData ?
@@ -77,11 +85,20 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, goalName, pale
                     }
                   ]}
                   key={dayIdx}
+                  onLongPress={() => {
+                    if (goal.unit === null) {
+                      if (hasData) {
+                        deleteGoalDataPoint(goalName, dayDataAndIndex[0][1]);
+                      } else {
+                        updateGoalDataPoint(goalName, undefined, { date: day, tags: positiveTags });
+                      }
+                    }
+                  }}
                   onPress={() => {
                     if (hasData) {
                       navigation.navigate("GoalData", { goalName, day });
                     } else {
-                      navigation.navigate("EditDataPoint", { goalName, newDataPoint: true, newDataPointDate: day });
+                      navigation.navigate("EditDataPoint", { goalName, newDataPoint: true, newDataPointDate: day, positiveTags });
                     }
                   }}
                   activeOpacity={0.3}
@@ -92,7 +109,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, goalName, pale
                   </Text>}
 
                   <Text style={[styles.value, { color: theme.colors.background }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>
-                    {hasData && (value !== null ? formatNumber(value) : '-')}
+                    {hasData && (value !== null ? (goal.unit === null && value === 1 ? "✓" : formatNumber(value)) : '-')}
                   </Text>
                 </TouchableOpacity>
               );

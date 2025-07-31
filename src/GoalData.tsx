@@ -62,7 +62,9 @@ export const renderValueSummary = (value: any, unit: Unit) => {
 };
 
 export const renderValue = (value: any, unit: Unit) => {
-  if (typeof value === "number" && typeof unit === "string") {
+  if (unit === null) {
+    return "✓";
+  } else if (typeof value === "number" && typeof unit === "string") {
     return `${Math.round(value * 100) / 100} ${unit}`;
   } else if (typeof value === "object" && Array.isArray(unit)) {
     // Handle complex units (like finger strength with mean, max, tut)
@@ -110,7 +112,7 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
   }
 
   const filteredDataPoints: [DataPoint, number][] = dps
-    .filter(([dataPoint, i]: [DataPoint, number]) => {
+    .filter(([dataPoint, _]: [DataPoint, number]) => {
       const hasAllRequired = requiredTags.every(tag => (dataPoint.tags ?? []).includes(tag));
       const hasAnyNegative = negativeTags.some(tag => (dataPoint.tags ?? []).includes(tag));
       return hasAllRequired && !hasAnyNegative;

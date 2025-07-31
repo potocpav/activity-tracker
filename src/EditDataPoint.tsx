@@ -32,15 +32,17 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
 
   const dataPoint : DataPoint = dataPointIndex !== undefined ? goal?.dataPoints[dataPointIndex] : {
     date: dateToDateList(newDataPointDate ? new Date(newDataPointDate[0], newDataPointDate[1], newDataPointDate[2]) : new Date()),
-    value: typeof goal.unit === "string" ?
-      null :
-      Object.fromEntries(goal.unit.map((u: SubUnit) => [u.name, null])),
-    tags: []
+    ...(goal.unit === null ? {} : {
+      value: typeof goal.unit === "string" ?
+        null :
+        Object.fromEntries(goal.unit.map((u: SubUnit) => [u.name, null])),
+    })
   };
 
   
   if (!dataPoint) {
-    return <Text>Data point not found</Text>;
+    console.log("Data point not found", dataPointIndex, dataPoint);
+    return <Text style={{ color: theme.colors.error }}>Data point not found</Text>;
   }
   
   const dateTime = new Date(...dataPoint.date);
@@ -49,16 +51,21 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   const deleteGoalDataPoint = useStore((state: any) => state.deleteGoalDataPoint);
   const [inputDate, setInputDate] = useState<CalendarDate | undefined>(dateTime);
   const [noteInput, setNoteInput] = useState<string>(dataPoint.note ?? "");
-  const inputValues = typeof goal.unit === "string" ? 
-    [{ 
+  let inputValues;
+  if (goal.unit === null) {
+    inputValues = [];
+  } else if (typeof goal.unit === "string") {
+    inputValues = [{ 
       subUnit: null, 
       value: useState<string>(dataPoint.value?.toString() ?? "") 
-    }] :
-    goal.unit.map((u: SubUnit) => ({ 
+    }]
+  } else {
+    inputValues = goal.unit.map((u: SubUnit) => ({ 
       subUnit: u, 
       value: useState<string>(
         (dataPoint.value as Record<string, number | null>)[u.name]?.toString() ?? "")
     }));
+  }
   const [inputTags, setInputTags] = useState<string[]>(dataPoint.tags ?? []);
 
   const toggleInputTag = (tag: string) => {
@@ -71,32 +78,36 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   };
 
   const saveDataPointWrapper = () => {
-    var newValue: any = {};
+    var newValue: any;
     var hasNonEmptyValue = false;
     var hasNonNumbervalue = false;
-    if (typeof goal.unit === "string") {
+    if (goal.unit === null) {
+      newValue = undefined;
+    } else if (typeof goal.unit === "string") {
       newValue = parseFloat(inputValues[0].value[0]);
       if (inputValues[0].value[0] === "") {
-        newValue = null;
+        // empty input is invalid, `hasNonEmptyValue` remains false
       } else if (isNaN(newValue)) {
-        newValue = null;
+        // non-number input is invalid, `hasNonNumbervalue` is set
         hasNonNumbervalue = true;
       } else {
+        // all is OK
         hasNonEmptyValue = true;
       }
     } else {
+      newValue = {};
       for (const inputValue of inputValues) {
         if (inputValue.value[0] === "") {
-          newValue[inputValue.subUnit.name] = null;
+          // empty value, do not set the sub-value to anything
         } else {
           hasNonEmptyValue = true;
           const value = parseFloat(inputValue.value[0]);
           if (isNaN(value)) {
-            newValue = null;
             hasNonNumbervalue = true;
             break;
+          } else {
+            newValue[inputValue.subUnit.name] = value;
           }
-          newValue[inputValue.subUnit.name] = value;
         }
       }
     }
@@ -105,7 +116,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
       Alert.alert("Date is required");
     } else if (hasNonNumbervalue) {
       Alert.alert("Value must be a number");
-    } else if (!hasNonEmptyValue) {
+    } else if (goal.unit !== null && !hasNonEmptyValue) {
       Alert.alert("Value is required");
     } else {
       const newDate = dateToDateList(inputDate);
@@ -118,11 +129,12 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
         const note = noteInput === "" ? {} : { "note": noteInput };
         const newIndex = updateGoalDataPoint(goalName, newDataPoint ? undefined : dataPointIndex, {
           date: newDate,
-          value: newValue,
-          tags: inputTags,
+          ...(newValue === undefined ? {} : {value: newValue}),
+          ...(inputTags.length > 0 ? { tags: inputTags } : {}),
           ...note,
         });
         navigation.goBack();
+        console.log("New index", newIndex);
         return newIndex;
       }
     }
@@ -130,6 +142,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
 
   const duplicateDataPointWrapper = () => {
     const newIndex = saveDataPointWrapper();
+    console.log("New index", newIndex);
     ToastAndroid.show('Data point saved', ToastAndroid.SHORT);
     navigation.navigate("EditDataPoint", { goalName, dataPointIndex: newIndex, newDataPoint: true });
   };

@@ -55,13 +55,14 @@ export const statPeriodCmp = (
   }
 }
 
-export const extractValue = (dataPoint: DataPoint, tagFiters: TagFilter[], subUnitName: string | null) => {
+export const extractValue = (dataPoint: DataPoint, tagFiters: TagFilter[], subUnitName: string | null) : number | null => {
   const requiredTags = tagFiters.filter((t) => t.state === "yes");
   const negativeTags = tagFiters.filter((t) => t.state === "no");
-  const hasAllRequiredTags = requiredTags.every((t) => dataPoint.tags.includes(t.name));
-  const hasAnyNegativeTags = negativeTags.some((t) => dataPoint.tags.includes(t.name));
+  const hasAllRequiredTags = requiredTags.every((t) => (dataPoint.tags ?? []).includes(t.name));
+  const hasAnyNegativeTags = negativeTags.some((t) => (dataPoint.tags ?? []).includes(t.name));
   if (hasAllRequiredTags && !hasAnyNegativeTags) {
-    const value = subUnitName ? (dataPoint.value as any)[subUnitName] : dataPoint.value;
+    const value = subUnitName ? (dataPoint.value as any)[subUnitName] : dataPoint.value ?? 1;
+    console.log("value", value);
     return value;
   } else {
     return null;
@@ -78,7 +79,12 @@ export const calcStatValue = (stat: Stat, goal: GoalType) => {
     goal.dataPoints,
     (dp: DataPoint) => statPeriodCmp(dp, stat.period, today, lastActive)
   );
-  return extractStatValue(goal.dataPoints.slice(...periodSlice), stat.tagFilters, stat.subUnit, stat.value);
+
+  const filteredValues: any[] = goal.dataPoints
+    .slice(...periodSlice)
+    .map((dp: DataPoint) => [dp.date, extractValue(dp, stat.tagFilters, stat.subUnit)])
+    .filter((v: any) => v[1] !== null);
+  return extractStatValue(filteredValues, stat.value);
 }
 
 
@@ -193,13 +199,9 @@ export const binTimeSeries = (binSize: BinSize, dataPoints: any[]) => {
   return bins;
 };
 
-export const extractStatValue = (dataPoints: DataPoint[], tagFilters: TagFilter[], subUnitName: string | null, statValue: StatValue) => {
-  const periodDatedValues = dataPoints
-    .map((dp: DataPoint) => [dp.date, extractValue(dp, tagFilters, subUnitName)])
-    .filter((v: any) => v[1] !== null);
-
-  const periodValues = periodDatedValues.map((v: any) => v[1]);
-  const periodDates = periodDatedValues.map((v: any) => v[0]);
+export const extractStatValue = (filteredValues: [DateList, number][], statValue: StatValue) : number | null => {
+  const periodValues = filteredValues.map((v: any) => v[1]);
+  const periodDates = filteredValues.map((v: any) => v[0]);
 
   let value;
   if (statValue === "n_days") {
