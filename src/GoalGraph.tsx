@@ -93,7 +93,7 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
 
   const bins = binTimeSeries(goal.graph.binSize, goal.dataPoints, goal.weekStart);
   const binStats: { t: number, q0: number, q1: number, q2: number, q3: number, q4: number, count: number, sum: number, mean: number, zero: number, dailyMean: number }[] = bins.map((bin) => {
-    const values = bin.values.map((dp: DataPoint) => extractValue(dp, goal.graph.tagFilters, goal.graph.subUnitName)).filter((v: number | null) => v !== null);
+    const values = bin.values.map((dp: DataPoint) => extractValue(dp, goal.graph.tagFilters, goal.graph.subUnit)).filter((v: number | null) => v !== null);
     if (values.length === 0) {
       return null
     } else {
@@ -194,20 +194,15 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
     return { domain, viewport };
   })();
 
-
-  // const [xDomain, setXDomain] = useState<[number, number]>(domain.x);
-
   const kx = useSharedValue(1);
   const ky = useSharedValue(1);
   const tx = useSharedValue(0);
   const ty = useSharedValue(0);
 
+
   const resetTransform = () => {
     tx.value = withTiming(0);
   }
-
-  // transformState.matrix.value = setScale(transformState.matrix.value, 1, 1);
-  // transformState.matrix.value = setTranslate(transformState.matrix.value, 0, 0);
 
   // enforce limits when panning
   useAnimatedReaction(
@@ -461,8 +456,8 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
         {/* SubUnit menu */}
         <SubUnitMenu
           subUnitNames={subUnitNames}
-          subUnitName={goal.graph.subUnitName}
-          setSubUnitName={(name) => setGoalGraph(goalName, { ...goal.graph, subUnitName: name })}
+          subUnitName={goal.graph.subUnit}
+          setSubUnitName={(name) => setGoalGraph(goalName, { ...goal.graph, subUnit: name })}
           menuVisible={subUnitMenuVisible}
           setMenuVisible={setSubUnitMenuVisible}
           themeColors={theme.colors}

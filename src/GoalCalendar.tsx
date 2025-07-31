@@ -13,6 +13,7 @@ import { darkPalette, lightPalette } from "./Color";
 import TagMenu from "./TagMenu";
 import Calendar from "./Calendar";
 import ValueMenu from "./ValueMenu";
+import SubUnitMenu from "./SubUnitMenu";
 const locale = NativeModules.I18nManager.localeIdentifier;
 
 type GoalCalendarProps = {
@@ -76,7 +77,10 @@ const GoalCalendar = ({ navigation, goalName }: GoalCalendarProps) => {
 
   const [tagsMenuVisible, setTagsMenuVisible] = useState(false);
   const [valueMenuVisible, setValueMenuVisible] = useState(false);
+  const [subUnitMenuVisible, setSubUnitMenuVisible] = useState(false);
   const [subValue, setSubValue] = useState<string | null>(null);
+
+  const subUnitNames = Array.isArray(goal.unit) ? goal.unit.map((u: any) => u.name) : null;
 
   if (!goal) {
     return <Text>Goal not found</Text>;
@@ -99,6 +103,15 @@ const GoalCalendar = ({ navigation, goalName }: GoalCalendarProps) => {
             themeColors={theme.colors}
           />
         )}
+        {/* SubUnit menu */}
+        <SubUnitMenu
+          subUnitNames={subUnitNames}
+          subUnitName={goal.calendar.subUnit}
+          setSubUnitName={(name) => setGoalCalendar(goalName, { ...goal.calendar, subUnit: name })}
+          menuVisible={subUnitMenuVisible}
+          setMenuVisible={setSubUnitMenuVisible}
+          themeColors={theme.colors}
+        />
         {goal.unit !== null && <ValueMenu
           value={goal.calendar.value}
           onChange={(v: StatValue) => setGoalCalendar(goalName, { ...goal.calendar, value: v })}

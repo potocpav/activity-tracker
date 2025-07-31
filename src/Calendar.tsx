@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, FlatList } from "react-native";
 import { useTheme } from 'react-native-paper';
-import { DataPoint, dateListToTime, dateToDateList, normalizeDateList, timeToDateList, DateList, CalendarProps, GoalType, TagFilter } from "./StoreTypes";
+import { DataPoint, dateListToTime, normalizeDateList, DateList, GoalType, TagFilter } from "./StoreTypes";
 import { formatNumber, findZeroSlice, dayCmp, extractStatValue, extractValue } from "./GoalUtil";
 import useStore from "./Store";
 import { lightPalette, darkPalette } from "./Color";

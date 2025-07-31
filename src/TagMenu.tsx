@@ -35,7 +35,7 @@ const TagMenu: React.FC<TagMenuProps> = ({
             }}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Text style={{ marginRight: 10, color: themeColors.onSurfaceVariant }}>
-                <AntDesign name="filter" size={16} color={themeColors.onSurfaceVariant} />
+                <AntDesign name="tag" size={16} color={themeColors.onSurfaceVariant} />
                 {(() => {
                   const yesTags = tags.filter(t => t.state === 'yes').map(t => t.name);
                   const noTags = tags.filter(t => t.state === 'no').map(t => t.name);

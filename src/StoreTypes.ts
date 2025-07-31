@@ -86,7 +86,7 @@ export type CalendarProps = {
   label: string;
   value: StatValue;
   tagFilters: TagFilter[];
-  subUnit: string | null
+  subUnit: string | null;
 };
 
 export type GraphType = "box" | "bar-count" | "bar-daily-mean" | "bar-sum" | "line-mean";

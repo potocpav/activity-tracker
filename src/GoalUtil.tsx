@@ -61,8 +61,7 @@ export const extractValue = (dataPoint: DataPoint, tagFiters: TagFilter[], subUn
   const hasAllRequiredTags = requiredTags.every((t) => (dataPoint.tags ?? []).includes(t.name));
   const hasAnyNegativeTags = negativeTags.some((t) => (dataPoint.tags ?? []).includes(t.name));
   if (hasAllRequiredTags && !hasAnyNegativeTags) {
-    const value = subUnitName ? (dataPoint.value as any)[subUnitName] : dataPoint.value ?? 1;
-    console.log("value", value);
+    const value = subUnitName !== null ? (dataPoint.value as any)[subUnitName] ?? null : dataPoint.value ?? 1;
     return value;
   } else {
     return null;

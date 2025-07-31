@@ -75,6 +75,8 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
     setInputTags(inputTags.includes(tag) ? inputTags.filter((t: string) => t !== tag) : [...inputTags, tag]);
   }
 
+  console.log(goal.unit);
+
   const deleteDataPointWrapper = () => {
     deleteGoalDataPoint(goalName, dataPointIndex);
     navigation.goBack();
@@ -137,7 +139,6 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
           ...note,
         });
         navigation.goBack();
-        console.log("New index", newIndex);
         return newIndex;
       }
     }
@@ -145,7 +146,6 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
 
   const duplicateDataPointWrapper = () => {
     const newIndex = saveDataPointWrapper();
-    console.log("New index", newIndex);
     ToastAndroid.show('Data point saved', ToastAndroid.SHORT);
     navigation.navigate("EditDataPoint", { goalName, dataPointIndex: newIndex, newDataPoint: true });
   };
@@ -183,7 +183,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
           {inputValues.map((inputValue: { subUnit: SubUnit | null, value: [string, (text: string) => void] }) => (
             <TextInput
               key={inputValue.subUnit?.name ?? "value"}
-              label={inputValue.subUnit ? `${inputValue.subUnit.name} [${inputValue.subUnit.symbol}]` : `Value ${goal.unit ? `[${goal.unit}]` : "-"}`}
+              label={inputValue.subUnit ? `${inputValue.subUnit.name} [${inputValue.subUnit.symbol}]` : `Value ${goal.unit ? `[${goal.unit}]` : ""}`}
               value={inputValue.value[0] ?? ""}
               onChangeText={text => inputValue.value[1](text)}
               keyboardType="numeric"

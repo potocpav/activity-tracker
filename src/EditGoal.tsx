@@ -37,14 +37,14 @@ const EditGoal: FC<EditGoalProps> = ({ navigation, route }) => {
   // Missing oldName represents there is no old name
   // null oldName represents that the old value comes from a single-valued unit
   // String oldName represents the old value name from a multi-valued unit
-  const [multiUnitInput, setMultiUnitInput] = useState<{ name: string, unit: string, oldName?: null | string }[]>(
+  const [multiUnitInput, setMultiUnitInput] = useState<{ name: string, symbol: string, oldName?: null | string }[]>(
     goal.unit === null ? [
-      { name: '', unit: '' },
-      { name: '', unit: '' },
+      { name: '', symbol: '' },
+      { name: '', symbol: '' },
     ] : typeof goal.unit === 'string' ? [
-      { name: '', unit: goal.unit, oldName: null },
-      { name: '', unit: '' },
-    ] : goal.unit.map((u: SubUnit) => ({ name: u.name, unit: u.symbol, oldName: u.name }))
+      { name: '', symbol: goal.unit, oldName: null },
+      { name: '', symbol: '' },
+    ] : goal.unit.map((u: SubUnit) => ({ name: u.name, symbol: u.symbol, oldName: u.name }))
   );
 
   const [tagDialogVisible, setTagDialogVisible] = useState(false);
@@ -78,7 +78,6 @@ const EditGoal: FC<EditGoalProps> = ({ navigation, route }) => {
     const goalName = goal.name === "" ? updatedGoal.name : goal.name;
     updateGoal(goalName, updatedGoal);
     setTags(updatedGoal.name, tagState);
-    console.log("newUnit", newUnit, singleUnitInput, multiUnitInput);
     setUnit(updatedGoal.name, newUnit);
     navigation.reset({
       index: 0,
@@ -110,7 +109,6 @@ const EditGoal: FC<EditGoalProps> = ({ navigation, route }) => {
       };
       // data loss?
       if (goal.dataPoints.length > 0) {
-        console.log("unitMode", unitMode, typeof null);
         if (unitMode === 'no_value' && goal.unit !== null) {
           dataLossAlert(saveGoal);
         } else if (unitMode === 'single' && Array.isArray(goal.unit)) {
@@ -119,7 +117,6 @@ const EditGoal: FC<EditGoalProps> = ({ navigation, route }) => {
           dataLossAlert(saveGoal);
         } else if (unitMode === 'multiple' && Array.isArray(goal.unit)) {
           let oldNames: any[] = multiUnitInput.map((u) => u.oldName).filter((n) => n !== undefined);
-          console.log("oldNames", oldNames);
           if (new Set(oldNames).isSupersetOf(new Set(goal.unit.map((u: SubUnit) => u.name)))) {
             saveGoal();
           } else {
@@ -212,10 +209,10 @@ const EditGoal: FC<EditGoalProps> = ({ navigation, route }) => {
           <View style={{ flex: 1 }}>
             <TextInput
               label="Unit"
-              value={val.unit}
+              value={val.symbol}
               onChangeText={text => {
                 const newVals = [...multiUnitInput];
-                newVals[idx].unit = text;
+                newVals[idx].symbol = text;
                 setMultiUnitInput(newVals);
               }}
               mode="outlined"
@@ -296,7 +293,7 @@ const EditGoal: FC<EditGoalProps> = ({ navigation, route }) => {
 
           <View style={styles.inputContainer}>
             {unitMode === 'no_value' ? editNoValue() : unitMode === 'single' ? editSingleValue() : editMultipleValues()}
-            <Button compact={true} onPress={() => setMultiUnitInput([...multiUnitInput, { name: '', unit: '' }])}><AntDesign name="plus" size={20} color={theme.colors.onSurface} /></Button>
+            <Button compact={true} onPress={() => setMultiUnitInput([...multiUnitInput, { name: '', symbol: '' }])}><AntDesign name="plus" size={20} color={theme.colors.onSurface} /></Button>
           </View>
 
           <View style={styles.inputContainer}>

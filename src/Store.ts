@@ -329,9 +329,6 @@ const useStore = create<State>()(
 
       setUnit: (goalName: string, unit: null | string | { name: string, symbol: string, oldName?: null | string }[]) => {
         set((state: any) => {
-          console.log("Setting unit.");
-          console.log("    Previous unit:", JSON.stringify(state.goals.find((g: GoalType) => g.name === goalName)?.unit));
-          console.log("    New unit:     ", JSON.stringify(unit));
           const goal = state.goals.find((g: GoalType) => g.name === goalName);
           if (!goal) {
             console.log("Goal not found");
@@ -439,7 +436,6 @@ const useStore = create<State>()(
             graph: newGraph,
             stats: newStats
           };
-          console.log("New goal:", JSON.stringify(newGoal, null, 2));
           return { goals: [...state.goals.filter((g: GoalType) => g.name !== goalName), newGoal] };
         });
       },
@@ -582,6 +578,9 @@ const useStore = create<State>()(
       updateGoalDataPoint: (goalName: string, dataPointIndex: number | undefined, updatedDataPoint: DataPoint) => {
         var insertIndex: number = NaN;
         set((state: any) => {
+          if (updatedDataPoint.tags?.length === 0) {
+            delete updatedDataPoint.tags;
+          }
           const goals = state.goals.map((goal: GoalType) => {
             if (goal.name === goalName) {
               const updatedDataPoints = [...goal.dataPoints];
