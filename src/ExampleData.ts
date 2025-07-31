@@ -2,7 +2,7 @@
 import { CalendarProps, dateListToTime, GoalType, GraphProps, Stat, timeToDateList, Unit } from "./StoreTypes";
 
 const firstSubUnit = (unit: Unit): string | null => {
-  if (typeof unit === "string") {
+  if (unit === null || typeof unit === "string") {
     return null;
   }
   return unit[0].name;
@@ -161,37 +161,30 @@ const bodyWeightExample2: GoalType = {
     {
       date: [2025, 7, 8],
       value: 81.4,
-      tags: [],
     },
     {
       date: [2025, 7, 9],
       value: 79.8,
-      tags: [],
     },
     {
       date: [2025, 7, 10],
       value: 80.9,
-      tags: [],
     },
     {
       date: [2025, 7, 11],
       value: 80.9,
-      tags: [],
     },
     {
       date: [2025, 7, 12],
       value: 79.9,
-      tags: [],
     },
     {
       date: [2025, 7, 13],
       value: 79.1,
-      tags: [],
     },
     {
       date: [2025, 7, 14],
       value: 80.1,
-      tags: [],
     },
   ],
 };
