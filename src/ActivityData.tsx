@@ -10,14 +10,14 @@ import {
 } from "react-native";
 import { useTheme, DataTable, FAB } from 'react-native-paper';
 import useStore from "./Store";
-import { DataPoint, GoalType, Tag, TagFilter, Unit } from "./StoreTypes";
+import { DataPoint, ActivityType, Tag, TagFilter, Unit } from "./StoreTypes";
 import { darkPalette, lightPalette } from "./Color";
-import { dayCmp, findZeroSlice, renderTags } from "./GoalUtil";
+import { dayCmp, findZeroSlice, renderTags } from "./ActivityUtil";
 import TagMenu from "./TagMenu";
 import DraggableFlatList from "react-native-draggable-flatlist";
 const locale = NativeModules.I18nManager.localeIdentifier;
 
-type GoalDataProps = {
+type ActivityDataProps = {
   navigation: any;
   route: any;
 };
@@ -82,28 +82,28 @@ export const renderValue = (value: any, unit: Unit) => {
 
 const ITEM_HEIGHT = 50;
 
-const GoalData = ({ navigation, route }: GoalDataProps) => {
+const ActivityData = ({ navigation, route }: ActivityDataProps) => {
   const theme = useTheme();
-  const { goalName, day } = route.params;
-  const goals = useStore((state: any) => state.goals);
-  const goal = goals.find((g: GoalType) => g.name === goalName);
+  const { activityName, day } = route.params;
+  const activities = useStore((state: any) => state.activities);
+  const activity = activities.find((a: ActivityType) => a.name === activityName);
   const themeState = useStore((state: any) => state.theme);
   const palette = themeState === "dark" ? darkPalette : lightPalette;
-  const goalColor = palette[goal.color];
+  const activityColor = palette[activity.color];
 
   // Tag filter state
   const [tags, setTags] = useState<{ name: string; state: "yes" | "no" }[]>([]);
   const [tagsMenuVisible, setTagsMenuVisible] = useState(false);
 
-  if (!goal) {
-    return <Text>Goal not found</Text>;
+  if (!activity) {
+    return <Text>Activity not found</Text>;
   }
 
   // Filtering logic
   const requiredTags = tags.filter((t) => t.state === "yes").map(t => t.name);
   const negativeTags = tags.filter((t) => t.state === "no").map(t => t.name);
   
-  let dps: [DataPoint, number][] = goal.dataPoints.map((o: DataPoint, i: number) => [o, i]);
+  let dps: [DataPoint, number][] = activity.dataPoints.map((o: DataPoint, i: number) => [o, i]);
   // filter only daily points
   if (day) {
     const daySlice = findZeroSlice(dps, (dp) => dayCmp(dp[0], day));
@@ -122,14 +122,14 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      {goal.tags.length > 0 && (
+      {activity.tags.length > 0 && (
         <View style={{ padding: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start' }}>
           <TagMenu
             tags={tags}
             onChange={(tags) => setTags(tags)}
             menuVisible={tagsMenuVisible}
             setMenuVisible={setTagsMenuVisible}
-            goalTags={goal.tags}
+            activityTags={activity.tags}
             palette={palette}
             themeColors={theme.colors}
           />
@@ -155,23 +155,23 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
         )}
         renderItem={({ item: [dataPoint, i] }) => (
           <TouchableOpacity
-            onPress={() => navigation.navigate("EditDataPoint", { goalName: goal.name, dataPointIndex: i })}
+            onPress={() => navigation.navigate("EditDataPoint", { activityName: activity.name, dataPointIndex: i })}
           >
             <DataTable.Row style={{ height: ITEM_HEIGHT }}>
               {day ? null : (
                 <DataTable.Cell>{formatDate(new Date(...dataPoint.date))}</DataTable.Cell>
               )}
-              <DataTable.Cell>{renderTags(goal.tags.filter((t: Tag) => (dataPoint.tags ?? []).includes(t.name)), theme, palette)}</DataTable.Cell>
+              <DataTable.Cell>{renderTags(activity.tags.filter((t: Tag) => (dataPoint.tags ?? []).includes(t.name)), theme, palette)}</DataTable.Cell>
               <DataTable.Cell>{dataPoint.note ? dataPoint.note : null}</DataTable.Cell>
-              <DataTable.Cell numeric>{renderValue(dataPoint.value, goal.unit)}</DataTable.Cell>
+              <DataTable.Cell numeric>{renderValue(dataPoint.value, activity.unit)}</DataTable.Cell>
             </DataTable.Row>
           </TouchableOpacity>
         )}
       />
       <FAB
         icon="plus"
-        style={[styles.fab, { backgroundColor: goalColor }]}
-        onPress={() => navigation.navigate("EditDataPoint", { goalName: goal.name, newDataPoint: true, newDataPointDate: day, tags: requiredTags })}
+        style={[styles.fab, { backgroundColor: activityColor }]}
+        onPress={() => navigation.navigate("EditDataPoint", { activityName: activity.name, newDataPoint: true, newDataPointDate: day, tags: requiredTags })}
         color={theme.colors.surface}
       />
     </SafeAreaView>
@@ -193,4 +193,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default GoalData; 
+export default ActivityData; 

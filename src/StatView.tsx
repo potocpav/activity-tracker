@@ -1,22 +1,22 @@
 import React from "react";
 import { Text, View, Pressable, StyleSheet } from "react-native";
 import { useTheme } from 'react-native-paper';
-import { GoalType, Stat } from "./StoreTypes";
-import { renderValueSummary } from "./GoalData";
-import { calcStatValue } from "./GoalUtil";
+import { ActivityType, Stat } from "./StoreTypes";
+import { renderValueSummary } from "./ActivityData";
+import { calcStatValue } from "./ActivityUtil";
 import { lightPalette, darkPalette } from "./Color";
 import useStore from "./Store";
 
 
-const StatView = ({ stat, goal, onPress }: { stat: Stat, goal: GoalType, onPress: () => void }) => {
+const StatView = ({ stat, activity, onPress }: { stat: Stat, activity: ActivityType, onPress: () => void }) => {
     const theme = useTheme();
     const themeState = useStore((state: any) => state.theme);
     const palette = themeState === "dark" ? darkPalette : lightPalette;
-    const goalColor = palette[goal.color];
-    const styles = getStyles(theme, goalColor);
+    const activityColor = palette[activity.color];
+    const styles = getStyles(theme, activityColor);
     
-    const value = calcStatValue(stat, goal);
-    const unit = ["n_days", "n_points"].includes(stat.value) ? "" : goal.unit;
+    const value = calcStatValue(stat, activity);
+    const unit = ["n_days", "n_points"].includes(stat.value) ? "" : activity.unit;
 
     return (
       <Pressable 
@@ -36,7 +36,7 @@ const StatView = ({ stat, goal, onPress }: { stat: Stat, goal: GoalType, onPress
     );
   };
 
-const getStyles = (theme: any, goalColor: string) => StyleSheet.create({
+const getStyles = (theme: any, activityColor: string) => StyleSheet.create({
   statInnerContainer: {
     flex: 1,
     flexDirection: 'row',
@@ -51,7 +51,7 @@ const getStyles = (theme: any, goalColor: string) => StyleSheet.create({
   statValue: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: goalColor,
+    color: activityColor,
   },
 });
 

@@ -7,20 +7,20 @@ import {
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LiveView from "./LiveView";
-import Goals from "./Goals";
+import Activities from "./Activities";
 import useStore from "./Store";
-import Goal from "./Goal";
+import Activity from "./Activity";
 import Settings from "./Settings";
 import DeviceModal from "./DeviceConnectionModal";
 import EditDataPoint from "./EditDataPoint";
-import EditGoal from "./EditGoal";
+import EditActivity from "./EditActivity";
 import {
   PaperProvider,
   MD3LightTheme,
   MD3DarkTheme,
   adaptNavigationTheme,
 } from 'react-native-paper';
-import GoalData from "./GoalData";
+import ActivityData from "./ActivityData";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 const { LightTheme, DarkTheme: PaperDarkTheme } = adaptNavigationTheme({
@@ -109,9 +109,9 @@ const App = () => {
             >
               <Stack.Group>
                 <Stack.Screen
-                  name="Goals"
-                  component={Goals}
-                  options={{ title: "Goals" }}
+                  name="Activities"
+                  component={Activities}
+                  options={{ title: "Activities" }}
                 />
                 <Stack.Screen
                   name="Live View"
@@ -119,12 +119,12 @@ const App = () => {
                   options={{ title: "Live View" }}
                 />
                 <Stack.Screen
-                  name="Goal"
-                  component={Goal}
+                  name="Activity"
+                  component={Activity}
                 />
                 <Stack.Screen
-                  name="GoalData"
-                  component={GoalData}
+                  name="ActivityData"
+                  component={ActivityData}
                   options={{ title: "Data Points" }}
                 />
                 <Stack.Screen
@@ -145,9 +145,9 @@ const App = () => {
                   options={{ title: "Edit Data Point" }}
                 />
                 <Stack.Screen
-                  name="EditGoal"
-                  component={EditGoal}
-                  options={{ title: "Edit Goal" }}
+                  name="EditActivity"
+                  component={EditActivity}
+                  options={{ title: "Edit Activity" }}
                 />
               </Stack.Group>
             </Stack.Navigator>

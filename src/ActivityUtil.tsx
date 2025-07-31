@@ -1,5 +1,5 @@
 
-import { Tag, StatPeriod, DataPoint, DateList, dateListToTime, normalizeDateList, TagFilter, StatValue, Stat, dateToDateList, GoalType, WeekStart } from "./StoreTypes";
+import { Tag, StatPeriod, DataPoint, DateList, dateListToTime, normalizeDateList, TagFilter, StatValue, Stat, dateToDateList, ActivityType, WeekStart } from "./StoreTypes";
 import { View, Text, StyleSheet } from "react-native";
 
 export type BinSize = "day" | "week" | "month" | "quarter" | "year";
@@ -69,17 +69,17 @@ export const extractValue = (dataPoint: DataPoint, tagFiters: TagFilter[], subUn
 }
 
 
-export const calcStatValue = (stat: Stat, goal: GoalType) => {
+export const calcStatValue = (stat: Stat, activity: ActivityType) => {
   const today = dateToDateList(new Date());
-  const lastActive = goal.dataPoints.length > 0 ?
-    goal.dataPoints[goal.dataPoints.length - 1].date :
+  const lastActive = activity.dataPoints.length > 0 ?
+    activity.dataPoints[activity.dataPoints.length - 1].date :
     null;
   const periodSlice = findZeroSlice(
-    goal.dataPoints,
+    activity.dataPoints,
     (dp: DataPoint) => statPeriodCmp(dp, stat.period, today, lastActive)
   );
 
-  const filteredValues: any[] = goal.dataPoints
+  const filteredValues: any[] = activity.dataPoints
     .slice(...periodSlice)
     .map((dp: DataPoint) => [dp.date, extractValue(dp, stat.tagFilters, stat.subUnit)])
     .filter((v: any) => v[1] !== null);

@@ -24,7 +24,7 @@ import { defaultGraph, defaultCalendar, defaultStats, exampleActivities } from "
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ActivityType, Tag, DataPoint, SetTag, TagName, State } from "./StoreTypes";
-import { findZeroSlice, dayCmp } from "./GoalUtil";
+import { findZeroSlice, dayCmp } from "./ActivityUtil";
 
 export const version = 10;
 
@@ -101,7 +101,7 @@ const useStore = create<State>()(
       // Measurement related state
       dataPoints: [],
 
-      // Goals related state
+      // Activities related state
       activities: exampleActivities,
       theme: "light",
       blackBackground: false,
@@ -579,15 +579,15 @@ const useStore = create<State>()(
         });
       },
 
-      updateGoalDataPoint: (activityName: string, dataPointIndex: number | undefined, updatedDataPoint: DataPoint) => {
+      updateActivityDataPoint: (activityName: string, dataPointIndex: number | undefined, updatedDataPoint: DataPoint) => {
         var insertIndex: number = NaN;
         set((state: any) => {
           if (updatedDataPoint.tags?.length === 0) {
             delete updatedDataPoint.tags;
           }
-          const goals = state.goals.map((goal: GoalType) => {
-            if (goal.name === goalName) {
-              const updatedDataPoints = [...goal.dataPoints];
+          const activities = state.activities.map((activity: ActivityType) => {
+            if (activity.name === activityName) {
+              const updatedDataPoints = [...activity.dataPoints];
               if (dataPointIndex !== undefined) {
                 if (dayCmp(updatedDataPoint, updatedDataPoints[dataPointIndex].date) == 0) {
                   // if date is the same, update in place
@@ -604,26 +604,26 @@ const useStore = create<State>()(
                 insertIndex = findZeroSlice(updatedDataPoints, (dp: DataPoint) => dayCmp(dp, updatedDataPoint.date))[1];
                 updatedDataPoints.splice(insertIndex, 0, updatedDataPoint);
               }
-              return { ...goal, dataPoints: updatedDataPoints };
+              return { ...activity, dataPoints: updatedDataPoints };
             }
-            return goal;
+            return activity;
           });
-          return { goals };
+          return { activities };
         });
         return insertIndex;
       },
 
-      deleteGoalDataPoint: (goalName: string, dataPointIndex: number) => {
+      deleteActivityDataPoint: (activityName: string, dataPointIndex: number) => {
         set((state: any) => {
-          const goals = state.goals.map((goal: GoalType) => {
-            if (goal.name === goalName) {
-              const updatedDataPoints = [...goal.dataPoints];
+          const activities = state.activities.map((activity: ActivityType) => {
+            if (activity.name === activityName) {
+              const updatedDataPoints = [...activity.dataPoints];
               updatedDataPoints.splice(dataPointIndex, 1);
-              return { ...goal, dataPoints: updatedDataPoints };
+              return { ...activity, dataPoints: updatedDataPoints };
             }
-            return goal;
+            return activity;
           });
-          return { goals };
+          return { activities };
         });
       },
     }),

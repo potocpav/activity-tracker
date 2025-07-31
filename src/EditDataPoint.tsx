@@ -9,13 +9,13 @@ import {
   NativeModules,
 } from "react-native";
 import { Chip, useTheme, TextInput, Button } from 'react-native-paper';
-import { SubUnit, GoalType, dateToDateList, dateListToTime, DataPoint } from "./StoreTypes";
+import { SubUnit, ActivityType, dateToDateList, dateListToTime, DataPoint } from "./StoreTypes";
 import useStore from "./Store";
 import { DatePickerInput } from "react-native-paper-dates";
 import { CalendarDate } from "react-native-paper-dates/lib/typescript/Date/Calendar";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { cmpDateList } from "./GoalUtil";
+import { cmpDateList } from "./ActivityUtil";
 import { darkPalette, lightPalette } from "./Color";
 
 type EditDataPointProps = {
@@ -27,18 +27,18 @@ const locale = NativeModules.I18nManager.localeIdentifier;
 
 const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   const theme = useTheme();
-  const { goalName, dataPointIndex, newDataPoint, newDataPointDate, tags } = route.params;
-  const goals = useStore((state: any) => state.goals);
-  const goal = goals.find((g: GoalType) => g.name === goalName);
+  const { activityName, dataPointIndex, newDataPoint, newDataPointDate, tags } = route.params;
+  const activities = useStore((state: any) => state.activities);
+  const activity = activities.find((a: ActivityType) => a.name === activityName);
   const themeState = useStore((state: any) => state.theme);
   const palette = themeState === "dark" ? darkPalette : lightPalette;
 
-  const dataPoint : DataPoint = dataPointIndex !== undefined ? goal?.dataPoints[dataPointIndex] : {
+  const dataPoint : DataPoint = dataPointIndex !== undefined ? activity?.dataPoints[dataPointIndex] : {
     date: dateToDateList(newDataPointDate ? new Date(newDataPointDate[0], newDataPointDate[1], newDataPointDate[2]) : new Date()),
-    ...(goal.unit === null ? {} : {
-      value: typeof goal.unit === "string" ?
+    ...(activity.unit === null ? {} : {
+      value: typeof activity.unit === "string" ?
         null :
-        Object.fromEntries(goal.unit.map((u: SubUnit) => [u.name, null])),
+        Object.fromEntries(activity.unit.map((u: SubUnit) => [u.name, null])),
     })
   };
 
@@ -50,20 +50,20 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   
   const dateTime = new Date(...dataPoint.date);
 
-  const updateGoalDataPoint = useStore((state: any) => state.updateGoalDataPoint);
-  const deleteGoalDataPoint = useStore((state: any) => state.deleteGoalDataPoint);
+  const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);
+  const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
   const [inputDate, setInputDate] = useState<CalendarDate | undefined>(dateTime);
   const [noteInput, setNoteInput] = useState<string>(dataPoint.note ?? "");
   let inputValues;
-  if (goal.unit === null) {
+  if (activity.unit === null) {
     inputValues = [];
-  } else if (typeof goal.unit === "string") {
+  } else if (typeof activity.unit === "string") {
     inputValues = [{ 
       subUnit: null, 
       value: useState<string>(dataPoint.value?.toString() ?? "") 
     }]
   } else {
-    inputValues = goal.unit.map((u: SubUnit) => ({ 
+    inputValues = activity.unit.map((u: SubUnit) => ({ 
       subUnit: u, 
       value: useState<string>(
         (dataPoint.value as Record<string, number | null>)[u.name]?.toString() ?? "")
@@ -75,10 +75,8 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
     setInputTags(inputTags.includes(tag) ? inputTags.filter((t: string) => t !== tag) : [...inputTags, tag]);
   }
 
-  console.log(goal.unit);
-
   const deleteDataPointWrapper = () => {
-    deleteGoalDataPoint(goalName, dataPointIndex);
+    deleteActivityDataPoint(activityName, dataPointIndex);
     navigation.goBack();
   };
 
@@ -86,9 +84,9 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
     var newValue: any;
     var hasNonEmptyValue = false;
     var hasNonNumbervalue = false;
-    if (goal.unit === null) {
+    if (activity.unit === null) {
       newValue = undefined;
-    } else if (typeof goal.unit === "string") {
+    } else if (typeof activity.unit === "string") {
       newValue = parseFloat(inputValues[0].value[0]);
       if (inputValues[0].value[0] === "") {
         // empty input is invalid, `hasNonEmptyValue` remains false
@@ -121,7 +119,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
       Alert.alert("Date is required");
     } else if (hasNonNumbervalue) {
       Alert.alert("Value must be a number");
-    } else if (goal.unit !== null && !hasNonEmptyValue) {
+    } else if (activity.unit !== null && !hasNonEmptyValue) {
       Alert.alert("Value is required");
     } else {
       const newDate = dateToDateList(inputDate);
@@ -132,7 +130,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
         Alert.alert("Date must be from this millenium");
       } else {
         const note = noteInput === "" ? {} : { "note": noteInput };
-        const newIndex = updateGoalDataPoint(goalName, newDataPoint ? undefined : dataPointIndex, {
+        const newIndex = updateActivityDataPoint(activityName, newDataPoint ? undefined : dataPointIndex, {
           date: newDate,
           ...(newValue === undefined ? {} : {value: newValue}),
           ...(inputTags.length > 0 ? { tags: inputTags } : {}),
@@ -147,7 +145,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   const duplicateDataPointWrapper = () => {
     const newIndex = saveDataPointWrapper();
     ToastAndroid.show('Data point saved', ToastAndroid.SHORT);
-    navigation.navigate("EditDataPoint", { goalName, dataPointIndex: newIndex, newDataPoint: true });
+    navigation.navigate("EditDataPoint", { activityName, dataPointIndex: newIndex, newDataPoint: true });
   };
 
   React.useEffect(() => {
@@ -163,7 +161,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
         </>
       ),
     });
-  }, [navigation, theme, goal, inputDate, ...inputValues.map((inputValue: any) => inputValue.value[0]), inputTags, noteInput]);
+  }, [navigation, theme, activity, inputDate, ...inputValues.map((inputValue: any) => inputValue.value[0]), inputTags, noteInput]);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
@@ -183,7 +181,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
           {inputValues.map((inputValue: { subUnit: SubUnit | null, value: [string, (text: string) => void] }) => (
             <TextInput
               key={inputValue.subUnit?.name ?? "value"}
-              label={inputValue.subUnit ? `${inputValue.subUnit.name} [${inputValue.subUnit.symbol}]` : `Value ${goal.unit ? `[${goal.unit}]` : ""}`}
+              label={inputValue.subUnit ? `${inputValue.subUnit.name} [${inputValue.subUnit.symbol}]` : `Value ${activity.unit ? `[${activity.unit}]` : ""}`}
               value={inputValue.value[0] ?? ""}
               onChangeText={text => inputValue.value[1](text)}
               keyboardType="numeric"
@@ -207,7 +205,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
         <View style={styles.inputContainer}>
           <View style={styles.tagsContainer}>
 
-            {goal.tags.map((tag: any, index: number) => (
+            {activity.tags.map((tag: any, index: number) => (
               <Chip
                 key={tag.name}
                 onPress={() => { toggleInputTag(tag.name); }}

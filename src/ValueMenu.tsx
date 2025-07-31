@@ -3,7 +3,7 @@ import { View, Text } from "react-native";
 import { Menu, Button } from 'react-native-paper';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { allStatValues, StatValue } from "./StoreTypes";
-import { valueToLabel } from "./GoalUtil";
+import { valueToLabel } from "./ActivityUtil";
 
 interface ValueMenuProps {
   menuVisible: boolean

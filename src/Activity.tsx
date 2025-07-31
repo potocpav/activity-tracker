@@ -8,26 +8,26 @@ import {
 } from "react-native";
 import { useTheme, Menu, Button } from 'react-native-paper';
 import useStore from "./Store";
-import {DataPoint, GoalType, SubUnit, Tag, Unit} from "./StoreTypes";
+import {DataPoint, ActivityType, SubUnit, Tag, Unit} from "./StoreTypes";
 import AntDesign from '@expo/vector-icons/AntDesign';
-import GoalSummary from "./GoalSummary";
+import ActivitySummary from "./ActivitySummary";
 import { File, Paths } from "expo-file-system/next";
 import * as Sharing from 'expo-sharing';
 
-type GoalProps = {
+type ActivityProps = {
   navigation: any;
   route: any;
 };
 
 
-const Goal: React.FC<GoalProps> = ({ navigation, route }) => {
+const Activity: React.FC<ActivityProps> = ({ navigation, route }) => {
   const theme = useTheme();
-  const { goalName } = route.params;
-  const goals = useStore((state: any) => state.goals);
-  const goal = goals.find((g: GoalType) => g.name === goalName);
+  const { activityName } = route.params;
+  const activities = useStore((state: any) => state.activities);
+  const activity = activities.find((a: ActivityType) => a.name === activityName);
 
-  return goal ? (
-    <GoalInner goal={goal} navigation={navigation} />
+  return activity ? (
+    <ActivityInner activity={activity} navigation={navigation} />
   ) : (
     <Text></Text>
   )
@@ -53,26 +53,26 @@ const renderCsv = (data: (string | number | null)[][]) => {
   }).join("\r\n");
 }
 
-const GoalInner: React.FC<any> = ({ goal, navigation }) => {
-  const goalName = goal.name;
+const ActivityInner: React.FC<any> = ({ activity, navigation }) => {
+  const activityName = activity.name;
   const theme = useTheme();
   const [menuVisible, setMenuVisible] = React.useState(false);
-  const deleteGoal = useStore((state: any) => state.deleteGoal);
+  const deleteActivity = useStore((state: any) => state.deleteActivity);
 
-  if (!goal) {
+  if (!activity) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surfaceVariant }]}>
         <View style={styles.errorContainer}>
-          <Text style={[styles.errorText, { color: theme.colors.onSurfaceVariant }]}>Goal not found</Text>
+          <Text style={[styles.errorText, { color: theme.colors.onSurfaceVariant }]}>Activity not found</Text>
         </View>
       </SafeAreaView>
     );
   }
 
-  const deleteGoalWrapper = () => {
+  const deleteActivityWrapper = () => {
     Alert.alert(
-      `Delete "${goal.name}"`,
-      "Are you sure you want to delete this goal? This action cannot be undone.",
+      `Delete "${activity.name}"`,
+      "Are you sure you want to delete this activity? This action cannot be undone.",
       [
         {
           text: "Cancel",
@@ -82,10 +82,10 @@ const GoalInner: React.FC<any> = ({ goal, navigation }) => {
           text: "Delete",
           style: "destructive",
           onPress: () => {
-            deleteGoal(goal.name);
+            deleteActivity(activity.name);
             navigation.reset({
               index: 0,
-              routes: [{ name: 'Goals' }],
+              routes: [{ name: 'Activities' }],
             });
           }
         }
@@ -93,27 +93,27 @@ const GoalInner: React.FC<any> = ({ goal, navigation }) => {
     );
   }
 
-  const exportGoalCsv = async () => {
+  const exportActivityCsv = async () => {
     const valueNames = (() => {
-      if (typeof goal.unit === "string") {
-        return [goal.unit];
+      if (typeof activity.unit === "string") {
+        return [activity.unit];
       } else {
-        return goal.unit.map((u: SubUnit) => u.name);
+        return activity.unit.map((u: SubUnit) => u.name);
       }
     })();
-    const tagNames = goal.tags.map((t: Tag) => t.name);
+    const tagNames = activity.tags.map((t: Tag) => t.name);
     const headerRow = ["Date", ...valueNames, ...tagNames];
-    var dataRows = goal.dataPoints.map((dp: DataPoint) => {
+    var dataRows = activity.dataPoints.map((dp: DataPoint) => {
       const values = (() => {
-        if (typeof goal.unit === "string" && typeof dp.value === "number") {
+        if (typeof activity.unit === "string" && typeof dp.value === "number") {
           return [dp.value];
         } else {
-          return goal.unit.map((u: SubUnit) =>
+          return activity.unit.map((u: SubUnit) =>
             (typeof dp.value === "object" ? (dp.value as any)[u.name] ?? null : null));
         }
       })();
       const tags = (() => {
-        return goal.tags.map((t: Tag) => dp.tags.includes(t.name) ? 1 : null);
+        return activity.tags.map((t: Tag) => (dp.tags ?? []).includes(t.name) ? 1 : null);
       })();
       return [new Date(...dp.date).toLocaleDateString(), ...values, ...tags];
     });
@@ -122,7 +122,7 @@ const GoalInner: React.FC<any> = ({ goal, navigation }) => {
     // save to file and share
     const date = new Date();
     const dateStr = date.toISOString().split('T')[0];
-    const file = new File(Paths.cache, `workout-goal-${dateStr}.csv`);
+    const file = new File(Paths.cache, `activity-${dateStr}.csv`);
 
     try {
       if (file.exists) {
@@ -132,7 +132,7 @@ const GoalInner: React.FC<any> = ({ goal, navigation }) => {
       file.write(csv);
 
       await Sharing.shareAsync(file.uri, {
-        dialogTitle: 'Export Workout Goal',
+        dialogTitle: 'Export Activity',
         mimeType: 'text/csv',
       });
     } catch (error) {
@@ -142,10 +142,10 @@ const GoalInner: React.FC<any> = ({ goal, navigation }) => {
 
   React.useEffect(() => {
     navigation.setOptions({
-      title: goal.name,
+      title: activity.name,
       headerRight: () => (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Button compact={true} onPress={() => navigation.navigate("EditGoal", { goalName })}>
+          <Button compact={true} onPress={() => navigation.navigate("EditActivity", { activityName })}>
             <AntDesign name="edit" size={24} color={theme.colors.onSurface} />
           </Button>
           <Button compact={true} onPress={() => setMenuVisible(!menuVisible)}>
@@ -164,17 +164,15 @@ const GoalInner: React.FC<any> = ({ goal, navigation }) => {
           onDismiss={() => setMenuVisible(false)}
           anchor={<View style={{ width: 1, height: 1 }} />}
         >
-          <Menu.Item onPress={() => { setMenuVisible(false); navigation.navigate("GoalData", { goalName }) }} title="Data" />
-          <Menu.Item onPress={() => { setMenuVisible(false); exportGoalCsv() }} title="Export" />
-          <Menu.Item onPress={() => { setMenuVisible(false); deleteGoalWrapper() }} title="Delete" />
+          <Menu.Item onPress={() => { setMenuVisible(false); navigation.navigate("ActivityData", { activityName }) }} title="Data" />
+          <Menu.Item onPress={() => { setMenuVisible(false); exportActivityCsv() }} title="Export" />
+          <Menu.Item onPress={() => { setMenuVisible(false); deleteActivityWrapper() }} title="Delete" />
         </Menu>
       </View>
-      <GoalSummary goalName={goalName} navigation={navigation} />
+      <ActivitySummary activityName={activityName} navigation={navigation} />
     </SafeAreaView>
   );
 };
-
-// GoalSummary component removed for extraction to a separate file.
 
 const styles = StyleSheet.create({
   container: {
@@ -190,4 +188,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Goal; 
+export default Activity; 

@@ -9,21 +9,21 @@ import {
 import { Menu, useTheme } from 'react-native-paper';
 import { Button } from 'react-native-paper';
 import useStore from "./Store";
-import { GoalType } from "./StoreTypes";
+import { ActivityType } from "./StoreTypes";
 import DraggableFlatList from 'react-native-draggable-flatlist'
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { renderValueSummary } from "./GoalData";
+import { renderValueSummary } from "./ActivityData";
 import { lightPalette, darkPalette } from "./Color";
-import { calcStatValue } from "./GoalUtil";
+import { calcStatValue } from "./ActivityUtil";
 
-type GoalsProps = {
+type ActivitiesProps = {
   navigation: any;
 };
 
-const Goals: React.FC<GoalsProps> = ({ navigation }) => {
+const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   const theme = useTheme();
-  const goals = useStore((state: any) => state.goals);
-  const setGoals = useStore((state: any) => state.setGoals);
+  const activities = useStore((state: any) => state.activities);
+  const setActivities = useStore((state: any) => state.setActivities);
   const [menuVisible, setMenuVisible] = React.useState(false);
   const themeState = useStore((state: any) => state.theme);
   const palette = themeState === "dark" ? darkPalette : lightPalette;
@@ -31,10 +31,10 @@ const Goals: React.FC<GoalsProps> = ({ navigation }) => {
 
   React.useEffect(() => {
     navigation.setOptions({
-      // title: goal.name,
+      // title: activity.name,
       headerRight: () => (
         <View style={styles.headerRightContainer}>
-          <Button compact={true} onPress={() => navigation.navigate('EditGoal', { goalName: null })}>
+          <Button compact={true} onPress={() => navigation.navigate('EditActivity', { activityName: null })}>
             <AntDesign name="plus" size={24} color={theme.colors.onSurface} />
           </Button>
           <Button compact={true} onPress={() => setMenuVisible(!menuVisible)}>
@@ -45,27 +45,27 @@ const Goals: React.FC<GoalsProps> = ({ navigation }) => {
     });
   }, [navigation, menuVisible, theme]);
 
-  const renderGoal = ({ item, drag }: { item: GoalType, drag: () => void }) => {
+  const renderActivity = ({ item, drag }: { item: ActivityType, drag: () => void }) => {
     const value = item.stats.length > 0 && item.stats[0].length > 0 ? calcStatValue(item.stats[0][0], item) : null;
     const unit = item.stats.length > 0 && item.stats[0].length > 0 ? ["n_days", "n_points"].includes(item.stats[0][0].value) ? "" : item.unit : "";
     return (
       <TouchableOpacity
-        style={[styles.goalCard, styles.goalCardSurface]}
-        onPress={() => navigation.navigate('Goal', { goalName: item.name })}
+        style={[styles.activityCard, styles.activityCardSurface]}
+        onPress={() => navigation.navigate('Activity', { activityName: item.name })}
         onLongPress={drag}
         activeOpacity={0.7}
       >
-        <View style={styles.goalRow}>
-          <View style={styles.goalTitleContainer}>
-            <Text style={[styles.goalTitle, { color: palette[item.color] }]}>{item.name}</Text>
+        <View style={styles.activityRow}>
+          <View style={styles.activityTitleContainer}>
+            <Text style={[styles.activityTitle, { color: palette[item.color] }]}>{item.name}</Text>
           </View>
-          <View style={styles.goalDescriptionContainer}>
-            <Text style={[styles.goalDescription, { color: palette[item.color] }]}>
+          <View style={styles.activityDescriptionContainer}>
+            <Text style={[styles.activityDescription, { color: palette[item.color] }]}>
               {renderValueSummary(value, unit)}
             </Text>
           </View>
           <TouchableOpacity
-            onPress={() => { navigation.navigate('EditDataPoint', { goalName: item.name, dataPointName: null, new: true }); }}
+            onPress={() => { navigation.navigate('EditDataPoint', { activityName: item.name, dataPointName: null, new: true }); }}
             style={styles.addDataPointButton}
           >
             <AntDesign name="plus" size={24} color={palette[item.color]} />
@@ -88,9 +88,9 @@ const Goals: React.FC<GoalsProps> = ({ navigation }) => {
         </Menu>
       </View>
       <DraggableFlatList
-        data={goals}
-        onDragEnd={({ data }) => setGoals(data)}
-        renderItem={renderGoal}
+        data={activities}
+        onDragEnd={({ data }) => setActivities(data)}
+        renderItem={renderActivity}
         keyExtractor={(item) => item.name}
         contentContainerStyle={styles.listContainer}
       />
@@ -108,32 +108,32 @@ const getStyles = (theme: any) => StyleSheet.create({
   listContainer: {
     margin: 10,
   },
-  goalCard: {
+  activityCard: {
     padding: 4,
   },
-  goalCardSurface: {
+  activityCardSurface: {
     backgroundColor: theme.colors.surface,
   },
-  goalRow: {
+  activityRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  goalTitleContainer: {
+  activityTitleContainer: {
     flex: 1,
   },
-  goalDescriptionContainer: {
+  activityDescriptionContainer: {
     marginTop: 4,
   },
   addDataPointButton: {
     marginLeft: 12,
     padding: 8,
   },
-  goalTitle: {
+  activityTitle: {
     fontSize: 16,
     width: '60%',
   },
-  goalDescription: {
+  activityDescription: {
     fontSize: 16,
   },
   fab: {
@@ -157,4 +157,4 @@ const getStyles = (theme: any) => StyleSheet.create({
   },
 });
 
-export default Goals; 
+export default Activities; 

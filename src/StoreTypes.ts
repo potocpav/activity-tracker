@@ -144,7 +144,7 @@ export type State = {
   shutdown: any;
   sampleBatteryVoltage: any;
   startStreamingData: any;
-  updateGoalDataPoint: any;
+  updateActivityDataPoint: any;
 };
 
 

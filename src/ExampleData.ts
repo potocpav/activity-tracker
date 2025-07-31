@@ -1,5 +1,5 @@
 
-import { CalendarProps, dateListToTime, GoalType, GraphProps, Stat, timeToDateList, Unit } from "./StoreTypes";
+import { CalendarProps, dateListToTime, ActivityType, GraphProps, Stat, timeToDateList, Unit } from "./StoreTypes";
 
 const firstSubUnit = (unit: Unit): string | null => {
   if (unit === null || typeof unit === "string") {
@@ -53,7 +53,7 @@ export const defaultGraph = (unit: Unit): GraphProps => {
   };
 };
 
-export const defaultGoal: GoalType = {
+export const defaultActivity: ActivityType = {
   name: "",
   description: "",
   unit: "",
@@ -81,7 +81,7 @@ const fingerStrengthUnit: Unit = [
   },
 ];
 
-const fingerStrengthExample: GoalType = {
+const fingerStrengthExample: ActivityType = {
   name: "Finger Strength (Example)",
   description: "Finger strength as measured using Tindeq Progressor",
   color: 4,
@@ -128,7 +128,7 @@ const fingerStrengthExample: GoalType = {
 
 const bodyWeightUnit: Unit = "kg";
 
-const bodyWeightExample: GoalType = {
+const bodyWeightExample: ActivityType = {
   name: "Body Weight (Example)",
   description: "Body weight measured in the morning before breakfast",
   unit: bodyWeightUnit,
@@ -148,7 +148,7 @@ const bodyWeightExample: GoalType = {
     })).sort((a, b) => dateListToTime(a.date) - dateListToTime(b.date)),
 }
 
-const bodyWeightExample2: GoalType = {
+const bodyWeightExample2: ActivityType = {
   name: "Body Weight (Example 2)",
   description: "Body weight measured in the morning before breakfast",
   unit: bodyWeightUnit,
@@ -190,7 +190,7 @@ const bodyWeightExample2: GoalType = {
 };
 
 
-export const exampleGoals = [
+export const exampleActivities = [
   bodyWeightExample,
   bodyWeightExample2,
   fingerStrengthExample,

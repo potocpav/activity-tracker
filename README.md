@@ -47,7 +47,7 @@ In order to make this app a full-featured management app for workout data, the f
 
 * [ ] Remove Tindeq permissions, if I decide against supporting Tindeq device
 * [ ] Auto-analyze and add reps from Tindeq
-* [ ] Integrate Tindeq with goal management
+* [ ] Integrate Tindeq with activity management
 * [ ] Improve connection so that we never get stuck
 * [ ] Tare with automatic disconnect/connect
 

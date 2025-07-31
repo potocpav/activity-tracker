@@ -2,10 +2,10 @@ import React from "react";
 import { Animated, FlatList, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, Pressable } from "react-native";
 import { useTheme, FAB, Divider, Portal, Dialog, Button, TextInput } from 'react-native-paper';
 import useStore from "./Store";
-import { GoalType, Stat, StatPeriod, StatValue, TagFilter, Tag, allStatPeriods, allStatValues } from "./StoreTypes";
-import { renderValueSummary, formatDate } from "./GoalData";
+import { ActivityType, Stat, StatPeriod, StatValue, TagFilter, Tag, allStatPeriods, allStatValues } from "./StoreTypes";
+import { renderValueSummary, formatDate } from "./ActivityData";
 import { lightPalette, darkPalette } from "./Color";
-import { renderTags, valueToLabel, periodToLabel, calcStatValue } from "./GoalUtil";
+import { renderTags, valueToLabel, periodToLabel, calcStatValue } from "./ActivityUtil";
 import TagMenu from "./TagMenu";
 import SubUnitMenu from "./SubUnitMenu";
 import DropdownMenu from "./DropdownMenu";
@@ -13,24 +13,24 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import StatView from "./StatView";
 
 
-export const EditStat = ({ navigation, goalName, statRowId, statColId, stat, visible, onDismiss }: { navigation: any, goalName: string, statRowId: number | null, statColId: number | null, stat: Stat | null, visible: boolean, onDismiss: () => void }) => {
+export const EditStat = ({ navigation, activityName, statRowId, statColId, stat, visible, onDismiss }: { navigation: any, activityName: string, statRowId: number | null, statColId: number | null, stat: Stat | null, visible: boolean, onDismiss: () => void }) => {
   const theme = useTheme();
-  const goals = useStore((state: any) => state.goals);
-  const goal = goals.find((g: GoalType) => g.name === goalName);
+  const activities = useStore((state: any) => state.activities);
+  const activity = activities.find((a: ActivityType) => a.name === activityName);
   const themeState = useStore((state: any) => state.theme);
   const palette = themeState === "dark" ? darkPalette : lightPalette;
-  const goalColor = palette[goal.color];
-  const addGoalStat = useStore((state: any) => state.addGoalStat);
-  const setGoalStat = useStore((state: any) => state.setGoalStat);
-  const deleteGoalStat = useStore((state: any) => state.deleteGoalStat);
+  const activityColor = palette[activity.color];
+  const addActivityStat = useStore((state: any) => state.addActivityStat);
+  const setActivityStat = useStore((state: any) => state.setActivityStat);
+  const deleteActivityStat = useStore((state: any) => state.deleteActivityStat);
 
-  const styles = getStyles(theme, goalColor);
-  const subUnitNames = Array.isArray(goal.unit) ? goal.unit.map((u: any) => u.name) : null;
+  const styles = getStyles(theme, activityColor);
+  const subUnitNames = Array.isArray(activity.unit) ? activity.unit.map((u: any) => u.name) : null;
 
   // Initialize state based on the provided stat or defaults
   const [inputLabel, setInputLabel] = React.useState<string>(stat?.label || "New Stat");
   const [inputValue, setInputValue] = React.useState<StatValue | null>(stat?.value || "mean");
-  const [inputSubUnit, setInputSubUnit] = React.useState<string | null>(stat?.subUnit || (Array.isArray(goal.unit) ? goal.unit[0].name : null));
+  const [inputSubUnit, setInputSubUnit] = React.useState<string | null>(stat?.subUnit || (Array.isArray(activity.unit) ? activity.unit[0].name : null));
   const [inputPeriod, setInputPeriod] = React.useState<StatPeriod | null>(stat?.period || "today");
   const [inputTagFilters, setInputTagFilters] = React.useState<TagFilter[]>(stat?.tagFilters || []);
 
@@ -50,11 +50,11 @@ export const EditStat = ({ navigation, goalName, statRowId, statColId, stat, vis
     } else {
       setInputLabel("New Stat");
       setInputValue("mean");
-      setInputSubUnit(Array.isArray(goal.unit) ? goal.unit[0].name : null);
+      setInputSubUnit(Array.isArray(activity.unit) ? activity.unit[0].name : null);
       setInputPeriod("today");
       setInputTagFilters([]);
     }
-  }, [stat, goal.unit]);
+  }, [stat, activity.unit]);
 
   // Value to display in dialog
   const dialogStat = (inputValue !== null) && (inputPeriod !== null) ?
@@ -66,19 +66,19 @@ export const EditStat = ({ navigation, goalName, statRowId, statColId, stat, vis
       tagFilters: inputTagFilters
     } : null;
 
-  if (!goal) {
-    return <Text>Goal not found</Text>;
+  if (!activity) {
+    return <Text>Activity not found</Text>;
   }
 
   const handleDismiss = () => {
     if (dialogStat !== null) {
       if (statRowId === null) {
-        addGoalStat(goalName, dialogStat, null);
+        addActivityStat(activityName, dialogStat, null);
       } else {
         if (statColId === null) {
-          addGoalStat(goalName, dialogStat, statRowId);
+          addActivityStat(activityName, dialogStat, statRowId);
         } else {
-          setGoalStat(goalName, statRowId, statColId, dialogStat);
+          setActivityStat(activityName, statRowId, statColId, dialogStat);
         }
       }
     }
@@ -87,7 +87,7 @@ export const EditStat = ({ navigation, goalName, statRowId, statColId, stat, vis
 
   const handleDelete = () => {
     if (statRowId !== null && statColId !== null) {
-      deleteGoalStat(goalName, statRowId, statColId);
+      deleteActivityStat(activityName, statRowId, statColId);
     }
     onDismiss();
   };
@@ -100,8 +100,6 @@ export const EditStat = ({ navigation, goalName, statRowId, statColId, stat, vis
       }}
       onDismiss={handleDismiss}
     >
-      {/* <Dialog.Title>{goal.stats[statDialogStatId].label}</Dialog.Title> */}
-
       <Dialog.Content>
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 5 }}>
           <TextInput
@@ -161,7 +159,7 @@ export const EditStat = ({ navigation, goalName, statRowId, statColId, stat, vis
           onChange={(tags) => setInputTagFilters(tags)}
           menuVisible={tagsMenuVisible}
           setMenuVisible={setTagsMenuVisible}
-          goalTags={goal.tags}
+          activityTags={activity.tags}
           palette={palette}
           themeColors={theme.colors}
         />
@@ -170,7 +168,7 @@ export const EditStat = ({ navigation, goalName, statRowId, statColId, stat, vis
           {dialogStat && (
             <StatView
               stat={dialogStat}
-              goal={goal}
+              activity={activity}
               onPress={() => {}}
             />
           )}

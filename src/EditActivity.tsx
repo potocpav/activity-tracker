@@ -7,89 +7,90 @@ import {
   Alert,
 } from "react-native";
 import { Dialog, Portal, SegmentedButtons, useTheme } from 'react-native-paper';
-import { GoalType, SetTag, SubUnit, Tag } from "./StoreTypes";
+import { ActivityType, SetTag, SubUnit, Tag } from "./StoreTypes";
 import { TextInput, Button, Chip } from "react-native-paper";
 import useStore from "./Store";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import { lightPalette, darkPalette } from './Color';
 import ColorPicker from './ColorPicker';
-import { defaultGoal } from "./ExampleData";
-type EditGoalProps = {
+import { defaultActivity } from "./ExampleData";
+
+type EditActivityProps = {
   navigation: any;
   route: any;
 };
 
-const EditGoal: FC<EditGoalProps> = ({ navigation, route }) => {
+const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   const theme = useTheme();
-  const { goalName } = route.params;
-  const goals = useStore((state: any) => state.goals);
+  const { activityName } = route.params;
+  const activities = useStore((state: any) => state.activities);
   const themeState = useStore((state: any) => state.theme);
-  const goal = goals.find((g: GoalType) => g.name === goalName) ?? defaultGoal;
-  const updateGoal = useStore((state: any) => state.updateGoal);
+  const activity = activities.find((a: ActivityType) => a.name === activityName) ?? defaultActivity;
+  const updateActivity = useStore((state: any) => state.updateActivity);
   const setTags = useStore((state: any) => state.setTags);
   const setUnit = useStore((state: any) => state.setUnit);
 
-  const [goalNameInput, setGoalNameInput] = useState(goal.name);
-  const [goalDescriptionInput, setGoalDescriptionInput] = useState(goal.description);
-  const [unitMode, setUnitMode] = useState<'no_value' | 'single' | 'multiple'>(goal.unit === null ? 'no_value' : typeof goal.unit === 'string' ? 'single' : 'multiple');
-  const [singleUnitInput, setSingleUnitInput] = useState<string>(typeof goal.unit === 'string' ? goal.unit : "");
+  const [activityNameInput, setActivityNameInput] = useState(activity.name);
+  const [activityDescriptionInput, setActivityDescriptionInput] = useState(activity.description);
+  const [unitMode, setUnitMode] = useState<'no_value' | 'single' | 'multiple'>(activity.unit === null ? 'no_value' : typeof activity.unit === 'string' ? 'single' : 'multiple');
+  const [singleUnitInput, setSingleUnitInput] = useState<string>(typeof activity.unit === 'string' ? activity.unit : "");
   // Missing oldName represents there is no old name
   // null oldName represents that the old value comes from a single-valued unit
   // String oldName represents the old value name from a multi-valued unit
   const [multiUnitInput, setMultiUnitInput] = useState<{ name: string, symbol: string, oldName?: null | string }[]>(
-    goal.unit === null ? [
+    activity.unit === null ? [
       { name: '', symbol: '' },
       { name: '', symbol: '' },
-    ] : typeof goal.unit === 'string' ? [
-      { name: '', symbol: goal.unit, oldName: null },
+    ] : typeof activity.unit === 'string' ? [
+      { name: '', symbol: activity.unit, oldName: null },
       { name: '', symbol: '' },
-    ] : goal.unit.map((u: SubUnit) => ({ name: u.name, symbol: u.symbol, oldName: u.name }))
+    ] : activity.unit.map((u: SubUnit) => ({ name: u.name, symbol: u.symbol, oldName: u.name }))
   );
 
   const [tagDialogVisible, setTagDialogVisible] = useState(false);
-  const [tagState, setTagState] = useState<SetTag[]>(goal.tags.map((t: Tag) => ({ oldTagName: t.name, ...t })));
+  const [tagState, setTagState] = useState<SetTag[]>(activity.tags.map((t: Tag) => ({ oldTagName: t.name, ...t })));
   const [tagDialogName, setTagDialogName] = useState("");
   const [tagDialogNameInput, setTagDialogNameInput] = useState("");
   const [tagDialogColorInput, setTagDialogColorInput] = useState(19);
   const [tagColorDialogVisible, setTagColorDialogVisible] = useState(false);
 
   const [colorDialogVisible, setColorDialogVisible] = useState(false);
-  const [selectedColor, setSelectedColor] = useState(goal.color);
+  const [selectedColor, setSelectedColor] = useState(activity.color);
 
   const palette = themeState === "dark" ? darkPalette : lightPalette;
 
-  if (!goal) {
-    return <Text>Goal not found</Text>;
+  if (!activity) {
+    return <Text>Activity not found</Text>;
   }
 
 
-  const saveGoal = () => {
-    const updatedGoal = {
-      ...goal,
-      name: goalNameInput,
-      description: goalDescriptionInput,
+  const saveActivity = () => {
+    const updatedActivity = {
+      ...activity,
+      name: activityNameInput,
+      description: activityDescriptionInput,
       color: selectedColor,
     };
     const newUnit = 
       unitMode === 'no_value' ? null : 
       unitMode === 'single' ? singleUnitInput : 
       multiUnitInput;
-    const goalName = goal.name === "" ? updatedGoal.name : goal.name;
-    updateGoal(goalName, updatedGoal);
-    setTags(updatedGoal.name, tagState);
-    setUnit(updatedGoal.name, newUnit);
+    const activityName = activity.name === "" ? updatedActivity.name : activity.name;
+    updateActivity(activityName, updatedActivity);
+    setTags(updatedActivity.name, tagState);
+    setUnit(updatedActivity.name, newUnit);
     navigation.reset({
       index: 0,
-      routes: [{ name: 'Goals' }, { name: 'Goal', params: { goalName: updatedGoal.name } }],
+      routes: [{ name: 'Activities' }, { name: 'Activity', params: { activityName: updatedActivity.name } }],
     });
   };
 
-  const saveGoalWrapper = () => {
-    if (goalNameInput === "") {
-      Alert.alert("Error", "Goal name cannot be empty");
-    } else if (goalNameInput !== goal.name && goals.find((g: GoalType) => g.name === goalNameInput)) {
-      Alert.alert("Error", "A goal with this name already exists");
+  const saveActivityWrapper = () => {
+    if (activityNameInput === "") {
+      Alert.alert("Error", "Activity name cannot be empty");
+    } else if (activityNameInput !== activity.name && activities.find((a: ActivityType) => a.name === activityNameInput)) {
+      Alert.alert("Error", "An activity with this name already exists");
     } else {
       if (unitMode === 'multiple' && multiUnitInput.findIndex((u) => u.name === "") !== -1) {
         Alert.alert("Error", "All value names must be non-empty");
@@ -108,39 +109,39 @@ const EditGoal: FC<EditGoalProps> = ({ navigation, route }) => {
         ]);
       };
       // data loss?
-      if (goal.dataPoints.length > 0) {
-        if (unitMode === 'no_value' && goal.unit !== null) {
-          dataLossAlert(saveGoal);
-        } else if (unitMode === 'single' && Array.isArray(goal.unit)) {
-          dataLossAlert(saveGoal);
-        } else if (unitMode === 'multiple' && typeof goal.unit === 'string' && multiUnitInput.findIndex((u) => u.oldName === null) === -1) {
-          dataLossAlert(saveGoal);
-        } else if (unitMode === 'multiple' && Array.isArray(goal.unit)) {
+      if (activity.dataPoints.length > 0) {
+        if (unitMode === 'no_value' && activity.unit !== null) {
+          dataLossAlert(saveActivity);
+        } else if (unitMode === 'single' && Array.isArray(activity.unit)) {
+          dataLossAlert(saveActivity);
+        } else if (unitMode === 'multiple' && typeof activity.unit === 'string' && multiUnitInput.findIndex((u) => u.oldName === null) === -1) {
+          dataLossAlert(saveActivity);
+        } else if (unitMode === 'multiple' && Array.isArray(activity.unit)) {
           let oldNames: any[] = multiUnitInput.map((u) => u.oldName).filter((n) => n !== undefined);
-          if (new Set(oldNames).isSupersetOf(new Set(goal.unit.map((u: SubUnit) => u.name)))) {
-            saveGoal();
+          if (new Set(oldNames).isSupersetOf(new Set(activity.unit.map((u: SubUnit) => u.name)))) {
+            saveActivity();
           } else {
-            dataLossAlert(saveGoal);
+            dataLossAlert(saveActivity);
           }
         } else {
-          saveGoal();
+          saveActivity();
         }
       } else {
-        saveGoal();
+        saveActivity();
       }
     }
   }
 
     React.useEffect(() => {
       navigation.setOptions({
-        title: goal.name,
+        title: activity.name,
         headerRight: () => (
           <>
-            <Button compact={true} onPress={saveGoalWrapper}><AntDesign name="check" size={24} color={theme.colors.onSurface} /></Button>
+            <Button compact={true} onPress={saveActivityWrapper}><AntDesign name="check" size={24} color={theme.colors.onSurface} /></Button>
           </>
         ),
       });
-    }, [navigation, theme, goal, goalNameInput, goalDescriptionInput, singleUnitInput, selectedColor, tagState, multiUnitInput, unitMode]);
+    }, [navigation, theme, activity, activityNameInput, activityDescriptionInput, singleUnitInput, selectedColor, tagState, multiUnitInput, unitMode]);
 
     const onUpdateTag = (action: "delete" | "update") => {
       if (tagDialogNameInput === "") {
@@ -238,9 +239,9 @@ const EditGoal: FC<EditGoalProps> = ({ navigation, route }) => {
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <View style={{ flex: 1 }}>
                 <TextInput
-                  label="Goal Name"
-                  value={goalNameInput}
-                  onChangeText={setGoalNameInput}
+                  label="Activity Name"
+                  value={activityNameInput}
+                  onChangeText={setActivityNameInput}
                   mode="outlined"
                 />
               </View>
@@ -257,8 +258,8 @@ const EditGoal: FC<EditGoalProps> = ({ navigation, route }) => {
           <View style={styles.inputContainer}>
             <TextInput
               label="Description"
-              value={goalDescriptionInput}
-              onChangeText={setGoalDescriptionInput}
+              value={activityDescriptionInput}
+              onChangeText={setActivityDescriptionInput}
               multiline
               numberOfLines={3}
               mode="outlined"
@@ -407,4 +408,4 @@ const EditGoal: FC<EditGoalProps> = ({ navigation, route }) => {
     },
   });
 
-  export default EditGoal; 
+  export default EditActivity; 

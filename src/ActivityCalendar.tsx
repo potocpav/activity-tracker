@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { useTheme } from 'react-native-paper';
 import useStore from "./Store";
-import { DataPoint, dateListToTime, GoalType, Tag, TagFilter, Unit, StatValue } from "./StoreTypes";
+import { ActivityType, Unit, StatValue } from "./StoreTypes";
 import { darkPalette, lightPalette } from "./Color";
 import TagMenu from "./TagMenu";
 import Calendar from "./Calendar";
@@ -16,9 +16,9 @@ import ValueMenu from "./ValueMenu";
 import SubUnitMenu from "./SubUnitMenu";
 const locale = NativeModules.I18nManager.localeIdentifier;
 
-type GoalCalendarProps = {
+type ActivityCalendarProps = {
   navigation: any;
-  goalName: string;
+  activityName: string;
 };
 
 export const formatDate = (date: Date) => {
@@ -66,39 +66,38 @@ export const renderValue = (value: any, unit: Unit) => {
   }
 };
 
-const GoalCalendar = ({ navigation, goalName }: GoalCalendarProps) => {
+const ActivityCalendar = ({ navigation, activityName }: ActivityCalendarProps) => {
   const theme = useTheme();
-  const goals = useStore((state: any) => state.goals);
-  const goal = goals.find((g: GoalType) => g.name === goalName);
+  const activities = useStore((state: any) => state.activities);
+  const activity = activities.find((a: ActivityType) => a.name === activityName);
   const themeState = useStore((state: any) => state.theme);
   const palette = themeState === "dark" ? darkPalette : lightPalette;
 
-  const setGoalCalendar = useStore((state: any) => state.setGoalCalendar);
+  const setActivityCalendar = useStore((state: any) => state.setActivityCalendar);
 
   const [tagsMenuVisible, setTagsMenuVisible] = useState(false);
   const [valueMenuVisible, setValueMenuVisible] = useState(false);
   const [subUnitMenuVisible, setSubUnitMenuVisible] = useState(false);
-  const [subValue, setSubValue] = useState<string | null>(null);
 
-  const subUnitNames = Array.isArray(goal.unit) ? goal.unit.map((u: any) => u.name) : null;
+  const subUnitNames = Array.isArray(activity.unit) ? activity.unit.map((u: any) => u.name) : null;
 
-  if (!goal) {
-    return <Text>Goal not found</Text>;
+  if (!activity) {
+    return <Text>Activity not found</Text>;
   }
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <Calendar navigation={navigation} goalName={goalName}/>
+      <Calendar navigation={navigation} activityName={activityName}/>
       <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-        {goal.tags.length > 0 && (
+        {activity.tags.length > 0 && (
           <TagMenu
-            tags={goal.calendar.tagFilters}
+            tags={activity.calendar.tagFilters}
             onChange={(tags) => {
-              setGoalCalendar(goalName, { ...goal.calendar, tagFilters: tags });
+              setActivityCalendar(activityName, { ...activity.calendar, tagFilters: tags });
             }}
             menuVisible={tagsMenuVisible}
             setMenuVisible={setTagsMenuVisible}
-            goalTags={goal.tags}
+            activityTags={activity.tags}
             palette={palette}
             themeColors={theme.colors}
           />
@@ -106,15 +105,15 @@ const GoalCalendar = ({ navigation, goalName }: GoalCalendarProps) => {
         {/* SubUnit menu */}
         <SubUnitMenu
           subUnitNames={subUnitNames}
-          subUnitName={goal.calendar.subUnit}
-          setSubUnitName={(name) => setGoalCalendar(goalName, { ...goal.calendar, subUnit: name })}
+          subUnitName={activity.calendar.subUnit}
+          setSubUnitName={(name) => setActivityCalendar(activityName, { ...activity.calendar, subUnit: name })}
           menuVisible={subUnitMenuVisible}
           setMenuVisible={setSubUnitMenuVisible}
           themeColors={theme.colors}
         />
-        {goal.unit !== null && <ValueMenu
-          value={goal.calendar.value}
-          onChange={(v: StatValue) => setGoalCalendar(goalName, { ...goal.calendar, value: v })}
+        {activity.unit !== null && <ValueMenu
+          value={activity.calendar.value}
+          onChange={(v: StatValue) => setActivityCalendar(activityName, { ...activity.calendar, value: v })}
           menuVisible={valueMenuVisible}
           setMenuVisible={setValueMenuVisible}
           themeColors={theme.colors}
@@ -132,4 +131,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default GoalCalendar; 
+export default ActivityCalendar; 

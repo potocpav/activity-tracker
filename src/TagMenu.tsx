@@ -9,7 +9,7 @@ interface TagMenuProps {
   onChange: (tags: { name: string; state: "yes" | "no" }[]) => void;
   menuVisible: boolean;
   setMenuVisible: (visible: boolean) => void;
-  goalTags: Tag[];
+  activityTags: Tag[];
   palette: string[];
   themeColors: any;
 }
@@ -19,12 +19,12 @@ const TagMenu: React.FC<TagMenuProps> = ({
   onChange,
   menuVisible,
   setMenuVisible,
-  goalTags,
+  activityTags,
   palette,
   themeColors,
 }) => {
   return (
-    goalTags.length > 0 && (
+    activityTags.length > 0 && (
       <Menu
         visible={menuVisible}
         onDismiss={() => setMenuVisible(false)}
@@ -50,7 +50,7 @@ const TagMenu: React.FC<TagMenuProps> = ({
           </Button>
         }
       >
-        {goalTags.map((tag: Tag) => {
+        {activityTags.map((tag: Tag) => {
           const state = tags.find((t) => t.name === tag.name)?.state ?? "maybe";
           let icon = undefined;
           let title = tag.name;
