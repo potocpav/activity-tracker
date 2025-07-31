@@ -18,11 +18,6 @@ In order to make this app a full-featured management app for workout data, the f
   
 ### Features
   
-* [x] Allow value-less goals
-  * [ ] Make value display & input better for value-less goals
-* [x] Implement editing composite units
-  * [x] Update event filters in Summary page when composite units change
-  * [ ] Testing & bug fixes
 * [ ] Dragging points in Day View
 
 ### Bugs
@@ -32,8 +27,6 @@ In order to make this app a full-featured management app for workout data, the f
 
 ### General Usability
 
-* [x] Show numbers on bar charts
-* [x] Improve bounds on graphs 
 * [ ] Polish stat editing and dragging
 * [ ] Screen orientation & responsive design tweaks
 * [ ] Limit graph Panning on the left
