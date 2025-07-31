@@ -19,7 +19,7 @@ import {
   Characteristic,
   Device,
 } from "react-native-ble-plx";
-import { CalendarProps, dateListToTime, GraphProps, Stat, TagFilter, timeToDateList } from "./StoreTypes";
+import { areUnitsEqual, CalendarProps, GraphProps, Stat, TagFilter, timeToDateList } from "./StoreTypes";
 import { defaultGraph, defaultCalendar, defaultStats, exampleGoals } from "./ExampleData";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -323,6 +323,110 @@ const useStore = create<State>()(
                 )
               } 
               : g);
+          return { goals };
+        });
+      },
+
+      setUnit: (goalName: string, unit: null | string | { name: string, symbol: string, oldName?: null | string }[]) => {
+        set((state: any) => {
+          console.log("Setting unit. Previous unit:", state.goals.find((g: GoalType) => g.name === goalName)?.unit);
+          console.log("New unit:", unit);
+          const goal = state.goals.find((g: GoalType) => g.name === goalName);
+          if (!goal) {
+            console.log("Goal not found");
+            return {};
+          }
+          // don't update unit if it's the same
+          if (areUnitsEqual(goal.unit, unit)) {
+            console.log("Unit is the same", goal.unit, unit   );
+            return {};
+          }
+
+          const setSubUnitName = (subUnit: string | null) => {
+            if (unit === null || typeof unit === 'string') {
+              return null;
+            } else if (Array.isArray(unit)) {
+              if (goal.unit === null || typeof goal.unit === 'string') {
+                return unit[0].name;
+              } else if (Array.isArray(goal.unit)) {
+                return unit.find((u: any) => u.oldName === subUnit)?.name ?? unit[0].name;
+              }
+            }
+            console.log("Unknown unit type", unit);
+            return null;
+          }
+
+          const mapDpValue = (value: undefined | number | object) => {
+            let newValue;
+            if (unit === null) {
+              value = undefined;
+            } else if (typeof unit === 'string') {
+              if (goal.unit === null) {
+                newValue = 1;
+              } else if (typeof goal.unit === 'string') {
+                newValue = value;
+              } else if (Array.isArray(goal.unit)) {
+                newValue = (value as any)[goal.unit[0].name];
+              }
+            } else if (Array.isArray(unit)) {
+              if (goal.unit === null) {
+                // first element is 1, the rest are undefined
+                newValue = Object.fromEntries([[unit[0].name, 1]]);
+              } else if (typeof goal.unit === 'string') {
+                // all subunits with oldName == null are value, the rest are undefined
+                newValue = Object.fromEntries(unit.filter((u: any) => u.oldName === null).map(u => [u.name, value]));
+              } else if (Array.isArray(goal.unit)) {
+                // all subunits with oldName are set to the appropriate previous value
+                newValue = Object.fromEntries(unit.filter((u: any) => typeof u.oldName === 'string').map(u => [u.name, (value as any)[u.oldName as string]]).filter((u: any) => u[1] !== undefined));
+              }
+            } else {
+              console.error("Unknown unit type", unit);
+              newValue = value;
+            }
+            return newValue;
+          }
+
+          // update data points
+          const newDataPoints = goal.dataPoints.map((dp: DataPoint) => {
+            const newDpValue = mapDpValue(dp.value);
+            return {
+              ...dp,
+              ...(newDpValue !== undefined ? {value: newDpValue} : {}),
+            }
+          });
+
+          // update calendar, graph, and stats
+          const newCalendar = {
+            ...goal.calendar,
+            subUnit: setSubUnitName(goal.calendar.subUnit)
+          };
+          
+          let newGraphType;
+          if (goal.unit === null || typeof goal.unit === 'string') {
+            newGraphType = "bar-count";
+          } else  {
+            newGraphType = goal.graph.graphType;
+          }
+
+          const newGraph = {
+            ...goal.graph,
+            graphType: newGraphType,
+            subUnit: setSubUnitName(goal.graph.subUnit)
+          };
+
+          const newStats = goal.stats.map((stat: Stat[]) => stat.map((s: Stat) => ({
+            ...s,
+            subUnit: setSubUnitName(s.subUnit)
+          })));
+
+          const goals = state.goals.map((g: GoalType) => goalName === g.name ? { 
+            ...g, 
+            unit,
+            dataPoints: newDataPoints,
+            calendar: newCalendar,
+            graph: newGraph,
+            stats: newStats
+          } : g);
           return { goals };
         });
       },

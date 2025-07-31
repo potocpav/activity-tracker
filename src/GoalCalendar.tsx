@@ -29,7 +29,7 @@ export const renderValueSummary = (value: any, unit: Unit, style: any, short = f
     return (
       <Text style={style}>{`${Math.round(value * 100) / 100} ${unit}`}</Text>
     );
-  } else if (typeof value === "object" && typeof unit === "object") {
+  } else if (typeof value === "object" && Array.isArray(unit)) {
     var parts: string[] = [];
     unit.forEach((u: any) => {
       if (value[u.name] !== null && value[u.name] !== undefined) {
@@ -52,7 +52,7 @@ export const renderValueSummary = (value: any, unit: Unit, style: any, short = f
 export const renderValue = (value: any, unit: Unit) => {
   if (typeof value === "number" && typeof unit === "string") {
     return `${Math.round(value * 100) / 100} ${unit}`;
-  } else if (typeof value === "object" && typeof unit === "object") {
+  } else if (typeof value === "object" && Array.isArray(unit)) {
     const parts: string[] = [];
     unit.forEach((u: any) => {
       if (value[u.name] !== null && value[u.name] !== undefined) {

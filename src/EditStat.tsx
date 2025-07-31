@@ -25,12 +25,12 @@ export const EditStat = ({ navigation, goalName, statRowId, statColId, stat, vis
   const deleteGoalStat = useStore((state: any) => state.deleteGoalStat);
 
   const styles = getStyles(theme, goalColor);
-  const subUnitNames = typeof goal.unit === 'string' ? null : goal.unit.map((u: any) => u.name);
+  const subUnitNames = Array.isArray(goal.unit) ? goal.unit.map((u: any) => u.name) : null;
 
   // Initialize state based on the provided stat or defaults
   const [inputLabel, setInputLabel] = React.useState<string>(stat?.label || "New Stat");
   const [inputValue, setInputValue] = React.useState<StatValue | null>(stat?.value || "mean");
-  const [inputSubUnit, setInputSubUnit] = React.useState<string | null>(stat?.subUnit || (typeof goal.unit === 'string' ? goal.unit : goal.unit[0].name));
+  const [inputSubUnit, setInputSubUnit] = React.useState<string | null>(stat?.subUnit || (Array.isArray(goal.unit) ? goal.unit[0].name : null));
   const [inputPeriod, setInputPeriod] = React.useState<StatPeriod | null>(stat?.period || "today");
   const [inputTagFilters, setInputTagFilters] = React.useState<TagFilter[]>(stat?.tagFilters || []);
 
@@ -50,7 +50,7 @@ export const EditStat = ({ navigation, goalName, statRowId, statColId, stat, vis
     } else {
       setInputLabel("New Stat");
       setInputValue("mean");
-      setInputSubUnit(typeof goal.unit === 'string' ? goal.unit : goal.unit[0].name);
+      setInputSubUnit(Array.isArray(goal.unit) ? goal.unit[0].name : null);
       setInputPeriod("today");
       setInputTagFilters([]);
     }

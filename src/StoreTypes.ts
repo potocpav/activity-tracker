@@ -4,7 +4,24 @@ import {
   } from "react-native-ble-plx";
 
 
-export type Unit = string | SubUnit[];
+// No value, single value, or multiple named values
+export type Unit = null | string | SubUnit[];
+
+export const areUnitsEqual = (unit1: Unit, unit2: Unit): boolean => {
+  if (unit1 === null && unit2 === null) {
+    return true;
+  } else if (typeof unit1 === 'string' && typeof unit2 === 'string') {
+    return unit1 === unit2;
+  } else if (Array.isArray(unit1) && Array.isArray(unit2)) {
+    return unit1.length === unit2.length && unit1.every((u1, i) => areSubUnitsEqual(u1, unit2[i]));
+  } else {
+    return false;
+  }
+}
+
+export const areSubUnitsEqual = (subUnit1: SubUnit, subUnit2: SubUnit): boolean => {
+  return subUnit1.name === subUnit2.name && subUnit1.symbol === subUnit2.symbol;
+}
 
 export type SubUnit = {
   name: string;

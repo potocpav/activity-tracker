@@ -42,7 +42,7 @@ export const renderValueSummary = (value: any, unit: Unit) => {
     return (
       `${Math.round(value * 100) / 100}${suffix}`
     );
-  } else if (typeof value === "object" && typeof unit === "object") {
+  } else if (typeof value === "object" && Array.isArray(unit)) {
     // Handle complex units (like finger strength with mean, max, tut)
     var parts: string[] = [];
     unit.forEach((u: any) => {
@@ -64,7 +64,7 @@ export const renderValueSummary = (value: any, unit: Unit) => {
 export const renderValue = (value: any, unit: Unit) => {
   if (typeof value === "number" && typeof unit === "string") {
     return `${Math.round(value * 100) / 100} ${unit}`;
-  } else if (typeof value === "object" && typeof unit === "object") {
+  } else if (typeof value === "object" && Array.isArray(unit)) {
     // Handle complex units (like finger strength with mean, max, tut)
     const parts: string[] = [];
     unit.forEach((u: any) => {

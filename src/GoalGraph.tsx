@@ -3,7 +3,7 @@ import { View, Text, Platform } from "react-native";
 import { useTheme, Menu, Button } from 'react-native-paper';
 import { getTransformComponents, Line, Scatter, setScale, setTranslate, useChartTransformState } from "victory-native";
 import { CartesianChart } from "victory-native";
-import { matchFont, Path, RoundedRect, Skia } from "@shopify/react-native-skia";
+import { matchFont, Path, RoundedRect, Skia, Text as SkiaText } from "@shopify/react-native-skia";
 import useStore from "./Store";
 import { DataPoint, dateListToTime, GoalType, GraphType, graphTypes, Tag, TagFilter } from "./StoreTypes";
 import { useAnimatedReaction, useSharedValue, withTiming } from "react-native-reanimated";
@@ -69,7 +69,7 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
     scaleX: 1.0, // Initial X-axis scale
     scaleY: 1.0, // Initial Y-axis scale
   }).state;
-  const subUnitNames = typeof goal.unit === 'string' ? null : goal.unit.map((u: any) => u.name);
+  const subUnitNames = Array.isArray(goal.unit) ? goal.unit.map((u: any) => u.name) : null;
 
   const [binMenuVisible, setBinMenuVisible] = useState(false);
   const [subUnitMenuVisible, setSubUnitMenuVisible] = useState(false);
@@ -167,11 +167,14 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
       const [ymin, ymax] = [Math.min(...binStats.map((b) => b.q0)), Math.max(...binStats.map((b) => b.q4))];
       domain.y = [ymin - (ymax - ymin) * 0.05, ymax + (ymax - ymin) * 0.05];
     } else if (goal.graph.graphType === "bar-count") {
-      domain.y = [0, Math.max(...binStats.map((b) => b.count))];
+      const ymax = Math.max(...binStats.map((b) => b.count));
+      domain.y = [0, ymax * 1.1];
     } else if (goal.graph.graphType === "bar-sum") {
-      domain.y = [0, Math.max(...binStats.map((b) => b.sum))];
+      const ymax = Math.max(...binStats.map((b) => b.sum));
+      domain.y = [0, ymax * 1.1];
     } else if (goal.graph.graphType === "line-mean") {
-      domain.y = [Math.min(...binStats.map((b) => b.mean)), Math.max(...binStats.map((b) => b.mean))];
+      const [ymin, ymax] = [Math.min(...binStats.map((b) => b.mean)), Math.max(...binStats.map((b) => b.mean))];
+      domain.y = [ymin - (ymax - ymin) * 0.05, ymax + (ymax - ymin) * 0.05];
     } else {
       throw new Error("Invalid graph type");
     }
@@ -227,12 +230,13 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
     },
   );
 
-  const barPlot = (values: any, zero: any) => {
+  const barPlot = (values: any, zero: any, stat: string) => {
     return (
       <>
         {(() => {
           const elements = [];
           for (let i = 0; i < values.length; i++) {
+            const label = (binStats as any)[i][stat].toFixed(0);
             const val = values[i];
             const [vx, vy] = [val.x, val.y ?? NaN];
             const w = barWidth;
@@ -244,16 +248,30 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
             fill.lineTo(vx - w, zero[i].y ?? NaN);
             fill.close()
 
+            const labelSize = font.measureText(label);
+
             elements.push(
-              <Fragment key={"" + i}>
+              <Fragment key={"bar" + i}>
                 <Path
                   style="fill"
                   path={fill}
                   color={goalColor}
                 />
+             
+              <SkiaText
+                key={"label" + i}
+                x={vx - labelSize.width / 2}
+                color={goalColor}
+                y={vy - labelSize.height / 2}
+                text={label}
+                font={font}
+              ></SkiaText>
               </Fragment>
             );
           }
+          elements.push(
+
+          );
           return elements;
         })()}
       </>);
@@ -382,9 +400,9 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
                 </>
               );
             } else if (goal.graph.graphType === "bar-count") {
-              return barPlot(points.count, points.zero);
+              return barPlot(points.count, points.zero, "count");
             } else if (goal.graph.graphType === "bar-sum") {
-              return barPlot(points.sum, points.zero);
+              return barPlot(points.sum, points.zero, "sum");
             } else if (goal.graph.graphType === "line-mean") {
               return (
                 <>
