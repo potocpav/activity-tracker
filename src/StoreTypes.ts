@@ -89,11 +89,7 @@ export type CalendarProps = {
   subUnit: string | null
 };
 
-export type GraphType = "box" | "bar-count" | "bar-sum" | "line-mean";
-
-export const graphTypes : GraphType[] = [
-  "box", "bar-count", "bar-sum", "line-mean"
-];
+export type GraphType = "box" | "bar-count" | "bar-daily-mean" | "bar-sum" | "line-mean";
 
 export type BinSize = "day" | "week" | "month" | "quarter" | "year";
 

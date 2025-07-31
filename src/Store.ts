@@ -412,8 +412,10 @@ const useStore = create<State>()(
           };
           
           let newGraphType;
-          if (unit === null || typeof unit === 'string') {
+          if (unit === null && goal.unit !== null) {
             newGraphType = "bar-count";
+          } else if (unit !== null && goal.unit === null) {
+            newGraphType = "box";
           } else  {
             newGraphType = goal.graph.graphType;
           }

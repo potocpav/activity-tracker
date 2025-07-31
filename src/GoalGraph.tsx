@@ -5,7 +5,7 @@ import { getTransformComponents, Line, Scatter, setScale, setTranslate, useChart
 import { CartesianChart } from "victory-native";
 import { matchFont, Path, RoundedRect, Skia, Text as SkiaText } from "@shopify/react-native-skia";
 import useStore from "./Store";
-import { DataPoint, dateListToTime, GoalType, GraphType, graphTypes, Tag, TagFilter } from "./StoreTypes";
+import { DataPoint, dateListToTime, GoalType, GraphType, Tag, TagFilter } from "./StoreTypes";
 import { useAnimatedReaction, useSharedValue, withTiming } from "react-native-reanimated";
 import { binTime, binTimeSeries, BinSize, extractValue } from "./GoalUtil";
 import AntDesign from '@expo/vector-icons/AntDesign';
@@ -92,7 +92,7 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
   }
 
   const bins = binTimeSeries(goal.graph.binSize, goal.dataPoints);
-  const binStats: { t: number, q0: number, q1: number, q2: number, q3: number, q4: number, count: number, sum: number, mean: number, zero: number }[] = bins.map((bin) => {
+  const binStats: { t: number, q0: number, q1: number, q2: number, q3: number, q4: number, count: number, sum: number, mean: number, zero: number, dailyMean: number }[] = bins.map((bin) => {
     const values = bin.values.map((dp: DataPoint) => extractValue(dp, goal.graph.tagFilters, goal.graph.subUnitName)).filter((v: number | null) => v !== null);
     if (values.length === 0) {
       return null
@@ -103,6 +103,7 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
         sum: values.reduce((a, b) => a + b, 0),
         mean: values.reduce((a, b) => a + b, 0) / values.length,
         zero: 0,
+        dailyMean: values.length / bin.nDays * 100,
         t: bin.time
       };
     }
@@ -113,6 +114,8 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
     yKeys = ["q0", "q1", "q2", "q3", "q4"];
   } else if (goal.graph.graphType === "bar-count") {
     yKeys = ["count", "zero"];
+  } else if (goal.graph.graphType === "bar-daily-mean") {
+    yKeys = ["dailyMean", "zero"];
   } else if (goal.graph.graphType === "bar-sum") {
     yKeys = ["sum", "zero"];
   } else if (goal.graph.graphType === "line-mean") {
@@ -134,6 +137,13 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <AntDesign name="barschart" size={24} color={theme.colors.onSurfaceVariant} />
             <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Count</Text>
+        </View>
+      );
+    } else if (gType === "bar-daily-mean") {
+      return (
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <AntDesign name="barschart" size={24} color={theme.colors.onSurfaceVariant} />
+            <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Daily Mean</Text>
         </View>
       );
     } else if (gType === "bar-sum") {
@@ -168,6 +178,9 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
       domain.y = [ymin - (ymax - ymin) * 0.05, ymax + (ymax - ymin) * 0.05];
     } else if (goal.graph.graphType === "bar-count") {
       const ymax = Math.max(...binStats.map((b) => b.count));
+      domain.y = [0, ymax * 1.1];
+    } else if (goal.graph.graphType === "bar-daily-mean") {
+      const ymax = Math.max(...binStats.map((b) => b.dailyMean));
       domain.y = [0, ymax * 1.1];
     } else if (goal.graph.graphType === "bar-sum") {
       const ymax = Math.max(...binStats.map((b) => b.sum));
@@ -230,13 +243,13 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
     },
   );
 
-  const barPlot = (values: any, zero: any, stat: string) => {
+  const barPlot = (values: any, zero: any, stat: string, unit?: string) => {
     return (
       <>
         {(() => {
           const elements = [];
           for (let i = 0; i < values.length; i++) {
-            const label = (binStats as any)[i][stat].toFixed(0);
+            const label = (binStats as any)[i][stat].toFixed(0) + (unit ?? "");
             const val = values[i];
             const [vx, vy] = [val.x, val.y ?? NaN];
             const w = barWidth;
@@ -285,6 +298,8 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
     year: "Year"
   };
   const binningOptions = Object.entries(binningLabels).map(([key, label]) => ({ key, label }));
+
+  const graphTypes = goal.unit === null ? ["bar-count", "bar-daily-mean"] : ["box", "bar-count", "bar-sum", "line-mean"];
 
   return (
     <View style={{ flex: 1, padding: 10, marginVertical: 16, backgroundColor: theme.colors.background }}>
@@ -401,6 +416,8 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
               );
             } else if (goal.graph.graphType === "bar-count") {
               return barPlot(points.count, points.zero, "count");
+            } else if (goal.graph.graphType === "bar-daily-mean") {
+              return barPlot(points.dailyMean, points.zero, "dailyMean", "%");
             } else if (goal.graph.graphType === "bar-sum") {
               return barPlot(points.sum, points.zero, "sum");
             } else if (goal.graph.graphType === "line-mean") {

@@ -182,7 +182,12 @@ export const binTimeSeries = (binSize: BinSize, dataPoints: any[]) => {
   }
   const t0 = dateListToTime(dataPoints[0].date);
 
-  var bins: { time: number, values: any[] }[] = [{ time: binTime(binSize, t0, 0), values: [] }];
+  const nDays = (binSize: BinSize, idx: number) => {
+    const tDiff = binTime(binSize, t0, idx + 1) - binTime(binSize, t0, idx);
+    return Math.round(tDiff / (1000 * 60 * 60 * 24));
+  };
+
+  var bins: { time: number, nDays: number, values: any[] }[] = [{ time: binTime(binSize, t0, 0), nDays: nDays(binSize, 0), values: [] }];
   var binIx = 0;
   for (let i = 0; i < dataPoints.length; i++) {
     const dp = dataPoints[i];
@@ -192,7 +197,7 @@ export const binTimeSeries = (binSize: BinSize, dataPoints: any[]) => {
       newBin = true;
     }
     if (newBin) {
-      bins.push({ time: binTime(binSize, t0, binIx), values: [] });
+      bins.push({ time: binTime(binSize, t0, binIx), nDays: nDays(binSize, binIx), values: [] });
     }
     bins[bins.length - 1].values.push(dp);
   };
