@@ -81,9 +81,9 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
 
   var ticks = [];
   if (goal.dataPoints.length > 0) {
-    var tick_t = binTime(goal.graph.binSize, dateListToTime(goal.dataPoints[0].date), 0);
+    var tick_t = binTime(goal.graph.binSize, dateListToTime(goal.dataPoints[0].date), 0, goal.weekStart);
     for (let i = 0; tick_t < now.getTime(); i++) {
-      tick_t = binTime(goal.graph.binSize, dateListToTime(goal.dataPoints[0].date), i);
+      tick_t = binTime(goal.graph.binSize, dateListToTime(goal.dataPoints[0].date), i, goal.weekStart);
       ticks.push(tick_t);
       if (i > 1000) {
         break; // limit
@@ -91,7 +91,7 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
     }
   }
 
-  const bins = binTimeSeries(goal.graph.binSize, goal.dataPoints);
+  const bins = binTimeSeries(goal.graph.binSize, goal.dataPoints, goal.weekStart);
   const binStats: { t: number, q0: number, q1: number, q2: number, q3: number, q4: number, count: number, sum: number, mean: number, zero: number, dailyMean: number }[] = bins.map((bin) => {
     const values = bin.values.map((dp: DataPoint) => extractValue(dp, goal.graph.tagFilters, goal.graph.subUnitName)).filter((v: number | null) => v !== null);
     if (values.length === 0) {
@@ -166,7 +166,7 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
   const { domain, viewport }: { domain: { x: [number, number], y?: [number, number] }, viewport: { x: [number, number] } } = (() => {
     const firstBinTime = bins.length ? bins[0].time : now.getTime();
     const lastBinTime = bins.length ? bins[bins.length - 1].time : now.getTime();
-    const nowBin = binTime(goal.graph.binSize, now.getTime(), 0);
+    const nowBin = binTime(goal.graph.binSize, now.getTime(), 0, goal.weekStart);
     const t1 = Math.max(lastBinTime, nowBin) + approximateBinSize(goal.graph.binSize) / 2;
     const t0view = t1 - approximateBinSize(goal.graph.binSize) * 15;
     const t0 = Math.min(firstBinTime - approximateBinSize(goal.graph.binSize) / 2, t0view);
@@ -282,9 +282,6 @@ const GoalGraph = ({ goalName }: { goalName: string }) => {
               </Fragment>
             );
           }
-          elements.push(
-
-          );
           return elements;
         })()}
       </>);

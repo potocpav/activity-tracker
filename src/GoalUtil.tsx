@@ -1,5 +1,5 @@
 
-import { Tag, StatPeriod, DataPoint, DateList, dateListToTime, normalizeDateList, TagFilter, StatValue, Stat, dateToDateList, GoalType } from "./StoreTypes";
+import { Tag, StatPeriod, DataPoint, DateList, dateListToTime, normalizeDateList, TagFilter, StatValue, Stat, dateToDateList, GoalType, WeekStart } from "./StoreTypes";
 import { View, Text, StyleSheet } from "react-native";
 
 export type BinSize = "day" | "week" | "month" | "quarter" | "year";
@@ -155,14 +155,15 @@ export const formatNumber = (value: number) => {
   return Math.round(value * 10) / 10;
 }
 
-export const binTime = (binSize: BinSize, t0: number, i: number) => {
+export const binTime = (binSize: BinSize, t0: number, i: number, weekStart: WeekStart) => {
   const t0Date = new Date(t0);
   if (binSize === "day") {
     return new Date(t0Date.getFullYear(), t0Date.getMonth(), t0Date.getDate() + i, 0).getTime();
 
   } else if (binSize === "week") {
     const dayOfWeek = t0Date.getDay();
-    return new Date(t0Date.getFullYear(), t0Date.getMonth(), t0Date.getDate() - dayOfWeek + i * 7, 0).getTime();
+    const startDay = weekStart === "sunday" ? 0 : 1;
+    return new Date(t0Date.getFullYear(), t0Date.getMonth(), t0Date.getDate() - dayOfWeek + startDay + i * 7, 0).getTime();
   } else if (binSize === "month") {
     return new Date(t0Date.getFullYear(), t0Date.getMonth() + i, 1, 0).getTime();
   } else if (binSize === "quarter") {
@@ -176,28 +177,28 @@ export const binTime = (binSize: BinSize, t0: number, i: number) => {
   }
 };
 
-export const binTimeSeries = (binSize: BinSize, dataPoints: any[]) => {
+export const binTimeSeries = (binSize: BinSize, dataPoints: any[], weekStart: WeekStart) => {
   if (dataPoints.length === 0) {
     return [];
   }
   const t0 = dateListToTime(dataPoints[0].date);
 
   const nDays = (binSize: BinSize, idx: number) => {
-    const tDiff = binTime(binSize, t0, idx + 1) - binTime(binSize, t0, idx);
+    const tDiff = binTime(binSize, t0, idx + 1, weekStart) - binTime(binSize, t0, idx, weekStart);
     return Math.round(tDiff / (1000 * 60 * 60 * 24));
   };
 
-  var bins: { time: number, nDays: number, values: any[] }[] = [{ time: binTime(binSize, t0, 0), nDays: nDays(binSize, 0), values: [] }];
+  var bins: { time: number, nDays: number, values: any[] }[] = [{ time: binTime(binSize, t0, 0, weekStart), nDays: nDays(binSize, 0), values: [] }];
   var binIx = 0;
   for (let i = 0; i < dataPoints.length; i++) {
     const dp = dataPoints[i];
     var newBin = false;
-    while (binTime(binSize, t0, binIx + 1) <= dateListToTime(dp.date)) {
+    while (binTime(binSize, t0, binIx + 1, weekStart) <= dateListToTime(dp.date)) {
       binIx++;
       newBin = true;
     }
     if (newBin) {
-      bins.push({ time: binTime(binSize, t0, binIx), nDays: nDays(binSize, binIx), values: [] });
+      bins.push({ time: binTime(binSize, t0, binIx, weekStart), nDays: nDays(binSize, binIx), values: [] });
     }
     bins[bins.length - 1].values.push(dp);
   };

@@ -117,6 +117,8 @@ export type GoalType = {
   graph: GraphProps;
 };
 
+export type WeekStart = "sunday" | "monday";
+
 export type State = {
   allDevices: Device[];
   isConnected: boolean;
@@ -128,7 +130,7 @@ export type State = {
   goals: GoalType[];
   theme: "light" | "dark";
   blackBackground: boolean;
-  weekStart: "sunday" | "monday";
+  weekStart: WeekStart;
 
   requestPermissions: any;
   connectToDevice: any;
