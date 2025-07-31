@@ -105,7 +105,7 @@ export type GraphProps = {
   binSize: BinSize;
 };
 
-export type GoalType = {
+export type ActivityType = {
   name: string;
   description: string;
   unit: Unit;
@@ -127,7 +127,7 @@ export type State = {
 
   dataPoints: { w: number, t: number }[];
 
-  goals: GoalType[];
+  activities: ActivityType[];
   theme: "light" | "dark";
   blackBackground: boolean;
   weekStart: WeekStart;

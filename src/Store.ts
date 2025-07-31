@@ -20,34 +20,34 @@ import {
   Device,
 } from "react-native-ble-plx";
 import { areUnitsEqual, CalendarProps, GraphProps, Stat, TagFilter, timeToDateList } from "./StoreTypes";
-import { defaultGraph, defaultCalendar, defaultStats, exampleGoals } from "./ExampleData";
+import { defaultGraph, defaultCalendar, defaultStats, exampleActivities } from "./ExampleData";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { GoalType, Tag, DataPoint, SetTag, TagName, State } from "./StoreTypes";
+import { ActivityType, Tag, DataPoint, SetTag, TagName, State } from "./StoreTypes";
 import { findZeroSlice, dayCmp } from "./GoalUtil";
 
-export const version = 9;
+export const version = 10;
 
 export const migrate = (persisted: any, version: number) => {
   if (version <= 0) {
-    persisted.goals.forEach((goal: GoalType) => {
+    persisted.goals.forEach((goal: any) => {
       goal.color = 19;
     });
   }
   if (version <= 1) {
-    persisted.goals.forEach((goal: GoalType) => {
+    persisted.goals.forEach((goal: any) => {
       goal.tags.forEach((tag: Tag) => {
         tag.color = 19;
       });
     });
   }
   if (version <= 2) {
-    persisted.goals.forEach((goal: GoalType) => {
+    persisted.goals.forEach((goal: any) => {
       goal.stats = defaultStats(goal.unit);
     });
   }
   if (version <= 3) {
-    persisted.goals.forEach((goal: GoalType) => {
+    persisted.goals.forEach((goal: any) => {
       goal.dataPoints.forEach((dp: any) => {
         dp.date = timeToDateList(dp.time);
         delete dp.time;
@@ -55,13 +55,13 @@ export const migrate = (persisted: any, version: number) => {
     });
   }
   if (version <= 4) {
-    persisted.goals.forEach((goal: GoalType) => {
+    persisted.goals.forEach((goal: any) => {
       goal.calendar = defaultCalendar(goal.unit);
       goal.graph = defaultGraph(goal.unit);
     });
   }
   if (version <= 5) {
-    persisted.goals.forEach((goal: GoalType) => {
+    persisted.goals.forEach((goal: any) => {
       goal.graph.binSize = "day";
     });
   }
@@ -75,12 +75,16 @@ export const migrate = (persisted: any, version: number) => {
   if (version <= 8) {
     persisted.weekStart = "monday";
   }
+  if (version <= 9) {
+    persisted.activities = persisted.goals;
+    delete persisted.goals;
+  }
   return persisted
 };
 
 // Save only the state that is needed to be saved
 export const partialize = (state: State) => ({
-  goals: state.goals,
+  activities: state.activities,
   theme: state.theme,
   blackBackground: state.blackBackground,
 });
@@ -98,7 +102,7 @@ const useStore = create<State>()(
       dataPoints: [],
 
       // Goals related state
-      goals: exampleGoals,
+      activities: exampleActivities,
       theme: "light",
       blackBackground: false,
       weekStart: "monday",
@@ -224,119 +228,119 @@ const useStore = create<State>()(
         });
       },
 
-      resetGoals: () => {
-        set({ goals: exampleGoals });
+      resetActivities: () => {
+        set({ activities: exampleActivities });
       },
 
-      setGoals: (goals: GoalType[]) => {
-        set({ goals: goals });
+      setActivities: (activities: ActivityType[]) => {
+        set({ activities: activities });
       },
 
-      deleteGoal: (goalName: string) => {
+      deleteActivity: (activityName: string) => {
         set((state: any) => {
-          const goals = state.goals.filter((goal: GoalType) => goal.name !== goalName);
-          return { goals };
+          const activities = state.activities.filter((activity: ActivityType) => activity.name !== activityName);
+          return { activities };
         });
       },
 
-      updateGoal: (goalName: string, goal: GoalType) => {
+      updateActivity: (activityName: string, activity: ActivityType) => {
         set((state: any) => {
-          const goalExists = state.goals.find((g: GoalType) => g.name === goalName);
-          if (goalExists) {
-            const goals = state.goals.map((g: GoalType) => goalName === g.name ? goal : g);
-            return { goals };
+          const activityExists = state.activities.find((a: ActivityType) => a.name === activityName);
+          if (activityExists) {
+            const activities = state.activities.map((a: ActivityType) => activityName === a.name ? activity : a);
+            return { activities };
           } else {
-            return { goals: [...state.goals, goal] };
+            return { activities: [...state.activities, activity] };
           }
         });
       },
 
-      setGoalCalendar: (goalName: string, calendar: CalendarProps) => {
+      setActivityCalendar: (activityName: string, calendar: CalendarProps) => {
         set((state: any) => {
-          const goals = state.goals.map((g: GoalType) => goalName === g.name ? { ...g, calendar } : g);
-          return { goals };
+          const activities = state.activities.map((a: ActivityType) => activityName === a.name ? { ...a, calendar } : a);
+          return { activities };
         });
       },
 
-      setGoalGraph: (goalName: string, graph: GraphProps) => {
+      setActivityGraph: (activityName: string, graph: GraphProps) => {
         set((state: any) => {
-          const goals = state.goals.map((g: GoalType) => goalName === g.name ? { ...g, graph } : g);
-          return { goals };
+          const activities = state.activities.map((a: ActivityType) => activityName === a.name ? { ...a, graph } : a);
+          return { activities };
         });
       },
 
-      setGoalStats: (goalName: string, stats: Stat[]) => {
+      setActivityStats: (activityName: string, stats: Stat[]) => {
         set((state: any) => {
-          const goals = state.goals.map((g: GoalType) => goalName === g.name ? { ...g, stats } : g);
-          return { goals };
+          const activities = state.activities.map((a: ActivityType) => activityName === a.name ? { ...a, stats } : a);
+          return { activities };
         });
       },
 
-      setGoalStat: (goalName: string, statRowId: number, statColId: number, stat: Stat) => {
+      setActivityStat: (activityName: string, statRowId: number, statColId: number, stat: Stat) => {
         set((state: any) => {
-          const goals = state.goals.map((g: GoalType) => 
-            goalName === g.name 
+          const activities = state.activities.map((a: ActivityType) => 
+            activityName === a.name 
               ? { 
-                ...g, 
-                stats: g.stats.map((s: Stat[], i: number) => 
+                ...a, 
+                stats: a.stats.map((s: Stat[], i: number) => 
                   i === statRowId 
                     ? s.map((s: Stat, j: number) => 
                       j === statColId ? stat : s) 
                     : s
                 )
                 } 
-              : g
+              : a
           );
-          return { goals };
+          return { activities };
         });
       },
 
-      addGoalStat: (goalName: string, stat: Stat, statRowId: number | null) => {
+      addActivityStat: (activityName: string, stat: Stat, statRowId: number | null) => {
         set((state: any) => {
-          const goals = state.goals.map((g: GoalType) => 
-            goalName === g.name 
+          const activities = state.activities.map((a: ActivityType) => 
+            activityName === a.name 
               ? { 
-                ...g, 
+                ...a, 
                 stats: statRowId === null 
-                  ? [...g.stats, [stat]] 
-                  : g.stats.map((s: Stat[], i: number) => 
+                  ? [...a.stats, [stat]] 
+                  : a.stats.map((s: Stat[], i: number) => 
                     i === statRowId 
                       ? [...s, stat] 
                       : s
                   )
               } 
-              : g);
-          return { goals };
+              : a);
+          return { activities };
         });
       },
 
-      deleteGoalStat: (goalName: string, statRowId: number, statColId: number) => {
+      deleteActivityStat: (activityName: string, statRowId: number, statColId: number) => {
         set((state: any) => {
-          const goals = state.goals.map((g: GoalType) => 
-            goalName === g.name 
+          const activities = state.activities.map((a: ActivityType) => 
+            activityName === a.name 
               ? { 
-                ...g, 
-                stats: g.stats.map((s: Stat[], i: number) => 
+                ...a, 
+                stats: a.stats.map((s: Stat[], i: number) => 
                   i === statRowId 
                     ? s.filter((s: Stat, j: number) => j !== statColId) 
                     : s
                 )
               } 
-              : g);
-          return { goals };
+              : a);
+          return { activities };
         });
       },
 
-      setUnit: (goalName: string, unit: null | string | { name: string, symbol: string, oldName?: null | string }[]) => {
+      setUnit: (activityName: string, unit: null | string | { name: string, symbol: string, oldName?: null | string }[]) => {
         set((state: any) => {
-          const goal = state.goals.find((g: GoalType) => g.name === goalName);
-          if (!goal) {
-            console.log("Goal not found");
+          const activity = state.activities.find((a: ActivityType) => a.name === activityName);
+          if (!activity) {
+            console.log("Activity not found");
             return {};
           }
           // don't update unit if it's the same
-          if (areUnitsEqual(goal.unit, unit)) {
-            console.log("Unit is the same", goal.unit, unit   );
+          if (areUnitsEqual(activity.unit, unit)) {
+            console.log("Unit is the same", activity.unit, unit);
             return {};
           }
 
@@ -344,9 +348,9 @@ const useStore = create<State>()(
             if (unit === null || typeof unit === 'string') {
               return null;
             } else if (Array.isArray(unit)) {
-              if (goal.unit === null || typeof goal.unit === 'string') {
+              if (activity.unit === null || typeof activity.unit === 'string') {
                 return unit[0].name;
-              } else if (Array.isArray(goal.unit)) {
+              } else if (Array.isArray(activity.unit)) {
                 return unit.find((u: any) => u.oldName === subUnit)?.name ?? unit[0].name;
               }
             }
@@ -359,21 +363,21 @@ const useStore = create<State>()(
             if (unit === null) {
               value = undefined;
             } else if (typeof unit === 'string') {
-              if (goal.unit === null) {
+              if (activity.unit === null) {
                 newValue = 1;
-              } else if (typeof goal.unit === 'string') {
+              } else if (typeof activity.unit === 'string') {
                 newValue = value;
-              } else if (Array.isArray(goal.unit)) {
-                newValue = (value as any)[goal.unit[0].name];
+              } else if (Array.isArray(activity.unit)) {
+                newValue = (value as any)[activity.unit[0].name];
               }
             } else if (Array.isArray(unit)) {
-              if (goal.unit === null) {
+              if (activity.unit === null) {
                 // first element is 1, the rest are undefined
                 newValue = Object.fromEntries([[unit[0].name, 1]]);
-              } else if (typeof goal.unit === 'string') {
+              } else if (typeof activity.unit === 'string') {
                 // all subunits with oldName == null are value, the rest are undefined
                 newValue = Object.fromEntries(unit.filter((u: any) => u.oldName === null).map(u => [u.name, value]));
-              } else if (Array.isArray(goal.unit)) {
+              } else if (Array.isArray(activity.unit)) {
                 // all subunits with oldName are set to the appropriate previous value
                 newValue = Object.fromEntries(unit.filter((u: any) => typeof u.oldName === 'string').map(u => [u.name, (value as any)[u.oldName as string]]).filter((u: any) => u[1] !== undefined));
               }
@@ -385,7 +389,7 @@ const useStore = create<State>()(
           }
 
           // update data points
-          const newDataPoints = goal.dataPoints.map((dp: DataPoint) => {
+          const newDataPoints = activity.dataPoints.map((dp: DataPoint) => {
             let {value, ...dpValueless} = dp;
             const newDpValue = mapDpValue(dp.value);
             return {
@@ -398,49 +402,49 @@ const useStore = create<State>()(
           if (unit === null) {
             newCalendarValue = "n_points";
           } else {
-            newCalendarValue = goal.calendar.value;
+            newCalendarValue = activity.calendar.value;
           }
 
           // update calendar, graph, and stats
           const newCalendar = {
-            ...goal.calendar,
+            ...activity.calendar,
             value: newCalendarValue,
-            subUnit: setSubUnitName(goal.calendar.subUnit)
+            subUnit: setSubUnitName(activity.calendar.subUnit)
           };
           
           let newGraphType;
-          if (unit === null && goal.unit !== null) {
+          if (unit === null && activity.unit !== null) {
             newGraphType = "bar-count";
-          } else if (unit !== null && goal.unit === null) {
+          } else if (unit !== null && activity.unit === null) {
             newGraphType = "box";
           } else  {
-            newGraphType = goal.graph.graphType;
+            newGraphType = activity.graph.graphType;
           }
 
           const newGraph = {
-            ...goal.graph,
+            ...activity.graph,
             graphType: newGraphType,
-            subUnit: setSubUnitName(goal.graph.subUnit)
+            subUnit: setSubUnitName(activity.graph.subUnit)
           };
 
-          const newStats = goal.stats.map((stat: Stat[]) => stat.map((s: Stat) => ({
+          const newStats = activity.stats.map((stat: Stat[]) => stat.map((s: Stat) => ({
             ...s,
             subUnit: setSubUnitName(s.subUnit)
           })));
 
-          const newGoal = {
-            ...goal,
+          const newActivity = {
+            ...activity,
             unit,
             dataPoints: newDataPoints,
             calendar: newCalendar,
             graph: newGraph,
             stats: newStats
           };
-          return { goals: [...state.goals.filter((g: GoalType) => g.name !== goalName), newGoal] };
+          return { activities: [...state.activities.filter((a: ActivityType) => a.name !== activityName), newActivity] };
         });
       },
 
-      setTags: (goalName: string, tags: SetTag[]) => {
+      setTags: (activityName: string, tags: SetTag[]) => {
         const newTagNames = tags.map((t: SetTag) => t.name);
         const oldTagNames = tags.map((t: SetTag) => t.oldTagName).filter((t: TagName | null) => t !== null);
         if (new Set(newTagNames).size !== newTagNames.length) {
@@ -474,22 +478,22 @@ const useStore = create<State>()(
           })).filter((tf: any) => tf.name !== null);
 
         set((state: any) => {
-          const goals = state.goals.map((goal: GoalType) => goal.name === goalName ? {
-            ...goal,
+          const activities = state.activities.map((activity: ActivityType) => activity.name === activityName ? {
+            ...activity,
             tags: newTags,
             calendar: {
-              ...goal.calendar,
-              tagFilters: updateTagFilters(goal.calendar.tagFilters)
+              ...activity.calendar,
+              tagFilters: updateTagFilters(activity.calendar.tagFilters)
             },
             graph: {
-              ...goal.graph,
-              tagFilters: updateTagFilters(goal.graph.tagFilters)
+              ...activity.graph,
+              tagFilters: updateTagFilters(activity.graph.tagFilters)
             },
-            stats: goal.stats.map((stat: Stat[]) => stat.map((s: Stat) => ({
+            stats: activity.stats.map((stat: Stat[]) => stat.map((s: Stat) => ({
               ...s,
               tagFilters: updateTagFilters(s.tagFilters)
             }))),
-            dataPoints: goal.dataPoints.map((dp: DataPoint) => {
+            dataPoints: activity.dataPoints.map((dp: DataPoint) => {
               const newTags = updateTags(dp.tags);
               if (newTags === undefined) {
                 return dp;
@@ -500,21 +504,21 @@ const useStore = create<State>()(
                 }
               }
             })
-          } : goal);
-          return { goals };
+          } : activity);
+          return { activities };
         });
       },
 
-      findTag: (goalName: string, tagName: string) => {
-        return get().goals.find((g: GoalType) => g.name === goalName)?.tags.find((t: Tag) => t.name === tagName);
+      findTag: (activityName: string, tagName: string) => {
+        return get().activities.find((a: ActivityType) => a.name === activityName)?.tags.find((t: Tag) => t.name === tagName);
       },
 
-      addTag: (goalName: string, tag: Tag) => {
+      addTag: (activityName: string, tag: Tag) => {
         set((state: any) => {
-          const existingTags = state.goals.find((g: GoalType) => g.name === goalName)?.tags;
+          const existingTags = state.activities.find((a: ActivityType) => a.name === activityName)?.tags;
           if (!existingTags.find((t: Tag) => t.name === tag.name)) {
-            const goals = state.goals.map((goal: GoalType) => goal.name === goalName ? { ...goal, tags: [...goal.tags, tag] } : goal);
-            return { goals };
+            const activities = state.activities.map((activity: ActivityType) => activity.name === activityName ? { ...activity, tags: [...activity.tags, tag] } : activity);
+            return { activities };
           } else {
             console.log("Tag already exists");
             return {};
@@ -522,7 +526,7 @@ const useStore = create<State>()(
         });
       },
 
-      deleteTag: (goalName: string, tagName: string) => {
+      deleteTag: (activityName: string, tagName: string) => {
         set((state: any) => {
           const updateDataPoints = (dataPoints: DataPoint[]) => {
             return dataPoints.map((dataPoint: DataPoint) => {
@@ -541,17 +545,17 @@ const useStore = create<State>()(
           const updateTags = (tags: Tag[]) => {
             return tags.filter((t: Tag) => t.name !== tagName);
           }
-          const goals = state.goals.map((goal: GoalType) => goal.name === goalName ? 
+          const activities = state.activities.map((activity: ActivityType) => activity.name === activityName ? 
             { 
-              ...goal, 
-              tags: updateTags(goal.tags), 
-              dataPoints: updateDataPoints(goal.dataPoints) 
-            } : goal);
-          return { goals };
+              ...activity, 
+              tags: updateTags(activity.tags), 
+              dataPoints: updateDataPoints(activity.dataPoints) 
+            } : activity);
+          return { activities };
         });
       },
 
-      renameTag: (goalName: string, tagName: string, newTagName: string) => {
+      renameTag: (activityName: string, tagName: string, newTagName: string) => {
         set((state: any) => {
           const updateTags = (tags: Tag[], oldTagName: string, newTagName: string) => {
             return tags.map((tag: Tag) => tag.name === oldTagName ? { ...tag, name: newTagName } : tag);
@@ -565,17 +569,17 @@ const useStore = create<State>()(
               }
             });
           }
-          const goals = state.goals.map((goal: GoalType) => goal.name === goalName ? {
-            ...goal,
-            tags: updateTags(goal.tags, tagName, newTagName),
-            dataPoints: updateDataPoints(goal.dataPoints, tagName, newTagName)
-          } : goal);
+          const activities = state.activities.map((activity: ActivityType) => activity.name === activityName ? {
+            ...activity,
+            tags: updateTags(activity.tags, tagName, newTagName),
+            dataPoints: updateDataPoints(activity.dataPoints, tagName, newTagName)
+          } : activity);
 
-          return { goals };
+          return { activities };
         });
       },
 
-      updateGoalDataPoint: (goalName: string, dataPointIndex: number | undefined, updatedDataPoint: DataPoint) => {
+      updateGoalDataPoint: (activityName: string, dataPointIndex: number | undefined, updatedDataPoint: DataPoint) => {
         var insertIndex: number = NaN;
         set((state: any) => {
           if (updatedDataPoint.tags?.length === 0) {
