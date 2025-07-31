@@ -2,7 +2,7 @@ import React from "react";
 import { SafeAreaView, ScrollView, StyleSheet, Text, View, Pressable } from "react-native";
 import { useTheme, FAB, Divider } from 'react-native-paper';
 import useStore from "./Store";
-import { GoalType, Stat } from "./StoreTypes";
+import { GoalType, Stat, TagFilter } from "./StoreTypes";
 import { lightPalette, darkPalette } from "./Color";
 import { renderTags } from "./GoalUtil";
 import AntDesign from '@expo/vector-icons/AntDesign';
@@ -30,6 +30,9 @@ const GoalSummary = ({ navigation, goalName }: { navigation: any, goalName: stri
   const dialogStat = (statDialogStatRowId !== null && statDialogStatColId !== null) ?
     goal.stats[statDialogStatRowId][statDialogStatColId] : null;
 
+  const positiveCalendarTags = goal.calendar.tagFilters
+    .filter((t: TagFilter) => t.state === "yes")
+    .map((t: TagFilter) => t.name);
 
   if (!goal) {
     return <Text>Goal not found</Text>;
@@ -122,7 +125,7 @@ const GoalSummary = ({ navigation, goalName }: { navigation: any, goalName: stri
       <FAB
         icon="plus"
         style={styles.fab}
-        onPress={() => navigation.navigate("EditDataPoint", { goalName, newDataPoint: true })}
+        onPress={() => navigation.navigate("EditDataPoint", { goalName, newDataPoint: true, tags: positiveCalendarTags })}
         color={theme.colors.surface}
       />
       <EditStat

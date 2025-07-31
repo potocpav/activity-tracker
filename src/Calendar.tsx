@@ -36,6 +36,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, goalName }) =>
   const firstVisibleWeek = firstDpDate ? pastWeekStart(new Date(...firstDpDate), 0) : lastVisibleWeek;
 
   const weekCount = Math.min(MAX_WEEK_COUNT, Math.max(MIN_WEEK_COUNT, 1 + Math.round((lastVisibleWeek.getTime() - firstVisibleWeek.getTime()) / (7 * 24 * 60 * 60 * 1000))));
+  const positiveTags = goal.calendar.tagFilters.filter((t: TagFilter) => t.state === "yes").map((t: TagFilter) => t.name);
 
   return (
     <FlatList
@@ -66,14 +67,15 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, goalName }) =>
                 return;
               }
               const daySlice = findZeroSlice(goal.dataPoints, (dp) => dayCmp(dp, day));
-              const dayDataAndIndex: [DataPoint, number][] = goal.dataPoints.map((dp: DataPoint, i: number): [DataPoint, number] => [dp, i]).slice(...daySlice);
-              const dayData = dayDataAndIndex.map(([dp, _]) => dp);
-              const positiveTags = goal.calendar.tagFilters.filter((t: TagFilter) => t.state === "yes").map((t: TagFilter) => t.name);
-              const filteredValues: any[] = dayData
-                .map((dp: DataPoint) => [dp.date, extractValue(dp, goal.calendar.tagFilters, goal.calendar.subUnit)])
-                .filter((v: any) => v[1] !== null);
-              const value = extractStatValue(filteredValues, goal.calendar.value);
-              const hasData = filteredValues.length > 0;
+              const dayDataAndIndex: [DataPoint, number][] = 
+                goal.dataPoints
+                  .map((dp: DataPoint, i: number): [DataPoint, number] => [dp, i])
+                  .slice(...daySlice)
+                  .map(([dp, i]: [DataPoint, number]) => 
+                    [dp.date, i, extractValue(dp, goal.calendar.tagFilters, goal.calendar.subUnit)])
+                  .filter((v: any) => v[2] !== null);
+              const value = extractStatValue(dayDataAndIndex.map((v: any) => [v[0], v[2]]), goal.calendar.value);
+              const hasData = dayDataAndIndex.length > 0;
               return (
                 <TouchableOpacity
                   style={[styles.daySquare, hasData ?
@@ -98,7 +100,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, goalName }) =>
                     if (hasData) {
                       navigation.navigate("GoalData", { goalName, day });
                     } else {
-                      navigation.navigate("EditDataPoint", { goalName, newDataPoint: true, newDataPointDate: day, positiveTags });
+                      navigation.navigate("EditDataPoint", { goalName, newDataPoint: true, newDataPointDate: day, tags: positiveTags });
                     }
                   }}
                   activeOpacity={0.3}

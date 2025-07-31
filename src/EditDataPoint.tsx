@@ -16,6 +16,7 @@ import { CalendarDate } from "react-native-paper-dates/lib/typescript/Date/Calen
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { cmpDateList } from "./GoalUtil";
+import { darkPalette, lightPalette } from "./Color";
 
 type EditDataPointProps = {
   navigation: any;
@@ -26,9 +27,11 @@ const locale = NativeModules.I18nManager.localeIdentifier;
 
 const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   const theme = useTheme();
-  const { goalName, dataPointIndex, newDataPoint, newDataPointDate } = route.params;
+  const { goalName, dataPointIndex, newDataPoint, newDataPointDate, tags } = route.params;
   const goals = useStore((state: any) => state.goals);
   const goal = goals.find((g: GoalType) => g.name === goalName);
+  const themeState = useStore((state: any) => state.theme);
+  const palette = themeState === "dark" ? darkPalette : lightPalette;
 
   const dataPoint : DataPoint = dataPointIndex !== undefined ? goal?.dataPoints[dataPointIndex] : {
     date: dateToDateList(newDataPointDate ? new Date(newDataPointDate[0], newDataPointDate[1], newDataPointDate[2]) : new Date()),
@@ -66,7 +69,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
         (dataPoint.value as Record<string, number | null>)[u.name]?.toString() ?? "")
     }));
   }
-  const [inputTags, setInputTags] = useState<string[]>(dataPoint.tags ?? []);
+  const [inputTags, setInputTags] = useState<string[]>(dataPoint.tags ?? tags ?? []);
 
   const toggleInputTag = (tag: string) => {
     setInputTags(inputTags.includes(tag) ? inputTags.filter((t: string) => t !== tag) : [...inputTags, tag]);
@@ -212,7 +215,12 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
                 style={{
                   marginRight: 8,
                   marginBottom: 8,
-                }} >
+                  backgroundColor: inputTags.includes(tag.name) ? palette[tag.color] : theme.colors.surface,
+                }}
+                textStyle={{
+                  color: inputTags.includes(tag.name) ? theme.colors.surface : palette[tag.color],
+                }}
+              >
                 {tag.name}
               </Chip>
             ))}

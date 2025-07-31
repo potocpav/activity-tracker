@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { useTheme, DataTable, FAB } from 'react-native-paper';
 import useStore from "./Store";
-import { DataPoint, GoalType, Tag, Unit } from "./StoreTypes";
+import { DataPoint, GoalType, Tag, TagFilter, Unit } from "./StoreTypes";
 import { darkPalette, lightPalette } from "./Color";
 import { dayCmp, findZeroSlice, renderTags } from "./GoalUtil";
 import TagMenu from "./TagMenu";
@@ -171,7 +171,7 @@ const GoalData = ({ navigation, route }: GoalDataProps) => {
       <FAB
         icon="plus"
         style={[styles.fab, { backgroundColor: goalColor }]}
-        onPress={() => navigation.navigate("EditDataPoint", { goalName: goal.name, newDataPoint: true, newDataPointDate: day })}
+        onPress={() => navigation.navigate("EditDataPoint", { goalName: goal.name, newDataPoint: true, newDataPointDate: day, tags: requiredTags })}
         color={theme.colors.surface}
       />
     </SafeAreaView>
