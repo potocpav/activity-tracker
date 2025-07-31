@@ -28,6 +28,8 @@ In order to make this app a full-featured management app for activity data, the 
 ### General Usability
 
 * [ ] Polish stat editing and dragging
+* [ ] Improve general styling
+  * [ ] Decrease brightness of edit field borders
 * [ ] Screen orientation & responsive design tweaks
 * [ ] Limit graph Panning on the left
 * [ ] Performance testing & enhancements
@@ -36,7 +38,7 @@ In order to make this app a full-featured management app for activity data, the 
 
 ### Publication
 
-* [ ] Rebrand to "Activities" / "Activity Tracker"
+* [x] Rebrand to "Activities" / "Activity Tracker"
 * [ ] Add screenshots
 * [ ] Make app store description
 * [ ] Improve GitHub README
@@ -45,7 +47,7 @@ In order to make this app a full-featured management app for activity data, the 
 
 ### Tindeq analysis
 
-* [ ] Remove Tindeq permissions, if I decide against supporting Tindeq device
+* [x] Disable Tindeq for now
 * [ ] Auto-analyze and add reps from Tindeq
 * [ ] Integrate Tindeq with activity management
 * [ ] Improve connection so that we never get stuck

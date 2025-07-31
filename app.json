@@ -19,7 +19,7 @@
         "foregroundImage": "./assets/icon-fg.png",
         "backgroundColor": "#7166ff"
       },
-      "permissions": [
+      "__disabled_permissions": [
         "android.permission.BLUETOOTH",
         "android.permission.BLUETOOTH_ADMIN",
         "android.permission.BLUETOOTH_CONNECT"
@@ -29,7 +29,7 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": [
+    "__disabled_plugins": [
       [
         "react-native-ble-plx",
         {
@@ -44,6 +44,7 @@
     ],
     "extra": {
       "eas": {
+        "projectId": "098bd04a-6ecb-4bf9-89b7-d050163640db"
       }
     }
   }

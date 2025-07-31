@@ -1,14 +1,14 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, FlatList } from "react-native";
 import { useTheme } from 'react-native-paper';
-import { DataPoint, dateListToTime, normalizeDateList, DateList, GoalType, TagFilter } from "./StoreTypes";
-import { formatNumber, findZeroSlice, dayCmp, extractStatValue, extractValue } from "./GoalUtil";
+import { DataPoint, dateListToTime, normalizeDateList, DateList, ActivityType, TagFilter } from "./StoreTypes";
+import { formatNumber, findZeroSlice, dayCmp, extractStatValue, extractValue } from "./ActivityUtil";
 import useStore from "./Store";
 import { lightPalette, darkPalette } from "./Color";
 
 type CalendarComponentProps = {
   navigation: any;
-  goalName: string;
+  activityName: string;
 };
 
 const ITEM_WIDTH = 35;
@@ -17,33 +17,33 @@ const MIN_WEEK_COUNT = 14;
 const MAX_WEEK_COUNT = 520;
 
 
-const Calendar: React.FC<CalendarComponentProps> = ({ navigation, goalName }) => {
+const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName }) => {
   const theme = useTheme();
-  const goals = useStore((state: any) => state.goals);
-  const goal = goals.find((g: GoalType) => g.name === goalName);
+  const activities = useStore((state: any) => state.activities);
+  const activity = activities.find((a: ActivityType) => a.name === activityName);
   const themeState = useStore((state: any) => state.theme);
   const palette = themeState === "dark" ? darkPalette : lightPalette;
-  const dayBackground = palette[goal.color];
+  const dayBackground = palette[activity.color];
   const weekStart = useStore((state: any) => state.weekStart);
-  const updateGoalDataPoint = useStore((state: any) => state.updateGoalDataPoint);
-  const deleteGoalDataPoint = useStore((state: any) => state.deleteGoalDataPoint);
+  const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);
+  const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
   
   const now = new Date();
   const pastWeekStart = (date: Date, i: number) => new Date(date.getFullYear(), date.getMonth(), date.getDate() - date.getDay() - i * 7 + (weekStart == "sunday" ? 0 : 1));
 
-  const firstDpDate: DateList | null = goal.dataPoints[0]?.date || null;
+  const firstDpDate: DateList | null = activity.dataPoints[0]?.date || null;
   const lastVisibleWeek = pastWeekStart(now, 0);
   const firstVisibleWeek = firstDpDate ? pastWeekStart(new Date(...firstDpDate), 0) : lastVisibleWeek;
 
   const weekCount = Math.min(MAX_WEEK_COUNT, Math.max(MIN_WEEK_COUNT, 1 + Math.round((lastVisibleWeek.getTime() - firstVisibleWeek.getTime()) / (7 * 24 * 60 * 60 * 1000))));
-  const positiveTags = goal.calendar.tagFilters.filter((t: TagFilter) => t.state === "yes").map((t: TagFilter) => t.name);
+  const positiveTags = activity.calendar.tagFilters.filter((t: TagFilter) => t.state === "yes").map((t: TagFilter) => t.name);
 
   return (
     <FlatList
       data={Array.from({ length: weekCount }, (_, i) => i)}
       keyExtractor={(_, id) => id.toString()}
       style={styles.scrollView}
-      extraData={goal.dataPoints}
+      extraData={activity.dataPoints}
       removeClippedSubviews={true}
       inverted={true}
       windowSize={2}
@@ -66,15 +66,15 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, goalName }) =>
               if (dateListToTime(day) > now.getTime()) {
                 return;
               }
-              const daySlice = findZeroSlice(goal.dataPoints, (dp) => dayCmp(dp, day));
+              const daySlice = findZeroSlice(activity.dataPoints, (dp) => dayCmp(dp, day));
               const dayDataAndIndex: [DataPoint, number][] = 
-                goal.dataPoints
+                activity.dataPoints
                   .map((dp: DataPoint, i: number): [DataPoint, number] => [dp, i])
                   .slice(...daySlice)
                   .map(([dp, i]: [DataPoint, number]) => 
-                    [dp.date, i, extractValue(dp, goal.calendar.tagFilters, goal.calendar.subUnit)])
+                    [dp.date, i, extractValue(dp, activity.calendar.tagFilters, activity.calendar.subUnit)])
                   .filter((v: any) => v[2] !== null);
-              const value = extractStatValue(dayDataAndIndex.map((v: any) => [v[0], v[2]]), goal.calendar.value);
+              const value = extractStatValue(dayDataAndIndex.map((v: any) => [v[0], v[2]]), activity.calendar.value);
               const hasData = dayDataAndIndex.length > 0;
               return (
                 <TouchableOpacity
@@ -88,19 +88,19 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, goalName }) =>
                   ]}
                   key={dayIdx}
                   onLongPress={() => {
-                    if (goal.unit === null) {
+                    if (activity.unit === null) {
                       if (hasData) {
-                        deleteGoalDataPoint(goalName, dayDataAndIndex[0][1]);
+                        deleteActivityDataPoint(activityName, dayDataAndIndex[0][1]);
                       } else {
-                        updateGoalDataPoint(goalName, undefined, { date: day, tags: positiveTags });
+                        updateActivityDataPoint(activityName, undefined, { date: day, tags: positiveTags });
                       }
                     }
                   }}
                   onPress={() => {
                     if (hasData) {
-                      navigation.navigate("GoalData", { goalName, day });
+                      navigation.navigate("ActivityData", { activityName, day });
                     } else {
-                      navigation.navigate("EditDataPoint", { goalName, newDataPoint: true, newDataPointDate: day, tags: positiveTags });
+                      navigation.navigate("EditDataPoint", { activityName, newDataPoint: true, newDataPointDate: day, tags: positiveTags });
                     }
                   }}
                   activeOpacity={0.3}
@@ -111,7 +111,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, goalName }) =>
                   </Text>}
 
                   <Text style={[styles.value, { color: theme.colors.background }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>
-                    {hasData && (value !== null ? (goal.unit === null && value === 1 ? "✓" : formatNumber(value)) : '-')}
+                    {hasData && (value !== null ? (activity.unit === null && value === 1 ? "✓" : formatNumber(value)) : '-')}
                   </Text>
                 </TouchableOpacity>
               );

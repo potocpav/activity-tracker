@@ -2,24 +2,24 @@ import React from "react";
 import { SafeAreaView, ScrollView, StyleSheet, Text, View, Pressable } from "react-native";
 import { useTheme, FAB, Divider } from 'react-native-paper';
 import useStore from "./Store";
-import { GoalType, Stat, TagFilter } from "./StoreTypes";
+import { ActivityType, Stat, TagFilter } from "./StoreTypes";
 import { lightPalette, darkPalette } from "./Color";
-import { renderTags } from "./GoalUtil";
+import { renderTags } from "./ActivityUtil";
 import AntDesign from '@expo/vector-icons/AntDesign';
-import GoalGraph from "./GoalGraph";
-import GoalCalendar from "./GoalCalendar";
+import ActivityGraph from "./ActivityGraph";
+import ActivityCalendar from "./ActivityCalendar";
 import StatView from "./StatView";
 import EditStat from "./EditStat";
 
-const GoalSummary = ({ navigation, goalName }: { navigation: any, goalName: string }) => {
+const ActivitySummary = ({ navigation, activityName }: { navigation: any, activityName: string }) => {
   const theme = useTheme();
-  const goals = useStore((state: any) => state.goals);
-  const goal = goals.find((g: GoalType) => g.name === goalName);
+  const activities = useStore((state: any) => state.activities);
+  const activity = activities.find((a: ActivityType) => a.name === activityName);
   const themeState = useStore((state: any) => state.theme);
   const palette = themeState === "dark" ? darkPalette : lightPalette;
-  const goalColor = palette[goal.color];
+  const activityColor = palette[activity.color];
 
-  const styles = getStyles(theme, goalColor);
+  const styles = getStyles(theme, activityColor);
 
   // Dialog state
   const [statDialogVisible, setStatDialogVisible] = React.useState(false);
@@ -28,14 +28,14 @@ const GoalSummary = ({ navigation, goalName }: { navigation: any, goalName: stri
 
   // Value to display in dialog
   const dialogStat = (statDialogStatRowId !== null && statDialogStatColId !== null) ?
-    goal.stats[statDialogStatRowId][statDialogStatColId] : null;
+    activity.stats[statDialogStatRowId][statDialogStatColId] : null;
 
-  const positiveCalendarTags = goal.calendar.tagFilters
+  const positiveCalendarTags = activity.calendar.tagFilters
     .filter((t: TagFilter) => t.state === "yes")
     .map((t: TagFilter) => t.name);
 
-  if (!goal) {
-    return <Text>Goal not found</Text>;
+  if (!activity) {
+    return <Text>Activity not found</Text>;
   }
 
   // Helper to open dialog
@@ -48,28 +48,28 @@ const GoalSummary = ({ navigation, goalName }: { navigation: any, goalName: stri
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
-        {goal.description && (
-          <View style={styles.goalInfo}>
-            <Text style={styles.goalDescription}>{goal.description}</Text>
+        {activity.description && (
+          <View style={styles.activityInfo}>
+            <Text style={styles.activityDescription}>{activity.description}</Text>
           </View>
         )}
-        {goal.tags.length > 0 && (
+        {activity.tags.length > 0 && (
           <>
             <Divider />
             <View style={styles.tagsRow}>
-              {renderTags(goal.tags, theme, palette)}
+              {renderTags(activity.tags, theme, palette)}
             </View>
           </>
         )}
         <Divider />
 
-        {goal.stats.map((statRow: Stat[], rowIndex: number) => (
+        {activity.stats.map((statRow: Stat[], rowIndex: number) => (
           <View
             key={rowIndex}
             style={styles.statsGroup}
           >
             {statRow.map((stat: Stat, index: number) => (
-              <StatView key={index} stat={stat} goal={goal} onPress={() =>
+              <StatView key={index} stat={stat} activity={activity} onPress={() =>
                 showStatDialog(rowIndex, index)} />
             ))}
 
@@ -115,9 +115,9 @@ const GoalSummary = ({ navigation, goalName }: { navigation: any, goalName: stri
 
         <Divider />
 
-        <GoalCalendar navigation={navigation} goalName={goalName} />
+        <ActivityCalendar navigation={navigation} activityName={activityName} />
 
-        <GoalGraph goalName={goalName} />
+        <ActivityGraph activityName={activityName} />
 
         <View style={{ height: 50 }} />
 
@@ -125,12 +125,12 @@ const GoalSummary = ({ navigation, goalName }: { navigation: any, goalName: stri
       <FAB
         icon="plus"
         style={styles.fab}
-        onPress={() => navigation.navigate("EditDataPoint", { goalName, newDataPoint: true, tags: positiveCalendarTags })}
+        onPress={() => navigation.navigate("EditDataPoint", { activityName, newDataPoint: true, tags: positiveCalendarTags })}
         color={theme.colors.surface}
       />
       <EditStat
         navigation={navigation}
-        goalName={goalName}
+        activityName={activityName}
         statRowId={statDialogStatRowId}
         statColId={statDialogStatColId}
         stat={dialogStat}
@@ -141,16 +141,16 @@ const GoalSummary = ({ navigation, goalName }: { navigation: any, goalName: stri
   );
 };
 
-const getStyles = (theme: any, goalColor: string) => StyleSheet.create({
+const getStyles = (theme: any, activityColor: string) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
   },
-  goalInfo: {
+  activityInfo: {
     padding: 15,
     backgroundColor: theme.colors.surface,
   },
-  goalDescription: {
+  activityDescription: {
     fontSize: 16,
     lineHeight: 22,
     color: theme.colors.onSurface,
@@ -174,8 +174,8 @@ const getStyles = (theme: any, goalColor: string) => StyleSheet.create({
     margin: 16,
     right: 0,
     bottom: 0,
-    backgroundColor: goalColor,
+    backgroundColor: activityColor,
   },
 });
 
-export default GoalSummary; 
+export default ActivitySummary; 

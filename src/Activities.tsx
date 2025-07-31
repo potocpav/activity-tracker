@@ -65,7 +65,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
             </Text>
           </View>
           <TouchableOpacity
-            onPress={() => { navigation.navigate('EditDataPoint', { activityName: item.name, dataPointName: null, new: true }); }}
+            onPress={() => { navigation.navigate('EditDataPoint', { activityName: item.name, dataPointName: null, newDataPoint: true }); }}
             style={styles.addDataPointButton}
           >
             <AntDesign name="plus" size={24} color={palette[item.color]} />
@@ -83,7 +83,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
           onDismiss={() => setMenuVisible(false)}
           anchor={<View style={styles.menuAnchor} />}
         >
-          <Menu.Item onPress={() => { setMenuVisible(false); navigation.navigate('Live View') }} title="Tindeq Live View" />
+          {/* <Menu.Item onPress={() => { setMenuVisible(false); navigation.navigate('Live View') }} title="Tindeq Live View" /> */} 
           <Menu.Item onPress={() => { setMenuVisible(false); navigation.navigate('Settings') }} title="Settings" />
         </Menu>
       </View>

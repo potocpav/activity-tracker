@@ -1,11 +1,10 @@
 import React from "react";
-import { Animated, FlatList, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, Pressable } from "react-native";
-import { useTheme, FAB, Divider, Portal, Dialog, Button, TextInput } from 'react-native-paper';
+import { StyleSheet, Text, View } from "react-native";
+import { useTheme, Dialog, Button, TextInput } from 'react-native-paper';
 import useStore from "./Store";
-import { ActivityType, Stat, StatPeriod, StatValue, TagFilter, Tag, allStatPeriods, allStatValues } from "./StoreTypes";
-import { renderValueSummary, formatDate } from "./ActivityData";
+import { ActivityType, Stat, StatPeriod, StatValue, TagFilter, allStatPeriods, allStatValues } from "./StoreTypes";
 import { lightPalette, darkPalette } from "./Color";
-import { renderTags, valueToLabel, periodToLabel, calcStatValue } from "./ActivityUtil";
+import { valueToLabel, periodToLabel } from "./ActivityUtil";
 import TagMenu from "./TagMenu";
 import SubUnitMenu from "./SubUnitMenu";
 import DropdownMenu from "./DropdownMenu";
@@ -19,12 +18,11 @@ export const EditStat = ({ navigation, activityName, statRowId, statColId, stat,
   const activity = activities.find((a: ActivityType) => a.name === activityName);
   const themeState = useStore((state: any) => state.theme);
   const palette = themeState === "dark" ? darkPalette : lightPalette;
-  const activityColor = palette[activity.color];
   const addActivityStat = useStore((state: any) => state.addActivityStat);
   const setActivityStat = useStore((state: any) => state.setActivityStat);
   const deleteActivityStat = useStore((state: any) => state.deleteActivityStat);
 
-  const styles = getStyles(theme, activityColor);
+  const styles = getStyles(theme);
   const subUnitNames = Array.isArray(activity.unit) ? activity.unit.map((u: any) => u.name) : null;
 
   // Initialize state based on the provided stat or defaults
@@ -182,7 +180,7 @@ export const EditStat = ({ navigation, activityName, statRowId, statColId, stat,
   );
 };
 
-const getStyles = (theme: any, goalColor: string) => StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   menusRow: {
     flex: 1,
     flexDirection: 'column',
