@@ -95,7 +95,9 @@ const ActivityInner: React.FC<any> = ({ activity, navigation }) => {
 
   const exportActivityCsv = async () => {
     const valueNames = (() => {
-      if (typeof activity.unit === "string") {
+      if (activity.unit === null) {
+        return []
+      } else if (typeof activity.unit === "string") {
         return [activity.unit];
       } else {
         return activity.unit.map((u: SubUnit) => u.name);
@@ -105,7 +107,9 @@ const ActivityInner: React.FC<any> = ({ activity, navigation }) => {
     const headerRow = ["Date", ...valueNames, ...tagNames];
     var dataRows = activity.dataPoints.map((dp: DataPoint) => {
       const values = (() => {
-        if (typeof activity.unit === "string" && typeof dp.value === "number") {
+        if (activity.unit === null) {
+          return []
+        } else if (typeof activity.unit === "string" && typeof dp.value === "number") {
           return [dp.value];
         } else {
           return activity.unit.map((u: SubUnit) =>
@@ -145,6 +149,10 @@ const ActivityInner: React.FC<any> = ({ activity, navigation }) => {
       title: activity.name,
       headerRight: () => (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Button compact={true} 
+            onPress={() => navigation.navigate("EditDataPoint", { activityName, newDataPoint: true })}>
+            <AntDesign name="plus" size={24} color={theme.colors.onSurface} />
+          </Button>
           <Button compact={true} onPress={() => navigation.navigate("EditActivity", { activityName })}>
             <AntDesign name="edit" size={24} color={theme.colors.onSurface} />
           </Button>

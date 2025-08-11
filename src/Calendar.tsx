@@ -24,12 +24,12 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName }
   const themeState = useStore((state: any) => state.theme);
   const palette = themeState === "dark" ? darkPalette : lightPalette;
   const dayBackground = palette[activity.color];
-  const weekStart = useStore((state: any) => state.weekStart);
+  const firstWeekDay = useStore((state: any) => state.weekStart);
   const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);
   const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
   
   const now = new Date();
-  const pastWeekStart = (date: Date, i: number) => new Date(date.getFullYear(), date.getMonth(), date.getDate() - date.getDay() - i * 7 + (weekStart == "sunday" ? 0 : 1));
+  const pastWeekStart = (date: Date, i: number) => new Date(date.getFullYear(), date.getMonth(), date.getDate() - date.getDay() - i * 7 + (firstWeekDay == "sunday" ? 0 : 1));
 
   const firstDpDate: DateList | null = activity.dataPoints[0]?.date || null;
   const lastVisibleWeek = pastWeekStart(now, 0);
@@ -74,7 +74,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName }
                   .map(([dp, i]: [DataPoint, number]) => 
                     [dp.date, i, extractValue(dp, activity.calendar.tagFilters, activity.calendar.subUnit)])
                   .filter((v: any) => v[2] !== null);
-              const value = extractStatValue(dayDataAndIndex.map((v: any) => [v[0], v[2]]), activity.calendar.value);
+              const value = extractStatValue(dayDataAndIndex.map((v: any) => [v[0], v[2]]), activity.calendar.value, activity.calendar.period, firstWeekDay);
               const hasData = dayDataAndIndex.length > 0;
               return (
                 <TouchableOpacity

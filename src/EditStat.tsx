@@ -2,7 +2,7 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { useTheme, Dialog, Button, TextInput } from 'react-native-paper';
 import useStore from "./Store";
-import { ActivityType, Stat, StatPeriod, StatValue, TagFilter, allStatPeriods, allStatValues } from "./StoreTypes";
+import { ActivityType, Stat, StatPeriod, StatValue, TagFilter, allStatPeriods, unaryStatValues, numericStatValues } from "./StoreTypes";
 import { lightPalette, darkPalette } from "./Color";
 import { valueToLabel, periodToLabel } from "./ActivityUtil";
 import TagMenu from "./TagMenu";
@@ -32,9 +32,9 @@ export const EditStat = ({ navigation, activityName, statRowId, statColId, stat,
   const [inputPeriod, setInputPeriod] = React.useState<StatPeriod | null>(stat?.period || "today");
   const [inputTagFilters, setInputTagFilters] = React.useState<TagFilter[]>(stat?.tagFilters || []);
 
-  const [subUnitMenuVisible, setSubUnitMenuVisible] = React.useState(false);
   const [tagsMenuVisible, setTagsMenuVisible] = React.useState(false);
   const [periodMenuVisible, setPeriodMenuVisible] = React.useState(false);
+  const [subUnitMenuVisible, setSubUnitMenuVisible] = React.useState(false);
   const [valueMenuVisible, setValueMenuVisible] = React.useState(false);
 
   // Update state when stat prop changes
@@ -90,6 +90,9 @@ export const EditStat = ({ navigation, activityName, statRowId, statColId, stat,
     onDismiss();
   };
 
+  const statValues = (activity.unit === null ? unaryStatValues : numericStatValues)
+    .map((v: StatValue) => ({ key: v, label: valueToLabel(v) }));
+
   return (
     <Dialog
       visible={visible}
@@ -116,18 +119,6 @@ export const EditStat = ({ navigation, activityName, statRowId, statColId, stat,
           </Button>
         </View>
 
-        <View key="menusRow" style={styles.menusRow}>
-          <SubUnitMenu
-            subUnitNames={subUnitNames}
-            subUnitName={inputSubUnit}
-            setSubUnitName={setInputSubUnit}
-            menuVisible={subUnitMenuVisible}
-            setMenuVisible={setSubUnitMenuVisible}
-            themeColors={theme.colors}
-          />
-        </View>
-
-
         {/* Period */}
         <DropdownMenu
           options={allStatPeriods.map((p: StatPeriod) => ({ key: p, label: periodToLabel(p) }))}
@@ -139,9 +130,19 @@ export const EditStat = ({ navigation, activityName, statRowId, statColId, stat,
           themeColors={theme.colors}
         />
 
+        {/* SubUnit menu */}
+        <SubUnitMenu
+          subUnitNames={subUnitNames}
+          subUnitName={inputSubUnit}
+          setSubUnitName={(name) => setInputSubUnit(name)}
+          menuVisible={subUnitMenuVisible}
+          setMenuVisible={setSubUnitMenuVisible}
+          themeColors={theme.colors}
+        />
+
         {/* Value */}
         <DropdownMenu
-          options={allStatValues.map((v: StatValue) => ({ key: v, label: valueToLabel(v) }))}
+          options={statValues}
           selectedKey={inputValue || ""}
           onSelect={(key: string) => setInputValue(key as StatValue)}
           visible={valueMenuVisible}
@@ -152,15 +153,17 @@ export const EditStat = ({ navigation, activityName, statRowId, statColId, stat,
 
 
         {/* Tags */}
-        <TagMenu
-          tags={inputTagFilters}
-          onChange={(tags) => setInputTagFilters(tags)}
-          menuVisible={tagsMenuVisible}
-          setMenuVisible={setTagsMenuVisible}
-          activityTags={activity.tags}
-          palette={palette}
-          themeColors={theme.colors}
-        />
+        {activity.tags.length > 0 && (
+          <TagMenu
+            tags={inputTagFilters}
+            onChange={(tags) => setInputTagFilters(tags)}
+            menuVisible={tagsMenuVisible}
+            setMenuVisible={setTagsMenuVisible}
+            activityTags={activity.tags}
+            palette={palette}
+            themeColors={theme.colors}
+          />
+        )}
 
         <View style={{ flexDirection: 'row' }}>
           {dialogStat && (

@@ -8,12 +8,13 @@ import {
   NativeModules,
   FlatList,
 } from "react-native";
-import { useTheme, DataTable, FAB } from 'react-native-paper';
+import { useTheme, DataTable, Button } from 'react-native-paper';
 import useStore from "./Store";
 import { DataPoint, ActivityType, Tag, TagFilter, Unit } from "./StoreTypes";
 import { darkPalette, lightPalette } from "./Color";
 import { dayCmp, findZeroSlice, renderTags } from "./ActivityUtil";
 import TagMenu from "./TagMenu";
+import AntDesign from '@expo/vector-icons/AntDesign';
 import DraggableFlatList from "react-native-draggable-flatlist";
 const locale = NativeModules.I18nManager.localeIdentifier;
 
@@ -120,6 +121,21 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
     .slice()
     .reverse()
 
+
+    React.useEffect(() => {
+      navigation.setOptions({
+        title: activity.name,
+        headerRight: () => (
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Button compact={true} 
+              onPress={() => navigation.navigate("EditDataPoint", { activityName: activity.name, newDataPoint: true, newDataPointDate: day, tags: requiredTags })}>
+              <AntDesign name="plus" size={24} color={theme.colors.onSurface} />
+            </Button>
+          </View>
+        ),
+      });
+    }, [navigation, theme]);
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       {activity.tags.length > 0 && (
@@ -167,12 +183,6 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
             </DataTable.Row>
           </TouchableOpacity>
         )}
-      />
-      <FAB
-        icon="plus"
-        style={[styles.fab, { backgroundColor: activityColor }]}
-        onPress={() => navigation.navigate("EditDataPoint", { activityName: activity.name, newDataPoint: true, newDataPointDate: day, tags: requiredTags })}
-        color={theme.colors.surface}
       />
     </SafeAreaView>
   );

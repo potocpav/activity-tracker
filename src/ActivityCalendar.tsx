@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { useTheme } from 'react-native-paper';
 import useStore from "./Store";
-import { ActivityType, Unit, StatValue } from "./StoreTypes";
+import { ActivityType, StatValue } from "./StoreTypes";
 import { darkPalette, lightPalette } from "./Color";
 import TagMenu from "./TagMenu";
 import Calendar from "./Calendar";
@@ -23,47 +23,6 @@ type ActivityCalendarProps = {
 
 export const formatDate = (date: Date) => {
   return date.toLocaleDateString(locale, { year: "numeric", month: "short", day: "numeric" });
-};
-
-export const renderValueSummary = (value: any, unit: Unit, style: any, short = false) => {
-  if (typeof value === "number" && typeof unit === "string") {
-    return (
-      <Text style={style}>{`${Math.round(value * 100) / 100} ${unit}`}</Text>
-    );
-  } else if (typeof value === "object" && Array.isArray(unit)) {
-    var parts: string[] = [];
-    unit.forEach((u: any) => {
-      if (value[u.name] !== null && value[u.name] !== undefined) {
-        parts.push(`${value[u.name]} ${u.symbol}`);
-      }
-    });
-    if (short) {
-      parts = parts.slice(0, 1);
-    }
-    return (
-      parts.map((p: string, i: number) => (
-        <Text style={style} key={i}>{p}</Text>
-      ))
-    );
-  } else {
-    return <Text style={style}>-</Text>
-  }
-};
-
-export const renderValue = (value: any, unit: Unit) => {
-  if (typeof value === "number" && typeof unit === "string") {
-    return `${Math.round(value * 100) / 100} ${unit}`;
-  } else if (typeof value === "object" && Array.isArray(unit)) {
-    const parts: string[] = [];
-    unit.forEach((u: any) => {
-      if (value[u.name] !== null && value[u.name] !== undefined) {
-        parts.push(`${value[u.name]} ${u.symbol}`);
-      }
-    });
-    return parts.join(", ");
-  } else {
-    return "n/a"
-  }
 };
 
 const ActivityCalendar = ({ navigation, activityName }: ActivityCalendarProps) => {

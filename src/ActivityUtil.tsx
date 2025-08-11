@@ -1,5 +1,6 @@
 
-import { Tag, StatPeriod, DataPoint, DateList, dateListToTime, normalizeDateList, TagFilter, StatValue, Stat, dateToDateList, ActivityType, WeekStart } from "./StoreTypes";
+import { StackedArea } from "victory-native";
+import { Tag, StatPeriod, DataPoint, DateList, dateListToTime, normalizeDateList, TagFilter, StatValue, Stat, dateToDateList, ActivityType, WeekStart, Unit } from "./StoreTypes";
 import { View, Text, StyleSheet } from "react-native";
 
 export type BinSize = "day" | "week" | "month" | "quarter" | "year";
@@ -17,15 +18,21 @@ export const dateBetween = (d: DateList, lo: DateList, hi: DateList) => {
 }
 
 export const statPeriodCmp = (
-  dp: DataPoint, period: StatPeriod, today: DateList, lastActive: DateList | null) => {
+  dp: DataPoint, 
+  period: StatPeriod, 
+  today: DateList, 
+  lastActive: DateList | null,
+  weekStart: WeekStart
+) => {
   let lo: DateList | null = null;
   let hi: DateList | null = null;
   if (period === "today") {
     lo = hi = today;
   } else if (period === "this_week") {
     const dayOfWeek = new Date(...today).getDay();
-    lo = [today[0], today[1], today[2] - dayOfWeek];
-    hi = [today[0], today[1], today[2] - dayOfWeek  + 6];
+    const firstDayOfWeek = weekStart === "sunday" ? 0 : 1;
+    lo = [today[0], today[1], today[2] - dayOfWeek + firstDayOfWeek];
+    hi = [today[0], today[1], today[2] - dayOfWeek + firstDayOfWeek + 6];
   } else if (period === "this_month") {
     lo = [today[0], today[1], 1];
     hi = [today[0], today[1] + 1, 0];
@@ -33,13 +40,13 @@ export const statPeriodCmp = (
     lo = [today[0], 0, 1];
     hi = [today[0] + 1, 0, 0];
   } else if (period === "last_7_days") {
-    lo = [today[0], today[1], today[2] - 7];
+    lo = [today[0], today[1], today[2] - 6];
     hi = today;
   } else if (period === "last_30_days") {
-    lo = [today[0], today[1], today[2] - 30];
+    lo = [today[0], today[1], today[2] - 29];
     hi = today;
   } else if (period === "last_365_days") {
-    lo = [today[0], today[1], today[2] - 365];
+    lo = [today[0], today[1], today[2] - 364];
     hi = today;
   } else if (period === "last_active_day") {
     lo = hi = lastActive;
@@ -47,7 +54,10 @@ export const statPeriodCmp = (
     lo = [0, 0, 0];
     hi = [3000, 12, 31];
   }
+  // normalize lo and hi
   if (lo && hi) {
+    lo = normalizeDateList(lo);
+    hi = normalizeDateList(hi);
     return dateBetween(dp.date, lo, hi) ? 0 : cmpDateList(dp.date, lo);
   } else {
     // don't match
@@ -69,21 +79,37 @@ export const extractValue = (dataPoint: DataPoint, tagFiters: TagFilter[], subUn
 }
 
 
-export const calcStatValue = (stat: Stat, activity: ActivityType) => {
+export const calcStatValue = (stat: Stat, activity: ActivityType, weekStart: WeekStart) => {
   const today = dateToDateList(new Date());
   const lastActive = activity.dataPoints.length > 0 ?
     activity.dataPoints[activity.dataPoints.length - 1].date :
     null;
   const periodSlice = findZeroSlice(
     activity.dataPoints,
-    (dp: DataPoint) => statPeriodCmp(dp, stat.period, today, lastActive)
+    (dp: DataPoint) => statPeriodCmp(dp, stat.period, today, lastActive, weekStart)
   );
 
   const filteredValues: any[] = activity.dataPoints
     .slice(...periodSlice)
     .map((dp: DataPoint) => [dp.date, extractValue(dp, stat.tagFilters, stat.subUnit)])
     .filter((v: any) => v[1] !== null);
-  return extractStatValue(filteredValues, stat.value);
+  return extractStatValue(filteredValues, stat.value, stat.period, weekStart);
+}
+
+export const getUnitSymbol = (stat: Stat, unit: Unit) => {
+  let symbol = "";
+  if (["n_days", "n_points"].includes(stat.value)) {
+    symbol = "";
+  } else if (stat.value === "daily_mean") {
+    symbol = "%";
+  } else if (unit === null) {
+    symbol = "";
+  } else if (typeof unit === "string") {
+    symbol = unit;
+  } else {
+    symbol = unit.find((u) => u.name === stat.subUnit)?.symbol ?? "";
+  }
+  return symbol;
 }
 
 
@@ -204,7 +230,32 @@ export const binTimeSeries = (binSize: BinSize, dataPoints: any[], weekStart: We
   return bins;
 };
 
-export const extractStatValue = (filteredValues: [DateList, number][], statValue: StatValue) : number | null => {
+export const statPeriodDays = (period: StatPeriod, weekStart: WeekStart) => {
+  const today = new Date();
+  switch (period) {
+    case "today":
+      return 1;
+    case "this_week":
+      const startDay = weekStart === "sunday" ? 0 : 1;
+      return (today.getDay() - startDay + 8) % 7;
+    case "this_month":
+      return today.getDate();
+    case "this_year":
+      return 365;
+    case "last_7_days":
+      return 7;
+    case "last_30_days":
+      return 30;
+    case "last_365_days":
+      return 365;
+    case "last_active_day":
+      return 1;
+    case "all_time":
+      return 365;
+  }
+}
+
+export const extractStatValue = (filteredValues: [DateList, number][], statValue: StatValue, period: StatPeriod, weekStart: WeekStart) : number | null => {
   const periodValues = filteredValues.map((v: any) => v[1]);
   const periodDates = filteredValues.map((v: any) => v[0]);
 
@@ -213,6 +264,8 @@ export const extractStatValue = (filteredValues: [DateList, number][], statValue
     value = new Set(periodDates.map((d: DateList) => d.join("-"))).size;
   } else if (statValue === "n_points") {
     value = periodValues.length;
+  } else if (statValue === "daily_mean") {
+    value = Math.round(periodValues.length / statPeriodDays(period, weekStart) * 100);
   } else if (statValue === "sum") {
     value = periodValues.reduce((acc, v) => acc + v, 0);
   } else if (statValue === "mean") {
@@ -271,6 +324,8 @@ export const valueToLabel = (value: StatValue): string => {
       return "# Days";
     case "n_points":
       return "# Points";
+    case "daily_mean":
+      return "Daily %";
     case "sum":
       return "Sum";
     case "mean":

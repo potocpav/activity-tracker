@@ -51,11 +51,15 @@ export type DataPoint = {
   tags?: TagName[];
 };
 
-export type StatValue = "n_days" | "n_points" | "sum" | "mean" | "max" | "min" | "last";
+export type StatValue = "n_days" | "n_points" | "daily_mean" | "sum" | "mean" | "max" | "min" | "last";
 
-export const allStatValues : StatValue[] = [
+export const numericStatValues : StatValue[] = [
   "n_days", "n_points", "sum", "mean", "max", "min", "last"
 ];
+
+export const unaryStatValues : StatValue[] = [
+  "n_days", "n_points", "daily_mean"
+]
 
 export type StatPeriod = 
   "today" | "last_active_day" | "this_week" | "this_month" | "this_year" |

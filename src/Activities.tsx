@@ -14,7 +14,7 @@ import DraggableFlatList from 'react-native-draggable-flatlist'
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { renderValueSummary } from "./ActivityData";
 import { lightPalette, darkPalette } from "./Color";
-import { calcStatValue } from "./ActivityUtil";
+import { calcStatValue, getUnitSymbol } from "./ActivityUtil";
 
 type ActivitiesProps = {
   navigation: any;
@@ -24,8 +24,10 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   const theme = useTheme();
   const activities = useStore((state: any) => state.activities);
   const setActivities = useStore((state: any) => state.setActivities);
-  const [menuVisible, setMenuVisible] = React.useState(false);
   const themeState = useStore((state: any) => state.theme);
+  const weekStart = useStore((state: any) => state.weekStart);
+  
+  const [menuVisible, setMenuVisible] = React.useState(false);
   const palette = themeState === "dark" ? darkPalette : lightPalette;
   const styles = getStyles(theme);
 
@@ -46,8 +48,10 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   }, [navigation, menuVisible, theme]);
 
   const renderActivity = ({ item, drag }: { item: ActivityType, drag: () => void }) => {
-    const value = item.stats.length > 0 && item.stats[0].length > 0 ? calcStatValue(item.stats[0][0], item) : null;
-    const unit = item.stats.length > 0 && item.stats[0].length > 0 ? ["n_days", "n_points"].includes(item.stats[0][0].value) ? "" : item.unit : "";
+    const value = item.stats.length > 0 && item.stats[0].length > 0 ? calcStatValue(item.stats[0][0], item, weekStart) : null;
+    const unitSymbol = item.stats.length > 0 && item.stats[0].length > 0 ? 
+      getUnitSymbol(item.stats[0][0], item.unit) : "";
+
     return (
       <TouchableOpacity
         style={[styles.activityCard, styles.activityCardSurface]}
@@ -61,7 +65,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
           </View>
           <View style={styles.activityDescriptionContainer}>
             <Text style={[styles.activityDescription, { color: palette[item.color] }]}>
-              {renderValueSummary(value, unit)}
+              {renderValueSummary(value, unitSymbol)}
             </Text>
           </View>
           <TouchableOpacity

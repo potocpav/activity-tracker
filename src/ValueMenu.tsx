@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text } from "react-native";
 import { Menu, Button } from 'react-native-paper';
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { allStatValues, StatValue } from "./StoreTypes";
+import { numericStatValues, StatValue } from "./StoreTypes";
 import { valueToLabel } from "./ActivityUtil";
 
 interface ValueMenuProps {
@@ -37,7 +37,7 @@ const ValueMenu: React.FC<ValueMenuProps> = ({
         </Button>
       }
     >
-      {(valueList ?? allStatValues).map((v: StatValue) => {
+      {(valueList ?? numericStatValues).map((v: StatValue) => {
         return (
           <Menu.Item
             key={v}

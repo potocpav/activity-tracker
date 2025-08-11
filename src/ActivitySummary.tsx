@@ -1,6 +1,6 @@
 import React from "react";
 import { SafeAreaView, ScrollView, StyleSheet, Text, View, Pressable } from "react-native";
-import { useTheme, FAB, Divider } from 'react-native-paper';
+import { useTheme, Divider } from 'react-native-paper';
 import useStore from "./Store";
 import { ActivityType, Stat, TagFilter } from "./StoreTypes";
 import { lightPalette, darkPalette } from "./Color";
@@ -122,12 +122,6 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
         <View style={{ height: 50 }} />
 
       </ScrollView>
-      <FAB
-        icon="plus"
-        style={styles.fab}
-        onPress={() => navigation.navigate("EditDataPoint", { activityName, newDataPoint: true, tags: positiveCalendarTags })}
-        color={theme.colors.surface}
-      />
       <EditStat
         navigation={navigation}
         activityName={activityName}

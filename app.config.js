@@ -20,7 +20,7 @@ const getUniqueIdentifier = () => {
     }
   
     if (IS_PREVIEW) {
-      return 'Activities (Preview)';
+      return 'Activities';
     }
   
     return 'Activities';

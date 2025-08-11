@@ -429,7 +429,7 @@ const useStore = create<State>()(
 
           const newStats = activity.stats.map((stat: Stat[]) => stat.map((s: Stat) => ({
             ...s,
-            subUnit: setSubUnitName(s.subUnit)
+            subUnit: setSubUnitName(activity.graph.subUnit)
           })));
 
           const newActivity = {

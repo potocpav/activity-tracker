@@ -92,22 +92,23 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
   }
 
   const bins = binTimeSeries(activity.graph.binSize, activity.dataPoints, activity.weekStart);
-  const binStats: { t: number, q0: number, q1: number, q2: number, q3: number, q4: number, count: number, sum: number, mean: number, zero: number, dailyMean: number }[] = bins.map((bin) => {
-    const values = bin.values.map((dp: DataPoint) => extractValue(dp, activity.graph.tagFilters, activity.graph.subUnit)).filter((v: number | null) => v !== null);
-    if (values.length === 0) {
-      return null
-    } else {
-      return {
-        ...quartiles(values),
-        count: values.length,
-        sum: values.reduce((a, b) => a + b, 0),
-        mean: values.reduce((a, b) => a + b, 0) / values.length,
-        zero: 0,
-        dailyMean: values.length / bin.nDays * 100,
-        t: bin.time
-      };
-    }
-  }).filter((b) => b !== null);
+  const binStats: { t: number, q0: number, q1: number, q2: number, q3: number, q4: number, count: number, sum: number, mean: number, zero: number, dailyMean: number }[]
+    = bins.map((bin) => {
+      const values = bin.values.map((dp: DataPoint) => extractValue(dp, activity.graph.tagFilters, activity.graph.subUnit)).filter((v: number | null) => v !== null);
+      if (values.length === 0) {
+        return null
+      } else {
+        return {
+          ...quartiles(values),
+          count: values.length,
+          sum: values.reduce((a, b) => a + b, 0),
+          mean: values.reduce((a, b) => a + b, 0) / values.length,
+          zero: 0,
+          dailyMean: values.length / bin.nDays * 100,
+          t: bin.time
+        };
+      }
+    }).filter((b) => b !== null);
 
   var yKeys: (keyof typeof binStats[number])[];
   if (activity.graph.graphType === "box") {
@@ -129,35 +130,35 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
       return (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <AntDesign name="barchart" size={24} color={theme.colors.onSurfaceVariant} />
-            <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Box</Text>
+          <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Box</Text>
         </View>
       );
     } else if (gType === "bar-count") {
       return (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <AntDesign name="barschart" size={24} color={theme.colors.onSurfaceVariant} />
-            <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Count</Text>
+          <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Count</Text>
         </View>
       );
     } else if (gType === "bar-daily-mean") {
       return (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <AntDesign name="barschart" size={24} color={theme.colors.onSurfaceVariant} />
-            <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Daily Mean</Text>
+          <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Daily Mean</Text>
         </View>
       );
     } else if (gType === "bar-sum") {
       return (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <AntDesign name="barschart" size={24} color={theme.colors.onSurfaceVariant} />
-            <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Sum</Text>
+          <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Sum</Text>
         </View>
       );
     } else if (gType === "line-mean") {
       return (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <AntDesign name="linechart" size={24} color={theme.colors.onSurfaceVariant} />
-            <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Mean</Text>
+          <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Mean</Text>
         </View>
       );
     }
@@ -265,15 +266,15 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
                   path={fill}
                   color={activityColor}
                 />
-             
-              <SkiaText
-                key={"label" + i}
-                x={vx - labelSize.width / 2}
-                color={activityColor}
-                y={vy - labelSize.height / 2}
-                text={label}
-                font={font}
-              ></SkiaText>
+
+                <SkiaText
+                  key={"label" + i}
+                  x={vx - labelSize.width / 2}
+                  color={activityColor}
+                  y={vy - labelSize.height / 2}
+                  text={label}
+                  font={font}
+                ></SkiaText>
               </Fragment>
             );
           }
@@ -295,7 +296,7 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
 
   return (
     <View style={{ flex: 1, padding: 10, marginVertical: 16, backgroundColor: theme.colors.background }}>
-       <View key="activityGraph" style={{ height: 300, width: '100%' }}>
+      <View key="activityGraph" style={{ height: 300, width: '100%' }}>
         <CartesianChart
           data={binStats}
           transformState={transformState}

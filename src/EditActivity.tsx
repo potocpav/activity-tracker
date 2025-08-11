@@ -21,6 +21,14 @@ type EditActivityProps = {
   route: any;
 };
 
+const isSupersetOf = (set1: Set<string>, set2: Set<string>) => {
+  for (const item of set2) {
+    if (!set1.has(item)) {
+      return false;
+    }
+  }
+  return true;
+};
 const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   const theme = useTheme();
   const { activityName } = route.params;
@@ -118,7 +126,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
           dataLossAlert(saveActivity);
         } else if (unitMode === 'multiple' && Array.isArray(activity.unit)) {
           let oldNames: any[] = multiUnitInput.map((u) => u.oldName).filter((n) => n !== undefined);
-          if (new Set(oldNames).isSupersetOf(new Set(activity.unit.map((u: SubUnit) => u.name)))) {
+          if (isSupersetOf(new Set(oldNames), new Set(activity.unit.map((u: SubUnit) => u.name)))) {
             saveActivity();
           } else {
             dataLossAlert(saveActivity);

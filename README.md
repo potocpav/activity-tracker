@@ -24,6 +24,7 @@ In order to make this app a full-featured management app for activity data, the 
 
 * [ ] Fix direct date input
 * [ ] Fix localization (date display)
+* [ ] Fix date in CSV, when imported into Google Sheets
 
 ### General Usability
 
