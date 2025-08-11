@@ -14,7 +14,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import { lightPalette, darkPalette } from './Color';
 import ColorPicker from './ColorPicker';
-import { defaultActivity } from "./ExampleData";
+import { defaultActivity } from "./DefaultActivity";
 
 type EditActivityProps = {
   navigation: any;

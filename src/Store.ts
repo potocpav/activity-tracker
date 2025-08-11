@@ -20,7 +20,7 @@ import {
   Device,
 } from "react-native-ble-plx";
 import { areUnitsEqual, CalendarProps, GraphProps, Stat, TagFilter, timeToDateList } from "./StoreTypes";
-import { defaultGraph, defaultCalendar, defaultStats, exampleActivities } from "./ExampleData";
+import { defaultGraph, defaultCalendar, defaultStats } from "./DefaultActivity";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ActivityType, Tag, DataPoint, SetTag, TagName, State } from "./StoreTypes";
@@ -102,7 +102,7 @@ const useStore = create<State>()(
       dataPoints: [],
 
       // Activities related state
-      activities: exampleActivities,
+      activities: [],
       theme: "light",
       blackBackground: false,
       weekStart: "monday",
@@ -226,10 +226,6 @@ const useStore = create<State>()(
           const subscription = startStreamingData(device, get().onDataUpdate);
           set({ subscription: subscription });
         });
-      },
-
-      resetActivities: () => {
-        set({ activities: exampleActivities });
       },
 
       setActivities: (activities: ActivityType[]) => {
