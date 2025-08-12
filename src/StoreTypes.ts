@@ -132,7 +132,7 @@ export type State = {
   dataPoints: { w: number, t: number }[];
 
   activities: ActivityType[];
-  theme: "light" | "dark";
+  theme: "system" | "light" | "dark";
   blackBackground: boolean;
   weekStart: WeekStart;
 

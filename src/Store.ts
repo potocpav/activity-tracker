@@ -19,8 +19,7 @@ import {
   Characteristic,
   Device,
 } from "react-native-ble-plx";
-import { areUnitsEqual, CalendarProps, GraphProps, Stat, TagFilter, timeToDateList } from "./StoreTypes";
-import { defaultGraph, defaultCalendar, defaultStats } from "./DefaultActivity";
+import { areUnitsEqual, CalendarProps, GraphProps, Stat, TagFilter } from "./StoreTypes";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ActivityType, Tag, DataPoint, SetTag, TagName, State } from "./StoreTypes";
@@ -29,37 +28,6 @@ import { findZeroSlice, dayCmp } from "./ActivityUtil";
 export const version = 10;
 
 export const migrate = (persisted: any, version: number) => {
-  if (version <= 0) {
-    persisted.goals.forEach((goal: any) => {
-      goal.color = 19;
-    });
-  }
-  if (version <= 1) {
-    persisted.goals.forEach((goal: any) => {
-      goal.tags.forEach((tag: Tag) => {
-        tag.color = 19;
-      });
-    });
-  }
-  if (version <= 2) {
-    persisted.goals.forEach((goal: any) => {
-      goal.stats = defaultStats(goal.unit);
-    });
-  }
-  if (version <= 3) {
-    persisted.goals.forEach((goal: any) => {
-      goal.dataPoints.forEach((dp: any) => {
-        dp.date = timeToDateList(dp.time);
-        delete dp.time;
-      });
-    });
-  }
-  if (version <= 4) {
-    persisted.goals.forEach((goal: any) => {
-      goal.calendar = defaultCalendar(goal.unit);
-      goal.graph = defaultGraph(goal.unit);
-    });
-  }
   if (version <= 5) {
     persisted.goals.forEach((goal: any) => {
       goal.graph.binSize = "day";
@@ -103,7 +71,7 @@ const useStore = create<State>()(
 
       // Activities related state
       activities: [],
-      theme: "light",
+      theme: "system",
       blackBackground: false,
       weekStart: "monday",
       requestPermissions: requestPermissions,
@@ -112,7 +80,7 @@ const useStore = create<State>()(
         set(state);
       },
 
-      setTheme: (theme: "light" | "dark") => {
+      setTheme: (theme: "system" | "light" | "dark") => {
         set({ theme: theme });
       },
 

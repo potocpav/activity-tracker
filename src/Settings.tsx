@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, ScrollView, ToastAndroid } from 'react-native';
 import { List, Divider, Switch, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import useStore, { version, partialize, migrate } from './Store';
 import { File, Paths } from 'expo-file-system/next';
 import * as DocumentPicker from 'expo-document-picker';
@@ -10,6 +11,7 @@ import * as Sharing from 'expo-sharing';
 
 const Settings = () => {
   const theme = useTheme();
+  const navigation = useNavigation();
   const themeState = useStore((state: any) => state.theme);
   const setThemeState = useStore((state: any) => state.setTheme);
   const blackBackground = useStore((state: any) => state.blackBackground);
@@ -18,6 +20,10 @@ const Settings = () => {
   const setWeekStart = useStore((state: any) => state.setWeekStart);
   const state = useStore((state: any) => state);
   const setState = useStore((state: any) => state.setState);
+
+  const openThemeSelection = () => {
+    (navigation as any).navigate('ThemeSelection', { currentTheme: themeState });
+  };
 
   const exportData = async () => {
     const data = JSON.stringify({ ...partialize(state), version: version }, null, 2);
@@ -68,16 +74,11 @@ const Settings = () => {
         <List.Section>
           <List.Subheader>Interface</List.Subheader>
           <List.Item
-            title="Dark Theme"
-            description="Use dark theme throughout the app"
-            onPress={() => setThemeState(themeState == 'dark' ? 'light' : 'dark')}
+            title="Theme"
+            description={`Current theme: ${themeState === 'system' ? 'System' : themeState === 'light' ? 'Light' : 'Dark'}`}
+            onPress={openThemeSelection}
             left={(props) => <List.Icon {...props} icon="theme-light-dark" />}
-            right={() => (
-              <Switch
-                value={themeState == 'dark'}
-                onValueChange={() => setThemeState(themeState == 'dark' ? 'light' : 'dark')}
-              />
-            )}
+            right={(props) => <List.Icon {...props} icon="chevron-right" />}
           />
           <List.Item
             title="Use pure black in dark theme"

@@ -14,6 +14,7 @@ import Settings from "./Settings";
 import DeviceModal from "./DeviceConnectionModal";
 import EditDataPoint from "./EditDataPoint";
 import EditActivity from "./EditActivity";
+import ThemeSelectionDialog from "./ThemeSelectionDialog";
 import {
   PaperProvider,
   MD3LightTheme,
@@ -148,6 +149,11 @@ const App = () => {
                   name="EditActivity"
                   component={EditActivity}
                   options={{ title: "Edit Activity" }}
+                />
+                <Stack.Screen
+                  name="ThemeSelection"
+                  component={ThemeSelectionDialog}
+                  options={{ title: "Select Theme" }}
                 />
               </Stack.Group>
             </Stack.Navigator>
