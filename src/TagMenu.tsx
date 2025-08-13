@@ -2,16 +2,16 @@ import React from "react";
 import { View, Text } from "react-native";
 import { Menu, Button } from 'react-native-paper';
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { Tag } from "./StoreTypes";
+import { Tag, ActivityType } from "./StoreTypes";
+import { getTheme, getThemePalette } from "./Theme";
 
 interface TagMenuProps {
+  activity: ActivityType;
   tags: { name: string; state: "yes" | "no" }[];
   onChange: (tags: { name: string; state: "yes" | "no" }[]) => void;
   menuVisible: boolean;
   setMenuVisible: (visible: boolean) => void;
   activityTags: Tag[];
-  palette: string[];
-  themeColors: any;
 }
 
 const TagMenu: React.FC<TagMenuProps> = ({
@@ -20,9 +20,9 @@ const TagMenu: React.FC<TagMenuProps> = ({
   menuVisible,
   setMenuVisible,
   activityTags,
-  palette,
-  themeColors,
 }) => {
+  const theme = getTheme();
+  const palette = getThemePalette();
   return (
     activityTags.length > 0 && (
       <Menu
@@ -31,11 +31,11 @@ const TagMenu: React.FC<TagMenuProps> = ({
         anchor={
           <Button compact={true} onPress={() => setMenuVisible(true)} style={{ 
             padding: 5,
-            backgroundColor: themeColors.surface,
+            backgroundColor: theme.colors.surface,
             }}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={{ marginRight: 10, color: themeColors.onSurfaceVariant }}>
-                <AntDesign name="tag" size={16} color={themeColors.onSurfaceVariant} />
+              <Text style={{ marginRight: 10, color: theme.colors.onSurfaceVariant }}>
+                <AntDesign name="tag" size={16} color={theme.colors.onSurfaceVariant} />
                 {(() => {
                   const yesTags = tags.filter(t => t.state === 'yes').map(t => t.name);
                   const noTags = tags.filter(t => t.state === 'no').map(t => t.name);
@@ -45,7 +45,7 @@ const TagMenu: React.FC<TagMenuProps> = ({
                     return '*';
                 })()}
               </Text>
-              <AntDesign name="down" size={16} color={themeColors.onSurfaceVariant} />
+              <AntDesign name="down" size={16} color={theme.colors.onSurfaceVariant} />
             </View>
           </Button>
         }

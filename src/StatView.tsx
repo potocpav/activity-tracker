@@ -6,16 +6,13 @@ import { renderValueSummary } from "./ActivityData";
 import { calcStatValue, getUnitSymbol } from "./ActivityUtil";
 import { lightPalette, darkPalette } from "./Color";
 import useStore from "./Store";
-
+import { getTheme } from "./Theme";
 
 const StatView = ({ stat, activity, onPress }: { stat: Stat, activity: ActivityType, onPress: () => void }) => {
-    const theme = useTheme();
+    const theme = getTheme(activity);
     const themeState = useStore((state: any) => state.theme);
     const weekStart = useStore((state: any) => state.weekStart);
-
-    const palette = themeState === "dark" ? darkPalette : lightPalette;
-    const activityColor = palette[activity.color];
-    const styles = getStyles(theme, activityColor);
+    const styles = getStyles(theme);
     
     const value = calcStatValue(stat, activity, weekStart);
     const unitSymbol = getUnitSymbol(stat, activity.unit);
@@ -38,7 +35,7 @@ const StatView = ({ stat, activity, onPress }: { stat: Stat, activity: ActivityT
     );
   };
 
-const getStyles = (theme: any, activityColor: string) => StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   statInnerContainer: {
     flex: 1,
     flexDirection: 'row',
@@ -53,7 +50,7 @@ const getStyles = (theme: any, activityColor: string) => StyleSheet.create({
   statValue: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: activityColor,
+    color: theme.colors.primary,
   },
 });
 

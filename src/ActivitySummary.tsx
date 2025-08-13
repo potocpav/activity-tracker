@@ -1,25 +1,23 @@
 import React from "react";
 import { SafeAreaView, ScrollView, StyleSheet, Text, View, Pressable } from "react-native";
-import { useTheme, Divider } from 'react-native-paper';
+import { Divider } from 'react-native-paper';
 import useStore from "./Store";
 import { ActivityType, Stat, TagFilter } from "./StoreTypes";
-import { lightPalette, darkPalette } from "./Color";
 import { renderTags } from "./ActivityUtil";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import ActivityGraph from "./ActivityGraph";
 import ActivityCalendar from "./ActivityCalendar";
 import StatView from "./StatView";
 import EditStat from "./EditStat";
+import { getTheme, getThemePalette } from "./Theme";
 
 const ActivitySummary = ({ navigation, activityName }: { navigation: any, activityName: string }) => {
-  const theme = useTheme();
   const activities = useStore((state: any) => state.activities);
   const activity = activities.find((a: ActivityType) => a.name === activityName);
-  const themeState = useStore((state: any) => state.theme);
-  const palette = themeState === "dark" ? darkPalette : lightPalette;
-  const activityColor = palette[activity.color];
+  const theme = getTheme(activity);
+  const palette = getThemePalette();
 
-  const styles = getStyles(theme, activityColor);
+  const styles = getStyles(theme);
 
   // Dialog state
   const [statDialogVisible, setStatDialogVisible] = React.useState(false);
@@ -119,8 +117,6 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
 
         <ActivityGraph activityName={activityName} />
 
-        <View style={{ height: 50 }} />
-
       </ScrollView>
       <EditStat
         navigation={navigation}
@@ -135,7 +131,7 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
   );
 };
 
-const getStyles = (theme: any, activityColor: string) => StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
@@ -162,13 +158,6 @@ const getStyles = (theme: any, activityColor: string) => StyleSheet.create({
     // justifyContent: 'space-between',
     alignItems: 'flex-start',
     backgroundColor: theme.colors.surface,
-  },
-  fab: {
-    position: 'absolute',
-    margin: 16,
-    right: 0,
-    bottom: 0,
-    backgroundColor: activityColor,
   },
 });
 

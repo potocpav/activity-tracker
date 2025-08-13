@@ -5,6 +5,7 @@ import { DataPoint, dateListToTime, normalizeDateList, DateList, ActivityType, T
 import { formatNumber, findZeroSlice, dayCmp, extractStatValue, extractValue } from "./ActivityUtil";
 import useStore from "./Store";
 import { lightPalette, darkPalette } from "./Color";
+import { getTheme } from "./Theme";
 
 type CalendarComponentProps = {
   navigation: any;
@@ -18,12 +19,10 @@ const MAX_WEEK_COUNT = 520;
 
 
 const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName }) => {
-  const theme = useTheme();
   const activities = useStore((state: any) => state.activities);
   const activity = activities.find((a: ActivityType) => a.name === activityName);
-  const themeState = useStore((state: any) => state.theme);
-  const palette = themeState === "dark" ? darkPalette : lightPalette;
-  const dayBackground = palette[activity.color];
+  const theme = getTheme(activity);
+  const dayBackground = theme.colors.primary;
   const firstWeekDay = useStore((state: any) => state.weekStart);
   const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);
   const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);

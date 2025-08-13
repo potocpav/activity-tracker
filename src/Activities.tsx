@@ -6,29 +6,27 @@ import {
   View,
   TouchableOpacity,
 } from "react-native";
-import { Menu, useTheme } from 'react-native-paper';
+import { Menu } from 'react-native-paper';
 import { Button } from 'react-native-paper';
 import useStore from "./Store";
 import { ActivityType } from "./StoreTypes";
 import DraggableFlatList from 'react-native-draggable-flatlist'
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { renderValueSummary } from "./ActivityData";
-import { lightPalette, darkPalette } from "./Color";
 import { calcStatValue, getUnitSymbol } from "./ActivityUtil";
-
+import { getTheme, getThemePalette } from "./Theme";
 type ActivitiesProps = {
   navigation: any;
 };
 
 const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
-  const theme = useTheme();
+  const theme = getTheme();
   const activities = useStore((state: any) => state.activities);
   const setActivities = useStore((state: any) => state.setActivities);
-  const themeState = useStore((state: any) => state.theme);
   const weekStart = useStore((state: any) => state.weekStart);
   
   const [menuVisible, setMenuVisible] = React.useState(false);
-  const palette = themeState === "dark" ? darkPalette : lightPalette;
+  const palette = getThemePalette();
   const styles = getStyles(theme);
 
   React.useEffect(() => {

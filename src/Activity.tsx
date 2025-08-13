@@ -13,7 +13,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import ActivitySummary from "./ActivitySummary";
 import { File, Paths } from "expo-file-system/next";
 import * as Sharing from 'expo-sharing';
-
+import { getTheme } from "./Theme";
 type ActivityProps = {
   navigation: any;
   route: any;
@@ -21,7 +21,6 @@ type ActivityProps = {
 
 
 const Activity: React.FC<ActivityProps> = ({ navigation, route }) => {
-  const theme = useTheme();
   const { activityName } = route.params;
   const activities = useStore((state: any) => state.activities);
   const activity = activities.find((a: ActivityType) => a.name === activityName);
@@ -55,7 +54,7 @@ const renderCsv = (data: (string | number | null)[][]) => {
 
 const ActivityInner: React.FC<any> = ({ activity, navigation }) => {
   const activityName = activity.name;
-  const theme = useTheme();
+  const theme = getTheme(activity);
   const [menuVisible, setMenuVisible] = React.useState(false);
   const deleteActivity = useStore((state: any) => state.deleteActivity);
 

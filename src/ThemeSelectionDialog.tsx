@@ -18,7 +18,7 @@ const ThemeSelectionDialog: React.FC = () => {
   return (
     <RadioButton.Group onValueChange={handleThemeSelect} value={themeState}>
       <View style={styles.radioContainer}>
-        {/* <RadioButton.Item label="System" value="system" style={styles.radioButton} /> */}
+        <RadioButton.Item label="System" value="system" style={styles.radioButton} />
         <RadioButton.Item label="Light" value="light" style={styles.radioButton} />
         <RadioButton.Item label="Dark" value="dark" style={styles.radioButton} />
       </View>

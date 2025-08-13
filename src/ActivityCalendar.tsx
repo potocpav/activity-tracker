@@ -14,6 +14,7 @@ import TagMenu from "./TagMenu";
 import Calendar from "./Calendar";
 import ValueMenu from "./ValueMenu";
 import SubUnitMenu from "./SubUnitMenu";
+import { getTheme, getThemePalette } from "./Theme";
 const locale = NativeModules.I18nManager.localeIdentifier;
 
 type ActivityCalendarProps = {
@@ -26,11 +27,10 @@ export const formatDate = (date: Date) => {
 };
 
 const ActivityCalendar = ({ navigation, activityName }: ActivityCalendarProps) => {
-  const theme = useTheme();
   const activities = useStore((state: any) => state.activities);
   const activity = activities.find((a: ActivityType) => a.name === activityName);
-  const themeState = useStore((state: any) => state.theme);
-  const palette = themeState === "dark" ? darkPalette : lightPalette;
+  const theme = getTheme(activity);
+  const palette = getThemePalette();
 
   const setActivityCalendar = useStore((state: any) => state.setActivityCalendar);
 
@@ -51,14 +51,13 @@ const ActivityCalendar = ({ navigation, activityName }: ActivityCalendarProps) =
         {activity.tags.length > 0 && (
           <TagMenu
             tags={activity.calendar.tagFilters}
+            activity={activity}
             onChange={(tags) => {
               setActivityCalendar(activityName, { ...activity.calendar, tagFilters: tags });
             }}
             menuVisible={tagsMenuVisible}
             setMenuVisible={setTagsMenuVisible}
             activityTags={activity.tags}
-            palette={palette}
-            themeColors={theme.colors}
           />
         )}
         {/* SubUnit menu */}
