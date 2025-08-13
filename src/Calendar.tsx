@@ -82,7 +82,9 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName }
                       backgroundColor: dayBackground,
                     } :
                     {
-                      backgroundColor: [0, 6].includes((weekStart.getDay() + dayIdx) % 7) ? theme.colors.surfaceDisabled : theme.colors.backdrop,
+                      backgroundColor: [0, 6].includes((weekStart.getDay() + dayIdx) % 7) 
+                      ? "#88888860" 
+                      : "#88888840",
                     }
                   ]}
                   key={dayIdx}

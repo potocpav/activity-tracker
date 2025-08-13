@@ -5,6 +5,7 @@ import {
   Text,
   View,
   Alert,
+  StatusBar,
 } from "react-native";
 import { useTheme, Menu, Button } from 'react-native-paper';
 import useStore from "./Store";
@@ -13,7 +14,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import ActivitySummary from "./ActivitySummary";
 import { File, Paths } from "expo-file-system/next";
 import * as Sharing from 'expo-sharing';
-import { getTheme } from "./Theme";
+import { getTheme, getThemeVariant } from "./Theme";
 type ActivityProps = {
   navigation: any;
   route: any;
@@ -55,6 +56,7 @@ const renderCsv = (data: (string | number | null)[][]) => {
 const ActivityInner: React.FC<any> = ({ activity, navigation }) => {
   const activityName = activity.name;
   const theme = getTheme(activity);
+  const themeVariant = getThemeVariant();
   const [menuVisible, setMenuVisible] = React.useState(false);
   const deleteActivity = useStore((state: any) => state.deleteActivity);
 
@@ -146,17 +148,21 @@ const ActivityInner: React.FC<any> = ({ activity, navigation }) => {
   React.useEffect(() => {
     navigation.setOptions({
       title: activity.name,
+      headerStyle: {
+        backgroundColor: themeVariant == 'light' ? theme.colors.primary : theme.colors.background,
+      },
+      headerTintColor: "#ffffff",
       headerRight: () => (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Button compact={true} 
             onPress={() => navigation.navigate("EditDataPoint", { activityName, newDataPoint: true })}>
-            <AntDesign name="plus" size={24} color={theme.colors.onSurface} />
+            <AntDesign name="plus" size={24} color={"#ffffff"} />
           </Button>
           <Button compact={true} onPress={() => navigation.navigate("EditActivity", { activityName })}>
-            <AntDesign name="edit" size={24} color={theme.colors.onSurface} />
+            <AntDesign name="edit" size={24} color={"#ffffff"} />
           </Button>
           <Button compact={true} onPress={() => setMenuVisible(!menuVisible)}>
-            <AntDesign name="bars" size={24} color={theme.colors.onSurface} />
+            <AntDesign name="bars" size={24} color={"#ffffff"} />
           </Button>
         </View>
       ),
@@ -165,6 +171,14 @@ const ActivityInner: React.FC<any> = ({ activity, navigation }) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surfaceVariant }]}>
+      <StatusBar 
+        animated={true}
+        barStyle={"light-content"} 
+          backgroundColor={
+            themeVariant == 'light' 
+            ? theme.colors.primary
+            : theme.colors.background
+            } />
       <View style={{ position: 'absolute', top: 10, right: 0 }}>
         <Menu
           visible={menuVisible}

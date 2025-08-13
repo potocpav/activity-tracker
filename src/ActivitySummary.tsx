@@ -28,10 +28,6 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
   const dialogStat = (statDialogStatRowId !== null && statDialogStatColId !== null) ?
     activity.stats[statDialogStatRowId][statDialogStatColId] : null;
 
-  const positiveCalendarTags = activity.calendar.tagFilters
-    .filter((t: TagFilter) => t.state === "yes")
-    .map((t: TagFilter) => t.name);
-
   if (!activity) {
     return <Text>Activity not found</Text>;
   }

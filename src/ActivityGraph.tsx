@@ -1,20 +1,18 @@
 import React, { Fragment, useState } from "react";
 import { View, Text, Platform } from "react-native";
-import { useTheme, Menu, Button } from 'react-native-paper';
+import { Menu, Button } from 'react-native-paper';
 import { getTransformComponents, Line, Scatter, setScale, setTranslate, useChartTransformState } from "victory-native";
 import { CartesianChart } from "victory-native";
 import { matchFont, Path, RoundedRect, Skia, Text as SkiaText } from "@shopify/react-native-skia";
 import useStore from "./Store";
-import { DataPoint, dateListToTime, ActivityType, GraphType, Tag, TagFilter } from "./StoreTypes";
+import { DataPoint, dateListToTime, ActivityType, GraphType } from "./StoreTypes";
 import { useAnimatedReaction, useSharedValue, withTiming } from "react-native-reanimated";
 import { binTime, binTimeSeries, BinSize, extractValue } from "./ActivityUtil";
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { lightPalette, darkPalette } from "./Color";
 import TagMenu from "./TagMenu";
 import SubUnitMenu from "./SubUnitMenu";
 import DropdownMenu from "./DropdownMenu";
 import { getTheme } from "./Theme";
-import { getThemePalette } from "./Theme";
 
 const fontFamily = Platform.select({ default: "sans-serif" });
 const font = matchFont({ fontFamily: fontFamily, fontSize: 10 });
@@ -57,7 +55,6 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
   const activities = useStore((state: any) => state.activities);
   const activity = activities.find((a: ActivityType) => a.name === activityName);
   const theme = getTheme(activity);
-  const palette = getThemePalette();
 
   if (!activity) {
     return <Text>Activity not found</Text>;

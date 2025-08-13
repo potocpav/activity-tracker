@@ -8,10 +8,9 @@ import {
   NativeModules,
   FlatList,
 } from "react-native";
-import { useTheme, DataTable, Button } from 'react-native-paper';
+import { DataTable, Button } from 'react-native-paper';
 import useStore from "./Store";
-import { DataPoint, ActivityType, Tag, TagFilter, Unit } from "./StoreTypes";
-import { darkPalette, lightPalette } from "./Color";
+import { DataPoint, ActivityType, Tag, Unit } from "./StoreTypes";
 import { dayCmp, findZeroSlice, renderTags } from "./ActivityUtil";
 import TagMenu from "./TagMenu";
 import AntDesign from '@expo/vector-icons/AntDesign';
@@ -27,14 +26,6 @@ type ActivityDataProps = {
 
 export const formatDate = (date: Date) => {
   return date.toLocaleDateString(locale, { year: "numeric", month: "short", day: "numeric" });
-  // return date.toUTCString();
-};
-
-const formatTime = (date: Date) => {
-  return date.toLocaleTimeString(locale, {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 };
 
 export const renderValueSummary = (value: any, unit: Unit) => {

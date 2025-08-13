@@ -55,6 +55,7 @@ export const partialize = (state: State) => ({
   activities: state.activities,
   theme: state.theme,
   blackBackground: state.blackBackground,
+  weekStart: state.weekStart,
 });
 
 const useStore = create<State>()(

@@ -32,14 +32,6 @@ export const getTheme = (activity?: ActivityType) : MD3Theme => {
       },
     };
   } else {
-    const theme = useTheme();
-    // the following is for testing
-    return {
-      ...theme,
-      colors: {
-        ...theme.colors,
-        primaryContainer: "#ff8080",
-      },
-    };
+    return useTheme();
   }
 };

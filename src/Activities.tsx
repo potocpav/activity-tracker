@@ -15,6 +15,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import { renderValueSummary } from "./ActivityData";
 import { calcStatValue, getUnitSymbol } from "./ActivityUtil";
 import { getTheme, getThemePalette } from "./Theme";
+
 type ActivitiesProps = {
   navigation: any;
 };

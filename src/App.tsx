@@ -41,7 +41,19 @@ const MD3BlackTheme = {
 };
 
 const App = () => {
+  const themeVariant = getThemeVariant();
+  const blackBackground = useStore((state: any) => state.blackBackground);
+
+  return (
+    <PaperProvider theme={themeVariant == 'light' ? MD3LightTheme : blackBackground ? MD3BlackTheme : MD3DarkTheme}>
+      <SubApp />
+    </PaperProvider>
+  );
+};
+
+const SubApp = () => {
   const Stack = createNativeStackNavigator(); 
+  const theme = getTheme();
   const themeVariant = getThemeVariant();
   const blackBackground = useStore((state: any) => state.blackBackground);
 
@@ -96,90 +108,73 @@ const App = () => {
   };
 
   return (
-    <PaperProvider theme={themeVariant == 'light' ? MD3LightTheme : blackBackground ? MD3BlackTheme : MD3DarkTheme}>
-      <GestureHandlerRootView>
-        <StatusBar barStyle={
-          themeVariant == 'light' 
-          ? "dark-content" 
-          : "light-content"
-          } backgroundColor={
-            themeVariant == 'light' 
-            ? "#f2f2f2" 
-            : blackBackground 
-            ? "#000000" 
-            : "#121212"
-            } />
-        <SafeAreaView style={[styles.container, { backgroundColor: themeVariant == 'light' ? "#f2f2f2" : blackBackground ? "#000000" : "#121212" }]}>
-          <NavigationContainer theme={navigationTheme}>
-            <Stack.Navigator
-              screenOptions={themeVariant == 'dark' && blackBackground ? {
-                headerStyle: {
-                  backgroundColor: "#000000",
-                },
-                // headerTintColor: theme == 'light' ? "#000000" : "#ffffff",
-              } : {
-                // headerStyle: {
-                //   backgroundColor: "#ff0000",
-                // },
-                // headerTintColor: "#ffffff",
-              }
-            }
-            >
-              <Stack.Group>
-                <Stack.Screen
-                  name="Activities"
-                  component={Activities}
-                  options={{ title: "Activities" }}
-                />
-                <Stack.Screen
-                  name="Live View"
-                  component={LiveView}
-                  options={{ title: "Live View" }}
-                />
-                <Stack.Screen
-                  name="Activity"
-                  component={Activity}
-                />
-                <Stack.Screen
-                  name="ActivityData"
-                  component={ActivityData}
-                  options={{ title: "Data Points" }}
-                />
-                <Stack.Screen
-                  name="Settings"
-                  component={Settings}
-                  options={{ title: "Settings" }}
-                />
-              </Stack.Group>
-              <Stack.Group screenOptions={{ presentation: 'modal' }}>
-                <Stack.Screen
-                  name="ConnectDevice"
-                  component={DeviceModal}
-                  options={{ title: "Connect to a Device" }}
-                />
-                <Stack.Screen
-                  name="EditDataPoint"
-                  component={EditDataPoint}
-                  options={{ title: "Edit Data Point" }}
-                />
-                <Stack.Screen
-                  name="EditActivity"
-                  component={EditActivity}
-                  options={{ title: "Edit Activity" }}
-                />
-                <Stack.Screen
-                  name="ThemeSelection"
-                  component={ThemeSelectionDialog}
-                  options={{ title: "Select Theme" }}
-                />
-              </Stack.Group>
-            </Stack.Navigator>
-          </NavigationContainer>
-        </SafeAreaView>
-      </GestureHandlerRootView>
-    </PaperProvider>
+    <GestureHandlerRootView>
+    <StatusBar barStyle={themeVariant == 'light' ? "dark-content" : "light-content"}
+      backgroundColor={theme.colors.surface} />
+    <SafeAreaView style={[styles.container]}>
+      <NavigationContainer theme={navigationTheme}>
+        <Stack.Navigator
+          screenOptions={themeVariant == 'dark' && blackBackground ? {
+            headerStyle: {
+              backgroundColor: theme.colors.surface,
+            },
+          } : {}
+        }
+        >
+          <Stack.Group>
+            <Stack.Screen
+              name="Activities"
+              component={Activities}
+              options={{ title: "Activities" }}
+            />
+            <Stack.Screen
+              name="Live View"
+              component={LiveView}
+              options={{ title: "Live View" }}
+            />
+            <Stack.Screen
+              name="Activity"
+              component={Activity}
+            />
+            <Stack.Screen
+              name="ActivityData"
+              component={ActivityData}
+              options={{ title: "Data Points" }}
+            />
+            <Stack.Screen
+              name="Settings"
+              component={Settings}
+              options={{ title: "Settings" }}
+            />
+          </Stack.Group>
+          <Stack.Group screenOptions={{ presentation: 'modal' }}>
+            <Stack.Screen
+              name="ConnectDevice"
+              component={DeviceModal}
+              options={{ title: "Connect to a Device" }}
+            />
+            <Stack.Screen
+              name="EditDataPoint"
+              component={EditDataPoint}
+              options={{ title: "Edit Data Point" }}
+            />
+            <Stack.Screen
+              name="EditActivity"
+              component={EditActivity}
+              options={{ title: "Edit Activity" }}
+            />
+            <Stack.Screen
+              name="ThemeSelection"
+              component={ThemeSelectionDialog}
+              options={{ title: "Select Theme" }}
+            />
+          </Stack.Group>
+        </Stack.Navigator>
+      </NavigationContainer>
+    </SafeAreaView>
+  </GestureHandlerRootView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {

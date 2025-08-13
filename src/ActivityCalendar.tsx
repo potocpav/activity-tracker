@@ -6,10 +6,8 @@ import {
   View,
   NativeModules,
 } from "react-native";
-import { useTheme } from 'react-native-paper';
 import useStore from "./Store";
 import { ActivityType, StatValue } from "./StoreTypes";
-import { darkPalette, lightPalette } from "./Color";
 import TagMenu from "./TagMenu";
 import Calendar from "./Calendar";
 import ValueMenu from "./ValueMenu";
@@ -30,7 +28,6 @@ const ActivityCalendar = ({ navigation, activityName }: ActivityCalendarProps) =
   const activities = useStore((state: any) => state.activities);
   const activity = activities.find((a: ActivityType) => a.name === activityName);
   const theme = getTheme(activity);
-  const palette = getThemePalette();
 
   const setActivityCalendar = useStore((state: any) => state.setActivityCalendar);
 
