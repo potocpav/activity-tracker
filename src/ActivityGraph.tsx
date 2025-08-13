@@ -13,6 +13,8 @@ import { lightPalette, darkPalette } from "./Color";
 import TagMenu from "./TagMenu";
 import SubUnitMenu from "./SubUnitMenu";
 import DropdownMenu from "./DropdownMenu";
+import { getTheme } from "./Theme";
+import { getThemePalette } from "./Theme";
 
 const fontFamily = Platform.select({ default: "sans-serif" });
 const font = matchFont({ fontFamily: fontFamily, fontSize: 10 });
@@ -52,12 +54,10 @@ const quartiles = (values: number[]) => {
 };
 
 const ActivityGraph = ({ activityName }: { activityName: string }) => {
-  const theme = useTheme();
   const activities = useStore((state: any) => state.activities);
   const activity = activities.find((a: ActivityType) => a.name === activityName);
-  const themeState = useStore((state: any) => state.theme);
-  const palette = themeState === "dark" ? darkPalette : lightPalette;
-  const activityColor = palette[activity.color];
+  const theme = getTheme(activity);
+  const palette = getThemePalette();
 
   if (!activity) {
     return <Text>Activity not found</Text>;
@@ -264,13 +264,13 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
                 <Path
                   style="fill"
                   path={fill}
-                  color={activityColor}
+                  color={theme.colors.primary}
                 />
 
                 <SkiaText
                   key={"label" + i}
                   x={vx - labelSize.width / 2}
-                  color={activityColor}
+                  color={theme.colors.onSurface}
                   y={vy - labelSize.height / 2}
                   text={label}
                   font={font}
@@ -381,7 +381,7 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
                             y={q1y}
                             width={2 * w}
                             height={q3y - q1y}
-                            color={activityColor}
+                            color={theme.colors.primary}
                             r={w}
                           />
                           <RoundedRect
@@ -389,7 +389,7 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
                             y={q0y}
                             width={2 * ws}
                             height={q4y - q0y}
-                            color={activityColor}
+                            color={theme.colors.primary}
                             r={ws}
                           />
                           <RoundedRect
@@ -418,7 +418,7 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
                 <>
                   <Line
                     points={points.mean}
-                    color={activityColor}
+                    color={theme.colors.primary}
                     strokeWidth={4}
                   />
                   <Scatter
@@ -433,7 +433,7 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
                     shape="circle"
                     radius={5}
                     style="fill"
-                    color={activityColor}
+                    color={theme.colors.primary}
                   />
                 </>
               );
@@ -470,8 +470,7 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
           menuVisible={tagsMenuVisible}
           setMenuVisible={setTagsMenuVisible}
           activityTags={activity.tags}
-          palette={palette}
-          themeColors={theme.colors}
+          activity={activity}
         />
         {/* Graph type menu */}
         <Menu

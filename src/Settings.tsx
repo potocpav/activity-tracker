@@ -1,19 +1,19 @@
 import React from 'react';
 import { StyleSheet, ScrollView, ToastAndroid } from 'react-native';
-import { List, Divider, Switch, useTheme } from 'react-native-paper';
+import { List, Divider, Switch } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import useStore, { version, partialize, migrate } from './Store';
 import { File, Paths } from 'expo-file-system/next';
 import * as DocumentPicker from 'expo-document-picker';
 import * as Sharing from 'expo-sharing';
+import { getTheme } from './Theme';
 
 
 const Settings = () => {
-  const theme = useTheme();
+  const theme = getTheme();
   const navigation = useNavigation();
   const themeState = useStore((state: any) => state.theme);
-  const setThemeState = useStore((state: any) => state.setTheme);
   const blackBackground = useStore((state: any) => state.blackBackground);
   const setBlackBackground = useStore((state: any) => state.setBlackBackground);
   const weekStart = useStore((state: any) => state.weekStart);

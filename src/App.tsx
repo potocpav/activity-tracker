@@ -23,6 +23,7 @@ import {
 } from 'react-native-paper';
 import ActivityData from "./ActivityData";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { getTheme, getThemeVariant } from "./Theme";
 
 const { LightTheme, DarkTheme: PaperDarkTheme } = adaptNavigationTheme({
   reactNavigationLight: DefaultTheme,
@@ -40,12 +41,12 @@ const MD3BlackTheme = {
 };
 
 const App = () => {
-  const Stack = createNativeStackNavigator();
-  const theme = useStore((state: any) => state.theme);
+  const Stack = createNativeStackNavigator(); 
+  const themeVariant = getThemeVariant();
   const blackBackground = useStore((state: any) => state.blackBackground);
 
   // Add missing fonts property to fix the TypeScript error
-  const navigationTheme = theme == 'light' ? {
+  const navigationTheme = themeVariant == 'light' ? {
     ...LightTheme,
     fonts: {
       regular: {
@@ -95,18 +96,34 @@ const App = () => {
   };
 
   return (
-    <PaperProvider theme={theme == 'light' ? MD3LightTheme : blackBackground ? MD3BlackTheme : MD3DarkTheme}>
+    <PaperProvider theme={themeVariant == 'light' ? MD3LightTheme : blackBackground ? MD3BlackTheme : MD3DarkTheme}>
       <GestureHandlerRootView>
-        <StatusBar barStyle={theme == 'light' ? "dark-content" : "light-content"} backgroundColor={theme == 'light' ? "#f2f2f2" : blackBackground ? "#000000" : "#121212"} />
-        <SafeAreaView style={[styles.container, { backgroundColor: theme == 'light' ? "#f2f2f2" : blackBackground ? "#000000" : "#121212" }]}>
+        <StatusBar barStyle={
+          themeVariant == 'light' 
+          ? "dark-content" 
+          : "light-content"
+          } backgroundColor={
+            themeVariant == 'light' 
+            ? "#f2f2f2" 
+            : blackBackground 
+            ? "#000000" 
+            : "#121212"
+            } />
+        <SafeAreaView style={[styles.container, { backgroundColor: themeVariant == 'light' ? "#f2f2f2" : blackBackground ? "#000000" : "#121212" }]}>
           <NavigationContainer theme={navigationTheme}>
             <Stack.Navigator
-              screenOptions={theme == 'dark' && blackBackground ? {
+              screenOptions={themeVariant == 'dark' && blackBackground ? {
                 headerStyle: {
                   backgroundColor: "#000000",
                 },
                 // headerTintColor: theme == 'light' ? "#000000" : "#ffffff",
-              } : {}}
+              } : {
+                // headerStyle: {
+                //   backgroundColor: "#ff0000",
+                // },
+                // headerTintColor: "#ffffff",
+              }
+            }
             >
               <Stack.Group>
                 <Stack.Screen

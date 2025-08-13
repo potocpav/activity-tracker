@@ -16,6 +16,8 @@ import { dayCmp, findZeroSlice, renderTags } from "./ActivityUtil";
 import TagMenu from "./TagMenu";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import DraggableFlatList from "react-native-draggable-flatlist";
+import { getThemePalette } from "./Theme";
+import { getTheme } from "./Theme";
 const locale = NativeModules.I18nManager.localeIdentifier;
 
 type ActivityDataProps = {
@@ -84,13 +86,11 @@ export const renderValue = (value: any, unit: Unit) => {
 const ITEM_HEIGHT = 50;
 
 const ActivityData = ({ navigation, route }: ActivityDataProps) => {
-  const theme = useTheme();
   const { activityName, day } = route.params;
   const activities = useStore((state: any) => state.activities);
   const activity = activities.find((a: ActivityType) => a.name === activityName);
-  const themeState = useStore((state: any) => state.theme);
-  const palette = themeState === "dark" ? darkPalette : lightPalette;
-  const activityColor = palette[activity.color];
+  const theme = getTheme(activity);
+  const palette = getThemePalette();
 
   // Tag filter state
   const [tags, setTags] = useState<{ name: string; state: "yes" | "no" }[]>([]);
@@ -141,13 +141,12 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
       {activity.tags.length > 0 && (
         <View style={{ padding: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start' }}>
           <TagMenu
+            activity={activity}
             tags={tags}
             onChange={(tags) => setTags(tags)}
             menuVisible={tagsMenuVisible}
             setMenuVisible={setTagsMenuVisible}
             activityTags={activity.tags}
-            palette={palette}
-            themeColors={theme.colors}
           />
         </View>
       )}

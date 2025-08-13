@@ -16,7 +16,7 @@ import { CalendarDate } from "react-native-paper-dates/lib/typescript/Date/Calen
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { cmpDateList } from "./ActivityUtil";
-import { darkPalette, lightPalette } from "./Color";
+import { getTheme, getThemePalette } from "./Theme";
 
 type EditDataPointProps = {
   navigation: any;
@@ -26,12 +26,11 @@ type EditDataPointProps = {
 const locale = NativeModules.I18nManager.localeIdentifier;
 
 const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
-  const theme = useTheme();
   const { activityName, dataPointIndex, newDataPoint, newDataPointDate, tags } = route.params;
   const activities = useStore((state: any) => state.activities);
   const activity = activities.find((a: ActivityType) => a.name === activityName);
-  const themeState = useStore((state: any) => state.theme);
-  const palette = themeState === "dark" ? darkPalette : lightPalette;
+  const theme = getTheme(activity);
+  const palette = getThemePalette();
 
   const dataPoint : DataPoint = dataPointIndex !== undefined ? activity?.dataPoints[dataPointIndex] : {
     date: dateToDateList(newDataPointDate ? new Date(newDataPointDate[0], newDataPointDate[1], newDataPointDate[2]) : new Date()),

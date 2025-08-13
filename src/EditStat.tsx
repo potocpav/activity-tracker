@@ -1,28 +1,25 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { useTheme, Dialog, Button, TextInput } from 'react-native-paper';
+import { Dialog, Button, TextInput } from 'react-native-paper';
 import useStore from "./Store";
 import { ActivityType, Stat, StatPeriod, StatValue, TagFilter, allStatPeriods, unaryStatValues, numericStatValues } from "./StoreTypes";
-import { lightPalette, darkPalette } from "./Color";
 import { valueToLabel, periodToLabel } from "./ActivityUtil";
 import TagMenu from "./TagMenu";
 import SubUnitMenu from "./SubUnitMenu";
 import DropdownMenu from "./DropdownMenu";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import StatView from "./StatView";
+import { getTheme, getThemePalette } from "./Theme";
 
-
-export const EditStat = ({ navigation, activityName, statRowId, statColId, stat, visible, onDismiss }: { navigation: any, activityName: string, statRowId: number | null, statColId: number | null, stat: Stat | null, visible: boolean, onDismiss: () => void }) => {
-  const theme = useTheme();
+export const EditStat = ({ activityName, statRowId, statColId, stat, visible, onDismiss }: { navigation: any, activityName: string, statRowId: number | null, statColId: number | null, stat: Stat | null, visible: boolean, onDismiss: () => void }) => {
   const activities = useStore((state: any) => state.activities);
   const activity = activities.find((a: ActivityType) => a.name === activityName);
-  const themeState = useStore((state: any) => state.theme);
-  const palette = themeState === "dark" ? darkPalette : lightPalette;
+  const theme = getTheme(activity);
+  const palette = getThemePalette();
   const addActivityStat = useStore((state: any) => state.addActivityStat);
   const setActivityStat = useStore((state: any) => state.setActivityStat);
   const deleteActivityStat = useStore((state: any) => state.deleteActivityStat);
 
-  const styles = getStyles(theme);
   const subUnitNames = Array.isArray(activity.unit) ? activity.unit.map((u: any) => u.name) : null;
 
   // Initialize state based on the provided stat or defaults
@@ -160,8 +157,7 @@ export const EditStat = ({ navigation, activityName, statRowId, statColId, stat,
             menuVisible={tagsMenuVisible}
             setMenuVisible={setTagsMenuVisible}
             activityTags={activity.tags}
-            palette={palette}
-            themeColors={theme.colors}
+            activity={activity}
           />
         )}
 
@@ -182,14 +178,5 @@ export const EditStat = ({ navigation, activityName, statRowId, statColId, stat,
     </Dialog>
   );
 };
-
-const getStyles = (theme: any) => StyleSheet.create({
-  menusRow: {
-    flex: 1,
-    flexDirection: 'column',
-    alignItems: 'center',
-    marginBottom: 5,
-  },
-});
 
 export default EditStat; 

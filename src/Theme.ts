@@ -4,6 +4,7 @@ import { darkPalette, lightPalette } from './Color';
 import { ActivityType } from './StoreTypes';
 import { useColorScheme } from 'react-native';
 import { MD3Theme } from 'react-native-paper/lib/typescript/types';
+
 export const getThemeVariant = () : "dark" | "light" => {
   const themeSettings = useStore((state: any) => state.theme);
   const systemScheme = useColorScheme();
@@ -23,9 +24,22 @@ export const getTheme = (activity?: ActivityType) : MD3Theme => {
   const palette = getThemePalette();
   if (activity) {
     const theme = useTheme();
-    theme.colors.primary = palette[activity.color];
-    return theme;
+    return {
+      ...theme,
+      colors: {
+        ...theme.colors,
+        primary: palette[activity.color],
+      },
+    };
   } else {
-    return useTheme();
+    const theme = useTheme();
+    // the following is for testing
+    return {
+      ...theme,
+      colors: {
+        ...theme.colors,
+        primaryContainer: "#ff8080",
+      },
+    };
   }
 };

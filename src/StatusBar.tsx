@@ -5,16 +5,14 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useTheme } from 'react-native-paper';
 import useStore from "./Store";
-
+import { getTheme } from "./Theme";
 type StatusBarProps = {
   navigation: any;
 };
 
-
 const StatusBar: React.FC<StatusBarProps> = ({ navigation }) => {
-  const theme = useTheme();
+  const theme = getTheme();
   const connectedDevice = useStore((state: any) => state.connectedDevice);
   const isConnected = useStore((state: any) => state.isConnected);
   const requestPermissions = useStore((state: any) => state.requestPermissions);

@@ -7,11 +7,11 @@ import {
   View,
   Platform,
 } from "react-native";
-import { useTheme } from 'react-native-paper';
 import StatusBar from "./StatusBar";
 import useStore from "./Store";
 import { CartesianChart, Line } from "victory-native";
 import { matchFont } from "@shopify/react-native-skia";
+import { getTheme } from "./Theme";
 
 const fontFamily = Platform.select({ default: "sans-serif" });
 const font = matchFont({ fontFamily: fontFamily });
@@ -22,7 +22,7 @@ type LiveViewProps = {
 };
 
 const LiveView: React.FC<LiveViewProps> = ({ navigation }) => {
-  const theme = useTheme();
+  const theme = getTheme();
   const isConnected = useStore((state: any) => state.isConnected);
   const dataPoints: { w: number, t: number }[] = useStore((state: any) => state.dataPoints);
   const startMeasurement = useStore((state: any) => state.startMeasurement);

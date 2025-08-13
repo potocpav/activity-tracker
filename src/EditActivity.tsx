@@ -6,16 +6,15 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
-import { Dialog, Portal, SegmentedButtons, useTheme } from 'react-native-paper';
+import { Dialog, Portal, SegmentedButtons } from 'react-native-paper';
 import { ActivityType, SetTag, SubUnit, Tag } from "./StoreTypes";
 import { TextInput, Button, Chip } from "react-native-paper";
 import useStore from "./Store";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import DraggableFlatList from 'react-native-draggable-flatlist';
-import { lightPalette, darkPalette } from './Color';
 import ColorPicker from './ColorPicker';
 import { defaultActivity } from "./DefaultActivity";
-
+import { getTheme, getThemePalette } from "./Theme";
 type EditActivityProps = {
   navigation: any;
   route: any;
@@ -30,11 +29,10 @@ const isSupersetOf = (set1: Set<string>, set2: Set<string>) => {
   return true;
 };
 const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
-  const theme = useTheme();
   const { activityName } = route.params;
   const activities = useStore((state: any) => state.activities);
-  const themeState = useStore((state: any) => state.theme);
   const activity = activities.find((a: ActivityType) => a.name === activityName) ?? defaultActivity;
+  const theme = getTheme(activity);
   const updateActivity = useStore((state: any) => state.updateActivity);
   const setTags = useStore((state: any) => state.setTags);
   const setUnit = useStore((state: any) => state.setUnit);
@@ -66,7 +64,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   const [colorDialogVisible, setColorDialogVisible] = useState(false);
   const [selectedColor, setSelectedColor] = useState(activity.color);
 
-  const palette = themeState === "dark" ? darkPalette : lightPalette;
+  const palette = getThemePalette();
 
   if (!activity) {
     return <Text>Activity not found</Text>;

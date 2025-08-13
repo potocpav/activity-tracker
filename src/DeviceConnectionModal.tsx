@@ -10,7 +10,7 @@ import {
 import { useTheme } from 'react-native-paper';
 import { Device } from "react-native-ble-plx";
 import useStore from "./Store";
-
+import { getTheme } from "./Theme";
 
 
 type DeviceModalProps = {
@@ -18,7 +18,7 @@ type DeviceModalProps = {
 };
 
 const DeviceModal: FC<DeviceModalProps> = ({ navigation }) => {
-  const theme = useTheme();
+  const theme = getTheme();
   const allDevices = useStore((state: any) => state.allDevices);
   const connectToDevice = useStore((state: any) => state.connectToDevice);
 
@@ -64,7 +64,7 @@ type DeviceModalListItemProps = {
 
 
 const DeviceModalListItem: FC<DeviceModalListItemProps> = (props) => {
-  const theme = useTheme();
+  const theme = getTheme();
   const { item, connectToDevice, navigation } = props;
 
   const connectAndCloseModal = useCallback(() => {
