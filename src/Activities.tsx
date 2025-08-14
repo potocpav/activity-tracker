@@ -31,7 +31,6 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   const styles = getStyles(theme);
 
   const dimensions = Dimensions.get('window');
-  console.log(dimensions);
 
   React.useEffect(() => {
     navigation.setOptions({
@@ -68,13 +67,23 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
       >
         <View style={styles.activityRow}>
           <View style={styles.activityTitleContainer}>
-            <Text style={[styles.activityTitle, { color: palette[item.color] }]}>{item.name}</Text>
+            <Text numberOfLines={1} style={[styles.activityTitle, { color: palette[item.color] }]}>{item.name}</Text>
           </View>
-          <View style={styles.activityDescriptionContainer}>
-            <Text style={[styles.activityDescription, { color: palette[item.color] }]}>
+          <View style={styles.activityValueContainer}>
+            <Text numberOfLines={1} adjustsFontSizeToFit style={[styles.activityValue, { color: palette[item.color] }]}>
               {renderValueSummary(value, unitSymbol)}
             </Text>
           </View>
+          {/* <View style={styles.activityValueContainer}>
+            <Text numberOfLines={1} adjustsFontSizeToFit style={[styles.activityValue, { color: palette[item.color] }]}>
+              {renderValueSummary(value, unitSymbol)}
+            </Text>
+          </View>
+          <View style={styles.activityValueContainer}>
+            <Text numberOfLines={1} adjustsFontSizeToFit style={[styles.activityValue, { color: palette[item.color] }]}>
+              {renderValueSummary(value, unitSymbol)}
+            </Text>
+          </View> */}
           <TouchableOpacity
             onPress={() => { navigation.navigate('EditDataPoint', { activityName: item.name, dataPointName: null, newDataPoint: true }); }}
             style={styles.addDataPointButton}
@@ -123,25 +132,34 @@ const getStyles = (theme: any) => StyleSheet.create({
   },
   activityRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: 4,
+    // alignItems: 'center',
+    // justifyContent: 'space-between',
   },
   activityTitleContainer: {
+    // flex: 6,
     flex: 1,
+    // width: '50%',
+    // backgroundColor: 'blue',
     paddingLeft: 4,
+    justifyContent: 'center',
   },
-  activityDescriptionContainer: {
-    marginTop: 4,
+  activityValueContainer: {
+    // flex: 1,
+    width: '25%',
+    // backgroundColor: 'red',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   addDataPointButton: {
-    marginLeft: 12,
     padding: 8,
+    flexShrink: 0,
   },
   activityTitle: {
     fontSize: 16,
     width: '60%',
   },
-  activityDescription: {
+  activityValue: {
     fontSize: 16,
   },
   fab: {
