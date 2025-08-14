@@ -5,8 +5,9 @@ import {
   Text,
   View,
   TouchableOpacity,
+  Pressable,
+  Dimensions,
 } from "react-native";
-import { Menu } from 'react-native-paper';
 import { Button } from 'react-native-paper';
 import useStore from "./Store";
 import { ActivityType } from "./StoreTypes";
@@ -26,9 +27,11 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   const setActivities = useStore((state: any) => state.setActivities);
   const weekStart = useStore((state: any) => state.weekStart);
   
-  const [menuVisible, setMenuVisible] = React.useState(false);
   const palette = getThemePalette();
   const styles = getStyles(theme);
+
+  const dimensions = Dimensions.get('window');
+  console.log(dimensions);
 
   React.useEffect(() => {
     navigation.setOptions({
@@ -38,13 +41,13 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
           <Button compact={true} onPress={() => navigation.navigate('EditActivity', { activityName: null })}>
             <AntDesign name="plus" size={24} color={theme.colors.onSurface} />
           </Button>
-          <Button compact={true} onPress={() => setMenuVisible(!menuVisible)}>
-            <AntDesign name="bars" size={24} color={theme.colors.onSurface} />
+          <Button compact={true} onPress={() => navigation.navigate('Settings')}>
+            <AntDesign name="setting" size={24} color={theme.colors.onSurface} />
           </Button>
         </View>
       ),
     });
-  }, [navigation, menuVisible, theme]);
+  }, [navigation, theme]);
 
   const renderActivity = ({ item, drag }: { item: ActivityType, drag: () => void }) => {
     const value = item.stats.length > 0 && item.stats[0].length > 0 ? calcStatValue(item.stats[0][0], item, weekStart) : null;
@@ -52,11 +55,16 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
       getUnitSymbol(item.stats[0][0], item.unit) : "";
 
     return (
-      <TouchableOpacity
-        style={[styles.activityCard, styles.activityCardSurface]}
+      <Pressable
+        // style={[styles.activityCard, styles.activityCardSurface]}
         onPress={() => navigation.navigate('Activity', { activityName: item.name })}
         onLongPress={drag}
-        activeOpacity={0.7}
+        style={({ pressed }) => [
+          styles.activityCard,
+          {
+            opacity: pressed ? 0.5 : 1,
+          },
+        ]}
       >
         <View style={styles.activityRow}>
           <View style={styles.activityTitleContainer}>
@@ -74,22 +82,12 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
             <AntDesign name="plus" size={24} color={palette[item.color]} />
           </TouchableOpacity>
         </View>
-      </TouchableOpacity>
+      </Pressable>
     );
   };
 
   return (
-    <SafeAreaView style={[styles.container, styles.background]}>
-      <View style={styles.menuContainer}>
-        <Menu
-          visible={menuVisible}
-          onDismiss={() => setMenuVisible(false)}
-          anchor={<View style={styles.menuAnchor} />}
-        >
-          {/* <Menu.Item onPress={() => { setMenuVisible(false); navigation.navigate('Live View') }} title="Tindeq Live View" /> */} 
-          <Menu.Item onPress={() => { setMenuVisible(false); navigation.navigate('Settings') }} title="Settings" />
-        </Menu>
-      </View>
+    <SafeAreaView style={[styles.container]}>
       <DraggableFlatList
         data={activities}
         onDragEnd={({ data }) => setActivities(data)}
@@ -102,20 +100,26 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
 };
 
 const getStyles = (theme: any) => StyleSheet.create({
+  menuContainer: {
+    position: 'absolute',
+    top: 10,
+    right: 0,
+  },
   container: {
     flex: 1,
-  },
-  background: {
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.elevation.level1,
+    paddingTop: 2,
   },
   listContainer: {
-    margin: 10,
+    padding: 2,
   },
   activityCard: {
     padding: 4,
-  },
-  activityCardSurface: {
     backgroundColor: theme.colors.surface,
+    margin: 2,
+    borderRadius: 2,
+
+    elevation: 1,
   },
   activityRow: {
     flexDirection: 'row',
@@ -124,6 +128,7 @@ const getStyles = (theme: any) => StyleSheet.create({
   },
   activityTitleContainer: {
     flex: 1,
+    paddingLeft: 4,
   },
   activityDescriptionContainer: {
     marginTop: 4,
@@ -148,11 +153,6 @@ const getStyles = (theme: any) => StyleSheet.create({
   headerRightContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  menuContainer: {
-    position: 'absolute',
-    top: 10,
-    right: 0,
   },
   menuAnchor: {
     width: 1,

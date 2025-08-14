@@ -37,6 +37,10 @@ const MD3BlackTheme = {
     background: "#000000",
     surface: "#000000",
     surfaceVariant: "#000000",
+    elevation: {
+      ...MD3DarkTheme.colors.elevation,
+      level1: "#000000",
+    },
   },
 };
 
@@ -110,7 +114,7 @@ const SubApp = () => {
   return (
     <GestureHandlerRootView>
     <StatusBar barStyle={themeVariant == 'light' ? "dark-content" : "light-content"}
-      backgroundColor={theme.colors.surface} />
+      backgroundColor={theme.colors.surfaceVariant} />
     <SafeAreaView style={[styles.container]}>
       <NavigationContainer theme={navigationTheme}>
         <Stack.Navigator
@@ -118,7 +122,7 @@ const SubApp = () => {
             headerStyle: {
               backgroundColor: theme.colors.surface,
             },
-          } : {}
+          } :  themeVariant == 'light' ? { headerStyle: { backgroundColor: theme.colors.surfaceVariant } } : {}
         }
         >
           <Stack.Group>
