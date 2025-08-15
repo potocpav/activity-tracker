@@ -305,7 +305,6 @@ const useStore = create<State>()(
           }
           // don't update unit if it's the same
           if (areUnitsEqual(activity.unit, unit)) {
-            console.log("Unit is the same", activity.unit, unit);
             return {};
           }
 

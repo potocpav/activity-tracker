@@ -6,7 +6,7 @@ import {
   View,
   TouchableOpacity,
   Pressable,
-  Dimensions,
+  useWindowDimensions,
 } from "react-native";
 import { Button } from 'react-native-paper';
 import useStore from "./Store";
@@ -28,9 +28,10 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   const weekStart = useStore((state: any) => state.weekStart);
   
   const palette = getThemePalette();
-  const styles = getStyles(theme);
-
-  const dimensions = Dimensions.get('window');
+  
+  const dimensions = useWindowDimensions();
+  const wideDisplay = dimensions.width > 600; // show up to three summary stats
+  const styles = getStyles(theme, wideDisplay);
 
   React.useEffect(() => {
     navigation.setOptions({
@@ -49,14 +50,21 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   }, [navigation, theme]);
 
   const renderActivity = ({ item, drag }: { item: ActivityType, drag: () => void }) => {
-    const value = item.stats.length > 0 && item.stats[0].length > 0 ? calcStatValue(item.stats[0][0], item, weekStart) : null;
-    const unitSymbol = item.stats.length > 0 && item.stats[0].length > 0 ? 
-      getUnitSymbol(item.stats[0][0], item.unit) : "";
+    const activity = item;
+    let values = activity.stats.length > 0 ? activity.stats[0].map((stat: any) => 
+      ({ 
+        value: calcStatValue(stat, activity, weekStart),
+        symbol: getUnitSymbol(stat, activity.unit),
+      })) : [];
+
+    if (!wideDisplay) {
+      values = values.slice(0, 1);
+    }
 
     return (
       <Pressable
         // style={[styles.activityCard, styles.activityCardSurface]}
-        onPress={() => navigation.navigate('Activity', { activityName: item.name })}
+        onPress={() => navigation.navigate('Activity', { activityName: activity.name })}
         onLongPress={drag}
         style={({ pressed }) => [
           styles.activityCard,
@@ -67,28 +75,20 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
       >
         <View style={styles.activityRow}>
           <View style={styles.activityTitleContainer}>
-            <Text numberOfLines={1} style={[styles.activityTitle, { color: palette[item.color] }]}>{item.name}</Text>
+            <Text numberOfLines={1} style={[styles.activityTitle, { color: palette[activity.color] }]}>{activity.name}</Text>
           </View>
-          <View style={styles.activityValueContainer}>
-            <Text numberOfLines={1} adjustsFontSizeToFit style={[styles.activityValue, { color: palette[item.color] }]}>
-              {renderValueSummary(value, unitSymbol)}
-            </Text>
-          </View>
-          {/* <View style={styles.activityValueContainer}>
-            <Text numberOfLines={1} adjustsFontSizeToFit style={[styles.activityValue, { color: palette[item.color] }]}>
-              {renderValueSummary(value, unitSymbol)}
-            </Text>
-          </View>
-          <View style={styles.activityValueContainer}>
-            <Text numberOfLines={1} adjustsFontSizeToFit style={[styles.activityValue, { color: palette[item.color] }]}>
-              {renderValueSummary(value, unitSymbol)}
-            </Text>
-          </View> */}
+          {values.map(({value, symbol}, index) => (
+            <View key={index} style={styles.activityValueContainer}>
+              <Text numberOfLines={1} adjustsFontSizeToFit style={[styles.activityValue, { color: palette[activity.color] }]}>
+                {renderValueSummary(value, symbol)}
+              </Text>
+            </View>
+          ))}
           <TouchableOpacity
-            onPress={() => { navigation.navigate('EditDataPoint', { activityName: item.name, dataPointName: null, newDataPoint: true }); }}
+            onPress={() => { navigation.navigate('EditDataPoint', { activityName: activity.name, dataPointName: null, newDataPoint: true }); }}
             style={styles.addDataPointButton}
           >
-            <AntDesign name="plus" size={24} color={palette[item.color]} />
+            <AntDesign name="plus" size={24} color={palette[activity.color]} />
           </TouchableOpacity>
         </View>
       </Pressable>
@@ -97,18 +97,26 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
 
   return (
     <SafeAreaView style={[styles.container]}>
-      <DraggableFlatList
-        data={activities}
-        onDragEnd={({ data }) => setActivities(data)}
-        renderItem={renderActivity}
-        keyExtractor={(item) => item.name}
-        contentContainerStyle={styles.listContainer}
-      />
+      {activities.length === 0 ? (
+        <View style={styles.emptyStateContainer}>
+          <AntDesign name="inbox" size={64} color={theme.colors.onSurfaceVariant} />
+          <Text style={styles.emptyStateText}>No activities</Text>
+          <Text style={styles.emptyStateSubtext}>Tap the + button to create an activity</Text>
+        </View>
+      ) : (
+        <DraggableFlatList
+          data={activities}
+          onDragEnd={({ data }) => setActivities(data)}
+          renderItem={renderActivity}
+          keyExtractor={(item) => item.name}
+          contentContainerStyle={styles.listContainer}
+        />
+      )}
     </SafeAreaView>
   );
 };
 
-const getStyles = (theme: any) => StyleSheet.create({
+const getStyles = (theme: any, wideDisplay: boolean) => StyleSheet.create({
   menuContainer: {
     position: 'absolute',
     top: 10,
@@ -139,20 +147,19 @@ const getStyles = (theme: any) => StyleSheet.create({
   activityTitleContainer: {
     // flex: 6,
     flex: 1,
-    // width: '50%',
     // backgroundColor: 'blue',
     paddingLeft: 4,
     justifyContent: 'center',
   },
   activityValueContainer: {
     // flex: 1,
-    width: '25%',
+    width: wideDisplay ? '10%' : '25%',
     // backgroundColor: 'red',
     alignItems: 'center',
     justifyContent: 'center',
   },
   addDataPointButton: {
-    padding: 8,
+    padding: 6,
     flexShrink: 0,
   },
   activityTitle: {
@@ -175,6 +182,26 @@ const getStyles = (theme: any) => StyleSheet.create({
   menuAnchor: {
     width: 1,
     height: 1,
+  },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    paddingBottom: 50,
+    backgroundColor: theme.colors.elevation.level1,
+  },
+  emptyStateText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: theme.colors.onSurfaceVariant,
+    marginTop: 10,
+  },
+  emptyStateSubtext: {
+    fontSize: 16,
+    color: theme.colors.onSurfaceVariant,
+    marginTop: 5,
+    textAlign: 'center',
   },
 });
 
