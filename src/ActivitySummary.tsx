@@ -83,9 +83,11 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
                   },
                 ]}
               >
-                <View style={{ position: 'absolute', right: 0, bottom: 0 }}>
-                  <AntDesign name="plus" size={24} color={theme.colors.outlineVariant} />
-                </View>
+                {statRow.length < 3 && (
+                  <View style={{}}>
+                    <AntDesign name="ellipsis1" size={24} color={theme.colors.outlineVariant} />
+                  </View>
+                )}
               </Pressable>
             )}
           </View>
@@ -103,7 +105,7 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
               },
             ]}
           >
-            <AntDesign name="plus" size={24} color={theme.colors.outlineVariant} />
+            <AntDesign name="ellipsis1" size={24} color={theme.colors.outlineVariant} />
           </Pressable>
         </View>
 
