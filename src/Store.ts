@@ -289,7 +289,7 @@ const useStore = create<State>()(
                   i === statRowId 
                     ? s.filter((s: Stat, j: number) => j !== statColId) 
                     : s
-                )
+                ).filter((s: Stat[]) => s.length > 0)
               } 
               : a);
           return { activities };

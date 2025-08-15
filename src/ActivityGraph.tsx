@@ -90,7 +90,6 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
   }
 
   const bins = binTimeSeries(activity.graph.binSize, activity.dataPoints, weekStart);
-  console.log(bins);
   const binStats: { t: number, q0: number, q1: number, q2: number, q3: number, q4: number, count: number, sum: number, mean: number, zero: number, dailyMean: number }[]
     = bins.map((bin) => {
       const values = bin.values.map((dp: DataPoint) => extractValue(dp, activity.graph.tagFilters, activity.graph.subUnit)).filter((v: number | null) => v !== null);

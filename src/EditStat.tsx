@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { Dialog, Button, TextInput } from 'react-native-paper';
 import useStore from "./Store";
 import { ActivityType, Stat, StatPeriod, StatValue, TagFilter, allStatPeriods, unaryStatValues, numericStatValues } from "./StoreTypes";
@@ -9,13 +9,12 @@ import SubUnitMenu from "./SubUnitMenu";
 import DropdownMenu from "./DropdownMenu";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import StatView from "./StatView";
-import { getTheme, getThemePalette } from "./Theme";
+import { getTheme } from "./Theme";
 
 export const EditStat = ({ activityName, statRowId, statColId, stat, visible, onDismiss }: { navigation: any, activityName: string, statRowId: number | null, statColId: number | null, stat: Stat | null, visible: boolean, onDismiss: () => void }) => {
   const activities = useStore((state: any) => state.activities);
   const activity = activities.find((a: ActivityType) => a.name === activityName);
   const theme = getTheme(activity);
-  const palette = getThemePalette();
   const addActivityStat = useStore((state: any) => state.addActivityStat);
   const setActivityStat = useStore((state: any) => state.setActivityStat);
   const deleteActivityStat = useStore((state: any) => state.deleteActivityStat);
@@ -65,7 +64,7 @@ export const EditStat = ({ activityName, statRowId, statColId, stat, visible, on
     return <Text>Activity not found</Text>;
   }
 
-  const handleDismiss = () => {
+  const handleApply = () => {
     if (dialogStat !== null) {
       if (statRowId === null) {
         addActivityStat(activityName, dialogStat, null);
@@ -96,7 +95,7 @@ export const EditStat = ({ activityName, statRowId, statColId, stat, visible, on
       style={{
         backgroundColor: theme.colors.background,
       }}
-      onDismiss={handleDismiss}
+      onDismiss={onDismiss}
     >
       <Dialog.Content>
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 5 }}>
@@ -173,7 +172,8 @@ export const EditStat = ({ activityName, statRowId, statColId, stat, visible, on
 
       </Dialog.Content>
       <Dialog.Actions>
-        <Button onPress={handleDismiss}><AntDesign name="check" size={24} color={theme.colors.onSurface} /></Button>
+        <Button onPress={onDismiss}><AntDesign name="close" size={24} color={theme.colors.onSurface} /></Button>
+        <Button onPress={handleApply}><AntDesign name="check" size={24} color={theme.colors.onSurface} /></Button>
       </Dialog.Actions>
     </Dialog>
   );

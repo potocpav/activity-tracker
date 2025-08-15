@@ -2,7 +2,7 @@ import React from "react";
 import { SafeAreaView, ScrollView, StyleSheet, Text, View, Pressable } from "react-native";
 import { Divider } from 'react-native-paper';
 import useStore from "./Store";
-import { ActivityType, Stat, TagFilter } from "./StoreTypes";
+import { ActivityType, Stat } from "./StoreTypes";
 import { renderTags } from "./ActivityUtil";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import ActivityGraph from "./ActivityGraph";
@@ -26,7 +26,7 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
 
   // Value to display in dialog
   const dialogStat = (statDialogStatRowId !== null && statDialogStatColId !== null) ?
-    activity.stats[statDialogStatRowId][statDialogStatColId] : null;
+    (activity.stats[statDialogStatRowId] ?? [])[statDialogStatColId] ?? null : null;
 
   if (!activity) {
     return <Text>Activity not found</Text>;
@@ -57,6 +57,10 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
         )}
         <Divider />
 
+        <View>
+
+        <Text style={styles.header}>Overview</Text>
+
         {activity.stats.map((statRow: Stat[], rowIndex: number) => (
           <View
             key={rowIndex}
@@ -68,33 +72,32 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
             ))}
 
             {/* Add Stat to a row */}
-            {statRow.length > 0 && (
+            {statRow.length < 3 && (
               <Pressable
                 onPress={() => {
                   showStatDialog(rowIndex, null);
                 }}
                 style={({ pressed }) => [
                   {
-                    margin: 8,
-                    position: 'absolute',
-                    right: -10,
-                    top: 20,
+                    padding: 10,
+                    flex: 0,
+                    // position: 'absolute',
+                    // right: -10,
+                    // top: 20,
                     opacity: pressed ? 0.5 : 1,
                   },
                 ]}
               >
-                {statRow.length < 3 && (
-                  <View style={{}}>
-                    <AntDesign name="ellipsis1" size={24} color={theme.colors.outlineVariant} />
-                  </View>
-                )}
+                <View style={{}}>
+                  <AntDesign name="ellipsis1" size={24} color={theme.colors.onSurfaceVariant} />
+                </View>
               </Pressable>
             )}
           </View>
         ))}
 
         { /* Add Stat into a new row */}
-        <View style={{ margin: 10, flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end' }}>
+        <View style={styles.addStatRow}>
           <Pressable
             onPress={() => {
               showStatDialog(null, null);
@@ -105,14 +108,18 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
               },
             ]}
           >
-            <AntDesign name="ellipsis1" size={24} color={theme.colors.outlineVariant} />
+            <AntDesign name="ellipsis1" size={24} color={theme.colors.onSurfaceVariant} />
           </Pressable>
         </View>
 
+        </View>
         <Divider />
 
+        <Text style={styles.header}>Calendar</Text>
         <ActivityCalendar navigation={navigation} activityName={activityName} />
 
+        <Divider />
+        <Text style={styles.header}>Graph</Text>
         <ActivityGraph activityName={activityName} />
 
       </ScrollView>
@@ -144,6 +151,13 @@ const getStyles = (theme: any) => StyleSheet.create({
     color: theme.colors.onSurface,
     textAlign: 'center',
   },
+  header: {
+    fontSize: 16,
+    color: theme.colors.onSurface,
+    marginHorizontal: 8,
+    marginTop: 16,
+    marginBottom: 8,
+  },
   tagsRow: {
     padding: 10,
     flexDirection: 'row',
@@ -152,10 +166,23 @@ const getStyles = (theme: any) => StyleSheet.create({
   },
   statsGroup: {
     flexDirection: 'row',
-    marginHorizontal: 10,
+    marginLeft: 10,
     // justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     backgroundColor: theme.colors.surface,
+  },
+  addStatRow: {
+    position: 'absolute',
+    right: 0,
+    bottom: -22,
+    backgroundColor: theme.colors.surface,
+    zIndex: 10,
+    padding: 10,
+    // margin: 10,
+    // flex: 1,
+    // flexDirection: 'row',
+    // alignItems: 'center',
+    // justifyContent: 'flex-end',
   },
 });
 
