@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, FlatList } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, useWindowDimensions } from "react-native";
 import { useTheme } from 'react-native-paper';
 import { DataPoint, dateListToTime, normalizeDateList, DateList, ActivityType, TagFilter } from "./StoreTypes";
 import { formatNumber, findZeroSlice, dayCmp, extractStatValue, extractValue } from "./ActivityUtil";
@@ -14,8 +14,6 @@ type CalendarComponentProps = {
 
 const ITEM_WIDTH = 35;
 const ITEM_MARGIN = 1;
-const MIN_WEEK_COUNT = 14;
-const MAX_WEEK_COUNT = 520;
 
 
 const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName }) => {
@@ -26,6 +24,9 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName }
   const firstWeekDay = useStore((state: any) => state.weekStart);
   const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);
   const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
+  const dimensions = useWindowDimensions();
+  const MIN_WEEK_COUNT = Math.ceil(dimensions.width / ITEM_WIDTH);
+  const MAX_WEEK_COUNT = 52 * 10;
   
   const now = new Date();
   const pastWeekStart = (date: Date, i: number) => new Date(date.getFullYear(), date.getMonth(), date.getDate() - date.getDay() - i * 7 + (firstWeekDay == "sunday" ? 0 : 1));

@@ -184,11 +184,10 @@ export const binTime = (binSize: BinSize, t0: number, i: number, weekStart: Week
   const t0Date = new Date(t0);
   if (binSize === "day") {
     return new Date(t0Date.getFullYear(), t0Date.getMonth(), t0Date.getDate() + i, 0).getTime();
-
   } else if (binSize === "week") {
-    const dayOfWeek = t0Date.getDay();
     const startDay = weekStart === "sunday" ? 0 : 1;
-    return new Date(t0Date.getFullYear(), t0Date.getMonth(), t0Date.getDate() - dayOfWeek + startDay + i * 7, 0).getTime();
+    const dayOfWeek = (t0Date.getDay() - startDay + 7) % 7;
+    return new Date(t0Date.getFullYear(), t0Date.getMonth(), t0Date.getDate() - dayOfWeek + i * 7, 0).getTime();
   } else if (binSize === "month") {
     return new Date(t0Date.getFullYear(), t0Date.getMonth() + i, 1, 0).getTime();
   } else if (binSize === "quarter") {
@@ -213,7 +212,11 @@ export const binTimeSeries = (binSize: BinSize, dataPoints: any[], weekStart: We
     return Math.round(tDiff / (1000 * 60 * 60 * 24));
   };
 
-  var bins: { time: number, nDays: number, values: any[] }[] = [{ time: binTime(binSize, t0, 0, weekStart), nDays: nDays(binSize, 0), values: [] }];
+  var bins: { time: number, nDays: number, values: any[] }[] = [{ 
+    time: binTime(binSize, t0, 0, weekStart), 
+    nDays: nDays(binSize, 0), 
+    values: [] 
+  }];
   var binIx = 0;
   for (let i = 0; i < dataPoints.length; i++) {
     const dp = dataPoints[i];

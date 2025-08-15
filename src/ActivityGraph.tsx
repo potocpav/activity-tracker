@@ -54,6 +54,7 @@ const quartiles = (values: number[]) => {
 const ActivityGraph = ({ activityName }: { activityName: string }) => {
   const activities = useStore((state: any) => state.activities);
   const activity = activities.find((a: ActivityType) => a.name === activityName);
+  const weekStart = useStore((state: any) => state.weekStart);
   const theme = getTheme(activity);
 
   if (!activity) {
@@ -78,9 +79,9 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
 
   var ticks = [];
   if (activity.dataPoints.length > 0) {
-    var tick_t = binTime(activity.graph.binSize, dateListToTime(activity.dataPoints[0].date), 0, activity.weekStart);
+    var tick_t = binTime(activity.graph.binSize, dateListToTime(activity.dataPoints[0].date), 0, weekStart);
     for (let i = 0; tick_t < now.getTime(); i++) {
-      tick_t = binTime(activity.graph.binSize, dateListToTime(activity.dataPoints[0].date), i, activity.weekStart);
+      tick_t = binTime(activity.graph.binSize, dateListToTime(activity.dataPoints[0].date), i, weekStart);
       ticks.push(tick_t);
       if (i > 1000) {
         break; // limit
@@ -88,7 +89,8 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
     }
   }
 
-  const bins = binTimeSeries(activity.graph.binSize, activity.dataPoints, activity.weekStart);
+  const bins = binTimeSeries(activity.graph.binSize, activity.dataPoints, weekStart);
+  console.log(bins);
   const binStats: { t: number, q0: number, q1: number, q2: number, q3: number, q4: number, count: number, sum: number, mean: number, zero: number, dailyMean: number }[]
     = bins.map((bin) => {
       const values = bin.values.map((dp: DataPoint) => extractValue(dp, activity.graph.tagFilters, activity.graph.subUnit)).filter((v: number | null) => v !== null);
@@ -164,7 +166,7 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
   const { domain, viewport }: { domain: { x: [number, number], y?: [number, number] }, viewport: { x: [number, number] } } = (() => {
     const firstBinTime = bins.length ? bins[0].time : now.getTime();
     const lastBinTime = bins.length ? bins[bins.length - 1].time : now.getTime();
-    const nowBin = binTime(activity.graph.binSize, now.getTime(), 0, activity.weekStart);
+    const nowBin = binTime(activity.graph.binSize, now.getTime(), 0, weekStart);
     const t1 = Math.max(lastBinTime, nowBin) + approximateBinSize(activity.graph.binSize) / 2;
     const t0view = t1 - approximateBinSize(activity.graph.binSize) * 15;
     const t0 = Math.min(firstBinTime - approximateBinSize(activity.graph.binSize) / 2, t0view);
@@ -247,21 +249,17 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
             const [vx, vy] = [val.x, val.y ?? NaN];
             const w = barWidth;
 
-            const fill = Skia.Path.Make();
-            fill.moveTo(vx - w, vy);
-            fill.lineTo(vx + w, vy);
-            fill.lineTo(vx + w, zero[i].y ?? NaN);
-            fill.lineTo(vx - w, zero[i].y ?? NaN);
-            fill.close()
-
             const labelSize = font.measureText(label);
 
             elements.push(
               <Fragment key={"bar" + i}>
-                <Path
-                  style="fill"
-                  path={fill}
+                <RoundedRect
+                  x={vx - w}
+                  y={vy}
+                  width={w * 2}
+                  height={zero[i].y ?? NaN}
                   color={theme.colors.primary}
+                  r={w * 2 / 3}
                 />
 
                 <SkiaText
