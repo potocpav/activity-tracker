@@ -180,21 +180,21 @@ export const formatNumber = (value: number) => {
   return Math.round(value * 10) / 10;
 }
 
-export const binTime = (binSize: BinSize, t0: number, i: number, weekStart: WeekStart) => {
+export const binTime = (binSize: BinSize, t0: number, i: number, weekStart: WeekStart): Date => {
   const t0Date = new Date(t0);
   if (binSize === "day") {
-    return new Date(t0Date.getFullYear(), t0Date.getMonth(), t0Date.getDate() + i, 0).getTime();
+    return new Date(t0Date.getFullYear(), t0Date.getMonth(), t0Date.getDate() + i, 0);
   } else if (binSize === "week") {
     const startDay = weekStart === "sunday" ? 0 : 1;
     const dayOfWeek = (t0Date.getDay() - startDay + 7) % 7;
-    return new Date(t0Date.getFullYear(), t0Date.getMonth(), t0Date.getDate() - dayOfWeek + i * 7, 0).getTime();
+    return new Date(t0Date.getFullYear(), t0Date.getMonth(), t0Date.getDate() - dayOfWeek + i * 7, 0);
   } else if (binSize === "month") {
-    return new Date(t0Date.getFullYear(), t0Date.getMonth() + i, 1, 0).getTime();
+    return new Date(t0Date.getFullYear(), t0Date.getMonth() + i, 1, 0);
   } else if (binSize === "quarter") {
     const month = t0Date.getMonth()
-    return new Date(t0Date.getFullYear(), month - (month % 3) + i * 3, 1, 0).getTime();
+    return new Date(t0Date.getFullYear(), month - (month % 3) + i * 3, 1, 0);
   } else if (binSize === "year") {
-    return new Date(t0Date.getFullYear() + i, 0, 1, 0).getTime();
+    return new Date(t0Date.getFullYear() + i, 0, 1, 0);
   } else {
     console.log("Invalid bin size: " + binSize);
     throw new Error("Invalid bin size: " + binSize);
@@ -208,12 +208,12 @@ export const binTimeSeries = (binSize: BinSize, dataPoints: any[], weekStart: We
   const t0 = dateListToTime(dataPoints[0].date);
 
   const nDays = (binSize: BinSize, idx: number) => {
-    const tDiff = binTime(binSize, t0, idx + 1, weekStart) - binTime(binSize, t0, idx, weekStart);
+    const tDiff = binTime(binSize, t0, idx + 1, weekStart).getTime() - binTime(binSize, t0, idx, weekStart).getTime();
     return Math.round(tDiff / (1000 * 60 * 60 * 24));
   };
 
   var bins: { time: number, nDays: number, values: any[] }[] = [{ 
-    time: binTime(binSize, t0, 0, weekStart), 
+    time: binTime(binSize, t0, 0, weekStart).getTime(), 
     nDays: nDays(binSize, 0), 
     values: [] 
   }];
@@ -221,12 +221,12 @@ export const binTimeSeries = (binSize: BinSize, dataPoints: any[], weekStart: We
   for (let i = 0; i < dataPoints.length; i++) {
     const dp = dataPoints[i];
     var newBin = false;
-    while (binTime(binSize, t0, binIx + 1, weekStart) <= dateListToTime(dp.date)) {
+    while (binTime(binSize, t0, binIx + 1, weekStart).getTime() <= dateListToTime(dp.date)) {
       binIx++;
       newBin = true;
     }
     if (newBin) {
-      bins.push({ time: binTime(binSize, t0, binIx, weekStart), nDays: nDays(binSize, binIx), values: [] });
+      bins.push({ time: binTime(binSize, t0, binIx, weekStart).getTime(), nDays: nDays(binSize, binIx), values: [] });
     }
     bins[bins.length - 1].values.push(dp);
   };

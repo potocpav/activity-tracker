@@ -3,7 +3,7 @@ import { View, Text, Platform, useWindowDimensions } from "react-native";
 import { Menu, Button } from 'react-native-paper';
 import { getTransformComponents, Line, Scatter, setScale, setTranslate, useChartTransformState } from "victory-native";
 import { CartesianChart } from "victory-native";
-import { matchFont, Path, RoundedRect, Skia, Text as SkiaText } from "@shopify/react-native-skia";
+import { matchFont, RoundedRect, Text as SkiaText } from "@shopify/react-native-skia";
 import useStore from "./Store";
 import { DataPoint, dateListToTime, ActivityType, GraphType } from "./StoreTypes";
 import { useAnimatedReaction, useSharedValue, withTiming } from "react-native-reanimated";
@@ -82,9 +82,9 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
 
   var ticks = [];
   if (activity.dataPoints.length > 0) {
-    var tick_t = binTime(activity.graph.binSize, dateListToTime(activity.dataPoints[0].date), 0, weekStart);
+    var tick_t = binTime(activity.graph.binSize, dateListToTime(activity.dataPoints[0].date), 0, weekStart).getTime();
     for (let i = 0; tick_t < now.getTime(); i++) {
-      tick_t = binTime(activity.graph.binSize, dateListToTime(activity.dataPoints[0].date), i, weekStart);
+      tick_t = binTime(activity.graph.binSize, dateListToTime(activity.dataPoints[0].date), i, weekStart).getTime();
       ticks.push(tick_t);
       if (i > 1000) {
         break; // limit
@@ -168,7 +168,7 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
   const { domain, viewport }: { domain: { x: [number, number], y?: [number, number] }, viewport: { x: [number, number] } } = (() => {
     const firstBinTime = bins.length ? bins[0].time : now.getTime();
     const lastBinTime = bins.length ? bins[bins.length - 1].time : now.getTime();
-    const nowBin = binTime(activity.graph.binSize, now.getTime(), 0, weekStart);
+    const nowBin = binTime(activity.graph.binSize, now.getTime(), 0, weekStart).getTime();
     const t1 = Math.max(lastBinTime, nowBin) + approximateBinSize(activity.graph.binSize) / 2;
     const t0view = t1 - approximateBinSize(activity.graph.binSize) * nBars;
     const t0 = Math.min(firstBinTime - approximateBinSize(activity.graph.binSize) / 2, t0view);

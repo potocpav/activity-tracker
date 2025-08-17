@@ -147,7 +147,6 @@ const getStyles = (theme: any) => StyleSheet.create({
   },
   statsContainer: {
     flexDirection: 'row',
-    marginLeft: 10,
     alignItems: 'center',
     justifyContent: 'space-around',
     backgroundColor: theme.colors.surface,

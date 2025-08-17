@@ -1,10 +1,8 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, useWindowDimensions } from "react-native";
-import { useTheme } from 'react-native-paper';
 import { DataPoint, dateListToTime, normalizeDateList, DateList, ActivityType, TagFilter } from "./StoreTypes";
-import { formatNumber, findZeroSlice, dayCmp, extractStatValue, extractValue } from "./ActivityUtil";
+import { formatNumber, findZeroSlice, dayCmp, extractStatValue, extractValue, binTime } from "./ActivityUtil";
 import useStore from "./Store";
-import { lightPalette, darkPalette } from "./Color";
 import { getTheme } from "./Theme";
 
 type CalendarComponentProps = {
@@ -21,7 +19,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName }
   const activity = activities.find((a: ActivityType) => a.name === activityName);
   const theme = getTheme(activity);
   const dayBackground = theme.colors.primary;
-  const firstWeekDay = useStore((state: any) => state.weekStart);
+  const weekStart = useStore((state: any) => state.weekStart);
   const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);
   const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
   const dimensions = useWindowDimensions();
@@ -29,10 +27,11 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName }
   const MAX_WEEK_COUNT = 52 * 10;
   
   const now = new Date();
-  const pastWeekStart = (date: Date, i: number) => new Date(date.getFullYear(), date.getMonth(), date.getDate() - date.getDay() - i * 7 + (firstWeekDay == "sunday" ? 0 : 1));
+  const pastWeekStart = (date: Date, i: number) => binTime("week", date.getTime(), -i, weekStart);
 
   const firstDpDate: DateList | null = activity.dataPoints[0]?.date || null;
   const lastVisibleWeek = pastWeekStart(now, 0);
+
   const firstVisibleWeek = firstDpDate ? pastWeekStart(new Date(...firstDpDate), 0) : lastVisibleWeek;
 
   const weekCount = Math.min(MAX_WEEK_COUNT, Math.max(MIN_WEEK_COUNT, 1 + Math.round((lastVisibleWeek.getTime() - firstVisibleWeek.getTime()) / (7 * 24 * 60 * 60 * 1000))));
@@ -52,17 +51,17 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName }
         { length: ITEM_WIDTH, offset: ITEM_WIDTH * index, index }
       )}
       renderItem={({ item: weekIdx }) => {
-        const weekStart = pastWeekStart(now, weekIdx);
+        const itemWeekStart = pastWeekStart(now, weekIdx);
         return (
           <View style={styles.weekColumn} key={weekIdx}>
             <View style={styles.monthLabelContainer}>
-              {(weekStart.getDate() <= 7) &&
-                <Text style={[styles.monthLabel, { color: theme.colors.onSurfaceVariant }]}>{`${weekStart.toLocaleDateString('en-US', { month: 'short' })}`}</Text>}
-              {(weekStart.getDate() <= 7 && weekStart.getMonth() == 1) &&
-                <Text style={[styles.monthLabel, { color: theme.colors.onSurfaceVariant }]}>{`${weekStart.toLocaleDateString('en-US', { year: 'numeric' })}`}</Text>}
+              {(itemWeekStart.getDate() <= 7) &&
+                <Text style={[styles.monthLabel, { color: theme.colors.onSurfaceVariant }]}>{`${itemWeekStart.toLocaleDateString('en-US', { month: 'short' })}`}</Text>}
+              {(itemWeekStart.getDate() <= 7 && itemWeekStart.getMonth() == 1) &&
+                <Text style={[styles.monthLabel, { color: theme.colors.onSurfaceVariant }]}>{`${itemWeekStart.toLocaleDateString('en-US', { year: 'numeric' })}`}</Text>}
             </View>
             {[0, 1, 2, 3, 4, 5, 6].map((dayIdx) => {
-              const day = normalizeDateList([weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + dayIdx]);
+              const day = normalizeDateList([itemWeekStart.getFullYear(), itemWeekStart.getMonth(), itemWeekStart.getDate() + dayIdx]);
               if (dateListToTime(day) > now.getTime()) {
                 return;
               }
@@ -74,7 +73,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName }
                   .map(([dp, i]: [DataPoint, number]) => 
                     [dp.date, i, extractValue(dp, activity.calendar.tagFilters, activity.calendar.subUnit)])
                   .filter((v: any) => v[2] !== null);
-              const value = extractStatValue(dayDataAndIndex.map((v: any) => [v[0], v[2]]), activity.calendar.value, activity.calendar.period, firstWeekDay);
+              const value = extractStatValue(dayDataAndIndex.map((v: any) => [v[0], v[2]]), activity.calendar.value, activity.calendar.period, weekStart);
               const hasData = dayDataAndIndex.length > 0;
               return (
                 <TouchableOpacity
@@ -83,7 +82,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName }
                       backgroundColor: dayBackground,
                     } :
                     {
-                      backgroundColor: [0, 6].includes((weekStart.getDay() + dayIdx) % 7) 
+                      backgroundColor: [0, 6].includes((itemWeekStart.getDay() + dayIdx) % 7) 
                       ? "#88888860" 
                       : "#88888840",
                     }
