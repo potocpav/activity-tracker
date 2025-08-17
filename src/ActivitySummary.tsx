@@ -9,36 +9,44 @@ import ActivityGraph from "./ActivityGraph";
 import ActivityCalendar from "./ActivityCalendar";
 import StatView from "./StatView";
 import EditStat from "./EditStat";
-import { getTheme, getThemePalette } from "./Theme";
+import { getTheme, getThemePalette, useWideDisplay } from "./Theme";
+import Animated, { LinearTransition } from "react-native-reanimated";
 
 const ActivitySummary = ({ navigation, activityName }: { navigation: any, activityName: string }) => {
   const activities = useStore((state: any) => state.activities);
   const activity = activities.find((a: ActivityType) => a.name === activityName);
+  const addActivityStat = useStore((state: any) => state.addActivityStat);
   const theme = getTheme(activity);
   const palette = getThemePalette();
-
+  const wideDisplay = useWideDisplay();
   const styles = getStyles(theme);
 
   // Dialog state
   const [statDialogVisible, setStatDialogVisible] = React.useState(false);
-  const [statDialogStatRowId, setStatDialogStatRowId] = React.useState<number | null>(null);
-  const [statDialogStatColId, setStatDialogStatColId] = React.useState<number | null>(null);
+  const [statDialogStatId, setStatDialogStatId] = React.useState<number | null>(null);
 
   // Value to display in dialog
-  const dialogStat = (statDialogStatRowId !== null && statDialogStatColId !== null) ?
-    (activity.stats[statDialogStatRowId] ?? [])[statDialogStatColId] ?? null : null;
+  const dialogStat = (statDialogStatId !== null) ?
+    activity.stats[statDialogStatId] ?? null : null;
 
   if (!activity) {
     return <Text>Activity not found</Text>;
   }
 
   // Helper to open dialog
-  const showStatDialog = (statRowId: number | null, statColId: number | null) => {
+  const showStatDialog = (statId: number | null) => {
     setStatDialogVisible(true);
-    setStatDialogStatRowId(statRowId);
-    setStatDialogStatColId(statColId);
+    setStatDialogStatId(statId);
   };
 
+  const newStat: Stat = {
+    label: "Last Value",
+    value: activity.unit === null ? "n_points" : "mean",
+    subUnit: Array.isArray(activity.unit) ? activity.unit[0].name : null,
+    period: "last_active_day",
+    tagFilters: [],
+  };
+  
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
@@ -58,60 +66,31 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
         <Divider />
 
         <View>
-
-        <Text style={styles.header}>Overview</Text>
-
-        {activity.stats.map((statRow: Stat[], rowIndex: number) => (
-          <View
-            key={rowIndex}
-            style={styles.statsGroup}
-          >
-            {statRow.map((stat: Stat, index: number) => (
-              <StatView key={index} stat={stat} activity={activity} onPress={() =>
-                showStatDialog(rowIndex, index)} />
-            ))}
-
-            {/* Add Stat to a row */}
-            {statRow.length < 3 && (
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <View style={{}}>
+              <Text style={styles.header}>Overview</Text>
+            </View>
+            <View style={styles.addStat}>
               <Pressable
                 onPress={() => {
-                  showStatDialog(rowIndex, null);
+                  addActivityStat(activityName, newStat);
                 }}
                 style={({ pressed }) => [
                   {
-                    padding: 10,
-                    flex: 0,
-                    // position: 'absolute',
-                    // right: -10,
-                    // top: 20,
                     opacity: pressed ? 0.5 : 1,
                   },
                 ]}
               >
-                <View style={{}}>
-                  <AntDesign name="ellipsis1" size={24} color={theme.colors.onSurfaceVariant} />
-                </View>
+                <AntDesign name="plus" size={24} color={theme.colors.onSurfaceVariant} />
               </Pressable>
-            )}
+            </View>
           </View>
-        ))}
-
-        { /* Add Stat into a new row */}
-        <View style={styles.addStatRow}>
-          <Pressable
-            onPress={() => {
-              showStatDialog(null, null);
-            }}
-            style={({ pressed }) => [
-              {
-                opacity: pressed ? 0.5 : 1,
-              },
-            ]}
-          >
-            <AntDesign name="ellipsis1" size={24} color={theme.colors.onSurfaceVariant} />
-          </Pressable>
-        </View>
-
+          <Animated.View layout={LinearTransition} style={styles.statsContainer}>
+            {activity.stats.map((stat: Stat, index: number) => (
+              <StatView key={index} stat={stat} activity={activity} onPress={() =>
+                showStatDialog(index)} />
+            ))}
+          </Animated.View>
         </View>
         <Divider />
 
@@ -126,8 +105,7 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
       <EditStat
         navigation={navigation}
         activityName={activityName}
-        statRowId={statDialogStatRowId}
-        statColId={statDialogStatColId}
+        statId={statDialogStatId}
         stat={dialogStat}
         visible={statDialogVisible}
         onDismiss={() => setStatDialogVisible(false)}
@@ -164,25 +142,16 @@ const getStyles = (theme: any) => StyleSheet.create({
     alignItems: 'flex-start',
     justifyContent: 'flex-start',
   },
-  statsGroup: {
+  addStat: {
+    padding: 10,
+  },
+  statsContainer: {
     flexDirection: 'row',
     marginLeft: 10,
-    // justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-around',
     backgroundColor: theme.colors.surface,
-  },
-  addStatRow: {
-    position: 'absolute',
-    right: 0,
-    bottom: -22,
-    backgroundColor: theme.colors.surface,
-    zIndex: 10,
-    padding: 10,
-    // margin: 10,
-    // flex: 1,
-    // flexDirection: 'row',
-    // alignItems: 'center',
-    // justifyContent: 'flex-end',
+    flexWrap: 'wrap',
   },
 });
 

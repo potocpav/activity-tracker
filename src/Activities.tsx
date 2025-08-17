@@ -10,12 +10,12 @@ import {
 } from "react-native";
 import { Button } from 'react-native-paper';
 import useStore from "./Store";
-import { ActivityType } from "./StoreTypes";
+import { ActivityType, Stat } from "./StoreTypes";
 import DraggableFlatList from 'react-native-draggable-flatlist'
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { renderValueSummary } from "./ActivityData";
 import { calcStatValue, getUnitSymbol } from "./ActivityUtil";
-import { getTheme, getThemePalette } from "./Theme";
+import { getTheme, getThemePalette, useWideDisplay } from "./Theme";
 
 type ActivitiesProps = {
   navigation: any;
@@ -28,9 +28,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   const weekStart = useStore((state: any) => state.weekStart);
   
   const palette = getThemePalette();
-  
-  const dimensions = useWindowDimensions();
-  const wideDisplay = dimensions.width > 600; // show up to three summary stats
+  const wideDisplay = useWideDisplay();
   const styles = getStyles(theme, wideDisplay);
 
   React.useEffect(() => {
@@ -51,11 +49,11 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
 
   const renderActivity = ({ item, drag }: { item: ActivityType, drag: () => void }) => {
     const activity = item;
-    let values = activity.stats.length > 0 ? activity.stats[0].map((stat: any) => 
+    let values = activity.stats.map((stat: Stat) => 
       ({ 
         value: calcStatValue(stat, activity, weekStart),
         symbol: getUnitSymbol(stat, activity.unit),
-      })) : [];
+      }));
 
     if (!wideDisplay) {
       values = values.slice(0, 1);

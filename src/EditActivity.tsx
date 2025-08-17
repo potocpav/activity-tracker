@@ -15,6 +15,8 @@ import DraggableFlatList from 'react-native-draggable-flatlist';
 import ColorPicker from './ColorPicker';
 import { defaultActivity } from "./DefaultActivity";
 import { getTheme, getThemePalette } from "./Theme";
+import { defaultStats } from "./DefaultActivity";
+
 type EditActivityProps = {
   navigation: any;
   route: any;
@@ -32,6 +34,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   const { activityName } = route.params;
   const activities = useStore((state: any) => state.activities);
   const activity = activities.find((a: ActivityType) => a.name === activityName) ?? defaultActivity;
+  const isNewActivity = activity.name === null;
   const theme = getTheme(activity);
   const updateActivity = useStore((state: any) => state.updateActivity);
   const setTags = useStore((state: any) => state.setTags);
@@ -72,16 +75,18 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
 
 
   const saveActivity = () => {
+    const newUnit = 
+      unitMode === 'no_value' ? null : 
+      unitMode === 'single' ? singleUnitInput : 
+      multiUnitInput;
     const updatedActivity = {
       ...activity,
       name: activityNameInput,
       description: activityDescriptionInput,
       color: selectedColor,
+      unit: newUnit,
+      stats: isNewActivity ? defaultStats(newUnit) : activity.stats,
     };
-    const newUnit = 
-      unitMode === 'no_value' ? null : 
-      unitMode === 'single' ? singleUnitInput : 
-      multiUnitInput;
     const activityName = activity.name === "" ? updatedActivity.name : activity.name;
     updateActivity(activityName, updatedActivity);
     setTags(updatedActivity.name, tagState);

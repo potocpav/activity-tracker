@@ -116,7 +116,7 @@ export type ActivityType = {
   dataPoints: DataPoint[];
   tags: Tag[];
   color: number;
-  stats: Stat[][];
+  stats: Stat[];
   calendar: CalendarProps;
   graph: GraphProps;
 };

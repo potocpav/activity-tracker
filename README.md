@@ -28,11 +28,18 @@ In order to make this app a full-featured management app for activity data, the 
 
 ### General Usability
 
-* [ ] Polish stat editing and dragging
+* [ ] Page-by-page polish
+  * [x] Activities
+  * [ ] Activity Summary
+    * [ ] Stats
+  * [ ] Edit Summary
+  * [ ] Edit Activity
+  * [ ] Edit Data Point
+  * [ ] Data Point List 
+  * [ ] Settings
 * [ ] Improve general styling
   * [ ] Decrease brightness of edit field borders
 * [ ] Screen orientation & responsive design tweaks
-* [ ] Limit graph Panning on the left
 * [ ] Performance testing & enhancements
   * [ ] Many points (10k)
   * [ ] Wide date ranges (25 years)
@@ -45,6 +52,10 @@ In order to make this app a full-featured management app for activity data, the 
 * [ ] Improve GitHub README
 * [ ] Link to GitHub from Settings
 * [ ] Rename GitHub project
+
+### Post-release
+
+* [ ] Limit graph Panning on the left
 
 ### Tindeq analysis
 

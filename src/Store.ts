@@ -25,7 +25,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ActivityType, Tag, DataPoint, SetTag, TagName, State } from "./StoreTypes";
 import { findZeroSlice, dayCmp } from "./ActivityUtil";
 
-export const version = 10;
+export const version = 11;
 
 export const migrate = (persisted: any, version: number) => {
   if (version <= 5) {
@@ -46,6 +46,11 @@ export const migrate = (persisted: any, version: number) => {
   if (version <= 9) {
     persisted.activities = persisted.goals;
     delete persisted.goals;
+  }
+  if (version <= 10) {
+    persisted.activities.forEach((activity: ActivityType) => {
+      activity.stats = activity.stats.flat(1);
+    });
   }
   return persisted
 };
@@ -208,7 +213,7 @@ const useStore = create<State>()(
         });
       },
 
-      updateActivity: (activityName: string, activity: ActivityType) => {
+      updateActivity: (activityName: string | null, activity: ActivityType) => {
         set((state: any) => {
           const activityExists = state.activities.find((a: ActivityType) => a.name === activityName);
           if (activityExists) {
@@ -234,24 +239,14 @@ const useStore = create<State>()(
         });
       },
 
-      setActivityStats: (activityName: string, stats: Stat[]) => {
-        set((state: any) => {
-          const activities = state.activities.map((a: ActivityType) => activityName === a.name ? { ...a, stats } : a);
-          return { activities };
-        });
-      },
-
-      setActivityStat: (activityName: string, statRowId: number, statColId: number, stat: Stat) => {
+      setActivityStat: (activityName: string, statId: number, stat: Stat) => {
         set((state: any) => {
           const activities = state.activities.map((a: ActivityType) => 
             activityName === a.name 
               ? { 
                 ...a, 
-                stats: a.stats.map((s: Stat[], i: number) => 
-                  i === statRowId 
-                    ? s.map((s: Stat, j: number) => 
-                      j === statColId ? stat : s) 
-                    : s
+                stats: a.stats.map((s: Stat, i: number) => 
+                  i === statId ? stat : s
                 )
                 } 
               : a
@@ -260,36 +255,26 @@ const useStore = create<State>()(
         });
       },
 
-      addActivityStat: (activityName: string, stat: Stat, statRowId: number | null) => {
+      addActivityStat: (activityName: string, stat: Stat) => {
         set((state: any) => {
           const activities = state.activities.map((a: ActivityType) => 
             activityName === a.name 
               ? { 
                 ...a, 
-                stats: statRowId === null 
-                  ? [...a.stats, [stat]] 
-                  : a.stats.map((s: Stat[], i: number) => 
-                    i === statRowId 
-                      ? [...s, stat] 
-                      : s
-                  )
+                stats: [...a.stats, stat]
               } 
               : a);
           return { activities };
         });
       },
 
-      deleteActivityStat: (activityName: string, statRowId: number, statColId: number) => {
+      deleteActivityStat: (activityName: string, statId: number) => {
         set((state: any) => {
           const activities = state.activities.map((a: ActivityType) => 
             activityName === a.name 
               ? { 
                 ...a, 
-                stats: a.stats.map((s: Stat[], i: number) => 
-                  i === statRowId 
-                    ? s.filter((s: Stat, j: number) => j !== statColId) 
-                    : s
-                ).filter((s: Stat[]) => s.length > 0)
+                stats: a.stats.filter((s: Stat, i: number) => i !== statId)
               } 
               : a);
           return { activities };
@@ -391,10 +376,10 @@ const useStore = create<State>()(
             subUnit: setSubUnitName(activity.graph.subUnit)
           };
 
-          const newStats = activity.stats.map((stat: Stat[]) => stat.map((s: Stat) => ({
-            ...s,
-            subUnit: setSubUnitName(activity.graph.subUnit)
-          })));
+          const newStats = activity.stats.map((stat: Stat) => ({
+            ...stat,
+            subUnit: setSubUnitName(stat.subUnit)
+          }));
 
           const newActivity = {
             ...activity,
@@ -453,10 +438,10 @@ const useStore = create<State>()(
               ...activity.graph,
               tagFilters: updateTagFilters(activity.graph.tagFilters)
             },
-            stats: activity.stats.map((stat: Stat[]) => stat.map((s: Stat) => ({
-              ...s,
-              tagFilters: updateTagFilters(s.tagFilters)
-            }))),
+            stats: activity.stats.map((stat: Stat) => ({
+              ...stat,
+              tagFilters: updateTagFilters(stat.tagFilters)
+            })),
             dataPoints: activity.dataPoints.map((dp: DataPoint) => {
               const newTags = updateTags(dp.tags);
               if (newTags === undefined) {

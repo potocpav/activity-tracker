@@ -1,5 +1,5 @@
 import React, { Fragment, useState } from "react";
-import { View, Text, Platform } from "react-native";
+import { View, Text, Platform, useWindowDimensions } from "react-native";
 import { Menu, Button } from 'react-native-paper';
 import { getTransformComponents, Line, Scatter, setScale, setTranslate, useChartTransformState } from "victory-native";
 import { CartesianChart } from "victory-native";
@@ -56,6 +56,7 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
   const activity = activities.find((a: ActivityType) => a.name === activityName);
   const weekStart = useStore((state: any) => state.weekStart);
   const theme = getTheme(activity);
+  const screenWidth = useWindowDimensions().width;
 
   if (!activity) {
     return <Text>Activity not found</Text>;
@@ -75,7 +76,9 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
   const [graphTypeMenuVisible, setGraphTypeMenuVisible] = useState(false);
 
   const now = new Date();
-  const barWidth = 5;
+  const graphWidth = screenWidth * 0.9;
+  const barWidth = 10;
+  const nBars = Math.floor(graphWidth / barWidth / 2);
 
   var ticks = [];
   if (activity.dataPoints.length > 0) {
@@ -167,7 +170,7 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
     const lastBinTime = bins.length ? bins[bins.length - 1].time : now.getTime();
     const nowBin = binTime(activity.graph.binSize, now.getTime(), 0, weekStart);
     const t1 = Math.max(lastBinTime, nowBin) + approximateBinSize(activity.graph.binSize) / 2;
-    const t0view = t1 - approximateBinSize(activity.graph.binSize) * 15;
+    const t0view = t1 - approximateBinSize(activity.graph.binSize) * nBars;
     const t0 = Math.min(firstBinTime - approximateBinSize(activity.graph.binSize) / 2, t0view);
 
     var domain: { x: [number, number], y?: [number, number] } = { x: [t0, t1] };
@@ -246,7 +249,7 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
             const label = (binStats as any)[i][stat].toFixed(0) + (unit ?? "");
             const val = values[i];
             const [vx, vy] = [val.x, val.y ?? NaN];
-            const w = barWidth;
+            const w = barWidth / 2;
 
             const labelSize = font.measureText(label);
 
@@ -353,7 +356,7 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
                   {(() => {
                     const elements = [];
                     for (let i = 0; i < points.q0.length; i++) {
-                      const w = barWidth;
+                      const w = barWidth / 2;
                       const ws = w * 0.4;
                       const wcircle = w * 0.5;
 

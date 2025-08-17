@@ -5,6 +5,7 @@ import {
   Text,
   View,
   NativeModules,
+  useWindowDimensions,
 } from "react-native";
 import useStore from "./Store";
 import { ActivityType, StatValue } from "./StoreTypes";
@@ -12,7 +13,7 @@ import TagMenu from "./TagMenu";
 import Calendar from "./Calendar";
 import ValueMenu from "./ValueMenu";
 import SubUnitMenu from "./SubUnitMenu";
-import { getTheme, getThemePalette } from "./Theme";
+import { getTheme } from "./Theme";
 const locale = NativeModules.I18nManager.localeIdentifier;
 
 type ActivityCalendarProps = {

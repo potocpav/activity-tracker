@@ -11,7 +11,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import StatView from "./StatView";
 import { getTheme } from "./Theme";
 
-export const EditStat = ({ activityName, statRowId, statColId, stat, visible, onDismiss }: { navigation: any, activityName: string, statRowId: number | null, statColId: number | null, stat: Stat | null, visible: boolean, onDismiss: () => void }) => {
+export const EditStat = ({ activityName, statId, stat, visible, onDismiss }: { navigation: any, activityName: string, statId: number | null, stat: Stat | null, visible: boolean, onDismiss: () => void }) => {
   const activities = useStore((state: any) => state.activities);
   const activity = activities.find((a: ActivityType) => a.name === activityName);
   const theme = getTheme(activity);
@@ -66,22 +66,18 @@ export const EditStat = ({ activityName, statRowId, statColId, stat, visible, on
 
   const handleApply = () => {
     if (dialogStat !== null) {
-      if (statRowId === null) {
+      if (statId === null) {
         addActivityStat(activityName, dialogStat, null);
       } else {
-        if (statColId === null) {
-          addActivityStat(activityName, dialogStat, statRowId);
-        } else {
-          setActivityStat(activityName, statRowId, statColId, dialogStat);
-        }
+        setActivityStat(activityName, statId, dialogStat);
       }
     }
     onDismiss();
   };
 
   const handleDelete = () => {
-    if (statRowId !== null && statColId !== null) {
-      deleteActivityStat(activityName, statRowId, statColId);
+    if (statId !== null) {
+      deleteActivityStat(activityName, statId);
     }
     onDismiss();
   };

@@ -8,10 +8,10 @@
     "splash": {
       "image": "./assets/icon-fg.png",
       "resizeMode": "contain",
-      "backgroundColor": "#7166ff",
+      "backgroundColor": "#ffffff",
       "dark": {
         "image": "./assets/icon-fg.png",
-        "backgroundColor": "#000000"
+        "backgroundColor": "#222222"
       }
     },
     "ios": {
