@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { Dialog, Button, TextInput } from 'react-native-paper';
 import useStore from "./Store";
 import { ActivityType, Stat, StatPeriod, StatValue, TagFilter, allStatPeriods, unaryStatValues, numericStatValues } from "./StoreTypes";
@@ -9,12 +9,22 @@ import SubUnitMenu from "./SubUnitMenu";
 import DropdownMenu from "./DropdownMenu";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import StatView from "./StatView";
-import { getTheme } from "./Theme";
+import { getTheme, getThemeVariant } from "./Theme";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-export const EditStat = ({ activityName, statId, stat, visible, onDismiss }: { navigation: any, activityName: string, statId: number | null, stat: Stat | null, visible: boolean, onDismiss: () => void }) => {
+
+export const EditStat = (
+  { navigation, route }: 
+  {
+    navigation: any, 
+    route: any,
+  }) => {
   const activities = useStore((state: any) => state.activities);
+  const { activityName, statId } = route.params;
   const activity = activities.find((a: ActivityType) => a.name === activityName);
+  const stat = activity?.stats[statId];
   const theme = getTheme(activity);
+  const themeVariant = getThemeVariant();
   const addActivityStat = useStore((state: any) => state.addActivityStat);
   const setActivityStat = useStore((state: any) => state.setActivityStat);
   const deleteActivityStat = useStore((state: any) => state.deleteActivityStat);
@@ -72,28 +82,44 @@ export const EditStat = ({ activityName, statId, stat, visible, onDismiss }: { n
         setActivityStat(activityName, statId, dialogStat);
       }
     }
-    onDismiss();
+    navigation.goBack();
   };
 
   const handleDelete = () => {
     if (statId !== null) {
       deleteActivityStat(activityName, statId);
     }
-    onDismiss();
+    navigation.goBack();
   };
 
   const statValues = (activity.unit === null ? unaryStatValues : numericStatValues)
     .map((v: StatValue) => ({ key: v, label: valueToLabel(v) }));
 
+    React.useEffect(() => {
+      navigation.setOptions({
+        headerStyle: {
+          backgroundColor: themeVariant == 'light' ? theme.colors.primary : theme.colors.background,
+        },
+        headerTintColor: "#ffffff",
+        headerRight: () => (
+          <>
+            <Button compact={true} onPress={handleApply}><AntDesign name="check" size={24} color={"#ffffff"} /></Button>
+            <Button
+            compact={true}
+            onPress={handleDelete}
+            style={{ marginLeft: 8 }}
+          >
+            <AntDesign name="delete" size={22} color={"#ffffff"} />
+          </Button>
+          </>
+        ),
+      });
+    }, [activityName, navigation, theme, activity]);
+
+
   return (
-    <Dialog
-      visible={visible}
-      style={{
-        backgroundColor: theme.colors.background,
-      }}
-      onDismiss={onDismiss}
-    >
-      <Dialog.Content>
+    <SafeAreaView style={[{flex: 1, backgroundColor: theme.colors.background }]} edges={["left", "right"]}>
+      <ScrollView style={{ flex: 1, marginHorizontal: 10 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
           {dialogStat && (
             <StatView
@@ -105,7 +131,6 @@ export const EditStat = ({ activityName, statId, stat, visible, onDismiss }: { n
           )}
         </View>
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 5 }}>
           <TextInput
             label="Label"
             mode="outlined"
@@ -113,66 +138,55 @@ export const EditStat = ({ activityName, statId, stat, visible, onDismiss }: { n
             onChangeText={setInputLabel}
             style={{ flex: 1, marginBottom: 0 }}
           />
-          <Button
-            compact={true}
-            onPress={handleDelete}
-            style={{ marginLeft: 8 }}
-          >
-            <AntDesign name="delete" size={22} color={theme.colors.onSurface} />
-          </Button>
-        </View>
 
-        {/* Period */}
-        <DropdownMenu
-          options={allStatPeriods.map((p: StatPeriod) => ({ key: p, label: periodToLabel(p) }))}
-          selectedKey={inputPeriod || ""}
-          onSelect={(key: string) => setInputPeriod(key as StatPeriod)}
-          visible={periodMenuVisible}
-          setVisible={setPeriodMenuVisible}
-          label="Period"
-          themeColors={theme.colors}
-        />
-
-        {/* SubUnit menu */}
-        <SubUnitMenu
-          subUnitNames={subUnitNames}
-          subUnitName={inputSubUnit}
-          setSubUnitName={(name) => setInputSubUnit(name)}
-          menuVisible={subUnitMenuVisible}
-          setMenuVisible={setSubUnitMenuVisible}
-          themeColors={theme.colors}
-        />
-
-        {/* Value */}
-        <DropdownMenu
-          options={statValues}
-          selectedKey={inputValue || ""}
-          onSelect={(key: string) => setInputValue(key as StatValue)}
-          visible={valueMenuVisible}
-          setVisible={setValueMenuVisible}
-          label="Value"
-          themeColors={theme.colors}
-        />
-
-
-        {/* Tags */}
-        {activity.tags.length > 0 && (
-          <TagMenu
-            tags={inputTagFilters}
-            onChange={(tags) => setInputTagFilters(tags)}
-            menuVisible={tagsMenuVisible}
-            setMenuVisible={setTagsMenuVisible}
-            activityTags={activity.tags}
-            activity={activity}
+        <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center', marginVertical: 5 }}>
+          {/* Period */}
+          <DropdownMenu
+            options={allStatPeriods.map((p: StatPeriod) => ({ key: p, label: periodToLabel(p) }))}
+            selectedKey={inputPeriod || ""}
+            onSelect={(key: string) => setInputPeriod(key as StatPeriod)}
+            visible={periodMenuVisible}
+            setVisible={setPeriodMenuVisible}
+            label="Period"
+            themeColors={theme.colors}
           />
-        )}
 
-      </Dialog.Content>
-      <Dialog.Actions>
-        <Button onPress={onDismiss}><AntDesign name="close" size={24} color={theme.colors.onSurface} /></Button>
-        <Button onPress={handleApply}><AntDesign name="check" size={24} color={theme.colors.onSurface} /></Button>
-      </Dialog.Actions>
-    </Dialog>
+          {/* SubUnit menu */}
+          <SubUnitMenu
+            subUnitNames={subUnitNames}
+            subUnitName={inputSubUnit}
+            setSubUnitName={(name) => setInputSubUnit(name)}
+            menuVisible={subUnitMenuVisible}
+            setMenuVisible={setSubUnitMenuVisible}
+            themeColors={theme.colors}
+          />
+
+          {/* Value */}
+          <DropdownMenu
+            options={statValues}
+            selectedKey={inputValue || ""}
+            onSelect={(key: string) => setInputValue(key as StatValue)}
+            visible={valueMenuVisible}
+            setVisible={setValueMenuVisible}
+            label="Value"
+            themeColors={theme.colors}
+          />
+
+
+          {/* Tags */}
+          {activity.tags.length > 0 && (
+            <TagMenu
+              tags={inputTagFilters}
+              onChange={(tags) => setInputTagFilters(tags)}
+              menuVisible={tagsMenuVisible}
+              setMenuVisible={setTagsMenuVisible}
+              activityTags={activity.tags}
+              activity={activity}
+            />
+          )}
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 

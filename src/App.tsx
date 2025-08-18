@@ -24,6 +24,7 @@ import ActivityData from "./ActivityData";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { getTheme, getThemeVariant } from "./Theme";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import EditStat from "./EditStat";
 
 const { LightTheme, DarkTheme: PaperDarkTheme } = adaptNavigationTheme({
   reactNavigationLight: DefaultTheme,
@@ -175,6 +176,11 @@ const SubApp = () => {
               name="ThemeSelection"
               component={ThemeSelectionDialog}
               options={{ title: "Select Theme" }}
+            />
+            <Stack.Screen
+              name="EditStat"
+              component={EditStat}
+              options={{ title: "Edit Stat" }}
             />
           </Stack.Group>
         </Stack.Navigator>

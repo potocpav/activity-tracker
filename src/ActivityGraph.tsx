@@ -438,7 +438,7 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
           }}
         </CartesianChart>
       </View>
-      <View key="menusRow" style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 5 }}>
+      <View key="menusRow" style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap', marginBottom: 5 }}>
         {/* Binning menu */}
         <DropdownMenu
           options={binningOptions}

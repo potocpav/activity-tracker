@@ -21,23 +21,12 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
   const wideDisplay = useWideDisplay();
   const styles = getStyles(theme);
 
-  // Dialog state
-  const [statDialogVisible, setStatDialogVisible] = React.useState(false);
-  const [statDialogStatId, setStatDialogStatId] = React.useState<number | null>(null);
-
   // Value to display in dialog
-  const dialogStat = (statDialogStatId !== null) ?
-    activity.stats[statDialogStatId] ?? null : null;
 
   if (!activity) {
     return <Text>Activity not found</Text>;
   }
 
-  // Helper to open dialog
-  const showStatDialog = (statId: number | null) => {
-    setStatDialogVisible(true);
-    setStatDialogStatId(statId);
-  };
 
   const newStat: Stat = {
     label: "Last Value",
@@ -88,7 +77,11 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
           <Animated.View layout={LinearTransition} style={styles.statsContainer}>
             {activity.stats.map((stat: Stat, index: number) => (
               <StatView key={index} stat={stat} activity={activity} onPress={() =>
-                showStatDialog(index)} sharedTransitionTag={index == 0 ? "tag" : undefined} />
+                navigation.navigate("EditStat", {
+                  activityName: activityName,
+                  statId: index,
+                })
+              } sharedTransitionTag={index == 0 ? "tag" : undefined} />
             ))}
           </Animated.View>
         </View>
@@ -102,16 +95,7 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
         <ActivityGraph activityName={activityName} />
 
         <View style={{ height: 20 }} />
-
       </ScrollView>
-      <EditStat
-        navigation={navigation}
-        activityName={activityName}
-        statId={statDialogStatId}
-        stat={dialogStat}
-        visible={statDialogVisible}
-        onDismiss={() => setStatDialogVisible(false)}
-      />
     </View>
   );
 };
