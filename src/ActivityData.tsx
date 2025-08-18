@@ -7,7 +7,7 @@ import {
   NativeModules,
   FlatList,
 } from "react-native";
-import { DataTable, Button } from 'react-native-paper';
+import { DataTable, Button, Divider } from 'react-native-paper';
 import useStore from "./Store";
 import { DataPoint, ActivityType, Tag, Unit } from "./StoreTypes";
 import { dayCmp, findZeroSlice, renderTags } from "./ActivityUtil";
@@ -74,7 +74,7 @@ export const renderValue = (value: any, unit: Unit) => {
   }
 };
 
-const ITEM_HEIGHT = 50;
+const ITEM_HEIGHT = 60;
 
 const ActivityData = ({ navigation, route }: ActivityDataProps) => {
   const { activityName, day } = route.params;
@@ -146,21 +146,13 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
           />
         </View>
       )}
-      <DataTable>
-        <DataTable.Header>
-          { day ? null : (
-            <DataTable.Title>Date</DataTable.Title>
-          )}
-          <DataTable.Title>Tags</DataTable.Title>
-          <DataTable.Title>Note</DataTable.Title>
-          <DataTable.Title numeric>Value</DataTable.Title>
-        </DataTable.Header>
-      </DataTable>
+      <Divider />
       <FlatList
         style={styles.scrollView}
         data={filteredDataPoints}
         keyExtractor={([_, i]) => i.toString()}
         windowSize={2}
+        ItemSeparatorComponent={() => <Divider />}
         getItemLayout={(_, index) => (
           { length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index }
         )}
@@ -168,14 +160,25 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
           <TouchableOpacity
             onPress={() => navigation.navigate("EditDataPoint", { activityName: activity.name, dataPointIndex: i })}
           >
-            <DataTable.Row style={{ height: ITEM_HEIGHT }}>
-              {day ? null : (
-                <DataTable.Cell>{formatDate(new Date(...dataPoint.date))}</DataTable.Cell>
-              )}
-              <DataTable.Cell>{renderTags(activity.tags.filter((t: Tag) => (dataPoint.tags ?? []).includes(t.name)), theme, palette)}</DataTable.Cell>
-              <DataTable.Cell>{dataPoint.note ? dataPoint.note : null}</DataTable.Cell>
-              <DataTable.Cell numeric>{renderValue(dataPoint.value, activity.unit)}</DataTable.Cell>
-            </DataTable.Row>
+              <View style={{ padding: 5, height: ITEM_HEIGHT }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                {day ? null : (
+                  <View style={{ flex: 1 }}><Text>{formatDate(new Date(...dataPoint.date))}</Text></View>
+                )}
+                <View style={{ flex: 1, alignItems: 'flex-end' }}><Text>{renderValue(dataPoint.value, activity.unit)}</Text></View>
+              </View>
+              <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>  
+                <View style={{ flex: 1, alignItems: 'flex-start' }}><Text>{dataPoint.note ? dataPoint.note : null}</Text></View>
+                <View style={{ width: '50%', overflow: 'hidden', alignItems: 'flex-end' }}>
+                  {renderTags(
+                    activity.tags.filter((t: Tag) => (dataPoint.tags ?? []).includes(t.name)),
+                    theme,
+                    palette,
+                    false
+                  )}
+                </View>
+              </View>
+            </View>
           </TouchableOpacity>
         )}
       />

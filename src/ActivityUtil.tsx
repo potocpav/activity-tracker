@@ -284,11 +284,11 @@ export const extractStatValue = (filteredValues: [DateList, number][], statValue
 }
 
 
-export const renderTags = (tags: Tag[], theme: any, palette: string[]) => {
+export const renderTags = (tags: Tag[], theme: any, palette: string[], wrap: boolean = true) => {
   if (tags.length === 0) return null;
 
   return (
-    <View style={styles.tagsContainer}>
+    <View style={[styles.tagsContainer, { flexWrap: wrap ? 'wrap' : 'nowrap' }]}>
       {tags.map((tag, index) => (
         <View key={index} style={[styles.tag, { backgroundColor: palette[tag.color], borderColor: theme.colors.surface }]}>
           <Text style={[styles.tagText, { color: theme.colors.surface }]}>{tag.name}</Text>
@@ -345,7 +345,6 @@ export const valueToLabel = (value: StatValue): string => {
 const styles = StyleSheet.create({
   tagsContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: 4,
   },
   tag: {
