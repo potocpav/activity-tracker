@@ -1,8 +1,7 @@
 import React from "react";
 import {
-  SafeAreaView,
   StyleSheet,
-  StatusBar,
+  View,
 } from "react-native";
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -24,6 +23,7 @@ import {
 import ActivityData from "./ActivityData";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { getTheme, getThemeVariant } from "./Theme";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 const { LightTheme, DarkTheme: PaperDarkTheme } = adaptNavigationTheme({
   reactNavigationLight: DefaultTheme,
@@ -49,9 +49,11 @@ const App = () => {
   const blackBackground = useStore((state: any) => state.blackBackground);
 
   return (
-    <PaperProvider theme={themeVariant == 'light' ? MD3LightTheme : blackBackground ? MD3BlackTheme : MD3DarkTheme}>
-      <SubApp />
-    </PaperProvider>
+    <SafeAreaProvider>
+      <PaperProvider theme={themeVariant == 'light' ? MD3LightTheme : blackBackground ? MD3BlackTheme : MD3DarkTheme}>
+        <SubApp />
+      </PaperProvider>
+    </SafeAreaProvider>
   );
 };
 
@@ -113,16 +115,18 @@ const SubApp = () => {
 
   return (
     <GestureHandlerRootView>
-    <StatusBar barStyle={themeVariant == 'light' ? "dark-content" : "light-content"}
-      backgroundColor={theme.colors.surfaceVariant} />
-    <SafeAreaView style={[styles.container]}>
+    {/* <StatusBar barStyle={themeVariant == 'light' ? "dark-content" : "light-content"}
+      backgroundColor={theme.colors.surfaceVariant} /> */}
+    <View style={[styles.container]}>
       <NavigationContainer theme={navigationTheme}>
         <Stack.Navigator
           screenOptions={themeVariant == 'dark' && blackBackground ? {
             headerStyle: {
               backgroundColor: theme.colors.surface,
             },
-          } :  themeVariant == 'light' ? { headerStyle: { backgroundColor: theme.colors.surfaceVariant } } : {}
+          } :  themeVariant == 'light' 
+            ? { headerStyle: { backgroundColor: theme.colors.surfaceVariant } } 
+            : {}
         }
         >
           <Stack.Group>
@@ -175,7 +179,7 @@ const SubApp = () => {
           </Stack.Group>
         </Stack.Navigator>
       </NavigationContainer>
-    </SafeAreaView>
+    </View>
   </GestureHandlerRootView>
   );
 }

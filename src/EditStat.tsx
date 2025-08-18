@@ -94,6 +94,17 @@ export const EditStat = ({ activityName, statId, stat, visible, onDismiss }: { n
       onDismiss={onDismiss}
     >
       <Dialog.Content>
+        <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+          {dialogStat && (
+            <StatView
+              sharedTransitionTag="tag"
+              stat={dialogStat}
+              activity={activity}
+              onPress={() => {}}
+            />
+          )}
+        </View>
+
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 5 }}>
           <TextInput
             label="Label"
@@ -155,16 +166,6 @@ export const EditStat = ({ activityName, statId, stat, visible, onDismiss }: { n
             activity={activity}
           />
         )}
-
-        <View style={{ flexDirection: 'row' }}>
-          {dialogStat && (
-            <StatView
-              stat={dialogStat}
-              activity={activity}
-              onPress={() => {}}
-            />
-          )}
-        </View>
 
       </Dialog.Content>
       <Dialog.Actions>

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  SafeAreaView,
   StyleSheet,
   Text,
   View,
@@ -14,9 +13,10 @@ import { DataPoint, ActivityType, Tag, Unit } from "./StoreTypes";
 import { dayCmp, findZeroSlice, renderTags } from "./ActivityUtil";
 import TagMenu from "./TagMenu";
 import AntDesign from '@expo/vector-icons/AntDesign';
-import DraggableFlatList from "react-native-draggable-flatlist";
-import { getThemePalette } from "./Theme";
+import { getThemePalette, getThemeVariant } from "./Theme";
 import { getTheme } from "./Theme";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 const locale = NativeModules.I18nManager.localeIdentifier;
 
 type ActivityDataProps = {
@@ -81,6 +81,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
   const activities = useStore((state: any) => state.activities);
   const activity = activities.find((a: ActivityType) => a.name === activityName);
   const theme = getTheme(activity);
+  const themeVariant = getThemeVariant();
   const palette = getThemePalette();
 
   // Tag filter state
@@ -116,11 +117,15 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
     React.useEffect(() => {
       navigation.setOptions({
         title: activity.name,
+        headerStyle: {
+          backgroundColor: themeVariant == 'light' ? theme.colors.primary : theme.colors.background,
+        },
+        headerTintColor: "#ffffff",
         headerRight: () => (
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Button compact={true} 
               onPress={() => navigation.navigate("EditDataPoint", { activityName: activity.name, newDataPoint: true, newDataPointDate: day, tags: requiredTags })}>
-              <AntDesign name="plus" size={24} color={theme.colors.onSurface} />
+              <AntDesign name="plus" size={24} color={"#ffffff"} />
             </Button>
           </View>
         ),
@@ -128,7 +133,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
     }, [navigation, theme]);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={["left", "right"]}>
       {activity.tags.length > 0 && (
         <View style={{ padding: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start' }}>
           <TagMenu

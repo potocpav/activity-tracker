@@ -16,7 +16,8 @@ import { CalendarDate } from "react-native-paper-dates/lib/typescript/Date/Calen
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { cmpDateList } from "./ActivityUtil";
-import { getTheme, getThemePalette } from "./Theme";
+import { getTheme, getThemePalette, getThemeVariant } from "./Theme";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type EditDataPointProps = {
   navigation: any;
@@ -30,6 +31,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   const activities = useStore((state: any) => state.activities);
   const activity = activities.find((a: ActivityType) => a.name === activityName);
   const theme = getTheme(activity);
+  const themeVariant = getThemeVariant();
   const palette = getThemePalette();
 
   const dataPoint : DataPoint = dataPointIndex !== undefined ? activity?.dataPoints[dataPointIndex] : {
@@ -150,12 +152,16 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   React.useEffect(() => {
     navigation.setOptions({
       title: newDataPoint ? 'New data point' : `${new Date(...dataPoint.date).toLocaleDateString(locale)} #${dataPointIndex + 1}`,
+      headerStyle: {
+        backgroundColor: themeVariant == 'light' ? theme.colors.primary : theme.colors.background,
+      },
+      headerTintColor: "#ffffff",
       headerRight: () => (
         <>
-          <Button compact={true} onPress={saveDataPointWrapper}><AntDesign name="check" size={24} color={theme.colors.onSurface} /></Button>
-          <Button compact={true} onPress={duplicateDataPointWrapper}><Ionicons name="duplicate-outline" size={24} color={theme.colors.onSurface} /></Button>
+          <Button compact={true} onPress={saveDataPointWrapper}><AntDesign name="check" size={24} color={"#ffffff"} /></Button>
+          <Button compact={true} onPress={duplicateDataPointWrapper}><Ionicons name="duplicate-outline" size={24} color={"#ffffff"} /></Button>
           {dataPointIndex !== undefined && (
-            <Button compact={true} onPress={deleteDataPointWrapper}><AntDesign name="delete" size={24} color={theme.colors.onSurface} /></Button>
+            <Button compact={true} onPress={deleteDataPointWrapper}><AntDesign name="delete" size={24} color={"#ffffff"} /></Button>
           )}
         </>
       ),
@@ -163,7 +169,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   }, [navigation, theme, activity, inputDate, ...inputValues.map((inputValue: any) => inputValue.value[0]), inputTags, noteInput]);
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surface }]} edges={["left", "right"]}>
       <ScrollView style={styles.content}>
         <View style={styles.pickerContainer}>
           <DatePickerInput
@@ -224,7 +230,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
           </View>
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 

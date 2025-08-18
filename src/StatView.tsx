@@ -7,7 +7,7 @@ import useStore from "./Store";
 import { getTheme } from "./Theme";
 import Animated, { LinearTransition, FadeIn, FadeOut } from "react-native-reanimated";
 
-const StatView = ({ stat, activity, onPress }: { stat: Stat, activity: ActivityType, onPress: () => void }) => {
+const StatView = ({ stat, activity, onPress, sharedTransitionTag }: { stat: Stat, activity: ActivityType, onPress: () => void, sharedTransitionTag?: string }) => {
     const theme = getTheme(activity);
     const weekStart = useStore((state: any) => state.weekStart);
     const styles = getStyles(theme);
@@ -21,6 +21,7 @@ const StatView = ({ stat, activity, onPress }: { stat: Stat, activity: ActivityT
         style={styles.statInnerContainer}
         entering={FadeIn}
         exiting={FadeOut}
+        sharedTransitionTag={sharedTransitionTag}
         >
         <Pressable 
           onPress={onPress}

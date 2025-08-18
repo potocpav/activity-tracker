@@ -1,5 +1,5 @@
 import React from "react";
-import { SafeAreaView, ScrollView, StyleSheet, Text, View, Pressable } from "react-native";
+import { ScrollView, StyleSheet, Text, View, Pressable } from "react-native";
 import { Divider } from 'react-native-paper';
 import useStore from "./Store";
 import { ActivityType, Stat } from "./StoreTypes";
@@ -48,7 +48,7 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
   };
   
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <ScrollView>
         {activity.description && (
           <View style={styles.activityInfo}>
@@ -88,7 +88,7 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
           <Animated.View layout={LinearTransition} style={styles.statsContainer}>
             {activity.stats.map((stat: Stat, index: number) => (
               <StatView key={index} stat={stat} activity={activity} onPress={() =>
-                showStatDialog(index)} />
+                showStatDialog(index)} sharedTransitionTag={index == 0 ? "tag" : undefined} />
             ))}
           </Animated.View>
         </View>
@@ -101,6 +101,8 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
         <Text style={styles.header}>Graph</Text>
         <ActivityGraph activityName={activityName} />
 
+        <View style={{ height: 20 }} />
+
       </ScrollView>
       <EditStat
         navigation={navigation}
@@ -110,7 +112,7 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
         visible={statDialogVisible}
         onDismiss={() => setStatDialogVisible(false)}
       />
-    </SafeAreaView>
+    </View>
   );
 };
 

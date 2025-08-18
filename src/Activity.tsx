@@ -1,20 +1,21 @@
 import React from "react";
 import {
-  SafeAreaView,
   StyleSheet,
   Text,
   View,
   Alert,
-  StatusBar,
 } from "react-native";
-import { useTheme, Menu, Button } from 'react-native-paper';
+import { Menu, Button } from 'react-native-paper';
 import useStore from "./Store";
-import {DataPoint, ActivityType, SubUnit, Tag, Unit} from "./StoreTypes";
+import {DataPoint, ActivityType, SubUnit, Tag} from "./StoreTypes";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import ActivitySummary from "./ActivitySummary";
 import { File, Paths } from "expo-file-system/next";
 import * as Sharing from 'expo-sharing';
 import { getTheme, getThemeVariant } from "./Theme";
+import { SystemBars } from "react-native-edge-to-edge";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 type ActivityProps = {
   navigation: any;
   route: any;
@@ -62,11 +63,11 @@ const ActivityInner: React.FC<any> = ({ activity, navigation }) => {
 
   if (!activity) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surfaceVariant }]}>
+      <View style={[styles.container, { backgroundColor: theme.colors.surfaceVariant }]}>
         <View style={styles.errorContainer}>
           <Text style={[styles.errorText, { color: theme.colors.onSurfaceVariant }]}>Activity not found</Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -170,15 +171,8 @@ const ActivityInner: React.FC<any> = ({ activity, navigation }) => {
   }, [navigation, theme, menuVisible]);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surfaceVariant }]}>
-      <StatusBar 
-        animated={true}
-        barStyle={"light-content"} 
-          backgroundColor={
-            themeVariant == 'light' 
-            ? theme.colors.primary
-            : theme.colors.background
-            } />
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surface }]} edges={["left", "right"]}>
+      <SystemBars style={"light"} />
       <View style={{ position: 'absolute', top: 10, right: 0 }}>
         <Menu
           visible={menuVisible}

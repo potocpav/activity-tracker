@@ -1,14 +1,13 @@
 import React from 'react';
-import { StyleSheet, ScrollView, ToastAndroid } from 'react-native';
+import { StyleSheet, ScrollView, ToastAndroid, View } from 'react-native';
 import { List, Divider, Switch } from 'react-native-paper';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import useStore, { version, partialize, migrate } from './Store';
 import { File, Paths } from 'expo-file-system/next';
 import * as DocumentPicker from 'expo-document-picker';
 import * as Sharing from 'expo-sharing';
 import { getTheme } from './Theme';
-
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const Settings = () => {
   const theme = getTheme();
@@ -43,6 +42,7 @@ const Settings = () => {
         dialogTitle: 'Export Activities',
         mimeType: 'application/json',
       });
+      ToastAndroid.show("Data exported successfully", ToastAndroid.SHORT);
     } catch (error) {
       console.error(error);
     }
@@ -69,7 +69,7 @@ const Settings = () => {
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={["left", "right"]}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <List.Section>
           <List.Subheader>Interface</List.Subheader>

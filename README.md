@@ -32,6 +32,7 @@ In order to make this app a full-featured management app for activity data, the 
   * [x] Activities
   * [ ] Activity Summary
     * [ ] Stats
+    * [ ] Edit Stat: fix scrolling on horizontal dislpays
   * [ ] Edit Summary
   * [ ] Edit Activity
   * [ ] Edit Data Point
@@ -39,7 +40,7 @@ In order to make this app a full-featured management app for activity data, the 
   * [ ] Settings
 * [ ] Improve general styling
   * [ ] Decrease brightness of edit field borders
-* [ ] Screen orientation & responsive design tweaks
+* [x] Screen orientation & responsive design tweaks
 * [ ] Performance testing & enhancements
   * [ ] Many points (10k)
   * [ ] Wide date ranges (25 years)

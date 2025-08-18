@@ -14,8 +14,9 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import ColorPicker from './ColorPicker';
 import { defaultActivity } from "./DefaultActivity";
-import { getTheme, getThemePalette } from "./Theme";
+import { getTheme, getThemePalette, getThemeVariant } from "./Theme";
 import { defaultStats } from "./DefaultActivity";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type EditActivityProps = {
   navigation: any;
@@ -36,6 +37,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   const activity = activities.find((a: ActivityType) => a.name === activityName) ?? defaultActivity;
   const isNewActivity = activity.name === null;
   const theme = getTheme(activity);
+  const themeVariant = getThemeVariant();
   const updateActivity = useStore((state: any) => state.updateActivity);
   const setTags = useStore((state: any) => state.setTags);
   const setUnit = useStore((state: any) => state.setUnit);
@@ -145,14 +147,18 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
 
     React.useEffect(() => {
       navigation.setOptions({
-        title: activity.name,
+        title: activityName === null ? "New Activity" : activity.name,
+        headerStyle: {
+          backgroundColor: themeVariant == 'light' ? theme.colors.primary : theme.colors.background,
+        },
+        headerTintColor: "#ffffff",
         headerRight: () => (
           <>
-            <Button compact={true} onPress={saveActivityWrapper}><AntDesign name="check" size={24} color={theme.colors.onSurface} /></Button>
+            <Button compact={true} onPress={saveActivityWrapper}><AntDesign name="check" size={24} color={"#ffffff"} /></Button>
           </>
         ),
       });
-    }, [navigation, theme, activity, activityNameInput, activityDescriptionInput, singleUnitInput, selectedColor, tagState, multiUnitInput, unitMode]);
+    }, [activityName, navigation, theme, activity, activityNameInput, activityDescriptionInput, singleUnitInput, selectedColor, tagState, multiUnitInput, unitMode]);
 
     const onUpdateTag = (action: "delete" | "update") => {
       if (tagDialogNameInput === "") {
@@ -244,7 +250,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
     );
 
     return (
-      <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surface }]} edges={["left", "right"]}>
         <ScrollView style={styles.content}>
           <View style={styles.inputContainer}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -388,7 +394,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
             theme={theme}
           />
         </Portal>
-      </View>
+      </SafeAreaView>
     );
   };
 

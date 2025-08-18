@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  SafeAreaView,
   StyleSheet,
   Text,
   View,
@@ -15,7 +14,9 @@ import DraggableFlatList from 'react-native-draggable-flatlist'
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { renderValueSummary } from "./ActivityData";
 import { calcStatValue, getUnitSymbol } from "./ActivityUtil";
-import { getTheme, getThemePalette, useWideDisplay } from "./Theme";
+import { getTheme, getThemePalette, getThemeVariant, useWideDisplay } from "./Theme";
+import { SystemBars } from "react-native-edge-to-edge";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type ActivitiesProps = {
   navigation: any;
@@ -23,6 +24,7 @@ type ActivitiesProps = {
 
 const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   const theme = getTheme();
+  const themeVariant = getThemeVariant();
   const activities = useStore((state: any) => state.activities);
   const setActivities = useStore((state: any) => state.setActivities);
   const weekStart = useStore((state: any) => state.weekStart);
@@ -94,7 +96,8 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={[styles.container]}>
+    <SafeAreaView style={[styles.container]} edges={["left", "right"]}>
+      <SystemBars style={themeVariant == 'light' ? "dark" : "light"} />
       {activities.length === 0 ? (
         <View style={styles.emptyStateContainer}>
           <AntDesign name="inbox" size={64} color={theme.colors.onSurfaceVariant} />

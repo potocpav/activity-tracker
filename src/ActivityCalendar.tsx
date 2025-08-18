@@ -1,11 +1,9 @@
 import React, { useState } from "react";
 import {
-  SafeAreaView,
   StyleSheet,
   Text,
   View,
   NativeModules,
-  useWindowDimensions,
 } from "react-native";
 import useStore from "./Store";
 import { ActivityType, StatValue } from "./StoreTypes";
@@ -43,7 +41,7 @@ const ActivityCalendar = ({ navigation, activityName }: ActivityCalendarProps) =
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <View style={[styles.container, { paddingHorizontal: 4, backgroundColor: theme.colors.background }]}>
       <Calendar navigation={navigation} activityName={activityName}/>
       <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
         {activity.tags.length > 0 && (
@@ -76,7 +74,7 @@ const ActivityCalendar = ({ navigation, activityName }: ActivityCalendarProps) =
           valueList={["n_points", "sum", "mean", "max", "min", "last"]}
         />}
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 

@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -35,7 +34,7 @@ const LiveView: React.FC<LiveViewProps> = ({ navigation }) => {
 
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surfaceVariant }]}>
+    <View style={[styles.container, { backgroundColor: theme.colors.surfaceVariant }]}>
       <StatusBar navigation={navigation} />
 
       {isConnected ? (
@@ -134,7 +133,7 @@ const LiveView: React.FC<LiveViewProps> = ({ navigation }) => {
           </Text>
         </View>
       )}
-    </SafeAreaView>
+    </View>
   );
 };
 
