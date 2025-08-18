@@ -163,12 +163,17 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
               <View style={{ padding: 5, height: ITEM_HEIGHT }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                 {day ? null : (
-                  <View style={{ flex: 1 }}><Text>{formatDate(new Date(...dataPoint.date))}</Text></View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{color: theme.colors.onSurface}}>{formatDate(new Date(...dataPoint.date))}</Text>
+                  </View>
                 )}
-                <View style={{ flex: 1, alignItems: 'flex-end' }}><Text>{renderValue(dataPoint.value, activity.unit)}</Text></View>
+                <View style={{ flex: 1, alignItems: 'flex-end' }}>
+                  <Text style={{color: theme.colors.onSurface}}>{renderValue(dataPoint.value, activity.unit)}</Text>
+                </View>
               </View>
               <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>  
-                <View style={{ flex: 1, alignItems: 'flex-start' }}><Text>{dataPoint.note ? dataPoint.note : null}</Text></View>
+                <View style={{ flex: 1, alignItems: 'flex-start' }}>
+                  <Text style={{color: theme.colors.onSurface}}>{dataPoint.note ? dataPoint.note : null}</Text></View>
                 <View style={{ width: '50%', overflow: 'hidden', alignItems: 'flex-end' }}>
                   {renderTags(
                     activity.tags.filter((t: Tag) => (dataPoint.tags ?? []).includes(t.name)),
