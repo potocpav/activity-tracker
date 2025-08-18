@@ -7,11 +7,12 @@ import {
   Alert,
   ToastAndroid,
   NativeModules,
+  Pressable,
 } from "react-native";
 import { Chip, useTheme, TextInput, Button } from 'react-native-paper';
 import { SubUnit, ActivityType, dateToDateList, dateListToTime, DataPoint } from "./StoreTypes";
 import useStore from "./Store";
-import { DatePickerInput } from "react-native-paper-dates";
+import { DatePickerInput, DatePickerModal } from "react-native-paper-dates";
 import { CalendarDate } from "react-native-paper-dates/lib/typescript/Date/Calendar";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -33,6 +34,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   const theme = getTheme(activity);
   const themeVariant = getThemeVariant();
   const palette = getThemePalette();
+  const [datePickerVisible, setDatePickerVisible] = useState(false);
 
   const dataPoint : DataPoint = dataPointIndex !== undefined ? activity?.dataPoints[dataPointIndex] : {
     date: dateToDateList(newDataPointDate ? new Date(newDataPointDate[0], newDataPointDate[1], newDataPointDate[2]) : new Date()),
@@ -172,14 +174,23 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surface }]} edges={["left", "right"]}>
       <ScrollView style={styles.content}>
         <View style={styles.pickerContainer}>
-          <DatePickerInput
-            locale={locale}
-            value={inputDate}
-            onChange={(d) => { setInputDate(d); }}
-            inputMode="start"
-            mode="outlined"
-            label="Date"
-          />
+          <Pressable onPress={() => { setDatePickerVisible(true); }}
+          style={({pressed}) => [
+            {
+              flex: 1,
+              opacity: pressed ? 0.7 : 1,
+            },
+          ]}
+          // android_ripple={{ color: theme.colors.onSurface, foreground: false }}
+            >
+            <TextInput
+              mode="outlined"
+              label="Date"
+              editable={false}
+              value={inputDate ? inputDate.toLocaleDateString(locale) : "Select date"}
+              right={<TextInput.Icon icon="calendar" />}
+            />
+          </Pressable>
         </View>
 
         <View style={styles.inputContainer}>
@@ -230,6 +241,14 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
           </View>
         </View>
       </ScrollView>
+      <DatePickerModal
+          locale="en"
+          mode="single"
+          visible={datePickerVisible}
+          onDismiss={() => { setDatePickerVisible(false); }}
+          date={inputDate}
+          onConfirm={(d) => { setInputDate(d.date); setDatePickerVisible(false); }}
+        />
     </SafeAreaView>
   );
 };
@@ -243,10 +262,6 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   pickerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 20,
   },
   inputContainer: {
     marginBottom: 20,
