@@ -20,12 +20,6 @@ In order to make this app a full-featured management app for activity data, the 
   
 * [ ] Dragging points in Day View
 
-### Bugs
-
-* [ ] Fix direct date input
-* [ ] Fix localization (date display)
-* [ ] Fix date in CSV, when imported into Google Sheets
-
 ### General Usability
 
 * [ ] Page-by-page polish
