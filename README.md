@@ -22,19 +22,9 @@ In order to make this app a full-featured management app for activity data, the 
 
 ### General Usability
 
-* [ ] Page-by-page polish
-  * [x] Activities
-  * [ ] Activity Summary
-    * [ ] Stats
-    * [x] Edit Stat: fix scrolling on horizontal dislpays
-  * [ ] Edit Summary
-  * [ ] Edit Activity
-  * [ ] Edit Data Point
-  * [ ] Data Point List 
-  * [ ] Settings
-* [ ] Improve general styling
-  * [ ] Decrease brightness of edit field borders
-* [x] Screen orientation & responsive design tweaks
+* [ ] Fix dark theme in Data section
+* [ ] Fix multi-value display in Data section
+* [ ] Decrease brightness of edit field borders
 * [ ] Performance testing & enhancements
   * [ ] Many points (10k)
   * [ ] Wide date ranges (25 years)
