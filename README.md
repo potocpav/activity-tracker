@@ -32,7 +32,7 @@ In order to make this app a full-featured management app for activity data, the 
   * [x] Activities
   * [ ] Activity Summary
     * [ ] Stats
-    * [ ] Edit Stat: fix scrolling on horizontal dislpays
+    * [x] Edit Stat: fix scrolling on horizontal dislpays
   * [ ] Edit Summary
   * [ ] Edit Activity
   * [ ] Edit Data Point

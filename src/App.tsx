@@ -25,6 +25,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { getTheme, getThemeVariant } from "./Theme";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import EditStat from "./EditStat";
+import { enGB, registerTranslation } from 'react-native-paper-dates'
 
 const { LightTheme, DarkTheme: PaperDarkTheme } = adaptNavigationTheme({
   reactNavigationLight: DefaultTheme,
@@ -44,6 +45,8 @@ const MD3BlackTheme = {
     },
   },
 };
+
+registerTranslation('en-GB', enGB)
 
 const App = () => {
   const themeVariant = getThemeVariant();

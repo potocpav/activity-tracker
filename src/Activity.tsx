@@ -121,7 +121,7 @@ const ActivityInner: React.FC<any> = ({ activity, navigation }) => {
       const tags = (() => {
         return activity.tags.map((t: Tag) => (dp.tags ?? []).includes(t.name) ? 1 : null);
       })();
-      return [new Date(...dp.date).toLocaleDateString(), ...values, ...tags];
+      return [new Date(...dp.date).toISOString().split('T')[0], ...values, ...tags];
     });
     const csv = renderCsv([headerRow, ...dataRows]);
 

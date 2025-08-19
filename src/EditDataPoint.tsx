@@ -35,6 +35,8 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   const themeVariant = getThemeVariant();
   const palette = getThemePalette();
   const [datePickerVisible, setDatePickerVisible] = useState(false);
+  const locale = Intl.DateTimeFormat().resolvedOptions().locale;
+  const weekStart = useStore((state: any) => state.weekStart);
 
   const dataPoint : DataPoint = dataPointIndex !== undefined ? activity?.dataPoints[dataPointIndex] : {
     date: dateToDateList(newDataPointDate ? new Date(newDataPointDate[0], newDataPointDate[1], newDataPointDate[2]) : new Date()),
@@ -203,7 +205,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
               keyboardType="numeric"
               mode="outlined"
               style={{
-                marginBottom: 10,
+                // marginBottom: 10,
               }}
             />
           ))}
@@ -242,11 +244,19 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
         </View>
       </ScrollView>
       <DatePickerModal
-          locale="en"
           mode="single"
+          endYear={new Date().getFullYear()}
+          label={"Select date"}
+          locale={"en-GB"}
           visible={datePickerVisible}
           onDismiss={() => { setDatePickerVisible(false); }}
+          startYear={2000}
+          validRange={{
+            startDate: new Date(2000, 0, 1),
+            endDate: new Date(),
+          }}
           date={inputDate}
+          startWeekOnMonday={weekStart === "monday"}
           onConfirm={(d) => { setInputDate(d.date); setDatePickerVisible(false); }}
         />
     </SafeAreaView>
@@ -262,6 +272,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   pickerContainer: {
+    marginBottom: 20,
   },
   inputContainer: {
     marginBottom: 20,
