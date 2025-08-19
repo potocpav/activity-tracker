@@ -16,7 +16,7 @@ import { DatePickerInput, DatePickerModal } from "react-native-paper-dates";
 import { CalendarDate } from "react-native-paper-dates/lib/typescript/Date/Calendar";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { cmpDateList } from "./ActivityUtil";
+import { cmpDateList, formatDate } from "./ActivityUtil";
 import { getTheme, getThemePalette, getThemeVariant } from "./Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -155,7 +155,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
 
   React.useEffect(() => {
     navigation.setOptions({
-      title: newDataPoint ? 'New data point' : `${new Date(...dataPoint.date).toLocaleDateString(locale)} #${dataPointIndex + 1}`,
+      title: newDataPoint ? 'New data point' : `${formatDate(new Date(...dataPoint.date))} #${dataPointIndex + 1}`,
       headerStyle: {
         backgroundColor: themeVariant == 'light' ? theme.colors.primary : theme.colors.background,
       },

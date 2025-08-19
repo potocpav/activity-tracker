@@ -1,8 +1,9 @@
 
-import { StackedArea } from "victory-native";
 import { Tag, StatPeriod, DataPoint, DateList, dateListToTime, normalizeDateList, TagFilter, StatValue, Stat, dateToDateList, ActivityType, WeekStart, Unit } from "./StoreTypes";
 import { View, Text, StyleSheet } from "react-native";
+import { NativeModules } from "react-native";
 
+const locale = NativeModules.I18nManager.localeIdentifier;
 export type BinSize = "day" | "week" | "month" | "quarter" | "year";
 
 export const dayCmp = (dp: DataPoint, day: DateList) => {
@@ -341,6 +342,10 @@ export const valueToLabel = (value: StatValue): string => {
       return "Last";
   }
 }
+
+export const formatDate = (date: Date) => {
+  return date.toLocaleDateString(locale, { year: "numeric", month: "short", day: "numeric" });
+};
 
 const styles = StyleSheet.create({
   tagsContainer: {

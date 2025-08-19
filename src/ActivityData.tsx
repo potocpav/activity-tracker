@@ -4,28 +4,22 @@ import {
   Text,
   View,
   TouchableOpacity,
-  NativeModules,
-  FlatList,
+  SectionList,
 } from "react-native";
-import { DataTable, Button, Divider } from 'react-native-paper';
+import { Button, Divider } from 'react-native-paper';
 import useStore from "./Store";
-import { DataPoint, ActivityType, Tag, Unit } from "./StoreTypes";
-import { dayCmp, findZeroSlice, renderTags } from "./ActivityUtil";
+import { DataPoint, ActivityType, Tag, Unit, DateList } from "./StoreTypes";
+import { cmpDateList, dayCmp, findZeroSlice, renderTags, formatDate } from "./ActivityUtil";
 import TagMenu from "./TagMenu";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { getThemePalette, getThemeVariant } from "./Theme";
 import { getTheme } from "./Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const locale = NativeModules.I18nManager.localeIdentifier;
 
 type ActivityDataProps = {
   navigation: any;
   route: any;
-};
-
-export const formatDate = (date: Date) => {
-  return date.toLocaleDateString(locale, { year: "numeric", month: "short", day: "numeric" });
 };
 
 export const renderValueSummary = (value: any, unit: Unit) => {
@@ -55,7 +49,7 @@ export const renderValueSummary = (value: any, unit: Unit) => {
   }
 };
 
-export const renderValue = (value: any, unit: Unit) => {
+const renderValue = (value: any, unit: Unit) => {
   if (unit === null) {
     return "✓";
   } else if (typeof value === "number" && typeof unit === "string") {
@@ -83,6 +77,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
   const theme = getTheme(activity);
   const themeVariant = getThemeVariant();
   const palette = getThemePalette();
+  const styles = getStyles(theme);
 
   // Tag filter state
   const [tags, setTags] = useState<{ name: string; state: "yes" | "no" }[]>([]);
@@ -95,7 +90,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
   // Filtering logic
   const requiredTags = tags.filter((t) => t.state === "yes").map(t => t.name);
   const negativeTags = tags.filter((t) => t.state === "no").map(t => t.name);
-  
+
   let dps: [DataPoint, number][] = activity.dataPoints.map((o: DataPoint, i: number) => [o, i]);
   // filter only daily points
   if (day) {
@@ -113,27 +108,89 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
     .slice()
     .reverse()
 
-
-    React.useEffect(() => {
-      navigation.setOptions({
-        title: activity.name,
-        headerStyle: {
-          backgroundColor: themeVariant == 'light' ? theme.colors.primary : theme.colors.background,
-        },
-        headerTintColor: "#ffffff",
-        headerRight: () => (
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Button compact={true} 
-              onPress={() => navigation.navigate("EditDataPoint", { activityName: activity.name, newDataPoint: true, newDataPointDate: day, tags: requiredTags })}>
-              <AntDesign name="plus" size={24} color={"#ffffff"} />
-            </Button>
-          </View>
-        ),
+  const sections = filteredDataPoints.reduce((acc: any, [dataPoint, i]) => {
+    const lastDate = acc[acc.length - 1]?.date ?? null;
+    if (lastDate && cmpDateList(dataPoint.date, lastDate) == 0) {
+      acc[acc.length - 1].data.push([dataPoint, i]);
+    } else {
+      acc.push({
+        date: dataPoint.date,
+        data: [[dataPoint, i]],
       });
-    }, [navigation, theme]);
+    }
+    return acc;
+  }, []);
+
+  React.useEffect(() => {
+    navigation.setOptions({
+      title: activity.name,
+      headerStyle: {
+        backgroundColor: themeVariant == 'light' ? theme.colors.primary : theme.colors.background,
+      },
+      headerTintColor: "#ffffff",
+      headerRight: () => (
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Button compact={true}
+            onPress={() => navigation.navigate("EditDataPoint", { activityName: activity.name, newDataPoint: true, newDataPointDate: day, tags: requiredTags })}>
+            <AntDesign name="plus" size={24} color={"#ffffff"} />
+          </Button>
+        </View>
+      ),
+    });
+  }, [navigation, theme]);
+
+  const renderNoteAndTags = (dataPoint: DataPoint) => {
+    return (
+      <View style={{gap: 4}}>
+        <View style={{}}>
+          <Text numberOfLines={1} style={{ color: theme.colors.onSurface }}>{dataPoint.note ?? ""}</Text>
+        </View>
+        <View style={{}}>
+          {renderTags(
+            activity.tags.filter((t: Tag) => (dataPoint.tags ?? []).includes(t.name)),
+            theme,
+            palette,
+            false
+          )}
+        </View>
+      </View>
+    );
+  }
+
+  const renderValueless = (dataPoint: DataPoint, i: number) => {
+    return (
+      <TouchableOpacity
+        onPress={() => navigation.navigate("EditDataPoint", { activityName: activity.name, dataPointIndex: i })}
+        style={styles.activityCard}
+      >
+        <View style={{ padding: 5, height: ITEM_HEIGHT, flexDirection: 'row', alignItems: 'center' }}>
+          <View style={{ width: ITEM_HEIGHT - 10, alignItems: 'center' }}>
+            <Text numberOfLines={1} adjustsFontSizeToFit style={{ color: theme.colors.onSurface, fontSize: 70 }}>✓</Text>
+          </View>
+          {renderNoteAndTags(dataPoint)}
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderWithValue = (dataPoint: DataPoint, i: number) => {
+    return (
+      <TouchableOpacity
+        onPress={() => navigation.navigate("EditDataPoint", { activityName: activity.name, dataPointIndex: i })}
+        style={styles.activityCard}
+      >
+        <View style={{ padding: 5, height: ITEM_HEIGHT, flexDirection: 'row' }}>
+          <View style={{ width: ITEM_HEIGHT - 10, marginRight: 10, alignItems: 'center' }}>
+            <Text numberOfLines={1} adjustsFontSizeToFit style={{ color: theme.colors.onSurface }}>{renderValue(dataPoint.value, activity.unit)}</Text>
+          </View>
+          {renderNoteAndTags(dataPoint)}
+        </View>
+      </TouchableOpacity>
+    );
+  }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={["left", "right"]}>
+    <SafeAreaView style={[styles.container]} edges={["left", "right"]}>
       {activity.tags.length > 0 && (
         <View style={{ padding: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start' }}>
           <TagMenu
@@ -147,62 +204,40 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
         </View>
       )}
       <Divider />
-      <FlatList
+      <SectionList
         style={styles.scrollView}
-        data={filteredDataPoints}
+        sections={sections}
         keyExtractor={([_, i]) => i.toString()}
         windowSize={2}
-        ItemSeparatorComponent={() => <Divider />}
-        getItemLayout={(_, index) => (
-          { length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index }
+        renderSectionHeader={({ section: { date } }) => (
+          <View style={{ padding: 5 }}>
+            <Text style={{ color: theme.colors.onSurface }}>{formatDate(new Date(...(date as DateList)))}</Text>
+          </View>
         )}
-        renderItem={({ item: [dataPoint, i] }) => (
-          <TouchableOpacity
-            onPress={() => navigation.navigate("EditDataPoint", { activityName: activity.name, dataPointIndex: i })}
-          >
-              <View style={{ padding: 5, height: ITEM_HEIGHT }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                {day ? null : (
-                  <View style={{ flex: 1 }}>
-                    <Text style={{color: theme.colors.onSurface}}>{formatDate(new Date(...dataPoint.date))}</Text>
-                  </View>
-                )}
-                <View style={{ flex: 1, alignItems: 'flex-end' }}>
-                  <Text style={{color: theme.colors.onSurface}}>{renderValue(dataPoint.value, activity.unit)}</Text>
-                </View>
-              </View>
-              <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>  
-                <View style={{ flex: 1, alignItems: 'flex-start' }}>
-                  <Text style={{color: theme.colors.onSurface}}>{dataPoint.note ? dataPoint.note : null}</Text></View>
-                <View style={{ width: '50%', overflow: 'hidden', alignItems: 'flex-end' }}>
-                  {renderTags(
-                    activity.tags.filter((t: Tag) => (dataPoint.tags ?? []).includes(t.name)),
-                    theme,
-                    palette,
-                    false
-                  )}
-                </View>
-              </View>
-            </View>
-          </TouchableOpacity>
-        )}
+        renderItem={({ item: [dataPoint, i] }) => activity.unit === null ? renderValueless(dataPoint, i) : renderWithValue(dataPoint, i)}
       />
     </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: theme.colors.elevation.level1,
+    paddingTop: 2,
   },
   scrollView: {
     flex: 1,
   },
-  fab: {
-    position: 'absolute',
-    margin: 16,
-    right: 0,
-    bottom: 0,
+  listContainer: {
+    padding: 2,
+  },
+  activityCard: {
+    padding: 4,
+    backgroundColor: theme.colors.surface,
+    margin: 2,
+    borderRadius: 2,
+    elevation: 1,
   },
 });
 

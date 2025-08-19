@@ -63,7 +63,6 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
 
     return (
       <Pressable
-        // style={[styles.activityCard, styles.activityCardSurface]}
         onPress={() => navigation.navigate('Activity', { activityName: activity.name })}
         onLongPress={drag}
         style={({ pressed }) => [
@@ -136,7 +135,6 @@ const getStyles = (theme: any, wideDisplay: boolean) => StyleSheet.create({
     backgroundColor: theme.colors.surface,
     margin: 2,
     borderRadius: 2,
-
     elevation: 1,
   },
   activityRow: {
