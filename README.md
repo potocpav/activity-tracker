@@ -1,4 +1,4 @@
-# Activity Tracker App
+# Activity Tracker
 
 **This app is work-in-progress, and I don't know how far I'll get before I get bored of it. It is now useful to me, and I use it every day. But YMMV (-:**
 

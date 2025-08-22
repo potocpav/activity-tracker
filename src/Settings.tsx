@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, ScrollView, ToastAndroid, View } from 'react-native';
+import { StyleSheet, ScrollView, ToastAndroid, View, Linking } from 'react-native';
 import { List, Divider, Switch } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import useStore, { version, partialize, migrate } from './Store';
@@ -108,39 +108,22 @@ const Settings = () => {
             left={(props) => <List.Icon {...props} icon="upload" />}
             onPress={exportData}
           />
-          <Divider />
           <List.Item
             title="Data Import"
-            description="Import data from a backup file."
+            description="Import data from a backup file. This will overwrite all existing data."
             left={(props) => <List.Icon {...props} icon="download" />}
             onPress={importData}
           />
         </List.Section>
 
         <List.Section>
-          <List.Subheader>Support</List.Subheader>
+          <List.Subheader>Links</List.Subheader>
           <List.Item
-            title="Help & FAQ"
-            description="Get help and find answers"
-            left={(props) => <List.Icon {...props} icon="help-circle" />}
+            title="Visit us on GitHub"
+            description="View source code and contribute"
+            left={(props) => <List.Icon {...props} icon="github" />}
             right={(props) => <List.Icon {...props} icon="chevron-right" />}
-            onPress={() => { }}
-          />
-          <Divider />
-          <List.Item
-            title="Contact Support"
-            description="Get in touch with our support team"
-            left={(props) => <List.Icon {...props} icon="message" />}
-            right={(props) => <List.Icon {...props} icon="chevron-right" />}
-            onPress={() => { }}
-          />
-          <Divider />
-          <List.Item
-            title="About"
-            description="App version and information"
-            left={(props) => <List.Icon {...props} icon="information" />}
-            right={(props) => <List.Icon {...props} icon="chevron-right" />}
-            onPress={() => { }}
+            onPress={() => Linking.openURL('https://github.com/potocpav/activity-tracker')}
           />
         </List.Section>
       </ScrollView>
