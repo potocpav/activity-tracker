@@ -18,7 +18,7 @@ const StatView = ({ stat, activity, onPress, sharedTransitionTag }: { stat: Stat
     return (
       <Animated.View 
         layout={LinearTransition} 
-        style={styles.statInnerContainer}
+        style={styles.container}
         entering={FadeIn}
         exiting={FadeOut}
         sharedTransitionTag={sharedTransitionTag}
@@ -26,15 +26,15 @@ const StatView = ({ stat, activity, onPress, sharedTransitionTag }: { stat: Stat
         <Pressable 
           onPress={onPress}
           style={({pressed}) => [
-            styles.statInnerContainer,
             {
+              flexDirection: 'row',
               opacity: pressed ? 0.5 : 1,
             },
           ]}
           >
           <View style={{ flex: 1, flexDirection: 'column', alignItems: 'center' }}>
-            <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>{renderValueSummary(value, unitSymbol)}</Text>
-            <Text style={styles.statsLabel} numberOfLines={2} adjustsFontSizeToFit>{stat.label}</Text>
+            <Text style={styles.value} numberOfLines={1} adjustsFontSizeToFit>{renderValueSummary(value, unitSymbol)}</Text>
+            <Text style={styles.label} numberOfLines={2} adjustsFontSizeToFit>{stat.label}</Text>
           </View>
         </Pressable>
       </Animated.View>
@@ -42,7 +42,7 @@ const StatView = ({ stat, activity, onPress, sharedTransitionTag }: { stat: Stat
   };
 
 const getStyles = (theme: any) => StyleSheet.create({
-  statInnerContainer: {
+  container: {
     width: 110,
     // flex: 1,
     flexDirection: 'row',
@@ -50,11 +50,11 @@ const getStyles = (theme: any) => StyleSheet.create({
     justifyContent: 'flex-start',
     paddingVertical: 18,
   },
-  statsLabel: {
+  label: {
     fontSize: 16,
     color: theme.colors.onSurfaceVariant,
   },
-  statValue: {
+  value: {
     fontSize: 24,
     fontWeight: 'bold',
     color: theme.colors.primary,

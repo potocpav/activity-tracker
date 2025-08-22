@@ -8,7 +8,6 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import ActivityGraph from "./ActivityGraph";
 import ActivityCalendar from "./ActivityCalendar";
 import StatView from "./StatView";
-import EditStat from "./EditStat";
 import { getTheme, getThemePalette, useWideDisplay } from "./Theme";
 import Animated, { LinearTransition } from "react-native-reanimated";
 
@@ -39,25 +38,27 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
   return (
     <View style={styles.container}>
       <ScrollView>
-        {activity.description && (
-          <View style={styles.activityInfo}>
-            <Text style={styles.activityDescription}>{activity.description}</Text>
-          </View>
-        )}
-        {activity.tags.length > 0 && (
-          <>
-            <Divider />
-            <View style={styles.tagsRow}>
-              {renderTags(activity.tags, theme, palette)}
+        <View style={styles.header}>
+          {activity.description && (
+            <View style={styles.activityInfo}>
+              <Text style={styles.activityDescription}>{activity.description}</Text>
             </View>
-          </>
-        )}
-        <Divider />
+          )}
+
+          {activity.tags.length > 0 && (
+            <>
+              {/* <Divider /> */}
+              <View style={styles.tagsRow}>
+                {renderTags(activity.tags, theme, palette)}
+              </View>
+            </>
+          )}
+        </View>
 
         <View>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <View style={{}}>
-              <Text style={styles.header}>Overview</Text>
+              <Text style={styles.sectionHeader}>Overview</Text>
             </View>
             <View style={styles.addStat}>
               <Pressable
@@ -87,11 +88,11 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
         </View>
         <Divider />
 
-        <Text style={styles.header}>Calendar</Text>
+        <Text style={styles.sectionHeader}>Calendar</Text>
         <ActivityCalendar navigation={navigation} activityName={activityName} />
 
         <Divider />
-        <Text style={styles.header}>Graph</Text>
+        <Text style={styles.sectionHeader}>Graph</Text>
         <ActivityGraph activityName={activityName} />
 
         <View style={{ height: 20 }} />
@@ -105,28 +106,30 @@ const getStyles = (theme: any) => StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.background,
   },
+  header: {
+    backgroundColor: theme.colors.elevation.level1,
+    elevation: 2,
+    marginHorizontal: 4,
+  },
   activityInfo: {
     padding: 15,
-    backgroundColor: theme.colors.surface,
   },
   activityDescription: {
     fontSize: 16,
-    lineHeight: 22,
     color: theme.colors.onSurface,
-    textAlign: 'center',
-  },
-  header: {
-    fontSize: 16,
-    color: theme.colors.onSurface,
-    marginHorizontal: 8,
-    marginTop: 16,
-    marginBottom: 8,
   },
   tagsRow: {
     padding: 10,
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'flex-start',
+  },
+  sectionHeader: {
+    fontSize: 16,
+    color: theme.colors.onSurface,
+    marginHorizontal: 8,
+    marginTop: 16,
+    marginBottom: 8,
   },
   addStat: {
     padding: 10,

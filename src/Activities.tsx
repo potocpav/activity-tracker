@@ -124,7 +124,7 @@ const getStyles = (theme: any, wideDisplay: boolean) => StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: theme.colors.elevation.level1,
+    backgroundColor: theme.colors.elevation.background,
     paddingTop: 2,
   },
   listContainer: {
@@ -132,28 +132,22 @@ const getStyles = (theme: any, wideDisplay: boolean) => StyleSheet.create({
   },
   activityCard: {
     padding: 4,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.elevation.level1,
+    elevation: 1,
     margin: 2,
     borderRadius: 2,
-    elevation: 1,
   },
   activityRow: {
     flexDirection: 'row',
     gap: 4,
-    // alignItems: 'center',
-    // justifyContent: 'space-between',
   },
   activityTitleContainer: {
-    // flex: 6,
     flex: 1,
-    // backgroundColor: 'blue',
     paddingLeft: 4,
     justifyContent: 'center',
   },
   activityValueContainer: {
-    // flex: 1,
     width: wideDisplay ? '10%' : '25%',
-    // backgroundColor: 'red',
     alignItems: 'center',
     justifyContent: 'center',
   },

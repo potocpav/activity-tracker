@@ -3,8 +3,8 @@ import {
   StyleSheet,
   Text,
   View,
-  TouchableOpacity,
   SectionList,
+  Pressable,
 } from "react-native";
 import { Button, Divider } from 'react-native-paper';
 import useStore from "./Store";
@@ -49,25 +49,6 @@ export const renderValueSummary = (value: any, unit: Unit) => {
   }
 };
 
-const renderValue = (value: any, unit: Unit) => {
-  if (unit === null) {
-    return "✓";
-  } else if (typeof value === "number" && typeof unit === "string") {
-    return `${Math.round(value * 100) / 100} ${unit}`;
-  } else if (typeof value === "object" && Array.isArray(unit)) {
-    // Handle complex units (like finger strength with mean, max, tut)
-    const parts: string[] = [];
-    unit.forEach((u: any) => {
-      if (value[u.name] !== null && value[u.name] !== undefined) {
-        parts.push(`${value[u.name]} ${u.symbol}`);
-      }
-    });
-    return parts.join(", ");
-  } else {
-    return "n/a"
-  }
-};
-
 const ITEM_HEIGHT = 60;
 
 const ActivityData = ({ navigation, route }: ActivityDataProps) => {
@@ -76,6 +57,9 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
   const activity = activities.find((a: ActivityType) => a.name === activityName);
   const theme = getTheme(activity);
   const themeVariant = getThemeVariant();
+  const blackBackground = useStore((state: any) => state.blackBackground);
+  const blackTheme = themeVariant == 'dark' && blackBackground;
+  
   const palette = getThemePalette();
   const styles = getStyles(theme);
 
@@ -130,6 +114,21 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
       headerTintColor: "#ffffff",
       headerRight: () => (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          {activity.tags.length > 0 && (
+              <TagMenu
+                activity={activity}
+                tags={tags}
+                onChange={(tags) => setTags(tags)}
+                menuVisible={tagsMenuVisible}
+                setMenuVisible={setTagsMenuVisible}
+                activityTags={activity.tags}
+                button= {(setMenuVisible) => 
+                <Button compact={true} onPress={() => setMenuVisible()}>
+                  <AntDesign name="filter" size={24} color={"#ffffff"} />
+                </Button>
+                }
+              />
+          )}
           <Button compact={true}
             onPress={() => navigation.navigate("EditDataPoint", { activityName: activity.name, newDataPoint: true, newDataPointDate: day, tags: requiredTags })}>
             <AntDesign name="plus" size={24} color={"#ffffff"} />
@@ -137,7 +136,34 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
         </View>
       ),
     });
-  }, [navigation, theme]);
+  }, [navigation, theme, tagsMenuVisible, tags, activity]);
+
+
+  const renderValue = (value: any, unit: Unit): React.ReactNode => {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        {unit === null ? (
+          <Text style={{ color: theme.colors.onSurface }}>✓</Text>
+        ) : typeof value === "number" && typeof unit === "string" ? (
+          <Text style={{ color: theme.colors.onSurface }}>{`${Math.round(value * 100) / 100} ${unit}`}</Text>
+        ) : typeof value === "object" && Array.isArray(unit) ? (
+            unit.map((u: any) => {
+              if (value[u.name] !== null && value[u.name] !== undefined) {
+                return (
+                  <View key={u.name} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                    <Text style={{ color: theme.colors.onSurface }} numberOfLines={1} adjustsFontSizeToFit>
+                      {`${value[u.name]} ${u.symbol}`}
+                    </Text>
+                  </View>
+                )
+              }
+            })
+        ) : (
+          <Text>n/a</Text>
+        )}
+      </View>
+    );
+  };
 
   const renderNoteAndTags = (dataPoint: DataPoint) => {
     return (
@@ -159,8 +185,9 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
 
   const renderValueless = (dataPoint: DataPoint, i: number) => {
     return (
-      <TouchableOpacity
+      <Pressable
         onPress={() => navigation.navigate("EditDataPoint", { activityName: activity.name, dataPointIndex: i })}
+        android_ripple={{ color: theme.colors.outline, foreground: false }}
         style={styles.activityCard}
       >
         <View style={{ padding: 5, height: ITEM_HEIGHT, flexDirection: 'row', alignItems: 'center' }}>
@@ -169,48 +196,37 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
           </View>
           {renderNoteAndTags(dataPoint)}
         </View>
-      </TouchableOpacity>
+      </Pressable>
     );
   };
 
   const renderWithValue = (dataPoint: DataPoint, i: number) => {
     return (
-      <TouchableOpacity
+      <Pressable
         onPress={() => navigation.navigate("EditDataPoint", { activityName: activity.name, dataPointIndex: i })}
+        android_ripple={{ color: theme.colors.outline, foreground: false }}
         style={styles.activityCard}
       >
-        <View style={{ padding: 5, height: ITEM_HEIGHT, flexDirection: 'row' }}>
-          <View style={{ width: ITEM_HEIGHT - 10, marginRight: 10, alignItems: 'center' }}>
-            <Text numberOfLines={1} adjustsFontSizeToFit style={{ color: theme.colors.onSurface }}>{renderValue(dataPoint.value, activity.unit)}</Text>
+        <View style={{ padding: 5, height: ITEM_HEIGHT, flexDirection: 'row', gap: 10 }}>
+          <View style={{ width: ITEM_HEIGHT * 1.2, alignItems: 'center' }}>
+            {renderValue(dataPoint.value, activity.unit)}
           </View>
           {renderNoteAndTags(dataPoint)}
         </View>
-      </TouchableOpacity>
+      </Pressable>
     );
   }
 
   return (
     <SafeAreaView style={[styles.container]} edges={["left", "right"]}>
-      {activity.tags.length > 0 && (
-        <View style={{ padding: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start' }}>
-          <TagMenu
-            activity={activity}
-            tags={tags}
-            onChange={(tags) => setTags(tags)}
-            menuVisible={tagsMenuVisible}
-            setMenuVisible={setTagsMenuVisible}
-            activityTags={activity.tags}
-          />
-        </View>
-      )}
-      <Divider />
       <SectionList
         style={styles.scrollView}
         sections={sections}
+        ItemSeparatorComponent={() => (blackTheme ? <Divider /> : null)}
         keyExtractor={([_, i]) => i.toString()}
         windowSize={2}
         renderSectionHeader={({ section: { date } }) => (
-          <View style={{ padding: 5 }}>
+          <View style={blackTheme ? styles.sectionHeaderBlackTheme : styles.sectionHeader}>
             <Text style={{ color: theme.colors.onSurface }}>{formatDate(new Date(...(date as DateList)))}</Text>
           </View>
         )}
@@ -223,8 +239,28 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
 const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.elevation.level1,
+    backgroundColor: theme.colors.background,
     paddingTop: 2,
+  },
+  sectionHeader: {
+    padding: 5,
+  },
+  sectionHeaderBlackTheme: {
+    padding: 5,
+    borderTopWidth: 1,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderColor: theme.colors.outline,
+  },
+  headerMenu: {
+    paddingHorizontal: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+
+    backgroundColor: theme.colors.elevation.level2,
+    elevation: 2,
+    borderRadius: 2,
+    marginBottom: 2,
   },
   scrollView: {
     flex: 1,
@@ -234,7 +270,7 @@ const getStyles = (theme: any) => StyleSheet.create({
   },
   activityCard: {
     padding: 4,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.elevation.level1,
     margin: 2,
     borderRadius: 2,
     elevation: 1,

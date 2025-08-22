@@ -193,7 +193,9 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
     };
 
     const editNoValue = () => (
-      <></>
+      <>
+      <Text style={{ color: theme.colors.onSurfaceVariant }}>Value-less activities are useful to mark that an activity was done, without tracking any performance data.</Text>
+      </>
     );
 
     const editSingleValue = () => (
@@ -207,10 +209,9 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       </View>
     );
 
-
-
     const editMultipleValues = () => (
-      multiUnitInput.map((val, idx) => (
+      <>
+      {multiUnitInput.map((val, idx) => (
         <View key={idx} style={{ flexDirection: 'row', alignItems: 'center' }}>
           <View style={{ flex: 2, marginRight: 8 }}>
             <TextInput
@@ -246,7 +247,13 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
             )}
           </View>
         </View>
-      ))
+      ))}
+      {multiUnitInput.length < 4 && (
+        <Button compact={true} onPress={() => setMultiUnitInput([...multiUnitInput, { name: '', symbol: '' }])}>
+          <AntDesign name="plus" size={20} color={theme.colors.onSurface} />
+        </Button>
+      )}
+      </>
     );
 
     return (
@@ -311,7 +318,6 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
 
           <View style={styles.inputContainer}>
             {unitMode === 'no_value' ? editNoValue() : unitMode === 'single' ? editSingleValue() : editMultipleValues()}
-            <Button compact={true} onPress={() => setMultiUnitInput([...multiUnitInput, { name: '', symbol: '' }])}><AntDesign name="plus" size={20} color={theme.colors.onSurface} /></Button>
           </View>
 
           <View style={styles.inputContainer}>

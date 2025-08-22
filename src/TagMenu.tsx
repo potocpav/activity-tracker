@@ -12,6 +12,7 @@ interface TagMenuProps {
   menuVisible: boolean;
   setMenuVisible: (visible: boolean) => void;
   activityTags: Tag[];
+  button?: (setMenuVisible: () => void) => React.ReactNode;
 }
 
 const TagMenu: React.FC<TagMenuProps> = ({
@@ -20,6 +21,7 @@ const TagMenu: React.FC<TagMenuProps> = ({
   menuVisible,
   setMenuVisible,
   activityTags,
+  button,
 }) => {
   const theme = getTheme();
   const palette = getThemePalette();
@@ -29,21 +31,14 @@ const TagMenu: React.FC<TagMenuProps> = ({
         visible={menuVisible}
         onDismiss={() => setMenuVisible(false)}
         anchor={
+          button ? button(() => setMenuVisible(true)) :
           <Button compact={true} onPress={() => setMenuVisible(true)} style={{ 
             padding: 5,
-            backgroundColor: theme.colors.surface,
             }}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Text style={{ marginRight: 10, color: theme.colors.onSurfaceVariant }}>
                 <AntDesign name="tag" size={16} color={theme.colors.onSurfaceVariant} />
-                {(() => {
-                  const yesTags = tags.filter(t => t.state === 'yes').map(t => t.name);
-                  const noTags = tags.filter(t => t.state === 'no').map(t => t.name);
-                  if (yesTags.length === 0 && noTags.length === 0)
-                    return '';
-                  else
-                    return '*';
-                })()}
+                {tags.length === 0 ? '' : '*'}
               </Text>
               <AntDesign name="down" size={16} color={theme.colors.onSurfaceVariant} />
             </View>

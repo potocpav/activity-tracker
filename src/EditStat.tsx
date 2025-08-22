@@ -119,8 +119,8 @@ export const EditStat = (
 
   return (
     <SafeAreaView style={[{flex: 1, backgroundColor: theme.colors.background }]} edges={["left", "right"]}>
-      <ScrollView style={{ flex: 1, marginHorizontal: 10 }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+      <ScrollView style={{ flex: 1 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'center', elevation: 2, backgroundColor: theme.colors.elevation.level1, marginBottom: 10, marginHorizontal: 4 }}>
           {dialogStat && (
             <StatView
               sharedTransitionTag="tag"
@@ -136,7 +136,7 @@ export const EditStat = (
             mode="outlined"
             value={inputLabel}
             onChangeText={setInputLabel}
-            style={{ flex: 1, marginBottom: 0 }}
+            style={{ flex: 1, margin: 10 }}
           />
 
         <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center', marginVertical: 5 }}>
