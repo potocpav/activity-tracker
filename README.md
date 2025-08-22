@@ -15,16 +15,9 @@ This app enables you to track your workouts, habits, body measurments, or other 
 ## ToDo List
 
 In order to make this app a full-featured management app for activity data, the following list of features must be implemented:
-  
-### Features
-  
-* [ ] Dragging points in Day View
 
 ### General Usability
 
-* [ ] Fix dark theme in Data section
-* [ ] Fix multi-value display in Data section
-* [ ] Decrease brightness of edit field borders
 * [ ] Performance testing & enhancements
   * [ ] Many points (10k)
   * [ ] Wide date ranges (25 years)
