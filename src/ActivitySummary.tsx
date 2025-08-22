@@ -110,6 +110,8 @@ const getStyles = (theme: any) => StyleSheet.create({
     backgroundColor: theme.colors.elevation.level1,
     elevation: 2,
     marginHorizontal: 4,
+    borderBottomLeftRadius: 4,
+    borderBottomRightRadius: 4,
   },
   activityInfo: {
     padding: 15,

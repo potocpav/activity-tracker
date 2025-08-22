@@ -17,6 +17,7 @@ import { defaultActivity } from "./DefaultActivity";
 import { getTheme, getThemePalette, getThemeVariant } from "./Theme";
 import { defaultStats } from "./DefaultActivity";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { SystemBars } from "react-native-edge-to-edge";
 
 type EditActivityProps = {
   navigation: any;
@@ -31,6 +32,7 @@ const isSupersetOf = (set1: Set<string>, set2: Set<string>) => {
   }
   return true;
 };
+
 const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   const { activityName } = route.params;
   const activities = useStore((state: any) => state.activities);
@@ -38,6 +40,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   const isNewActivity = activity.name === null;
   const theme = getTheme(activity);
   const themeVariant = getThemeVariant();
+  const palette = getThemePalette();
   const updateActivity = useStore((state: any) => state.updateActivity);
   const setTags = useStore((state: any) => state.setTags);
   const setUnit = useStore((state: any) => state.setUnit);
@@ -63,13 +66,11 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   const [tagState, setTagState] = useState<SetTag[]>(activity.tags.map((t: Tag) => ({ oldTagName: t.name, ...t })));
   const [tagDialogName, setTagDialogName] = useState("");
   const [tagDialogNameInput, setTagDialogNameInput] = useState("");
-  const [tagDialogColorInput, setTagDialogColorInput] = useState(19);
+  const [tagDialogColorInput, setTagDialogColorInput] = useState(Math.floor(Math.random() * palette.length));
   const [tagColorDialogVisible, setTagColorDialogVisible] = useState(false);
 
   const [colorDialogVisible, setColorDialogVisible] = useState(false);
-  const [selectedColor, setSelectedColor] = useState(activity.color);
-
-  const palette = getThemePalette();
+  const [selectedColor, setSelectedColor] = useState(18);
 
   if (!activity) {
     return <Text>Activity not found</Text>;
@@ -258,6 +259,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
 
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surface }]} edges={["left", "right"]}>
+        <SystemBars style={"light"} />
         <ScrollView style={styles.content}>
           <View style={styles.inputContainer}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>

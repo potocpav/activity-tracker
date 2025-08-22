@@ -4,6 +4,7 @@ import {
   Text,
   View,
   Alert,
+  ToastAndroid,
 } from "react-native";
 import { Menu, Button } from 'react-native-paper';
 import useStore from "./Store";
@@ -149,9 +150,9 @@ const ActivityInner: React.FC<any> = ({ activity, navigation }) => {
   React.useEffect(() => {
     navigation.setOptions({
       title: activity.name,
-      headerStyle: {
-        backgroundColor: themeVariant == 'light' ? theme.colors.primary : theme.colors.background,
-      },
+      headerStyle: themeVariant == 'light' ? {
+        backgroundColor: theme.colors.primary,
+      } : undefined,
       headerTintColor: "#ffffff",
       headerRight: () => (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>

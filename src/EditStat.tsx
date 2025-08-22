@@ -11,6 +11,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import StatView from "./StatView";
 import { getTheme, getThemeVariant } from "./Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { SystemBars } from "react-native-edge-to-edge";
 
 
 export const EditStat = (
@@ -119,6 +120,7 @@ export const EditStat = (
 
   return (
     <SafeAreaView style={[{flex: 1, backgroundColor: theme.colors.background }]} edges={["left", "right"]}>
+      <SystemBars style={"light"} />
       <ScrollView style={{ flex: 1 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'center', elevation: 2, backgroundColor: theme.colors.elevation.level1, marginBottom: 10, marginHorizontal: 4 }}>
           {dialogStat && (

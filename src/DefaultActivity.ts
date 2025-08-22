@@ -59,13 +59,13 @@ export const defaultGraph = (unit: Unit): GraphProps => {
   };
 };
 
-export const defaultActivity: ActivityType = {
+export const defaultActivity : ActivityType = {
   name: "",
   description: "",
   unit: "",
   dataPoints: [],
   tags: [],
-  color: 19,
+  color: 18,
   stats: defaultStats(""),
   calendar: defaultCalendar(""),
   graph: defaultGraph(""),

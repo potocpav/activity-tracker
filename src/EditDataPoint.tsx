@@ -19,6 +19,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { cmpDateList, formatDate } from "./ActivityUtil";
 import { getTheme, getThemePalette, getThemeVariant } from "./Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { SystemBars } from "react-native-edge-to-edge";
 
 type EditDataPointProps = {
   navigation: any;
@@ -174,6 +175,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surface }]} edges={["left", "right"]}>
+      <SystemBars style={"light"} />
       <ScrollView style={styles.content}>
         <View style={styles.pickerContainer}>
           <Pressable onPress={() => { setDatePickerVisible(true); }}

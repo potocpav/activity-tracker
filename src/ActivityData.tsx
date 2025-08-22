@@ -15,6 +15,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import { getThemePalette, getThemeVariant } from "./Theme";
 import { getTheme } from "./Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { SystemBars } from "react-native-edge-to-edge";
 
 
 type ActivityDataProps = {
@@ -219,12 +220,16 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
 
   return (
     <SafeAreaView style={[styles.container]} edges={["left", "right"]}>
+      <SystemBars style={"light"} />
       <SectionList
         style={styles.scrollView}
         sections={sections}
         ItemSeparatorComponent={() => (blackTheme ? <Divider /> : null)}
         keyExtractor={([_, i]) => i.toString()}
-        windowSize={2}
+        windowSize={11}
+        ListFooterComponent={() => (
+          <View style={{ height: 50 }} />
+        )}
         renderSectionHeader={({ section: { date } }) => (
           <View style={blackTheme ? styles.sectionHeaderBlackTheme : styles.sectionHeader}>
             <Text style={{ color: theme.colors.onSurface }}>{formatDate(new Date(...(date as DateList)))}</Text>
