@@ -5,12 +5,10 @@ import {
 } from "react-native";
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import LiveView from "./LiveView";
 import Activities from "./Activities";
 import useStore from "./Store";
 import Activity from "./Activity";
 import Settings from "./Settings";
-import DeviceModal from "./DeviceConnectionModal";
 import EditDataPoint from "./EditDataPoint";
 import EditActivity from "./EditActivity";
 import ThemeSelectionDialog from "./ThemeSelectionDialog";
@@ -140,11 +138,6 @@ const SubApp = () => {
               options={{ title: "Activities" }}
             />
             <Stack.Screen
-              name="Live View"
-              component={LiveView}
-              options={{ title: "Live View" }}
-            />
-            <Stack.Screen
               name="Activity"
               component={Activity}
             />
@@ -160,11 +153,6 @@ const SubApp = () => {
             />
           </Stack.Group>
           <Stack.Group screenOptions={{ presentation: 'modal' }}>
-            <Stack.Screen
-              name="ConnectDevice"
-              component={DeviceModal}
-              options={{ title: "Connect to a Device" }}
-            />
             <Stack.Screen
               name="EditDataPoint"
               component={EditDataPoint}

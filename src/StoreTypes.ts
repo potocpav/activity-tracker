@@ -1,7 +1,7 @@
-import {
-    Device,
-    Subscription,
-  } from "react-native-ble-plx";
+// import {
+//     Device,
+//     Subscription,
+//   } from "react-native-ble-plx";
 
 
 // No value, single value, or multiple named values
@@ -124,10 +124,10 @@ export type ActivityType = {
 export type WeekStart = "sunday" | "monday";
 
 export type State = {
-  allDevices: Device[];
-  isConnected: boolean;
-  connectedDevice: Device | null;
-  subscription: Subscription | null;
+  // allDevices: Device[];
+  // isConnected: boolean;
+  // connectedDevice: Device | null;
+  // subscription: Subscription | null;
 
   dataPoints: { w: number, t: number }[];
 
@@ -135,7 +135,7 @@ export type State = {
   theme: "system" | "light" | "dark";
   blackBackground: boolean;
   weekStart: WeekStart;
-
+/*
   requestPermissions: any;
   connectToDevice: any;
   disconnectDevice: any;
@@ -149,6 +149,7 @@ export type State = {
   sampleBatteryVoltage: any;
   startStreamingData: any;
   updateActivityDataPoint: any;
+  */
 };
 
 
