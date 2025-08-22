@@ -10,7 +10,6 @@ type CalendarComponentProps = {
   activityName: string;
 };
 
-const ITEM_WIDTH = 35;
 const ITEM_MARGIN = 1;
 
 
@@ -23,9 +22,12 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName }
   const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);
   const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
   const dimensions = useWindowDimensions();
-  const MIN_WEEK_COUNT = Math.ceil(dimensions.width / ITEM_WIDTH);
-  const MAX_WEEK_COUNT = 52 * 10;
+
+  const itemWidth = 35 * dimensions.fontScale;
+  const minWeekCount = Math.ceil(dimensions.width / itemWidth);
+  const maxWeekCount = 52 * 10;
   
+  const styles = getStyles(itemWidth, dimensions);
   const now = new Date();
   const pastWeekStart = (date: Date, i: number) => binTime("week", date.getTime(), -i, weekStart);
 
@@ -34,7 +36,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName }
 
   const firstVisibleWeek = firstDpDate ? pastWeekStart(new Date(...firstDpDate), 0) : lastVisibleWeek;
 
-  const weekCount = Math.min(MAX_WEEK_COUNT, Math.max(MIN_WEEK_COUNT, 1 + Math.round((lastVisibleWeek.getTime() - firstVisibleWeek.getTime()) / (7 * 24 * 60 * 60 * 1000))));
+  const weekCount = Math.min(maxWeekCount, Math.max(minWeekCount, 1 + Math.round((lastVisibleWeek.getTime() - firstVisibleWeek.getTime()) / (7 * 24 * 60 * 60 * 1000))));
   const positiveTags = activity.calendar.tagFilters.filter((t: TagFilter) => t.state === "yes").map((t: TagFilter) => t.name);
 
   return (
@@ -48,7 +50,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName }
       windowSize={2}
       horizontal={true}
       getItemLayout={(_, index) => (
-        { length: ITEM_WIDTH, offset: ITEM_WIDTH * index, index }
+        { length: itemWidth, offset: itemWidth * index, index }
       )}
       renderItem={({ item: weekIdx }) => {
         const itemWeekStart = pastWeekStart(now, weekIdx);
@@ -124,7 +126,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName }
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (itemWidth: number, dimensions: any) => StyleSheet.create({
   calendarContainer: {
     flexDirection: 'column',
     alignItems: 'center',
@@ -133,11 +135,11 @@ const styles = StyleSheet.create({
   },
   weekColumn: {
     flexDirection: 'column',
-    width: ITEM_WIDTH,
+    width: itemWidth,
   },
   daySquare: {
-    width: ITEM_WIDTH - ITEM_MARGIN * 2,
-    height: ITEM_WIDTH - ITEM_MARGIN * 2,
+    width: itemWidth - ITEM_MARGIN * 2,
+    height: itemWidth - ITEM_MARGIN * 2,
     borderRadius: 8,
     margin: ITEM_MARGIN,
     alignItems: 'center',
@@ -146,23 +148,23 @@ const styles = StyleSheet.create({
   },
   dayNumber: {
     position: 'absolute',
-    fontSize: 8,
+    fontSize: 8 * dimensions.fontScale,
     marginBottom: 2,
-    marginTop: -30,
-    marginLeft: -25,
+    marginTop: -30 * dimensions.fontScale,
+    marginLeft: -25 * dimensions.fontScale,
     paddingHorizontal: 3,
     paddingVertical: 1,
     borderRadius: 4,
   },
   value: {
     position: 'absolute',
-    fontSize: 15,
+    fontSize: 15 * dimensions.fontScale,
   },
   monthLabelContainer: {
-    height: 25,
+    height: 25 * dimensions.fontScale,
     alignItems: 'center',
     justifyContent: 'flex-start',
-    marginRight: 4,
+    marginRight: 4 * dimensions.fontScale,
   },
   monthLabel: {
     fontSize: 12,

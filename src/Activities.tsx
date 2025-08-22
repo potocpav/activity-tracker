@@ -31,7 +31,8 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   
   const palette = getThemePalette();
   const wideDisplay = useWideDisplay();
-  const styles = getStyles(theme, wideDisplay);
+  const dimensions = useWindowDimensions();
+  const styles = getStyles(theme, wideDisplay, dimensions);
 
   React.useEffect(() => {
     navigation.setOptions({
@@ -116,7 +117,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   );
 };
 
-const getStyles = (theme: any, wideDisplay: boolean) => StyleSheet.create({
+const getStyles = (theme: any, wideDisplay: boolean, dimensions: any) => StyleSheet.create({
   menuContainer: {
     position: 'absolute',
     top: 10,
@@ -131,7 +132,7 @@ const getStyles = (theme: any, wideDisplay: boolean) => StyleSheet.create({
     padding: 2,
   },
   activityCard: {
-    padding: 4,
+    padding: 4 * dimensions.fontScale,
     backgroundColor: theme.colors.elevation.level1,
     elevation: 1,
     margin: 2,

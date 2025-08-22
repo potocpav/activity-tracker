@@ -15,7 +15,6 @@ import DropdownMenu from "./DropdownMenu";
 import { getTheme } from "./Theme";
 
 const fontFamily = Platform.select({ default: "sans-serif" });
-const font = matchFont({ fontFamily: fontFamily, fontSize: 10 });
 
 const approximateBinSize = (binSize: BinSize) => {
   const day = 24 * 60 * 60 * 1000;
@@ -56,7 +55,8 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
   const activity = activities.find((a: ActivityType) => a.name === activityName);
   const weekStart = useStore((state: any) => state.weekStart);
   const theme = getTheme(activity);
-  const screenWidth = useWindowDimensions().width;
+  const windowDimensions = useWindowDimensions();
+  const font = matchFont({ fontFamily: fontFamily, fontSize: 10 * windowDimensions.fontScale });
 
   if (!activity) {
     return <Text>Activity not found</Text>;
@@ -76,8 +76,8 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
   const [graphTypeMenuVisible, setGraphTypeMenuVisible] = useState(false);
 
   const now = new Date();
-  const graphWidth = screenWidth * 0.9;
-  const barWidth = 10;
+  const graphWidth = windowDimensions.width * 0.9;
+  const barWidth = 10 * windowDimensions.fontScale;
   const nBars = Math.floor(graphWidth / barWidth / 2);
 
   var ticks = [];
@@ -220,11 +220,6 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
         if (tx.value < 0) {
           tx.value = withTiming(0);
         }
-
-        // const limit = 300;
-        // if (tx.value > limit) {
-        //   tx.value = withTiming(limit);
-        // }
       }
     },
   );

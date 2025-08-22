@@ -46,6 +46,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   const setUnit = useStore((state: any) => state.setUnit);
 
   const [activityNameInput, setActivityNameInput] = useState(activity.name);
+  const [selectedColor, setSelectedColor] = useState(activity.color);
   const [activityDescriptionInput, setActivityDescriptionInput] = useState(activity.description);
   const [unitMode, setUnitMode] = useState<'no_value' | 'single' | 'multiple'>(activity.unit === null ? 'no_value' : typeof activity.unit === 'string' ? 'single' : 'multiple');
   const [singleUnitInput, setSingleUnitInput] = useState<string>(typeof activity.unit === 'string' ? activity.unit : "");
@@ -70,7 +71,6 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   const [tagColorDialogVisible, setTagColorDialogVisible] = useState(false);
 
   const [colorDialogVisible, setColorDialogVisible] = useState(false);
-  const [selectedColor, setSelectedColor] = useState(18);
 
   if (!activity) {
     return <Text>Activity not found</Text>;
