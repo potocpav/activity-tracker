@@ -42,6 +42,7 @@ export type SetTag = {
 export type TagName = string;
 
 // Normalized [year, month, day] numbers
+// !! Both month and day are 1-indexed, which is different from the Date object. There, month is 0-indexed
 export type DateList = [number, number, number];
 
 export type DataPoint = {
@@ -117,8 +118,8 @@ export type ActivityType = {
   tags: Tag[];
   color: number;
   stats: Stat[];
-  calendar: CalendarProps;
-  graph: GraphProps;
+  calendars: CalendarProps[];
+  graphs: GraphProps[];
 };
 
 export type WeekStart = "sunday" | "monday";
@@ -154,19 +155,21 @@ export type State = {
 
 
 export const dateToDateList = (date: Date): DateList => {
-    return [date.getFullYear(), date.getMonth(), date.getDate()];
+    return [date.getFullYear(), date.getMonth() + 1, date.getDate()];
+};
+
+export const dateListToDate = (dateList: DateList): Date => {
+  return new Date(dateList[0], dateList[1] - 1, dateList[2]);
 };
 
 export const normalizeDateList = (dateList: DateList): DateList => {
-    return dateToDateList(new Date(...dateList));
+    return dateToDateList(dateListToDate(dateList));
 };
 
-// TODO: move to a util file
 export const timeToDateList = (time: number): DateList => {
-    const date = new Date(time);
-    return [date.getFullYear(), date.getMonth(), date.getDate()];
+    return dateToDateList(new Date(time));
 };
 
 export const dateListToTime = (dateList: DateList): number => {
-    return new Date(...dateList).getTime();
+    return dateListToDate(dateList).getTime();
 };

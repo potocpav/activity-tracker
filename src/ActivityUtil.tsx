@@ -1,5 +1,5 @@
 
-import { Tag, StatPeriod, DataPoint, DateList, dateListToTime, normalizeDateList, TagFilter, StatValue, Stat, dateToDateList, ActivityType, WeekStart, Unit } from "./StoreTypes";
+import { Tag, StatPeriod, DataPoint, DateList, dateListToTime, normalizeDateList, TagFilter, StatValue, Stat, dateToDateList, ActivityType, WeekStart, Unit, dateListToDate } from "./StoreTypes";
 import { View, Text, StyleSheet } from "react-native";
 import { NativeModules } from "react-native";
 
@@ -30,7 +30,7 @@ export const statPeriodCmp = (
   if (period === "today") {
     lo = hi = today;
   } else if (period === "this_week") {
-    const dayOfWeek = new Date(...today).getDay();
+    const dayOfWeek = dateListToDate(today).getDay();
     const firstDayOfWeek = weekStart === "sunday" ? 0 : 1;
     lo = [today[0], today[1], today[2] - dayOfWeek + firstDayOfWeek];
     hi = [today[0], today[1], today[2] - dayOfWeek + firstDayOfWeek + 6];

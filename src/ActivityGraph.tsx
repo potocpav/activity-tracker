@@ -1,6 +1,6 @@
 import React, { Fragment, useState } from "react";
-import { View, Text, Platform, useWindowDimensions } from "react-native";
-import { Menu, Button } from 'react-native-paper';
+import { View, Text, Platform, useWindowDimensions, Pressable, StyleSheet } from "react-native";
+import { Menu, Button, Portal, Dialog, TextInput } from 'react-native-paper';
 import { getTransformComponents, Line, Scatter, setScale, setTranslate, useChartTransformState } from "victory-native";
 import { CartesianChart } from "victory-native";
 import { matchFont, RoundedRect, Text as SkiaText } from "@shopify/react-native-skia";
@@ -50,9 +50,10 @@ const quartiles = (values: number[]) => {
   return { q0, q1, q2, q3, q4 };
 };
 
-const ActivityGraph = ({ activityName }: { activityName: string }) => {
+const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, graphIndex: number }) => {
   const activities = useStore((state: any) => state.activities);
   const activity = activities.find((a: ActivityType) => a.name === activityName);
+  const graph = activity.graphs[graphIndex];
   const weekStart = useStore((state: any) => state.weekStart);
   const theme = getTheme(activity);
   const windowDimensions = useWindowDimensions();
@@ -63,6 +64,10 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
   }
 
   const setActivityGraph = useStore((state: any) => state.setActivityGraph);
+  const cloneActivityGraph = useStore((state: any) => state.cloneActivityGraph);
+  const deleteActivityGraph = useStore((state: any) => state.deleteActivityGraph);
+
+  const styles = getStyles(theme);
 
   const transformState = useChartTransformState({
     scaleX: 1.0, // Initial X-axis scale
@@ -75,6 +80,9 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
   const [tagsMenuVisible, setTagsMenuVisible] = useState(false);
   const [graphTypeMenuVisible, setGraphTypeMenuVisible] = useState(false);
 
+  const [graphDialogVisible, setGraphDialogVisible] = useState(false);
+  const [graphDialogNameInput, setGraphDialogNameInput] = useState(graph.label);
+
   const now = new Date();
   const graphWidth = windowDimensions.width * 0.9;
   const barWidth = 10 * windowDimensions.fontScale;
@@ -82,9 +90,9 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
 
   var ticks = [];
   if (activity.dataPoints.length > 0) {
-    var tick_t = binTime(activity.graph.binSize, dateListToTime(activity.dataPoints[0].date), 0, weekStart).getTime();
+    var tick_t = binTime(graph.binSize, dateListToTime(activity.dataPoints[0].date), 0, weekStart).getTime();
     for (let i = 0; tick_t < now.getTime(); i++) {
-      tick_t = binTime(activity.graph.binSize, dateListToTime(activity.dataPoints[0].date), i, weekStart).getTime();
+      tick_t = binTime(graph.binSize, dateListToTime(activity.dataPoints[0].date), i, weekStart).getTime();
       ticks.push(tick_t);
       if (i > 1000) {
         break; // limit
@@ -92,10 +100,10 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
     }
   }
 
-  const bins = binTimeSeries(activity.graph.binSize, activity.dataPoints, weekStart);
+  const bins = binTimeSeries(graph.binSize, activity.dataPoints, weekStart);
   const binStats: { t: number, q0: number, q1: number, q2: number, q3: number, q4: number, count: number, sum: number, mean: number, zero: number, dailyMean: number }[]
     = bins.map((bin) => {
-      const values = bin.values.map((dp: DataPoint) => extractValue(dp, activity.graph.tagFilters, activity.graph.subUnit)).filter((v: number | null) => v !== null);
+      const values = bin.values.map((dp: DataPoint) => extractValue(dp, graph.tagFilters, graph.subUnit)).filter((v: number | null) => v !== null);
       if (values.length === 0) {
         return null
       } else {
@@ -112,15 +120,15 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
     }).filter((b) => b !== null);
 
   var yKeys: (keyof typeof binStats[number])[];
-  if (activity.graph.graphType === "box") {
+  if (graph.graphType === "box") {
     yKeys = ["q0", "q1", "q2", "q3", "q4"];
-  } else if (activity.graph.graphType === "bar-count") {
+  } else if (graph.graphType === "bar-count") {
     yKeys = ["count", "zero"];
-  } else if (activity.graph.graphType === "bar-daily-mean") {
+  } else if (graph.graphType === "bar-daily-mean") {
     yKeys = ["dailyMean", "zero"];
-  } else if (activity.graph.graphType === "bar-sum") {
+  } else if (graph.graphType === "bar-sum") {
     yKeys = ["sum", "zero"];
-  } else if (activity.graph.graphType === "line-mean") {
+  } else if (graph.graphType === "line-mean") {
     yKeys = ["mean"];
   } else {
     throw new Error("Invalid graph type");
@@ -168,26 +176,26 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
   const { domain, viewport }: { domain: { x: [number, number], y?: [number, number] }, viewport: { x: [number, number] } } = (() => {
     const firstBinTime = bins.length ? bins[0].time : now.getTime();
     const lastBinTime = bins.length ? bins[bins.length - 1].time : now.getTime();
-    const nowBin = binTime(activity.graph.binSize, now.getTime(), 0, weekStart).getTime();
-    const t1 = Math.max(lastBinTime, nowBin) + approximateBinSize(activity.graph.binSize) / 2;
-    const t0view = t1 - approximateBinSize(activity.graph.binSize) * nBars;
-    const t0 = Math.min(firstBinTime - approximateBinSize(activity.graph.binSize) / 2, t0view);
+    const nowBin = binTime(graph.binSize, now.getTime(), 0, weekStart).getTime();
+    const t1 = Math.max(lastBinTime, nowBin) + approximateBinSize(graph.binSize) / 2;
+    const t0view = t1 - approximateBinSize(graph.binSize) * nBars;
+    const t0 = Math.min(firstBinTime - approximateBinSize(graph.binSize) / 2, t0view);
 
     var domain: { x: [number, number], y?: [number, number] } = { x: [t0, t1] };
     var viewport: { x: [number, number] } = { x: [t0view, t1] };
-    if (activity.graph.graphType === "box") {
+    if (graph.graphType === "box") {
       const [ymin, ymax] = [Math.min(...binStats.map((b) => b.q0)), Math.max(...binStats.map((b) => b.q4))];
       domain.y = [ymin - (ymax - ymin) * 0.05, ymax + (ymax - ymin) * 0.05];
-    } else if (activity.graph.graphType === "bar-count") {
+    } else if (graph.graphType === "bar-count") {
       const ymax = Math.max(...binStats.map((b) => b.count));
       domain.y = [0, ymax * 1.1];
-    } else if (activity.graph.graphType === "bar-daily-mean") {
+    } else if (graph.graphType === "bar-daily-mean") {
       const ymax = Math.max(...binStats.map((b) => b.dailyMean));
       domain.y = [0, ymax * 1.1];
-    } else if (activity.graph.graphType === "bar-sum") {
+    } else if (graph.graphType === "bar-sum") {
       const ymax = Math.max(...binStats.map((b) => b.sum));
       domain.y = [0, ymax * 1.1];
-    } else if (activity.graph.graphType === "line-mean") {
+    } else if (graph.graphType === "line-mean") {
       const [ymin, ymax] = [Math.min(...binStats.map((b) => b.mean)), Math.max(...binStats.map((b) => b.mean))];
       domain.y = [ymin - (ymax - ymin) * 0.05, ymax + (ymax - ymin) * 0.05];
     } else {
@@ -275,7 +283,7 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
       </>);
   }
 
-  const binningLabels: Record<typeof activity.graph.binSize, string> = {
+  const binningLabels: Record<typeof graph.binSize, string> = {
     day: "Day",
     week: "Week",
     month: "Month",
@@ -288,7 +296,15 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
 
   return (
     <View style={{ flex: 1, padding: 10, marginVertical: 16, backgroundColor: theme.colors.background }}>
-      <View key="activityGraph" style={{ height: 300, width: '100%' }}>
+      <View style={styles.headerContainer}>
+        <Pressable onPress={() => setGraphDialogVisible(true)} android_ripple={{ color: theme.colors.outline, foreground: false }}>
+          <Text style={styles.headerText}>{graph.label}</Text>
+        </Pressable>
+        <Button compact={true} onPress={() => cloneActivityGraph(activityName, graphIndex)}>
+          <AntDesign name="plus" size={24} color={theme.colors.onSurfaceVariant} style={{ marginLeft: 6 }} /> 
+        </Button>
+      </View>
+      <View key="activityGraph" style={{ height: 300, width: '100%', marginVertical: 8 }}>
         <CartesianChart
           data={binStats}
           transformState={transformState}
@@ -296,7 +312,6 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
             pan: { dimensions: "x" },
             pinch: { enabled: false }
           }}
-          padding={{ bottom: 10 }}
           domain={domain}
           viewport={viewport}
           xKey="t"
@@ -315,17 +330,17 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
 
             formatXLabel: (t: number) => {
               const d = new Date(t);
-              if (activity.graph.binSize === "day") {
+              if (graph.binSize === "day") {
                 return "" + d.getDate();
-              } else if (activity.graph.binSize === "week") {
-                return "" + (d.getDate() + 1);
-              } else if (activity.graph.binSize === "month") {
+              } else if (graph.binSize === "week") {
+                return "" + (d.getDate());
+              } else if (graph.binSize === "month") {
                 const m = d.getMonth() + 1;
                 return m > 1 ? `${m}` : `'${d.getFullYear() % 100}`;
-              } else if (activity.graph.binSize === "quarter") {
+              } else if (graph.binSize === "quarter") {
                 const q = d.getMonth() / 3 + 1;
                 return q > 1 ? `q${q}` : `'${d.getFullYear() % 100}`;
-              } else if (activity.graph.binSize === "year") {
+              } else if (graph.binSize === "year") {
                 return "" + d.getFullYear();
               } else {
                 throw new Error("Invalid bin size");
@@ -345,7 +360,7 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
           ]}
         >
           {({ points }) => {
-            if (activity.graph.graphType === "box") {
+            if (graph.graphType === "box") {
               return (
                 <>
                   {(() => {
@@ -399,13 +414,13 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
                   })()}
                 </>
               );
-            } else if (activity.graph.graphType === "bar-count") {
+            } else if (graph.graphType === "bar-count") {
               return barPlot(points.count, points.zero, "count");
-            } else if (activity.graph.graphType === "bar-daily-mean") {
+            } else if (graph.graphType === "bar-daily-mean") {
               return barPlot(points.dailyMean, points.zero, "dailyMean", "%");
-            } else if (activity.graph.graphType === "bar-sum") {
+            } else if (graph.graphType === "bar-sum") {
               return barPlot(points.sum, points.zero, "sum");
-            } else if (activity.graph.graphType === "line-mean") {
+            } else if (graph.graphType === "line-mean") {
               return (
                 <>
                   <Line
@@ -433,14 +448,14 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
           }}
         </CartesianChart>
       </View>
-      <View key="menusRow" style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap', marginBottom: 5 }}>
+      <View key="menusRow" style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
         {/* Binning menu */}
         <DropdownMenu
           options={binningOptions}
-          selectedKey={activity.graph.binSize}
+          selectedKey={graph.binSize}
           onSelect={(key) => {
             resetTransform();
-            setActivityGraph(activityName, { ...activity.graph, binSize: key as BinSize });
+            setActivityGraph(activityName, { ...graph, binSize: key as BinSize });
           }}
           visible={binMenuVisible}
           setVisible={setBinMenuVisible}
@@ -449,16 +464,16 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
         {/* SubUnit menu */}
         <SubUnitMenu
           subUnitNames={subUnitNames}
-          subUnitName={activity.graph.subUnit}
-          setSubUnitName={(name) => setActivityGraph(activityName, { ...activity.graph, subUnit: name })}
+          subUnitName={graph.subUnit}
+          setSubUnitName={(name) => setActivityGraph(activityName, { ...graph, subUnit: name })}
           menuVisible={subUnitMenuVisible}
           setMenuVisible={setSubUnitMenuVisible}
           themeColors={theme.colors}
         />
         {/* Tags menu */}
         <TagMenu
-          tags={activity.graph.tagFilters}
-          onChange={(tags) => setActivityGraph(activityName, { ...activity.graph, tagFilters: tags })}
+          tags={graph.tagFilters}
+          onChange={(tags) => setActivityGraph(activityName, { ...graph, tagFilters: tags })}
           menuVisible={tagsMenuVisible}
           setMenuVisible={setTagsMenuVisible}
           activityTags={activity.tags}
@@ -471,7 +486,7 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
           anchor={
             <Button compact={true} onPress={() => setGraphTypeMenuVisible(true)}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                {graphLabel(activity.graph.graphType)}
+                {graphLabel(graph.graphType)}
                 <AntDesign name="down" size={16} color={theme.colors.onSurfaceVariant} style={{ marginLeft: 6 }} />
               </View>
             </Button>
@@ -482,16 +497,48 @@ const ActivityGraph = ({ activityName }: { activityName: string }) => {
               key={type}
               onPress={() => {
                 setGraphTypeMenuVisible(false);
-                setActivityGraph(activityName, { ...activity.graph, graphType: type as GraphType });
+                setActivityGraph(activityName, { ...graph, graphType: type as GraphType });
               }}
               title={<View style={{ flexDirection: 'row', alignItems: 'center' }}>{graphLabel(type)}</View>}
-              trailingIcon={activity.graph.graphType === type ? "check" : undefined}
+              trailingIcon={graph.graphType === type ? "check" : undefined}
             />
           ))}
         </Menu>
       </View>
+      <Portal>
+        <Dialog visible={graphDialogVisible} onDismiss={() => setGraphDialogVisible(false)}>
+          <Dialog.Content>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={{ flex: 1 }}>
+                <TextInput label="Graph Name" value={graphDialogNameInput} onChangeText={setGraphDialogNameInput} mode="outlined" />
+              </View>
+            </View>
+          </Dialog.Content>
+          <Dialog.Actions>
+            {activity.graphs.length > 1 && (
+              <Button onPress={() => {deleteActivityGraph(activityName, graphIndex); setGraphDialogVisible(false);}}><AntDesign name="delete" size={24} color={theme.colors.onSurface} /></Button>
+            )}
+            <Button onPress={() => {setActivityGraph(activityName, graphIndex, { ...graph, label: graphDialogNameInput }); setGraphDialogVisible(false);}}><AntDesign name="check" size={24} color={theme.colors.onSurface} /></Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </View>
   );
 };
+
+const getStyles = (theme: any) => StyleSheet.create({
+  headerContainer: {
+    marginHorizontal: 8,
+    marginBottom: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  headerText: {
+    fontSize: 16,
+    padding: 5,
+    color: theme.colors.onSurface,
+  },
+});
 
 export default ActivityGraph; 

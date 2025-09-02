@@ -6,13 +6,12 @@ import {
   ScrollView,
   Alert,
   ToastAndroid,
-  NativeModules,
   Pressable,
 } from "react-native";
-import { Chip, useTheme, TextInput, Button } from 'react-native-paper';
-import { SubUnit, ActivityType, dateToDateList, dateListToTime, DataPoint } from "./StoreTypes";
+import { Chip, TextInput, Button } from 'react-native-paper';
+import { SubUnit, ActivityType, dateToDateList, DataPoint, dateListToDate } from "./StoreTypes";
 import useStore from "./Store";
-import { DatePickerInput, DatePickerModal } from "react-native-paper-dates";
+import { DatePickerModal } from "react-native-paper-dates";
 import { CalendarDate } from "react-native-paper-dates/lib/typescript/Date/Calendar";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -26,8 +25,6 @@ type EditDataPointProps = {
   route: any;
 };
 
-const locale = NativeModules.I18nManager.localeIdentifier;
-
 const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   const { activityName, dataPointIndex, newDataPoint, newDataPointDate, tags } = route.params;
   const activities = useStore((state: any) => state.activities);
@@ -40,7 +37,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   const weekStart = useStore((state: any) => state.weekStart);
 
   const dataPoint : DataPoint = dataPointIndex !== undefined ? activity?.dataPoints[dataPointIndex] : {
-    date: dateToDateList(newDataPointDate ? new Date(newDataPointDate[0], newDataPointDate[1], newDataPointDate[2]) : new Date()),
+    date: dateToDateList(newDataPointDate ? dateListToDate(newDataPointDate) : new Date()),
     ...(activity.unit === null ? {} : {
       value: typeof activity.unit === "string" ?
         null :
@@ -54,7 +51,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
     return <Text style={{ color: theme.colors.error }}>Data point not found</Text>;
   }
   
-  const dateTime = new Date(...dataPoint.date);
+  const dateTime = dateListToDate(dataPoint.date);
 
   const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);
   const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
@@ -132,7 +129,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
       const today = dateToDateList(new Date());
       if (cmpDateList(newDate, today) > 0) {
         Alert.alert("Date cannot be in the future");
-      } else if (cmpDateList(newDate, [2000, 0, 0]) < 0) {
+      } else if (cmpDateList(newDate, [2000, 1, 1]) < 0) {
         Alert.alert("Date must be from this millenium");
       } else {
         const note = noteInput === "" ? {} : { "note": noteInput };
@@ -156,7 +153,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
 
   React.useEffect(() => {
     navigation.setOptions({
-      title: newDataPoint ? 'New data point' : `${formatDate(new Date(...dataPoint.date))} #${dataPointIndex + 1}`,
+      title: newDataPoint ? 'New data point' : `${formatDate(dateListToDate(dataPoint.date))} #${dataPointIndex + 1}`,
       headerStyle: {
         backgroundColor: themeVariant == 'light' ? theme.colors.primary : theme.colors.background,
       },
@@ -206,9 +203,6 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
               onChangeText={text => inputValue.value[1](text)}
               keyboardType="numeric"
               mode="outlined"
-              style={{
-                // marginBottom: 10,
-              }}
             />
           ))}
         </View>

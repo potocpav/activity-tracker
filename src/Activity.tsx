@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { Menu, Button } from 'react-native-paper';
 import useStore from "./Store";
-import {DataPoint, ActivityType, SubUnit, Tag} from "./StoreTypes";
+import {DataPoint, ActivityType, SubUnit, Tag, dateListToDate} from "./StoreTypes";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import ActivitySummary from "./ActivitySummary";
 import { File, Paths } from "expo-file-system/next";
@@ -122,7 +122,7 @@ const ActivityInner: React.FC<any> = ({ activity, navigation }) => {
       const tags = (() => {
         return activity.tags.map((t: Tag) => (dp.tags ?? []).includes(t.name) ? 1 : null);
       })();
-      return [new Date(...dp.date).toISOString().split('T')[0], ...values, ...tags];
+      return [dateListToDate(dp.date).toISOString().split('T')[0], ...values, ...tags];
     });
     const csv = renderCsv([headerRow, ...dataRows]);
 

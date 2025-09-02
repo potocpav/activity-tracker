@@ -28,7 +28,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ActivityType, Tag, DataPoint, SetTag, TagName, State } from "./StoreTypes";
 import { findZeroSlice, dayCmp } from "./ActivityUtil";
 
-export const version = 11;
+export const version = 15;
 
 export const migrate = (persisted: any, version: number) => {
   if (version <= 5) {
@@ -53,6 +53,32 @@ export const migrate = (persisted: any, version: number) => {
   if (version <= 10) {
     persisted.activities.forEach((activity: ActivityType) => {
       activity.stats = activity.stats.flat(1);
+    });
+  }
+  if (version <= 11) {
+    persisted.activities.forEach((activity: ActivityType) => {
+      activity.dataPoints = activity.dataPoints.map((dp: DataPoint) => ({
+        ...dp,
+        date: [dp.date[0], dp.date[1] + 1, dp.date[2]]
+      }));
+    });
+  }
+  if (version <= 13) {
+    persisted.activities.forEach((activity: any) => {
+      activity.calendars = [activity.calendar];
+      activity.graphs = [activity.graph];
+      delete activity.calendar;
+      delete activity.graph;
+    });
+  }
+  if (version <= 14) {
+    persisted.activities.forEach((activity: any) => {
+      activity.calendars.forEach((calendar: any) => {
+        calendar.label = calendar.label == "Count" ? "Calendar" : calendar.label;
+      });
+      activity.graphs.forEach((graph: any) => {
+        graph.label = graph.label || "Graph";
+      });
     });
   }
   return persisted
@@ -123,16 +149,46 @@ const useStore = create<State>()(
         });
       },
 
-      setActivityCalendar: (activityName: string, calendar: CalendarProps) => {
+      setActivityCalendar: (activityName: string, calendarIndex: number, calendar: CalendarProps) => {
         set((state: any) => {
-          const activities = state.activities.map((a: ActivityType) => activityName === a.name ? { ...a, calendar } : a);
+          const activities = state.activities.map((a: ActivityType) => activityName === a.name ? { ...a, calendars: a.calendars.map((c: CalendarProps, i: number) => i === calendarIndex ? calendar : c) } : a);
           return { activities };
         });
       },
 
-      setActivityGraph: (activityName: string, graph: GraphProps) => {
+      cloneActivityCalendar: (activityName: string, calendarIndex: number) => {
         set((state: any) => {
-          const activities = state.activities.map((a: ActivityType) => activityName === a.name ? { ...a, graph } : a);
+          const activities = state.activities.map((a: ActivityType) => activityName === a.name ? { ...a, calendars: 
+            [...a.calendars.slice(0, calendarIndex + 1), a.calendars[calendarIndex], ...a.calendars.slice(calendarIndex + 1)] } : a);
+          return { activities };
+        });
+      },
+
+      deleteActivityCalendar: (activityName: string, calendarIndex: number) => {
+        set((state: any) => {
+          const activities = state.activities.map((a: ActivityType) => activityName === a.name ? { ...a, calendars: [...a.calendars.slice(0, calendarIndex), ...a.calendars.slice(calendarIndex + 1)] } : a);
+          return { activities };
+        });
+      },
+
+      setActivityGraph: (activityName: string, graphIndex: number, graph: GraphProps) => {
+        set((state: any) => {
+          const activities = state.activities.map((a: ActivityType) => activityName === a.name ? { ...a, graphs: a.graphs.map((g: GraphProps, i: number) => i === graphIndex ? graph : g) } : a);
+          return { activities };
+        });
+      },
+
+      cloneActivityGraph: (activityName: string, graphIndex: number) => {
+        set((state: any) => {
+          const activities = state.activities.map((a: ActivityType) => activityName === a.name ? { ...a, graphs: 
+            [...a.graphs.slice(0, graphIndex + 1), a.graphs[graphIndex], ...a.graphs.slice(graphIndex + 1)] } : a);
+          return { activities };
+        });
+      },
+
+      deleteActivityGraph: (activityName: string, graphIndex: number) => {
+        set((state: any) => {
+          const activities = state.activities.map((a: ActivityType) => activityName === a.name ? { ...a, graphs: [...a.graphs.slice(0, graphIndex), ...a.graphs.slice(graphIndex + 1)] } : a);
           return { activities };
         });
       },
@@ -245,34 +301,39 @@ const useStore = create<State>()(
             }
           });
 
-          let newCalendarValue;
-          if (unit === null) {
-            newCalendarValue = "n_points";
-          } else {
-            newCalendarValue = activity.calendar.value;
-          }
+          // update calendars, graphs, and stats
 
-          // update calendar, graph, and stats
-          const newCalendar = {
-            ...activity.calendar,
-            value: newCalendarValue,
-            subUnit: setSubUnitName(activity.calendar.subUnit)
-          };
-          
-          let newGraphType;
-          if (unit === null && activity.unit !== null) {
-            newGraphType = "bar-count";
-          } else if (unit !== null && activity.unit === null) {
-            newGraphType = "box";
-          } else  {
-            newGraphType = activity.graph.graphType;
-          }
+          const newCalendars = activity.calendars.map((calendar: CalendarProps) => {
+            let newCalendarValue;
+            if (unit === null) {
+              newCalendarValue = "n_points";
+            } else {
+              newCalendarValue = calendar.value;
+            }
 
-          const newGraph = {
-            ...activity.graph,
-            graphType: newGraphType,
-            subUnit: setSubUnitName(activity.graph.subUnit)
-          };
+            return {
+              ...calendar,
+              value: newCalendarValue,
+              subUnit: setSubUnitName(calendar.subUnit)
+            };
+          });
+
+          const newGraphs = activity.graphs.map((graph: GraphProps) => {
+            let newGraphType;
+            if (unit === null && activity.unit !== null) {
+              newGraphType = "bar-count";
+            } else if (unit !== null && activity.unit === null) {
+              newGraphType = "box";
+            } else  {
+              newGraphType = graph.graphType;
+            }
+    
+            return {
+              ...graph,
+              graphType: newGraphType,
+              subUnit: setSubUnitName(graph.subUnit)
+            };
+          });
 
           const newStats = activity.stats.map((stat: Stat) => ({
             ...stat,
@@ -283,8 +344,8 @@ const useStore = create<State>()(
             ...activity,
             unit,
             dataPoints: newDataPoints,
-            calendar: newCalendar,
-            graph: newGraph,
+            calendars: newCalendars,
+            graphs: newGraphs,
             stats: newStats
           };
           return { activities: [...state.activities.filter((a: ActivityType) => a.name !== activityName), newActivity] };
@@ -328,17 +389,17 @@ const useStore = create<State>()(
           const activities = state.activities.map((activity: ActivityType) => activity.name === activityName ? {
             ...activity,
             tags: newTags,
-            calendar: {
-              ...activity.calendar,
-              tagFilters: updateTagFilters(activity.calendar.tagFilters)
-            },
-            graph: {
-              ...activity.graph,
-              tagFilters: updateTagFilters(activity.graph.tagFilters)
-            },
             stats: activity.stats.map((stat: Stat) => ({
               ...stat,
               tagFilters: updateTagFilters(stat.tagFilters)
+            })),
+            calendars: activity.calendars.map((calendar: CalendarProps) => ({
+              ...calendar,
+              tagFilters: updateTagFilters(calendar.tagFilters)
+            })),
+            graphs: activity.graphs.map((graph: GraphProps) => ({
+              ...graph,
+              tagFilters: updateTagFilters(graph.tagFilters)
             })),
             dataPoints: activity.dataPoints.map((dp: DataPoint) => {
               const newTags = updateTags(dp.tags);

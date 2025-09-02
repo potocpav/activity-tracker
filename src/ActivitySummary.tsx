@@ -2,7 +2,7 @@ import React from "react";
 import { ScrollView, StyleSheet, Text, View, Pressable } from "react-native";
 import { Divider } from 'react-native-paper';
 import useStore from "./Store";
-import { ActivityType, Stat } from "./StoreTypes";
+import { ActivityType, CalendarProps, GraphProps, Stat } from "./StoreTypes";
 import { renderTags } from "./ActivityUtil";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import ActivityGraph from "./ActivityGraph";
@@ -88,12 +88,19 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
         </View>
         <Divider />
 
-        <Text style={styles.sectionHeader}>Calendar</Text>
-        <ActivityCalendar navigation={navigation} activityName={activityName} />
+        {activity.calendars.map((calendar: CalendarProps, index: number) => (
+          <>
+            <ActivityCalendar key={`calendar-${index}`} navigation={navigation} activityName={activityName} calendarIndex={index} />
+            <Divider key={`calendar-divider-${index}`} />
+          </>
+        ))}
 
-        <Divider />
-        <Text style={styles.sectionHeader}>Graph</Text>
-        <ActivityGraph activityName={activityName} />
+        {activity.graphs.map((graph: GraphProps, index: number) => (
+          <>
+            <ActivityGraph key={`graph-${index}`} activityName={activityName} graphIndex={index} />
+            <Divider key={`graph-divider-${index}`} />
+          </>
+        ))}
 
         <View style={{ height: 20 }} />
       </ScrollView>

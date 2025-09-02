@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { Button, Divider } from 'react-native-paper';
 import useStore from "./Store";
-import { DataPoint, ActivityType, Tag, Unit, DateList } from "./StoreTypes";
+import { DataPoint, ActivityType, Tag, Unit, DateList, dateListToDate } from "./StoreTypes";
 import { cmpDateList, dayCmp, findZeroSlice, renderTags, formatDate } from "./ActivityUtil";
 import TagMenu from "./TagMenu";
 import AntDesign from '@expo/vector-icons/AntDesign';
@@ -232,7 +232,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
         )}
         renderSectionHeader={({ section: { date } }) => (
           <View style={blackTheme ? styles.sectionHeaderBlackTheme : styles.sectionHeader}>
-            <Text style={{ color: theme.colors.onSurface }}>{formatDate(new Date(...(date as DateList)))}</Text>
+            <Text style={{ color: theme.colors.onSurface }}>{formatDate(dateListToDate(date as DateList))}</Text>
           </View>
         )}
         renderItem={({ item: [dataPoint, i] }) => activity.unit === null ? renderValueless(dataPoint, i) : renderWithValue(dataPoint, i)}

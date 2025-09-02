@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, useWindowDimensions } from "react-native";
-import { DataPoint, dateListToTime, normalizeDateList, DateList, ActivityType, TagFilter } from "./StoreTypes";
+import { DataPoint, dateListToTime, normalizeDateList, DateList, ActivityType, TagFilter, dateListToDate } from "./StoreTypes";
 import { formatNumber, findZeroSlice, dayCmp, extractStatValue, extractValue, binTime } from "./ActivityUtil";
 import useStore from "./Store";
 import { getTheme } from "./Theme";
@@ -8,14 +8,16 @@ import { getTheme } from "./Theme";
 type CalendarComponentProps = {
   navigation: any;
   activityName: string;
+  calendarIndex: number;
 };
 
 const ITEM_MARGIN = 1;
 
 
-const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName }) => {
+const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName, calendarIndex }) => {
   const activities = useStore((state: any) => state.activities);
   const activity = activities.find((a: ActivityType) => a.name === activityName);
+  const calendar = activity.calendars[calendarIndex];
   const theme = getTheme(activity);
   const dayBackground = theme.colors.primary;
   const weekStart = useStore((state: any) => state.weekStart);
@@ -34,10 +36,10 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName }
   const firstDpDate: DateList | null = activity.dataPoints[0]?.date || null;
   const lastVisibleWeek = pastWeekStart(now, 0);
 
-  const firstVisibleWeek = firstDpDate ? pastWeekStart(new Date(...firstDpDate), 0) : lastVisibleWeek;
+  const firstVisibleWeek = firstDpDate ? pastWeekStart(dateListToDate(firstDpDate), 0) : lastVisibleWeek;
 
   const weekCount = Math.min(maxWeekCount, Math.max(minWeekCount, 1 + Math.round((lastVisibleWeek.getTime() - firstVisibleWeek.getTime()) / (7 * 24 * 60 * 60 * 1000))));
-  const positiveTags = activity.calendar.tagFilters.filter((t: TagFilter) => t.state === "yes").map((t: TagFilter) => t.name);
+  const positiveTags = calendar.tagFilters.filter((t: TagFilter) => t.state === "yes").map((t: TagFilter) => t.name);
 
   return (
     <FlatList
@@ -57,13 +59,13 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName }
         return (
           <View style={styles.weekColumn} key={weekIdx}>
             <View style={styles.monthLabelContainer}>
-              {(itemWeekStart.getDate() <= 7) &&
+              {(itemWeekStart.getDate() <= 7  && itemWeekStart.getMonth() > 0) &&
                 <Text style={[styles.monthLabel, { color: theme.colors.onSurfaceVariant }]}>{`${itemWeekStart.toLocaleDateString('en-US', { month: 'short' })}`}</Text>}
-              {(itemWeekStart.getDate() <= 7 && itemWeekStart.getMonth() == 1) &&
+              {(itemWeekStart.getDate() <= 7 && itemWeekStart.getMonth() == 0) &&
                 <Text style={[styles.monthLabel, { color: theme.colors.onSurfaceVariant }]}>{`${itemWeekStart.toLocaleDateString('en-US', { year: 'numeric' })}`}</Text>}
             </View>
             {[0, 1, 2, 3, 4, 5, 6].map((dayIdx) => {
-              const day = normalizeDateList([itemWeekStart.getFullYear(), itemWeekStart.getMonth(), itemWeekStart.getDate() + dayIdx]);
+              const day = normalizeDateList([itemWeekStart.getFullYear(), itemWeekStart.getMonth() + 1, itemWeekStart.getDate() + dayIdx]);
               if (dateListToTime(day) > now.getTime()) {
                 return;
               }
@@ -73,9 +75,9 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName }
                   .map((dp: DataPoint, i: number): [DataPoint, number] => [dp, i])
                   .slice(...daySlice)
                   .map(([dp, i]: [DataPoint, number]) => 
-                    [dp.date, i, extractValue(dp, activity.calendar.tagFilters, activity.calendar.subUnit)])
+                    [dp.date, i, extractValue(dp, calendar.tagFilters, calendar.subUnit)])
                   .filter((v: any) => v[2] !== null);
-              const value = extractStatValue(dayDataAndIndex.map((v: any) => [v[0], v[2]]), activity.calendar.value, activity.calendar.period, weekStart);
+              const value = extractStatValue(dayDataAndIndex.map((v: any) => [v[0], v[2]]), calendar.value, calendar.period, weekStart);
               const hasData = dayDataAndIndex.length > 0;
               return (
                 <TouchableOpacity
