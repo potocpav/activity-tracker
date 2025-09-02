@@ -99,7 +99,7 @@ const ActivityCalendar = ({ navigation, activityName, calendarIndex }: ActivityC
           <Dialog.Content>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <View style={{ flex: 1 }}>
-                <TextInput label="Calendar Name" value={calendarDialogNameInput} onChangeText={setCalendarDialogNameInput} mode="outlined" />
+                <TextInput label="Calendar Name" defaultValue={calendarDialogNameInput} onChangeText={setCalendarDialogNameInput} mode="outlined" />
               </View>
             </View>
           </Dialog.Content>

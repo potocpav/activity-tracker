@@ -510,7 +510,7 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
           <Dialog.Content>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <View style={{ flex: 1 }}>
-                <TextInput label="Graph Name" value={graphDialogNameInput} onChangeText={setGraphDialogNameInput} mode="outlined" />
+                <TextInput label="Graph Name" defaultValue={graphDialogNameInput} onChangeText={setGraphDialogNameInput} mode="outlined" />
               </View>
             </View>
           </Dialog.Content>

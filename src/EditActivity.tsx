@@ -368,7 +368,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
             <Dialog.Content>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <View style={{ flex: 1 }}>
-                  <TextInput label="Tag Name" value={tagDialogNameInput} onChangeText={setTagDialogNameInput} mode="outlined" />
+                  <TextInput label="Tag Name" defaultValue={tagDialogNameInput} onChangeText={setTagDialogNameInput} mode="outlined" />
                 </View>
                 <Button
                   onPress={() => setTagColorDialogVisible(true)}
