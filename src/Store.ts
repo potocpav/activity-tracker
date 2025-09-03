@@ -28,34 +28,34 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ActivityType, Tag, DataPoint, SetTag, TagName, State } from "./StoreTypes";
 import { findZeroSlice, dayCmp } from "./ActivityUtil";
 
-export const version = 15;
+export const version = 16;
 
 export const migrate = (persisted: any, version: number) => {
-  if (version <= 5) {
+  if (version < 6) {
     persisted.goals.forEach((goal: any) => {
       goal.graph.binSize = "day";
     });
   }
-  if (version <= 7) {
+  if (version < 8) {
     persisted.goals.forEach((goal: any) => {
       if (goal.stats.length > 0 && typeof goal.stats[0] === 'object') {
         goal.stats = [goal.stats];
       }
     });
   }
-  if (version <= 8) {
+  if (version < 9) {
     persisted.weekStart = "monday";
   }
-  if (version <= 9) {
+  if (version < 10) {
     persisted.activities = persisted.goals;
     delete persisted.goals;
   }
-  if (version <= 10) {
+  if (version < 11) {
     persisted.activities.forEach((activity: ActivityType) => {
       activity.stats = activity.stats.flat(1);
     });
   }
-  if (version <= 11) {
+  if (version < 12) {
     persisted.activities.forEach((activity: ActivityType) => {
       activity.dataPoints = activity.dataPoints.map((dp: DataPoint) => ({
         ...dp,
@@ -63,7 +63,7 @@ export const migrate = (persisted: any, version: number) => {
       }));
     });
   }
-  if (version <= 13) {
+  if (version < 14) {
     persisted.activities.forEach((activity: any) => {
       activity.calendars = [activity.calendar];
       activity.graphs = [activity.graph];
@@ -71,7 +71,7 @@ export const migrate = (persisted: any, version: number) => {
       delete activity.graph;
     });
   }
-  if (version <= 14) {
+  if (version < 15) {
     persisted.activities.forEach((activity: any) => {
       activity.calendars.forEach((calendar: any) => {
         calendar.label = calendar.label == "Count" ? "Calendar" : calendar.label;
@@ -79,6 +79,19 @@ export const migrate = (persisted: any, version: number) => {
       activity.graphs.forEach((graph: any) => {
         graph.label = graph.label || "Graph";
       });
+    });
+  }
+  if (version < 16) {
+    persisted.activities.forEach((activity: any) => {
+      if (activity.unit === null) {
+        activity.unit = { type: "none" };
+      } else if (typeof activity.unit === 'string') {
+        activity.unit = { type: "single", unit: { type: "number", symbol: activity.unit } };
+      } else if (Array.isArray(activity.unit)) {
+        activity.unit = { type: "multiple", values: activity.unit.map((u: any) => ({ name: u.name, unit: { type: "number", symbol: u.symbol } })) };
+      } else {
+        console.error("Unknown unit type", activity.unit);
+      }
     });
   }
   return persisted

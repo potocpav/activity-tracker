@@ -301,17 +301,17 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
                   {
                     value: 'no_value',
                     label: 'None',
-                    icon: 'counter',
+                    icon: 'check-square',
                   },
                   {
                     value: 'single',
                     label: 'Single',
-                    icon: 'counter',
+                    icon: 'numeric',
                   },
                   {
                     value: 'multiple',
                     label: 'Multiple',
-                    icon: 'numeric',
+                    icon: 'counter',
                   },
                 ]}
               />

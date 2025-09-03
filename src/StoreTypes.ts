@@ -7,6 +7,32 @@
 // No value, single value, or multiple named values
 export type Unit = null | string | SubUnit[];
 
+export type CompositeUnit = 
+  { type: "none" } |
+  { type: "single", unit: SubUnit2 } |
+  { type: "multiple", values: { name: string, unit: SubUnit2 }[] };
+
+export type SubUnit2 = 
+  {
+    type: "number",
+    symbol: string,
+  } |
+  {
+    type: "count",
+  } |
+  {
+    type: "weight",
+    unit: "kg" | "lb",
+  } |
+  {
+    type: "time",
+    unit: "seconds" | "minutes" | "hours",
+  } |
+  {
+    type: "climbing_grade",
+    grade: "uiaa" | "french" | "font" | "v-scale",
+  };
+
 export const areUnitsEqual = (unit1: Unit, unit2: Unit): boolean => {
   if (unit1 === null && unit2 === null) {
     return true;
@@ -113,7 +139,7 @@ export type GraphProps = {
 export type ActivityType = {
   name: string;
   description: string;
-  unit: Unit;
+  unit: CompositeUnit;
   dataPoints: DataPoint[];
   tags: Tag[];
   color: number;
