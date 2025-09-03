@@ -9,6 +9,16 @@ This app enables you to track your workouts, habits, body measurments, or other 
 - **Data Visualization**: Analyze your progress with interactive charts, including box plots, line graphs, and histograms
 - **Data Ownership**: You can back up your data into JSON or CSV files
 
+## Planned Features
+
+- [x] Multiple calendars and graphs per activity
+  - [ ] Animations for adding and removing calendars and graphs
+- [ ] Bluetooth integration with Tindeq Progressor and other scales
+- [ ] Improved units (time units, climbing grades, etc.)
+- [ ] Tag groups
+- [ ] Reimplement graphs to use FlatList instead of VictoryNative
+- [ ] JSON import validation
+
 ## Screenshots
 
 [![Screenshot 1](screenshots/sshot-1.thumb.jpg)](screenshots/sshot-1.jpg)

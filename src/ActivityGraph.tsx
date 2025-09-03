@@ -455,7 +455,7 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
           selectedKey={graph.binSize}
           onSelect={(key) => {
             resetTransform();
-            setActivityGraph(activityName, { ...graph, binSize: key as BinSize });
+            setActivityGraph(activityName, graphIndex, { ...graph, binSize: key as BinSize });
           }}
           visible={binMenuVisible}
           setVisible={setBinMenuVisible}
@@ -465,7 +465,7 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
         <SubUnitMenu
           subUnitNames={subUnitNames}
           subUnitName={graph.subUnit}
-          setSubUnitName={(name) => setActivityGraph(activityName, { ...graph, subUnit: name })}
+          setSubUnitName={(name) => setActivityGraph(activityName, graphIndex, { ...graph, subUnit: name })}
           menuVisible={subUnitMenuVisible}
           setMenuVisible={setSubUnitMenuVisible}
           themeColors={theme.colors}
@@ -473,7 +473,7 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
         {/* Tags menu */}
         <TagMenu
           tags={graph.tagFilters}
-          onChange={(tags) => setActivityGraph(activityName, { ...graph, tagFilters: tags })}
+          onChange={(tags) => setActivityGraph(activityName, graphIndex, { ...graph, tagFilters: tags })}
           menuVisible={tagsMenuVisible}
           setMenuVisible={setTagsMenuVisible}
           activityTags={activity.tags}
@@ -497,7 +497,7 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
               key={type}
               onPress={() => {
                 setGraphTypeMenuVisible(false);
-                setActivityGraph(activityName, { ...graph, graphType: type as GraphType });
+                setActivityGraph(activityName, graphIndex, { ...graph, graphType: type as GraphType });
               }}
               title={<View style={{ flexDirection: 'row', alignItems: 'center' }}>{graphLabel(type)}</View>}
               trailingIcon={graph.graphType === type ? "check" : undefined}
