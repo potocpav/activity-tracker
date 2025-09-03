@@ -58,7 +58,9 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
         symbol: getUnitSymbol(stat, activity.unit),
       }));
 
-    if (!wideDisplay) {
+    if (wideDisplay) {
+      values = values.slice(0, 3);
+    } else {
       values = values.slice(0, 1);
     }
 
