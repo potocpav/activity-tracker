@@ -40,18 +40,15 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
       <ScrollView>
         <View style={styles.header}>
           {activity.description && (
-            <View style={styles.activityInfo}>
+            <View key="activity-description" style={styles.activityInfo}>
               <Text style={styles.activityDescription}>{activity.description}</Text>
             </View>
           )}
 
           {activity.tags.length > 0 && (
-            <>
-              {/* <Divider /> */}
-              <View style={styles.tagsRow}>
-                {renderTags(activity.tags, theme, palette)}
-              </View>
-            </>
+            <View key="activity-tags" style={styles.tagsRow}>
+              {renderTags(activity.tags, theme, palette)}
+            </View>
           )}
         </View>
 
@@ -102,7 +99,7 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
           </>
         ))}
 
-        <View style={{ height: 20 }} />
+        <View key="activity-spacer" style={{ height: 20 }} />
       </ScrollView>
     </View>
   );

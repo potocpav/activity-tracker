@@ -7,7 +7,7 @@ import {
   Alert,
 } from "react-native";
 import { Dialog, Portal, SegmentedButtons } from 'react-native-paper';
-import { ActivityType, SetTag, SubUnit, Tag } from "./StoreTypes";
+import { ActivityType, SetTag, SubUnit, Tag, SubUnit2, CompositeUnit } from "./StoreTypes";
 import { TextInput, Button, Chip } from "react-native-paper";
 import useStore from "./Store";
 import AntDesign from '@expo/vector-icons/AntDesign';
@@ -18,6 +18,7 @@ import { getTheme, getThemePalette, getThemeVariant } from "./Theme";
 import { defaultStats } from "./DefaultActivity";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
+import { UnitEditor } from "./Unit";
 
 type EditActivityProps = {
   navigation: any;
@@ -36,7 +37,7 @@ const isSupersetOf = (set1: Set<string>, set2: Set<string>) => {
 const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   const { activityName } = route.params;
   const activities = useStore((state: any) => state.activities);
-  const activity = activities.find((a: ActivityType) => a.name === activityName) ?? defaultActivity;
+  const activity: ActivityType = activities.find((a: ActivityType) => a.name === activityName) ?? defaultActivity;
   const isNewActivity = activity.name === null;
   const theme = getTheme(activity);
   const themeVariant = getThemeVariant();
@@ -48,20 +49,57 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   const [activityNameInput, setActivityNameInput] = useState(activity.name);
   const [selectedColor, setSelectedColor] = useState(activity.color);
   const [activityDescriptionInput, setActivityDescriptionInput] = useState(activity.description);
-  const [unitMode, setUnitMode] = useState<'no_value' | 'single' | 'multiple'>(activity.unit === null ? 'no_value' : typeof activity.unit === 'string' ? 'single' : 'multiple');
-  const [singleUnitInput, setSingleUnitInput] = useState<string>(typeof activity.unit === 'string' ? activity.unit : "");
+  const [unitMode, setUnitMode] = useState<'no_value' | 'single' | 'multiple'>((() => {
+    switch (activity.unit.type) {
+      case 'none':
+        return 'no_value';
+      case 'single':
+        return 'single';
+      case 'multiple':
+        return 'multiple';
+    }
+  })());
+  const [singleUnitInput, setSingleUnitInput] = useState<SubUnit2>((() => {
+    switch (activity.unit.type) {
+      case 'none':
+        return { type: "number", symbol: '' };
+      case 'single':
+        return activity.unit.unit;
+      case 'multiple':
+        return activity.unit.values[0].unit;
+    }
+  })());
+
   // Missing oldName represents there is no old name
   // null oldName represents that the old value comes from a single-valued unit
   // String oldName represents the old value name from a multi-valued unit
-  const [multiUnitInput, setMultiUnitInput] = useState<{ name: string, symbol: string, oldName?: null | string }[]>(
-    activity.unit === null ? [
-      { name: '', symbol: '' },
-      { name: '', symbol: '' },
-    ] : typeof activity.unit === 'string' ? [
-      { name: '', symbol: activity.unit, oldName: null },
-      { name: '', symbol: '' },
-    ] : activity.unit.map((u: SubUnit) => ({ name: u.name, symbol: u.symbol, oldName: u.name }))
-  );
+  const [oldUnitMap, setOldUnitMap] = useState<{ oldName: string | null, newIndex: number }[]>((() => {
+    switch (activity.unit.type) {
+      case 'none':
+        return [];
+      case 'single':
+        return [{ oldName: null, newIndex: 0 }];
+      case 'multiple':
+        return activity.unit.values.map((u, index: number) => ({ oldName: u.name, newIndex: index }));
+    }
+  })());
+  const [multiUnitInput, setMultiUnitInput] = useState<{ name: string, unit: SubUnit2 }[]>((() => {
+    switch (activity.unit.type) {
+      case 'none':
+        return [
+          { name: '', unit: { type: "number", symbol: '' } },
+          { name: '', unit: { type: "number", symbol: '' } },
+        ];
+      case 'single':
+        return [
+          { name: '', unit: activity.unit.unit },
+          { name: '', unit: { type: "number", symbol: '' } },
+        ];
+      case 'multiple':
+        return activity.unit.values.map((u: { name: string, unit: SubUnit2 }) => ({ name: u.name, unit: u.unit }));
+    }
+  })());
+  
 
   const [tagDialogVisible, setTagDialogVisible] = useState(false);
   const [tagState, setTagState] = useState<SetTag[]>(activity.tags.map((t: Tag) => ({ oldTagName: t.name, ...t })));
@@ -78,10 +116,19 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
 
 
   const saveActivity = () => {
-    const newUnit = 
-      unitMode === 'no_value' ? null : 
-      unitMode === 'single' ? singleUnitInput : 
-      multiUnitInput;
+    let newUnit : CompositeUnit;
+    switch (unitMode) {
+      case 'no_value':
+        newUnit = { type: "none" };
+        break;
+      case 'single':
+        newUnit = { type: "single", unit: singleUnitInput };
+        break;
+      case 'multiple':
+        newUnit = { type: "multiple", values: multiUnitInput };
+        break;
+    }
+
     const updatedActivity = {
       ...activity,
       name: activityNameInput,
@@ -93,7 +140,19 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
     const activityName = activity.name === "" ? updatedActivity.name : activity.name;
     updateActivity(activityName, updatedActivity);
     setTags(updatedActivity.name, tagState);
-    setUnit(updatedActivity.name, newUnit);
+    let unitMap;
+    switch (newUnit.type) {
+      case "none":
+        unitMap = {};
+        break;
+      case "single":
+        unitMap = {};
+        break;
+      case "multiple":
+        unitMap = oldUnitMap.map((u) => ({ oldName: u.oldName, newName: multiUnitInput[u.newIndex].name }));
+        break;
+    }
+    setUnit(updatedActivity.name, newUnit, unitMap);
     navigation.reset({
       index: 0,
       routes: [{ name: 'Activities' }, { name: 'Activity', params: { activityName: updatedActivity.name } }],
@@ -124,15 +183,19 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       };
       // data loss?
       if (activity.dataPoints.length > 0) {
-        if (unitMode === 'no_value' && activity.unit !== null) {
+        if (unitMode === 'no_value' && activity.unit.type !== 'none') {
           dataLossAlert(saveActivity);
-        } else if (unitMode === 'single' && Array.isArray(activity.unit)) {
+        } else if (unitMode === 'single' && activity.unit.type === 'multiple') {
           dataLossAlert(saveActivity);
-        } else if (unitMode === 'multiple' && typeof activity.unit === 'string' && multiUnitInput.findIndex((u) => u.oldName === null) === -1) {
-          dataLossAlert(saveActivity);
-        } else if (unitMode === 'multiple' && Array.isArray(activity.unit)) {
-          let oldNames: any[] = multiUnitInput.map((u) => u.oldName).filter((n) => n !== undefined);
-          if (isSupersetOf(new Set(oldNames), new Set(activity.unit.map((u: SubUnit) => u.name)))) {
+        } else if (unitMode === 'multiple' && activity.unit.type === 'single') {
+          if (oldUnitMap.findIndex((u) => u.oldName === null) === -1) {
+            dataLossAlert(saveActivity);
+          } else {
+            saveActivity();
+          }
+        } else if (unitMode === 'multiple' && activity.unit.type === 'multiple') {
+          let oldNames: any[] = oldUnitMap.map((u) => u.oldName)
+          if (isSupersetOf(new Set(oldNames), new Set(activity.unit.values.map((u: { name: string, unit: SubUnit2 }) => u.name)))) {
             saveActivity();
           } else {
             dataLossAlert(saveActivity);
@@ -201,12 +264,9 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
 
     const editSingleValue = () => (
       <View style={styles.inputContainer}>
-        <TextInput
-          label="Unit"
-          value={singleUnitInput}
-          onChangeText={setSingleUnitInput}
-          mode="outlined"
-        />
+        <UnitEditor unit={singleUnitInput} onChange={(unit: SubUnit2) => {
+          setSingleUnitInput(unit);
+        }} />
       </View>
     );
 
@@ -219,6 +279,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
               label="Value"
               value={val.name}
               onChangeText={text => {
+                // Update sub-unit name
                 const newVals = [...multiUnitInput];
                 newVals[idx].name = text;
                 setMultiUnitInput(newVals);
@@ -227,30 +288,36 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
             />
           </View>
           <View style={{ flex: 1 }}>
-            <TextInput
-              label="Unit"
-              value={val.symbol}
-              onChangeText={text => {
-                const newVals = [...multiUnitInput];
-                newVals[idx].symbol = text;
-                setMultiUnitInput(newVals);
-              }}
-              mode="outlined"
-            />
+            <UnitEditor unit={val.unit} onChange={(unit: SubUnit2) => {
+              // Update unit
+              const newVals = [...multiUnitInput];
+              newVals[idx].unit = unit;
+              setMultiUnitInput(newVals);
+            }} />
           </View>
           <View style={{ width: 40, marginLeft: 4 }}>
             {multiUnitInput.length > 2 && (
               <Button compact={true} onPress={() => {
+                // Delete unit
                 const newVals = [...multiUnitInput];
                 newVals.splice(idx, 1);
                 setMultiUnitInput(newVals);
+
+                const newOldUnitMap = [...oldUnitMap];
+                newOldUnitMap
+                  .filter((u) => u.newIndex !== idx)
+                  .map((u) => u.newIndex > idx ? { ...u, newIndex: u.newIndex - 1 } : u);
+                setOldUnitMap(newOldUnitMap);
               }}><AntDesign name="delete" size={20} color={theme.colors.onSurface} /></Button>
             )}
           </View>
         </View>
       ))}
       {multiUnitInput.length < 4 && (
-        <Button compact={true} onPress={() => setMultiUnitInput([...multiUnitInput, { name: '', symbol: '' }])}>
+        <Button compact={true} onPress={() => {
+          // Add unit to the end
+          setMultiUnitInput([...multiUnitInput, { name: '', unit: { type: "number", symbol: '' } }]);
+        }}>
           <AntDesign name="plus" size={20} color={theme.colors.onSurface} />
         </Button>
       )}
@@ -301,7 +368,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
                   {
                     value: 'no_value',
                     label: 'None',
-                    icon: 'check-square',
+                    icon: 'checkbox-marked-outline',
                   },
                   {
                     value: 'single',

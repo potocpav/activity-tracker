@@ -30,7 +30,7 @@ export const formatDate = (date: Date) => {
 
 const ActivityCalendar = ({ navigation, activityName, calendarIndex }: ActivityCalendarProps) => {
   const activities = useStore((state: any) => state.activities);
-  const activity = activities.find((a: ActivityType) => a.name === activityName);
+  const activity: ActivityType = activities.find((a: ActivityType) => a.name === activityName);
   const calendar = activity.calendars[calendarIndex];
   const theme = getTheme(activity);
 
@@ -46,7 +46,7 @@ const ActivityCalendar = ({ navigation, activityName, calendarIndex }: ActivityC
   const [calendarDialogVisible, setCalendarDialogVisible] = useState(false);
   const [calendarDialogNameInput, setCalendarDialogNameInput] = useState(calendar.label);
 
-  const subUnitNames = Array.isArray(activity.unit) ? activity.unit.map((u: any) => u.name) : null;
+  const subUnitNames = activity.unit.type === "multiple" ? activity.unit.values.map(u => u.name) : null;
 
   if (!activity) {
     return <Text>Activity not found</Text>;

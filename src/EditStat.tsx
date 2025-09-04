@@ -22,7 +22,7 @@ export const EditStat = (
   }) => {
   const activities = useStore((state: any) => state.activities);
   const { activityName, statId } = route.params;
-  const activity = activities.find((a: ActivityType) => a.name === activityName);
+  const activity: ActivityType = activities.find((a: ActivityType) => a.name === activityName);
   const stat = activity?.stats[statId];
   const theme = getTheme(activity);
   const themeVariant = getThemeVariant();
@@ -30,12 +30,12 @@ export const EditStat = (
   const setActivityStat = useStore((state: any) => state.setActivityStat);
   const deleteActivityStat = useStore((state: any) => state.deleteActivityStat);
 
-  const subUnitNames = Array.isArray(activity.unit) ? activity.unit.map((u: any) => u.name) : null;
+  const subUnitNames = activity.unit.type === "multiple" ? activity.unit.values.map(u => u.name) : null;
 
   // Initialize state based on the provided stat or defaults
   const [inputLabel, setInputLabel] = React.useState<string>(stat?.label || "New Stat");
   const [inputValue, setInputValue] = React.useState<StatValue | null>(stat?.value || "mean");
-  const [inputSubUnit, setInputSubUnit] = React.useState<string | null>(stat?.subUnit || (Array.isArray(activity.unit) ? activity.unit[0].name : null));
+  const [inputSubUnit, setInputSubUnit] = React.useState<string | null>(stat?.subUnit || (activity.unit.type === "multiple" ? activity.unit.values[0].name : null));
   const [inputPeriod, setInputPeriod] = React.useState<StatPeriod | null>(stat?.period || "today");
   const [inputTagFilters, setInputTagFilters] = React.useState<TagFilter[]>(stat?.tagFilters || []);
 
@@ -55,7 +55,7 @@ export const EditStat = (
     } else {
       setInputLabel("New Stat");
       setInputValue("mean");
-      setInputSubUnit(Array.isArray(activity.unit) ? activity.unit[0].name : null);
+      setInputSubUnit(activity.unit.type === "multiple" ? activity.unit.values[0].name : null);
       setInputPeriod("today");
       setInputTagFilters([]);
     }

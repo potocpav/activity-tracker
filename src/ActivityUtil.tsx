@@ -1,5 +1,22 @@
 
-import { Tag, StatPeriod, DataPoint, DateList, dateListToTime, normalizeDateList, TagFilter, StatValue, Stat, dateToDateList, ActivityType, WeekStart, Unit, dateListToDate } from "./StoreTypes";
+import { 
+  Tag, 
+  StatPeriod, 
+  DataPoint, 
+  DateList, 
+  dateListToTime, 
+  normalizeDateList, 
+  TagFilter, 
+  StatValue, 
+  Stat, 
+  dateToDateList, 
+  ActivityType, 
+  WeekStart, 
+  dateListToDate, 
+  CompositeUnit,
+  SubUnit2
+} from "./StoreTypes";
+import { renderLongFormNumber, renderLongFormValue } from "./Unit";
 import { View, Text, StyleSheet } from "react-native";
 import { NativeModules } from "react-native";
 
@@ -97,22 +114,35 @@ export const calcStatValue = (stat: Stat, activity: ActivityType, weekStart: Wee
   return extractStatValue(filteredValues, stat.value, stat.period, weekStart);
 }
 
-export const getUnitSymbol = (stat: Stat, unit: Unit) => {
-  let symbol = "";
-  if (["n_days", "n_points"].includes(stat.value)) {
-    symbol = "";
-  } else if (stat.value === "daily_mean") {
-    symbol = "%";
-  } else if (unit === null) {
-    symbol = "";
-  } else if (typeof unit === "string") {
-    symbol = unit;
-  } else {
-    symbol = unit.find((u) => u.name === stat.subUnit)?.symbol ?? "";
-  }
-  return symbol;
-}
+export const renderStatValue = (stat: Stat, activity: ActivityType, weekStart: WeekStart) => {
+  const value = calcStatValue(stat, activity, weekStart);
+  console.log("renderStatValue", stat, value);
 
+  if (value === null) {
+    return "-";
+  } else if (["n_days", "n_points"].includes(stat.value)) {
+    return renderLongFormNumber(value);
+  } else if (stat.value === "daily_mean") {
+    return renderLongFormNumber(value) + " %";
+  } else {
+    console.log(activity.unit);
+    if (activity.unit.type === "none") {
+      return renderLongFormNumber(value);
+    } else if (activity.unit.type === "single") {
+      return renderLongFormValue(value, activity.unit.unit);
+    } else if (activity.unit.type === "multiple") {
+      const subUnit = activity.unit.values.find((u) => u.name === stat.subUnit)?.unit;
+      if (!subUnit) {
+        return renderLongFormNumber(value);
+      } else {
+        return renderLongFormValue(value, subUnit);
+      }
+    }
+    console.log("renderStatValue", "default");
+  }
+  console.log("renderStatValue", "default");
+  return "-";
+}
 
 // Returns the indices of the slice in data that zero the condition `cmp`
 // Data must be sorted in ascending order, such that (x)=>signum(cmp(x)) is monotonic.
@@ -175,10 +205,6 @@ export const findZeroSlice = (data: any[], cmp: (x: any) => number): [number, nu
   }
 
   return [startLo, endLo];
-}
-
-export const formatNumber = (value: number) => {
-  return Math.round(value * 10) / 10;
 }
 
 export const binTime = (binSize: BinSize, t0: number, i: number, weekStart: WeekStart): Date => {

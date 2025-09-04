@@ -9,7 +9,7 @@ import {
   Pressable,
 } from "react-native";
 import { Chip, TextInput, Button } from 'react-native-paper';
-import { SubUnit, ActivityType, dateToDateList, DataPoint, dateListToDate } from "./StoreTypes";
+import { ActivityType, dateToDateList, DataPoint, dateListToDate, SubUnit2 } from "./StoreTypes";
 import useStore from "./Store";
 import { DatePickerModal } from "react-native-paper-dates";
 import { CalendarDate } from "react-native-paper-dates/lib/typescript/Date/Calendar";
@@ -28,7 +28,7 @@ type EditDataPointProps = {
 const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   const { activityName, dataPointIndex, newDataPoint, newDataPointDate, tags } = route.params;
   const activities = useStore((state: any) => state.activities);
-  const activity = activities.find((a: ActivityType) => a.name === activityName);
+  const activity: ActivityType = activities.find((a: ActivityType) => a.name === activityName);
   const theme = getTheme(activity);
   const themeVariant = getThemeVariant();
   const palette = getThemePalette();
@@ -36,15 +36,12 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   const locale = Intl.DateTimeFormat().resolvedOptions().locale;
   const weekStart = useStore((state: any) => state.weekStart);
 
-  const dataPoint : DataPoint = dataPointIndex !== undefined ? activity?.dataPoints[dataPointIndex] : {
-    date: dateToDateList(newDataPointDate ? dateListToDate(newDataPointDate) : new Date()),
-    ...(activity.unit === null ? {} : {
-      value: typeof activity.unit === "string" ?
-        null :
-        Object.fromEntries(activity.unit.map((u: SubUnit) => [u.name, null])),
-    })
-  };
-
+  const dataPoint : DataPoint = 
+    dataPointIndex !== undefined ? 
+      activity?.dataPoints[dataPointIndex] : 
+      {
+        date: dateToDateList(newDataPointDate ? dateListToDate(newDataPointDate) : new Date()),
+      };
   
   if (!dataPoint) {
     console.log("Data point not found", dataPointIndex, dataPoint);
@@ -57,20 +54,24 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
   const [inputDate, setInputDate] = useState<CalendarDate | undefined>(dateTime);
   const [noteInput, setNoteInput] = useState<string>(dataPoint.note ?? "");
-  let inputValues;
-  if (activity.unit === null) {
-    inputValues = [];
-  } else if (typeof activity.unit === "string") {
-    inputValues = [{ 
-      subUnit: null, 
-      value: useState<string>(dataPoint.value?.toString() ?? "") 
-    }]
-  } else {
-    inputValues = activity.unit.map((u: SubUnit) => ({ 
-      subUnit: u, 
-      value: useState<string>(
-        (dataPoint.value as Record<string, number | null>)[u.name]?.toString() ?? "")
-    }));
+  let inputValues: { subUnit: {name: string, unit: SubUnit2} | null, value: [string, (text: string) => void] }[];
+  switch (activity.unit.type) {
+    case 'none':
+      inputValues = [];
+      break;
+    case 'single':
+      inputValues = [{ 
+        subUnit: null, 
+        value: useState<string>(dataPoint.value?.toString() ?? "") 
+      }];
+      break;
+    case 'multiple':
+      inputValues = activity.unit.values.map((u) => ({ 
+        subUnit: u,
+        value: useState<string>(
+          (dataPoint.value as Record<string, number>)[u.name]?.toString() ?? "")
+      }));
+      break;
   }
   const [inputTags, setInputTags] = useState<string[]>(dataPoint.tags ?? tags ?? []);
 
@@ -195,15 +196,16 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
         </View>
 
         <View style={styles.inputContainer}>
-          {inputValues.map((inputValue: { subUnit: SubUnit | null, value: [string, (text: string) => void] }) => (
-            <TextInput
-              key={inputValue.subUnit?.name ?? "value"}
-              label={inputValue.subUnit ? `${inputValue.subUnit.name} [${inputValue.subUnit.symbol}]` : `Value ${activity.unit ? `[${activity.unit}]` : ""}`}
-              value={inputValue.value[0] ?? ""}
-              onChangeText={text => inputValue.value[1](text)}
-              keyboardType="numeric"
-              mode="outlined"
-            />
+          {inputValues.map((inputValue: { subUnit: {name: string, unit: SubUnit2} | null, value: [string, (text: string) => void] }) => (
+            <Text>Unimplemented</Text>
+            // <TextInput
+            //   key={inputValue.subUnit?.name ?? "value"}
+            //   label={inputValue.subUnit ? `${inputValue.subUnit.name} [${inputValue.subUnit.symbol}]` : `Value ${activity.unit ? `[${activity.unit}]` : ""}`}
+            //   value={inputValue.value[0] ?? ""}
+            //   onChangeText={text => inputValue.value[1](text)}
+            //   keyboardType="numeric"
+            //   mode="outlined"
+            // />
           ))}
         </View>
 

@@ -12,8 +12,7 @@ import useStore from "./Store";
 import { ActivityType, Stat } from "./StoreTypes";
 import DraggableFlatList from 'react-native-draggable-flatlist'
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { renderValueSummary } from "./ActivityData";
-import { calcStatValue, getUnitSymbol } from "./ActivityUtil";
+import { renderStatValue } from "./ActivityUtil";
 import { getTheme, getThemePalette, getThemeVariant, useWideDisplay } from "./Theme";
 import { SystemBars } from "react-native-edge-to-edge";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -52,17 +51,14 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
 
   const renderActivity = ({ item, drag }: { item: ActivityType, drag: () => void }) => {
     const activity = item;
-    let values = activity.stats.map((stat: Stat) => 
-      ({ 
-        value: calcStatValue(stat, activity, weekStart),
-        symbol: getUnitSymbol(stat, activity.unit),
-      }));
 
+    let stats;
     if (wideDisplay) {
-      values = values.slice(0, 3);
+      stats = activity.stats.slice(0, 3);
     } else {
-      values = values.slice(0, 1);
+      stats = activity.stats.slice(0, 1);
     }
+    const values = stats.map((stat: Stat) => renderStatValue(stat, activity, weekStart));
 
     return (
       <Pressable
@@ -79,10 +75,10 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
           <View style={styles.activityTitleContainer}>
             <Text numberOfLines={1} style={[styles.activityTitle, { color: palette[activity.color] }]}>{activity.name}</Text>
           </View>
-          {values.map(({value, symbol}, index) => (
+          {values.map((value, index) => (
             <View key={index} style={styles.activityValueContainer}>
               <Text numberOfLines={1} adjustsFontSizeToFit style={[styles.activityValue, { color: palette[activity.color] }]}>
-                {renderValueSummary(value, symbol)}
+                {value}
               </Text>
             </View>
           ))}

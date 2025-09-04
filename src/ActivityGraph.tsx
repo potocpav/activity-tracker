@@ -52,7 +52,7 @@ const quartiles = (values: number[]) => {
 
 const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, graphIndex: number }) => {
   const activities = useStore((state: any) => state.activities);
-  const activity = activities.find((a: ActivityType) => a.name === activityName);
+  const activity: ActivityType = activities.find((a: ActivityType) => a.name === activityName);
   const graph = activity.graphs[graphIndex];
   const weekStart = useStore((state: any) => state.weekStart);
   const theme = getTheme(activity);
@@ -73,7 +73,7 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
     scaleX: 1.0, // Initial X-axis scale
     scaleY: 1.0, // Initial Y-axis scale
   }).state;
-  const subUnitNames = Array.isArray(activity.unit) ? activity.unit.map((u: any) => u.name) : null;
+  const subUnitNames = activity.unit.type === "multiple" ? activity.unit.values.map(u => u.name) : null;
 
   const [binMenuVisible, setBinMenuVisible] = useState(false);
   const [subUnitMenuVisible, setSubUnitMenuVisible] = useState(false);

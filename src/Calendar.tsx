@@ -1,9 +1,10 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, useWindowDimensions } from "react-native";
 import { DataPoint, dateListToTime, normalizeDateList, DateList, ActivityType, TagFilter, dateListToDate } from "./StoreTypes";
-import { formatNumber, findZeroSlice, dayCmp, extractStatValue, extractValue, binTime } from "./ActivityUtil";
+import { findZeroSlice, dayCmp, extractStatValue, extractValue, binTime } from "./ActivityUtil";
 import useStore from "./Store";
 import { getTheme } from "./Theme";
+import { renderShortFormNumber } from "./Unit";
 
 type CalendarComponentProps = {
   navigation: any;
@@ -116,7 +117,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName, 
                   </Text>}
 
                   <Text style={[styles.value, { color: theme.colors.background }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>
-                    {hasData && (value !== null ? (activity.unit === null && value === 1 ? "✓" : formatNumber(value)) : '-')}
+                    {hasData && (value !== null ? (activity.unit === null && value === 1 ? "✓" : renderShortFormNumber(value)) : '-')}
                   </Text>
                 </TouchableOpacity>
               );

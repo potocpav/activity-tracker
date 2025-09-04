@@ -22,7 +22,7 @@ import {
 } from "react-native-ble-plx";
  */
 import { create } from "zustand";
-import { areUnitsEqual, CalendarProps, GraphProps, Stat, TagFilter } from "./StoreTypes";
+import { areUnitsEqual, CalendarProps, CompositeUnit, GraphProps, Stat, TagFilter } from "./StoreTypes";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ActivityType, Tag, DataPoint, SetTag, TagName, State } from "./StoreTypes";
@@ -248,7 +248,7 @@ const useStore = create<State>()(
         });
       },
 
-      setUnit: (activityName: string, unit: null | string | { name: string, symbol: string, oldName?: null | string }[]) => {
+      setUnit: (activityName: string, unit: CompositeUnit, unitMap: {oldName: string | null, newName: string}[]) => {
         set((state: any) => {
           const activity = state.activities.find((a: ActivityType) => a.name === activityName);
           if (!activity) {
@@ -260,15 +260,21 @@ const useStore = create<State>()(
             return {};
           }
 
-          const setSubUnitName = (subUnit: string | null) => {
-            if (unit === null || typeof unit === 'string') {
-              return null;
-            } else if (Array.isArray(unit)) {
-              if (activity.unit === null || typeof activity.unit === 'string') {
-                return unit[0].name;
-              } else if (Array.isArray(activity.unit)) {
-                return unit.find((u: any) => u.oldName === subUnit)?.name ?? unit[0].name;
-              }
+          const setSubUnitName = (oldName: string | null) => {
+            switch (unit.type) {
+              case "none":
+                return null;
+              case "single":
+                return null;
+              case "multiple":
+                switch (activity.unit.type) {
+                  case "none":
+                    return unit.values[0].name;
+                  case "single":
+                    return unit.values[0].name;
+                  case "multiple":
+                    return unitMap.find((u: any) => u.oldName === oldName)?.newName ?? unit.values[0].name;
+                }
             }
             console.log("Unknown unit type", unit);
             return null;
@@ -276,35 +282,50 @@ const useStore = create<State>()(
 
           const mapDpValue = (value: undefined | number | object) => {
             let newValue;
-            if (unit === null) {
-              value = undefined;
-            } else if (typeof unit === 'string') {
-              if (activity.unit === null) {
-                newValue = 1;
-              } else if (typeof activity.unit === 'string') {
-                newValue = value;
-              } else if (Array.isArray(activity.unit)) {
-                newValue = (value as any)[activity.unit[0].name];
-              }
-            } else if (Array.isArray(unit)) {
-              if (activity.unit === null) {
-                // first element is 1, the rest are undefined
-                newValue = Object.fromEntries([[unit[0].name, 1]]);
-              } else if (typeof activity.unit === 'string') {
-                // all subunits with oldName == null are value, the rest are undefined
-                newValue = Object.fromEntries(unit.filter((u: any) => u.oldName === null).map(u => [u.name, value]));
-              } else if (Array.isArray(activity.unit)) {
-                // all subunits with oldName are set to the appropriate previous value
-                newValue = Object.fromEntries(unit.filter((u: any) => typeof u.oldName === 'string').map(u => [u.name, (value as any)[u.oldName as string]]).filter((u: any) => u[1] !== undefined));
-              }
-            } else {
-              console.error("Unknown unit type", unit);
-              newValue = value;
+            switch (unit.type) {
+              case "none":
+                value = undefined;
+                break;
+              case "single":
+                if (activity.unit === null) {
+                  newValue = 1;
+                } else if (typeof activity.unit === 'string') {
+                  newValue = value;
+                } else if (Array.isArray(activity.unit)) {
+                  newValue = (value as any)[activity.unit[0].name];
+                }
+                break;
+              case "multiple":
+                switch (activity.unit.type) {
+                  case "none":
+                    // first element is 1, the rest are undefined
+                    newValue = Object.fromEntries([[unit.values[0].name, 1]]);
+                    break;
+                  case "single":
+                    // all subunits with oldName == null are value, the rest are undefined
+                    newValue = Object.fromEntries(
+                      unitMap
+                        .filter(u => u.oldName === null)
+                        .map(u => [u.newName, value])
+                      );
+                    break;
+                  case "multiple":
+                    // all subunits with oldName are set to the appropriate previous value
+                    newValue = Object.fromEntries(
+                      unitMap
+                        .filter(u => typeof u.oldName === 'string')
+                        .map(u => [u.newName, (value as any)[u.oldName as string]])
+                        .filter(u => u[1] !== undefined)
+                      );
+                    break;
+                }
+                break;
             }
             return newValue;
           }
 
           // update data points
+          // FIXME: What if the value is undefined, after converting a data point from Multiple to Single?
           const newDataPoints = activity.dataPoints.map((dp: DataPoint) => {
             let {value, ...dpValueless} = dp;
             const newDpValue = mapDpValue(dp.value);
@@ -318,7 +339,7 @@ const useStore = create<State>()(
 
           const newCalendars = activity.calendars.map((calendar: CalendarProps) => {
             let newCalendarValue;
-            if (unit === null) {
+            if (unit.type === "none") {
               newCalendarValue = "n_points";
             } else {
               newCalendarValue = calendar.value;
@@ -333,9 +354,9 @@ const useStore = create<State>()(
 
           const newGraphs = activity.graphs.map((graph: GraphProps) => {
             let newGraphType;
-            if (unit === null && activity.unit !== null) {
+            if (unit.type === "none" && activity.unit.type !== "none") {
               newGraphType = "bar-count";
-            } else if (unit !== null && activity.unit === null) {
+            } else if (unit.type !== "none" && activity.unit.type === "none") {
               newGraphType = "box";
             } else  {
               newGraphType = graph.graphType;

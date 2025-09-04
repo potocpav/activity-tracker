@@ -33,26 +33,42 @@ export type SubUnit2 =
     grade: "uiaa" | "french" | "font" | "v-scale",
   };
 
-export const areUnitsEqual = (unit1: Unit, unit2: Unit): boolean => {
-  if (unit1 === null && unit2 === null) {
+export type SubUnit = {
+  name: string;
+  symbol: string;
+};
+
+export const areUnitsEqual = (unit1: CompositeUnit, unit2: CompositeUnit): boolean => {
+  if (unit1.type === "none" && unit2.type === "none") {
     return true;
-  } else if (typeof unit1 === 'string' && typeof unit2 === 'string') {
-    return unit1 === unit2;
-  } else if (Array.isArray(unit1) && Array.isArray(unit2)) {
-    return unit1.length === unit2.length && unit1.every((u1, i) => areSubUnitsEqual(u1, unit2[i]));
+  } else if (unit1.type === "single" && unit2.type === "single") {
+    return areSubUnitsEqual(unit1.unit, unit2.unit);
+  } else if (unit1.type === "multiple" && unit2.type === "multiple") {
+    return unit1.values.length === unit2.values.length && unit1.values.every((u1, i) => areSubUnitsEqual(u1.unit, unit2.values[i].unit));
   } else {
     return false;
   }
 }
 
-export const areSubUnitsEqual = (subUnit1: SubUnit, subUnit2: SubUnit): boolean => {
-  return subUnit1.name === subUnit2.name && subUnit1.symbol === subUnit2.symbol;
+export const areSubUnitsEqual = (subUnit1: SubUnit2, subUnit2: SubUnit2): boolean => {
+  if (subUnit1.type === subUnit2.type) {
+    let subUnit2Copy : any = subUnit2; // we know the constructor is the same as subUnit1 here.
+    switch (subUnit1.type) {
+      case "number":
+        return subUnit1.symbol === subUnit2Copy.symbol;
+      case "count":
+        return true;
+      case "weight":
+        return subUnit1.unit === subUnit2Copy.unit;
+      case "time":
+        return subUnit1.unit === subUnit2Copy.unit;
+      case "climbing_grade":
+        return subUnit1.grade === subUnit2Copy.grade;
+    }
+  } else {
+    return false;
+  }
 }
-
-export type SubUnit = {
-  name: string;
-  symbol: string;
-};
 
 export type Tag = {
   name: TagName;
@@ -73,7 +89,7 @@ export type DateList = [number, number, number];
 
 export type DataPoint = {
   date: DateList;
-  value?: number | object;
+  value?: number | Record<string, number>;
   note?: string;
   tags?: TagName[];
 };

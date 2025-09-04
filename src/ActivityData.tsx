@@ -23,33 +23,6 @@ type ActivityDataProps = {
   route: any;
 };
 
-export const renderValueSummary = (value: any, unit: Unit) => {
-  const suffix = unit === "" ? "" : " " + unit;
-  if (value === null) {
-    return "-"
-  } else if (typeof value === "number" && typeof unit === "string") {
-    return (
-      `${Math.round(value * 100) / 100}${suffix}`
-    );
-  } else if (typeof value === "object" && Array.isArray(unit)) {
-    // Handle complex units (like finger strength with mean, max, tut)
-    var parts: string[] = [];
-    unit.forEach((u: any) => {
-      if (value[u.name] !== null) {
-        const suffix = u.symbol === "" ? "" : " " + u.symbol;
-        parts.push(`${value[u.name]}${suffix}`);
-      } else {
-        parts.push("-");
-      }
-    });
-    return ( // Only render the first part always
-      parts[0]
-    );
-  } else {
-    return "-"
-  }
-};
-
 const ITEM_HEIGHT = 60;
 
 const ActivityData = ({ navigation, route }: ActivityDataProps) => {
