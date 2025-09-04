@@ -22,10 +22,22 @@ import {
 } from "react-native-ble-plx";
  */
 import { create } from "zustand";
-import { areUnitsEqual, CalendarProps, CompositeUnit, GraphProps, Stat, TagFilter } from "./StoreTypes";
+import { 
+  CalendarProps, 
+  Unit, 
+  GraphProps, 
+  Stat, 
+  TagFilter, 
+  ActivityType, 
+  Tag, 
+  DataPoint, 
+  SetTag, 
+  TagName, 
+  State 
+} from "./StoreTypes";
+import { areUnitsEqual } from "./Unit";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ActivityType, Tag, DataPoint, SetTag, TagName, State } from "./StoreTypes";
 import { findZeroSlice, dayCmp } from "./ActivityUtil";
 
 export const version = 16;
@@ -143,6 +155,25 @@ const useStore = create<State>()(
         set({ activities: activities });
       },
 
+      duplicateActivity: (activityName: string) => {
+        set((state: any) => {
+          const activityIx = state.activities.findIndex((a: ActivityType) => a.name === activityName);
+          if (activityIx === -1) {
+            console.log("Activity not found");
+            return {};
+          }
+          const nameRoot = state.activities[activityIx].name.replace(/ \(copy(\s*\d*)\)$/, "");
+          let newName = (i: number) => i == 1 ? `${nameRoot} (copy)` : `${nameRoot} (copy ${i})`;
+          let i = 1;
+          while (state.activities.find((a: ActivityType) => a.name === newName(i))) {
+            i++;
+          }
+          const newActivity = { ...state.activities[activityIx], name: newName(i) };
+          const activities = [...state.activities.slice(0, activityIx + 1), newActivity, ...state.activities.slice(activityIx + 1)];
+          return { activities };
+        });
+      },
+
       deleteActivity: (activityName: string) => {
         set((state: any) => {
           const activities = state.activities.filter((activity: ActivityType) => activity.name !== activityName);
@@ -248,7 +279,7 @@ const useStore = create<State>()(
         });
       },
 
-      setUnit: (activityName: string, unit: CompositeUnit, unitMap: {oldName: string | null, newName: string}[]) => {
+      setUnit: (activityName: string, unit: Unit, unitMap: {oldName: string | null, newName: string}[]) => {
         set((state: any) => {
           const activity = state.activities.find((a: ActivityType) => a.name === activityName);
           if (!activity) {
@@ -287,12 +318,16 @@ const useStore = create<State>()(
                 value = undefined;
                 break;
               case "single":
-                if (activity.unit === null) {
-                  newValue = 1;
-                } else if (typeof activity.unit === 'string') {
-                  newValue = value;
-                } else if (Array.isArray(activity.unit)) {
-                  newValue = (value as any)[activity.unit[0].name];
+                switch (activity.unit.type) {
+                  case "none":
+                    newValue = 1;
+                    break;
+                  case "single":
+                    newValue = value;
+                    break;
+                  case "multiple":
+                    newValue = (value as any)[activity.unit.values[0].name];
+                    break;
                 }
                 break;
               case "multiple":
@@ -326,14 +361,15 @@ const useStore = create<State>()(
 
           // update data points
           // FIXME: What if the value is undefined, after converting a data point from Multiple to Single?
-          const newDataPoints = activity.dataPoints.map((dp: DataPoint) => {
-            let {value, ...dpValueless} = dp;
-            const newDpValue = mapDpValue(dp.value);
-            return {
-              ...dpValueless ,
-              ...(newDpValue !== undefined ? {value: newDpValue} : {}),
-            }
-          });
+          const newDataPoints = activity.dataPoints
+            .map((dp: DataPoint) => {
+              let {value, ...dpValueless} = dp;
+              const newDpValue = mapDpValue(dp.value);
+              return {
+                ...dpValueless ,
+                ...(newDpValue !== undefined ? {value: newDpValue} : {}),
+              }
+            });
 
           // update calendars, graphs, and stats
 

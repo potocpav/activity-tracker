@@ -1,6 +1,4 @@
-import { Text } from "react-native";
-import { TextInput } from "react-native-paper";
-import { CompositeUnit, SubUnit, SubUnit2 } from "./StoreTypes";
+import { Unit, SubUnit } from "./StoreTypes";
 
 export const renderLongFormNumber = (value: number): string => {
   return `${Math.round(value * 10) / 10}`;
@@ -10,7 +8,7 @@ export const renderShortFormNumber = (value: number): string => {
   return `${Math.round(value * 10) / 10}`;
 }
 
-export const renderLongFormValue = (value: number, unit: SubUnit2): string => {
+export const renderLongFormValue = (value: number, unit: SubUnit): string => {
   switch (unit.type) {
     case "number":
       let suffix1 = unit.symbol === "" ? "" : " " + unit.symbol;
@@ -34,24 +32,65 @@ export const renderLongFormValue = (value: number, unit: SubUnit2): string => {
   }
 }
 
-export const UnitEditor = ({ unit, onChange }: { unit: SubUnit2, onChange: (unit: SubUnit2) => void }) => {
+export const toInputValue = (value: number, unit: SubUnit): string => {
   switch (unit.type) {
     case "number":
-      return (
-        <TextInput
-          label="Unit"
-          value={unit.symbol}
-          onChangeText={text => onChange({ ...unit, symbol: text })}
-          mode="outlined"
-        />
-      );
+      return value.toString();
     case "count":
-      return (<Text>TODO: count editor</Text>);
+      return value.toString();
     case "weight":
-      return (<Text>TODO: count editor</Text>);
+      return value.toString();
     case "time":
-      return (<Text>TODO: count editor</Text>);
+      return value.toString();
     case "climbing_grade":
-      return (<Text>TODO: count editor</Text>);
+      return value.toString();
+  }
+}
+
+export const fromInputValue = (value: string, unit: SubUnit): number => {
+  switch (unit.type) {
+    case "number":
+      return parseFloat(value);
+    case "count":
+      return parseInt(value);
+    case "weight":
+      return parseFloat(value);
+    case "time":
+      return parseFloat(value);
+    case "climbing_grade":
+      return parseFloat(value);
+  }
+}
+
+
+export const areUnitsEqual = (unit1: Unit, unit2: Unit): boolean => {
+  if (unit1.type === "none" && unit2.type === "none") {
+    return true;
+  } else if (unit1.type === "single" && unit2.type === "single") {
+    return areSubUnitsEqual(unit1.unit, unit2.unit);
+  } else if (unit1.type === "multiple" && unit2.type === "multiple") {
+    return unit1.values.length === unit2.values.length && unit1.values.every((u1, i) => areSubUnitsEqual(u1.unit, unit2.values[i].unit));
+  } else {
+    return false;
+  }
+}
+
+export const areSubUnitsEqual = (subUnit1: SubUnit, subUnit2: SubUnit): boolean => {
+  if (subUnit1.type === subUnit2.type) {
+    let subUnit2Copy : any = subUnit2; // we know the constructor is the same as subUnit1 here.
+    switch (subUnit1.type) {
+      case "number":
+        return subUnit1.symbol === subUnit2Copy.symbol;
+      case "count":
+        return true;
+      case "weight":
+        return subUnit1.unit === subUnit2Copy.unit;
+      case "time":
+        return subUnit1.unit === subUnit2Copy.unit;
+      case "climbing_grade":
+        return subUnit1.grade === subUnit2Copy.grade;
+    }
+  } else {
+    return false;
   }
 }

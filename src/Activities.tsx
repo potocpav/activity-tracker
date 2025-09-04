@@ -33,6 +33,8 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   const dimensions = useWindowDimensions();
   const styles = getStyles(theme, wideDisplay, dimensions);
 
+  // setActivities(activities.filter((activity: ActivityType) => activity.name !== "None Test (copy)"));
+
   React.useEffect(() => {
     navigation.setOptions({
       // title: activity.name,
@@ -94,7 +96,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={[styles.container]} edges={["left", "right"]}>
+    <SafeAreaView style={[styles.container]} edges={["left", "right", "bottom"]}>
       <SystemBars style={themeVariant == 'light' ? "dark" : "light"} />
       {activities.length === 0 ? (
         <View style={styles.emptyStateContainer}>

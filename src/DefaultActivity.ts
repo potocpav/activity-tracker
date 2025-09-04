@@ -1,14 +1,14 @@
 
-import { CalendarProps, ActivityType, GraphProps, Stat, CompositeUnit, SubUnit2 } from "./StoreTypes";
+import { CalendarProps, ActivityType, GraphProps, Stat, Unit, SubUnit } from "./StoreTypes";
 
-const firstSubUnitName = (unit: CompositeUnit): string | null => {
+const firstSubUnitName = (unit: Unit): string | null => {
   if (unit.type === "none" || unit.type === "single") {
     return null;
   }
   return unit.values[0].name;
 }
 
-export const defaultStats = (unit: CompositeUnit): Stat[] => {
+export const defaultStats = (unit: Unit): Stat[] => {
   return [
     {
       label: "Count",
@@ -40,7 +40,7 @@ export const defaultStats = (unit: CompositeUnit): Stat[] => {
   ];
 };
 
-export const defaultCalendar = (unit: CompositeUnit): CalendarProps => {
+export const defaultCalendar = (unit: Unit): CalendarProps => {
   return {
     label: "Calendar",
     value: "n_points",
@@ -49,7 +49,7 @@ export const defaultCalendar = (unit: CompositeUnit): CalendarProps => {
   };
 };
 
-export const defaultGraph = (unit: CompositeUnit): GraphProps => {
+export const defaultGraph = (unit: Unit): GraphProps => {
   return {
     label: "Graph",
     subUnit: firstSubUnitName(unit),
@@ -59,7 +59,7 @@ export const defaultGraph = (unit: CompositeUnit): GraphProps => {
   };
 };
 
-const defaultUnit: CompositeUnit = { type: "single", unit: { type: "number", symbol: "" } };
+const defaultUnit: Unit = { type: "single", unit: { type: "number", symbol: "" } };
 
 export const defaultActivity : ActivityType = {
   name: "",

@@ -8,9 +8,10 @@ import {
 } from "react-native";
 import { Button, Divider } from 'react-native-paper';
 import useStore from "./Store";
-import { DataPoint, ActivityType, Tag, Unit, DateList, dateListToDate } from "./StoreTypes";
+import { DataPoint, ActivityType, Tag, DateList, dateListToDate, Unit } from "./StoreTypes";
 import { cmpDateList, dayCmp, findZeroSlice, renderTags, formatDate } from "./ActivityUtil";
 import TagMenu from "./TagMenu";
+import { renderLongFormValue } from "./Unit";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { getThemePalette, getThemeVariant } from "./Theme";
 import { getTheme } from "./Theme";
@@ -113,20 +114,20 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
   }, [navigation, theme, tagsMenuVisible, tags, activity]);
 
 
-  const renderValue = (value: any, unit: Unit): React.ReactNode => {
+  const renderValue = (value: null | number | Record<string, number>, unit: Unit): React.ReactNode => {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        {unit === null ? (
+        {unit.type === "none" ? (
           <Text style={{ color: theme.colors.onSurface }}>✓</Text>
-        ) : typeof value === "number" && typeof unit === "string" ? (
-          <Text style={{ color: theme.colors.onSurface }}>{`${Math.round(value * 100) / 100} ${unit}`}</Text>
-        ) : typeof value === "object" && Array.isArray(unit) ? (
-            unit.map((u: any) => {
-              if (value[u.name] !== null && value[u.name] !== undefined) {
+        ) : typeof value === "number" && unit.type === "single" ? (
+          <Text style={{ color: theme.colors.onSurface }}>{renderLongFormValue(value, unit.unit)}</Text>
+        ) : typeof value === "object" && unit.type === "multiple" ? (
+            unit.values.map((u: any) => {
+              if (value !== null && value[u.name] !== null && value[u.name] !== undefined) {
                 return (
                   <View key={u.name} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
                     <Text style={{ color: theme.colors.onSurface }} numberOfLines={1} adjustsFontSizeToFit>
-                      {`${value[u.name]} ${u.symbol}`}
+                      {renderLongFormValue(value[u.name], u.unit)}
                     </Text>
                   </View>
                 )
@@ -183,7 +184,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
       >
         <View style={{ padding: 5, height: ITEM_HEIGHT, flexDirection: 'row', gap: 10 }}>
           <View style={{ width: ITEM_HEIGHT * 1.2, alignItems: 'center' }}>
-            {renderValue(dataPoint.value, activity.unit)}
+            {renderValue(dataPoint.value ?? null, activity.unit)}
           </View>
           {renderNoteAndTags(dataPoint)}
         </View>

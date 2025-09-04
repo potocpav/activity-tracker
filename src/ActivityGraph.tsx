@@ -57,7 +57,7 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
   const weekStart = useStore((state: any) => state.weekStart);
   const theme = getTheme(activity);
   const windowDimensions = useWindowDimensions();
-  const font = matchFont({ fontFamily: fontFamily, fontSize: 10 * windowDimensions.fontScale });
+  const font = matchFont({ fontFamily: fontFamily, fontSize: 10 * windowDimensions.fontScale });  
 
   if (!activity) {
     return <Text>Activity not found</Text>;

@@ -4,15 +4,12 @@
 //   } from "react-native-ble-plx";
 
 
-// No value, single value, or multiple named values
-export type Unit = null | string | SubUnit[];
-
-export type CompositeUnit = 
+export type Unit = 
   { type: "none" } |
-  { type: "single", unit: SubUnit2 } |
-  { type: "multiple", values: { name: string, unit: SubUnit2 }[] };
+  { type: "single", unit: SubUnit } |
+  { type: "multiple", values: { name: string, unit: SubUnit }[] };
 
-export type SubUnit2 = 
+export type SubUnit = 
   {
     type: "number",
     symbol: string,
@@ -32,43 +29,6 @@ export type SubUnit2 =
     type: "climbing_grade",
     grade: "uiaa" | "french" | "font" | "v-scale",
   };
-
-export type SubUnit = {
-  name: string;
-  symbol: string;
-};
-
-export const areUnitsEqual = (unit1: CompositeUnit, unit2: CompositeUnit): boolean => {
-  if (unit1.type === "none" && unit2.type === "none") {
-    return true;
-  } else if (unit1.type === "single" && unit2.type === "single") {
-    return areSubUnitsEqual(unit1.unit, unit2.unit);
-  } else if (unit1.type === "multiple" && unit2.type === "multiple") {
-    return unit1.values.length === unit2.values.length && unit1.values.every((u1, i) => areSubUnitsEqual(u1.unit, unit2.values[i].unit));
-  } else {
-    return false;
-  }
-}
-
-export const areSubUnitsEqual = (subUnit1: SubUnit2, subUnit2: SubUnit2): boolean => {
-  if (subUnit1.type === subUnit2.type) {
-    let subUnit2Copy : any = subUnit2; // we know the constructor is the same as subUnit1 here.
-    switch (subUnit1.type) {
-      case "number":
-        return subUnit1.symbol === subUnit2Copy.symbol;
-      case "count":
-        return true;
-      case "weight":
-        return subUnit1.unit === subUnit2Copy.unit;
-      case "time":
-        return subUnit1.unit === subUnit2Copy.unit;
-      case "climbing_grade":
-        return subUnit1.grade === subUnit2Copy.grade;
-    }
-  } else {
-    return false;
-  }
-}
 
 export type Tag = {
   name: TagName;
@@ -155,7 +115,7 @@ export type GraphProps = {
 export type ActivityType = {
   name: string;
   description: string;
-  unit: CompositeUnit;
+  unit: Unit;
   dataPoints: DataPoint[];
   tags: Tag[];
   color: number;

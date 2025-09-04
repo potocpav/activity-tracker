@@ -117,7 +117,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName, 
                   </Text>}
 
                   <Text style={[styles.value, { color: theme.colors.background }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>
-                    {hasData && (value !== null ? (activity.unit === null && value === 1 ? "✓" : renderShortFormNumber(value)) : '-')}
+                    {hasData && (value !== null ? (activity.unit.type === "none" && value === 1 ? "✓" : renderShortFormNumber(value)) : '-')}
                   </Text>
                 </TouchableOpacity>
               );

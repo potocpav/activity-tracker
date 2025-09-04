@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { Menu, Button } from 'react-native-paper';
 import useStore from "./Store";
-import {DataPoint, ActivityType, SubUnit, Tag, dateListToDate} from "./StoreTypes";
+import {DataPoint, ActivityType, Tag, dateListToDate} from "./StoreTypes";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import ActivitySummary from "./ActivitySummary";
 import { File, Paths } from "expo-file-system/next";
@@ -55,11 +55,12 @@ const renderCsv = (data: (string | number | null)[][]) => {
   }).join("\r\n");
 }
 
-const ActivityInner: React.FC<any> = ({ activity, navigation }) => {
+const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ activity, navigation }) => {
   const activityName = activity.name;
   const theme = getTheme(activity);
   const themeVariant = getThemeVariant();
   const [menuVisible, setMenuVisible] = React.useState(false);
+  const duplicateActivity = useStore((state: any) => state.duplicateActivity);
   const deleteActivity = useStore((state: any) => state.deleteActivity);
 
   if (!activity) {
@@ -98,25 +99,27 @@ const ActivityInner: React.FC<any> = ({ activity, navigation }) => {
 
   const exportActivityCsv = async () => {
     const valueNames = (() => {
-      if (activity.unit === null) {
-        return []
-      } else if (typeof activity.unit === "string") {
-        return [activity.unit];
-      } else {
-        return activity.unit.map((u: SubUnit) => u.name);
+      switch (activity.unit.type) {
+        case "none":
+          return [];
+        case "single":
+          // TODO: add unit name
+          return ["Value"];
+        case "multiple":
+          return activity.unit.values.map(u => u.name);
       }
     })();
     const tagNames = activity.tags.map((t: Tag) => t.name);
     const headerRow = ["Date", ...valueNames, ...tagNames];
     var dataRows = activity.dataPoints.map((dp: DataPoint) => {
       const values = (() => {
-        if (activity.unit === null) {
-          return []
-        } else if (typeof activity.unit === "string" && typeof dp.value === "number") {
-          return [dp.value];
-        } else {
-          return activity.unit.map((u: SubUnit) =>
-            (typeof dp.value === "object" ? (dp.value as any)[u.name] ?? null : null));
+        switch (activity.unit.type) {
+          case "none":
+            return [];
+          case "single":
+            return [typeof dp.value === "number" ? dp.value : null];
+          case "multiple":
+            return activity.unit.values.map(u => (typeof dp.value === "object" ? (dp.value as any)[u.name] ?? null : null));
         }
       })();
       const tags = (() => {
@@ -182,6 +185,14 @@ const ActivityInner: React.FC<any> = ({ activity, navigation }) => {
         >
           <Menu.Item onPress={() => { setMenuVisible(false); navigation.navigate("ActivityData", { activityName }) }} title="Data" />
           <Menu.Item onPress={() => { setMenuVisible(false); exportActivityCsv() }} title="Export" />
+          <Menu.Item onPress={() => { 
+            setMenuVisible(false); 
+            duplicateActivity(activity.name);
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'Activities' }],
+            });
+          }} title="Duplicate" />
           <Menu.Item onPress={() => { setMenuVisible(false); deleteActivityWrapper() }} title="Delete" />
         </Menu>
       </View>

@@ -13,8 +13,8 @@ import {
   ActivityType, 
   WeekStart, 
   dateListToDate, 
-  CompositeUnit,
-  SubUnit2
+  Unit,
+  SubUnit
 } from "./StoreTypes";
 import { renderLongFormNumber, renderLongFormValue } from "./Unit";
 import { View, Text, StyleSheet } from "react-native";
@@ -116,7 +116,6 @@ export const calcStatValue = (stat: Stat, activity: ActivityType, weekStart: Wee
 
 export const renderStatValue = (stat: Stat, activity: ActivityType, weekStart: WeekStart) => {
   const value = calcStatValue(stat, activity, weekStart);
-  console.log("renderStatValue", stat, value);
 
   if (value === null) {
     return "-";
@@ -125,7 +124,6 @@ export const renderStatValue = (stat: Stat, activity: ActivityType, weekStart: W
   } else if (stat.value === "daily_mean") {
     return renderLongFormNumber(value) + " %";
   } else {
-    console.log(activity.unit);
     if (activity.unit.type === "none") {
       return renderLongFormNumber(value);
     } else if (activity.unit.type === "single") {
@@ -138,9 +136,7 @@ export const renderStatValue = (stat: Stat, activity: ActivityType, weekStart: W
         return renderLongFormValue(value, subUnit);
       }
     }
-    console.log("renderStatValue", "default");
   }
-  console.log("renderStatValue", "default");
   return "-";
 }
 

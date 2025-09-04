@@ -7,7 +7,7 @@ import {
   Alert,
 } from "react-native";
 import { Dialog, Portal, SegmentedButtons } from 'react-native-paper';
-import { ActivityType, SetTag, SubUnit, Tag, SubUnit2, CompositeUnit } from "./StoreTypes";
+import { ActivityType, SetTag, Tag, SubUnit, Unit } from "./StoreTypes";
 import { TextInput, Button, Chip } from "react-native-paper";
 import useStore from "./Store";
 import AntDesign from '@expo/vector-icons/AntDesign';
@@ -18,7 +18,7 @@ import { getTheme, getThemePalette, getThemeVariant } from "./Theme";
 import { defaultStats } from "./DefaultActivity";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
-import { UnitEditor } from "./Unit";
+import { UnitEditor } from "./UnitView";
 
 type EditActivityProps = {
   navigation: any;
@@ -59,7 +59,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
         return 'multiple';
     }
   })());
-  const [singleUnitInput, setSingleUnitInput] = useState<SubUnit2>((() => {
+  const [singleUnitInput, setSingleUnitInput] = useState<SubUnit>((() => {
     switch (activity.unit.type) {
       case 'none':
         return { type: "number", symbol: '' };
@@ -83,7 +83,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
         return activity.unit.values.map((u, index: number) => ({ oldName: u.name, newIndex: index }));
     }
   })());
-  const [multiUnitInput, setMultiUnitInput] = useState<{ name: string, unit: SubUnit2 }[]>((() => {
+  const [multiUnitInput, setMultiUnitInput] = useState<{ name: string, unit: SubUnit }[]>((() => {
     switch (activity.unit.type) {
       case 'none':
         return [
@@ -96,7 +96,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
           { name: '', unit: { type: "number", symbol: '' } },
         ];
       case 'multiple':
-        return activity.unit.values.map((u: { name: string, unit: SubUnit2 }) => ({ name: u.name, unit: u.unit }));
+        return activity.unit.values.map((u: { name: string, unit: SubUnit }) => ({ name: u.name, unit: u.unit }));
     }
   })());
   
@@ -116,7 +116,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
 
 
   const saveActivity = () => {
-    let newUnit : CompositeUnit;
+    let newUnit : Unit;
     switch (unitMode) {
       case 'no_value':
         newUnit = { type: "none" };
@@ -134,8 +134,8 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       name: activityNameInput,
       description: activityDescriptionInput,
       color: selectedColor,
-      unit: newUnit,
       stats: isNewActivity ? defaultStats(newUnit) : activity.stats,
+      // don't update unit, it will be updated in the setUnit call
     };
     const activityName = activity.name === "" ? updatedActivity.name : activity.name;
     updateActivity(activityName, updatedActivity);
@@ -195,7 +195,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
           }
         } else if (unitMode === 'multiple' && activity.unit.type === 'multiple') {
           let oldNames: any[] = oldUnitMap.map((u) => u.oldName)
-          if (isSupersetOf(new Set(oldNames), new Set(activity.unit.values.map((u: { name: string, unit: SubUnit2 }) => u.name)))) {
+          if (isSupersetOf(new Set(oldNames), new Set(activity.unit.values.map((u: { name: string, unit: SubUnit }) => u.name)))) {
             saveActivity();
           } else {
             dataLossAlert(saveActivity);
@@ -264,7 +264,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
 
     const editSingleValue = () => (
       <View style={styles.inputContainer}>
-        <UnitEditor unit={singleUnitInput} onChange={(unit: SubUnit2) => {
+        <UnitEditor unit={singleUnitInput} onChange={(unit: SubUnit) => {
           setSingleUnitInput(unit);
         }} />
       </View>
@@ -288,7 +288,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
             />
           </View>
           <View style={{ flex: 1 }}>
-            <UnitEditor unit={val.unit} onChange={(unit: SubUnit2) => {
+            <UnitEditor unit={val.unit} onChange={(unit: SubUnit) => {
               // Update unit
               const newVals = [...multiUnitInput];
               newVals[idx].unit = unit;

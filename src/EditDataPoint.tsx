@@ -9,7 +9,7 @@ import {
   Pressable,
 } from "react-native";
 import { Chip, TextInput, Button } from 'react-native-paper';
-import { ActivityType, dateToDateList, DataPoint, dateListToDate, SubUnit2 } from "./StoreTypes";
+import { ActivityType, dateToDateList, DataPoint, dateListToDate, SubUnit } from "./StoreTypes";
 import useStore from "./Store";
 import { DatePickerModal } from "react-native-paper-dates";
 import { CalendarDate } from "react-native-paper-dates/lib/typescript/Date/Calendar";
@@ -19,6 +19,8 @@ import { cmpDateList, formatDate } from "./ActivityUtil";
 import { getTheme, getThemePalette, getThemeVariant } from "./Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
+import { toInputValue, fromInputValue } from "./Unit";
+import { ValueEditor } from "./UnitView";
 
 type EditDataPointProps = {
   navigation: any;
@@ -54,22 +56,23 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
   const [inputDate, setInputDate] = useState<CalendarDate | undefined>(dateTime);
   const [noteInput, setNoteInput] = useState<string>(dataPoint.note ?? "");
-  let inputValues: { subUnit: {name: string, unit: SubUnit2} | null, value: [string, (text: string) => void] }[];
+  let inputValues: { subUnit: {name: string | null, unit: SubUnit}, value: [string, (text: string) => void] }[];
+    
   switch (activity.unit.type) {
     case 'none':
       inputValues = [];
       break;
     case 'single':
       inputValues = [{ 
-        subUnit: null, 
-        value: useState<string>(dataPoint.value?.toString() ?? "") 
+        subUnit: {name: null, unit: activity.unit.unit}, 
+        value: useState<string>(toInputValue((dataPoint as any).value ?? "", activity.unit.unit)) 
       }];
       break;
     case 'multiple':
       inputValues = activity.unit.values.map((u) => ({ 
         subUnit: u,
         value: useState<string>(
-          (dataPoint.value as Record<string, number>)[u.name]?.toString() ?? "")
+          toInputValue((dataPoint.value as any)[u.name] ?? "", u.unit))
       }));
       break;
   }
@@ -88,42 +91,47 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
     var newValue: any;
     var hasNonEmptyValue = false;
     var hasNonNumbervalue = false;
-    if (activity.unit === null) {
-      newValue = undefined;
-    } else if (typeof activity.unit === "string") {
-      newValue = parseFloat(inputValues[0].value[0]);
-      if (inputValues[0].value[0] === "") {
-        // empty input is invalid, `hasNonEmptyValue` remains false
-      } else if (isNaN(newValue)) {
-        // non-number input is invalid, `hasNonNumbervalue` is set
-        hasNonNumbervalue = true;
-      } else {
-        // all is OK
-        hasNonEmptyValue = true;
-      }
-    } else {
-      newValue = {};
-      for (const inputValue of inputValues) {
-        if (inputValue.value[0] === "") {
+
+    switch (activity.unit.type) {
+      case "none":
+        newValue = undefined;
+        break;
+      case "single":
+        if (inputValues[0].value[0] === "") {
           // empty value, do not set the sub-value to anything
         } else {
           hasNonEmptyValue = true;
-          const value = parseFloat(inputValue.value[0]);
-          if (isNaN(value)) {
-            hasNonNumbervalue = true;
-            break;
+          newValue = fromInputValue(inputValues[0].value[0], activity.unit.unit);
+        }
+        break;
+      case "multiple":
+        newValue = {};
+        for (const inputValue of inputValues) {
+          if (inputValue.value[0] === "") {
+            // empty value, do not set the sub-value to anything
           } else {
-            newValue[inputValue.subUnit.name] = value;
+            hasNonEmptyValue = true;
+            const value = fromInputValue(inputValue.value[0], inputValue.subUnit.unit);
+            if (isNaN(value)) {
+              hasNonNumbervalue = true;
+              break;
+            } else {
+              if (inputValue.subUnit.name !== null) {
+                newValue[inputValue.subUnit.name] = value;
+              } else {
+                console.error("Sub-unit name is null");
+              }
+            }
           }
         }
-      }
+        break;
     }
 
     if (!inputDate) {
       Alert.alert("Date is required");
     } else if (hasNonNumbervalue) {
       Alert.alert("Value must be a number");
-    } else if (activity.unit !== null && !hasNonEmptyValue) {
+    } else if (activity.unit.type !== "none" && !hasNonEmptyValue) {
       Alert.alert("Value is required");
     } else {
       const newDate = dateToDateList(inputDate);
@@ -196,16 +204,13 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
         </View>
 
         <View style={styles.inputContainer}>
-          {inputValues.map((inputValue: { subUnit: {name: string, unit: SubUnit2} | null, value: [string, (text: string) => void] }) => (
-            <Text>Unimplemented</Text>
-            // <TextInput
-            //   key={inputValue.subUnit?.name ?? "value"}
-            //   label={inputValue.subUnit ? `${inputValue.subUnit.name} [${inputValue.subUnit.symbol}]` : `Value ${activity.unit ? `[${activity.unit}]` : ""}`}
-            //   value={inputValue.value[0] ?? ""}
-            //   onChangeText={text => inputValue.value[1](text)}
-            //   keyboardType="numeric"
-            //   mode="outlined"
-            // />
+          {inputValues.map((inputValue: { subUnit: {name: string | null, unit: SubUnit}, value: [string, (text: string) => void] }) => (
+            <ValueEditor 
+              key={inputValue.subUnit.name ?? "value"}
+              label={inputValue.subUnit.name === null ? "Value" : `${inputValue.subUnit.name}`} // TODO: better label
+              value={inputValue.value[0]} 
+              onChange={inputValue.value[1]} 
+            />
           ))}
         </View>
 
