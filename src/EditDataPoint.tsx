@@ -72,7 +72,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
       inputValues = activity.unit.values.map((u) => ({ 
         subUnit: u,
         value: useState<string>(
-          toInputValue((dataPoint.value as any)[u.name] ?? "", u.unit))
+          toInputValue(((dataPoint as any).value ?? {})[u.name] ?? "", u.unit))
       }));
       break;
   }
