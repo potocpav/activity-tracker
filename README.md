@@ -32,7 +32,12 @@ This app enables you to track your workouts, habits, body measurments, or other 
 
 ### 1.0
 
-- [x] Basic functionality
+- [x] Activity management
+- [x] Data point management
+- [x] Tags, filtering
+- [x] Summary values, calendars and graphs
+- [x] Settings
+- [x] Data import and export
 
 ## Development
 
