@@ -1,6 +1,6 @@
 {
   "name": "activity-tracker",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "main": "expo/AppEntry.js",
   "scripts": {
     "dev": "APP_VARIANT=development npx expo start",

@@ -29,9 +29,11 @@ const getUniqueIdentifier = () => {
   const getIconBackground = () => {
     if (IS_DEV) {
       return '#4d4d4d';
+    } else if (IS_PREVIEW) {
+      return '#00caf2';
+    } else {
+      return '#7166ff';
     }
-
-    return "#7166ff";
   };
   
 
