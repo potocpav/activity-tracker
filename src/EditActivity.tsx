@@ -303,8 +303,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
                 newVals.splice(idx, 1);
                 setMultiUnitInput(newVals);
 
-                const newOldUnitMap = [...oldUnitMap];
-                newOldUnitMap
+                const newOldUnitMap = oldUnitMap
                   .filter((u) => u.newIndex !== idx)
                   .map((u) => u.newIndex > idx ? { ...u, newIndex: u.newIndex - 1 } : u);
                 setOldUnitMap(newOldUnitMap);
@@ -354,7 +353,8 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
               value={activityDescriptionInput}
               onChangeText={setActivityDescriptionInput}
               multiline
-              numberOfLines={3}
+              numberOfLines={2}
+              style={{ height: 80 }}
               mode="outlined"
             />
           </View>

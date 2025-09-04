@@ -282,8 +282,9 @@ const useStore = create<State>()(
       setUnit: (activityName: string, unit: Unit, unitMap: {oldName: string | null, newName: string}[]) => {
         set((state: any) => {
           const activity = state.activities.find((a: ActivityType) => a.name === activityName);
+          console.log("SET UNIT", activityName, activity?.unit, unit, unitMap);
           if (!activity) {
-            console.log("Activity not found");
+            console.error("Activity not found");
             return {};
           }
           // don't update unit if it's the same
@@ -307,7 +308,7 @@ const useStore = create<State>()(
                     return unitMap.find((u: any) => u.oldName === oldName)?.newName ?? unit.values[0].name;
                 }
             }
-            console.log("Unknown unit type", unit);
+            console.error("Unknown unit type", unit);
             return null;
           }
 
@@ -418,7 +419,7 @@ const useStore = create<State>()(
             graphs: newGraphs,
             stats: newStats
           };
-          return { activities: [...state.activities.filter((a: ActivityType) => a.name !== activityName), newActivity] };
+          return {activities: state.activities.map((a: ActivityType) => a.name === activityName ? newActivity : a)};
         });
       },
 

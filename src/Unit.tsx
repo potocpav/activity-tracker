@@ -69,7 +69,8 @@ export const areUnitsEqual = (unit1: Unit, unit2: Unit): boolean => {
   } else if (unit1.type === "single" && unit2.type === "single") {
     return areSubUnitsEqual(unit1.unit, unit2.unit);
   } else if (unit1.type === "multiple" && unit2.type === "multiple") {
-    return unit1.values.length === unit2.values.length && unit1.values.every((u1, i) => areSubUnitsEqual(u1.unit, unit2.values[i].unit));
+    return unit1.values.length === unit2.values.length && unit1.values.every(
+      (u1, i) => u1.name === unit2.values[i].name && areSubUnitsEqual(u1.unit, unit2.values[i].unit));
   } else {
     return false;
   }

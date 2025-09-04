@@ -29,7 +29,7 @@ const approximateBinSize = (binSize: BinSize) => {
   } else if (binSize === "year") {
     return 365 * day;
   } else {
-    console.log("Invalid bin size: " + binSize);
+    console.error("Invalid bin size: " + binSize);
     throw new Error("Invalid bin size: " + binSize);
   }
 }

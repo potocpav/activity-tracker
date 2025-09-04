@@ -16,6 +16,7 @@ import { renderStatValue } from "./ActivityUtil";
 import { getTheme, getThemePalette, getThemeVariant, useWideDisplay } from "./Theme";
 import { SystemBars } from "react-native-edge-to-edge";
 import { SafeAreaView } from "react-native-safe-area-context";
+import EmptyPagePlaceholder from "./EmptyPagePlaceholder";
 
 type ActivitiesProps = {
   navigation: any;
@@ -27,7 +28,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   const activities = useStore((state: any) => state.activities);
   const setActivities = useStore((state: any) => state.setActivities);
   const weekStart = useStore((state: any) => state.weekStart);
-  
+
   const palette = getThemePalette();
   const wideDisplay = useWideDisplay();
   const dimensions = useWindowDimensions();
@@ -98,21 +99,19 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   return (
     <SafeAreaView style={[styles.container]} edges={["left", "right", "bottom"]}>
       <SystemBars style={themeVariant == 'light' ? "dark" : "light"} />
-      {activities.length === 0 ? (
-        <View style={styles.emptyStateContainer}>
-          <AntDesign name="inbox" size={64} color={theme.colors.onSurfaceVariant} />
-          <Text style={styles.emptyStateText}>No activities</Text>
-          <Text style={styles.emptyStateSubtext}>Tap the + button to create an activity</Text>
-        </View>
-      ) : (
-        <DraggableFlatList
-          data={activities}
-          onDragEnd={({ data }) => setActivities(data)}
-          renderItem={renderActivity}
-          keyExtractor={(item) => item.name}
-          contentContainerStyle={styles.listContainer}
-        />
-      )}
+      <DraggableFlatList
+        data={activities}
+        onDragEnd={({ data }) => setActivities(data)}
+        renderItem={renderActivity}
+        ListEmptyComponent={() => (
+          <EmptyPagePlaceholder 
+            title="No activities" 
+            subtext="Tap the + button to create an activity" 
+          />
+        )}
+        keyExtractor={(item) => item.name}
+        contentContainerStyle={styles.listContainer}
+      />
     </SafeAreaView>
   );
 };
@@ -163,12 +162,6 @@ const getStyles = (theme: any, wideDisplay: boolean, dimensions: any) => StyleSh
   activityValue: {
     fontSize: 16,
   },
-  fab: {
-    position: 'absolute',
-    margin: 16,
-    right: 0,
-    bottom: 0,
-  },
   headerRightContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -176,26 +169,6 @@ const getStyles = (theme: any, wideDisplay: boolean, dimensions: any) => StyleSh
   menuAnchor: {
     width: 1,
     height: 1,
-  },
-  emptyStateContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    paddingBottom: 50,
-    backgroundColor: theme.colors.elevation.level1,
-  },
-  emptyStateText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: theme.colors.onSurfaceVariant,
-    marginTop: 10,
-  },
-  emptyStateSubtext: {
-    fontSize: 16,
-    color: theme.colors.onSurfaceVariant,
-    marginTop: 5,
-    textAlign: 'center',
   },
 });
 

@@ -94,7 +94,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName, 
                   ]}
                   key={dayIdx}
                   onLongPress={() => {
-                    if (activity.unit === null) {
+                    if (activity.unit.type === "none") {
                       if (hasData) {
                         deleteActivityDataPoint(activityName, dayDataAndIndex[0][1]);
                       } else {

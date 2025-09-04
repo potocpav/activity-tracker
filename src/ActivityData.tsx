@@ -17,6 +17,7 @@ import { getThemePalette, getThemeVariant } from "./Theme";
 import { getTheme } from "./Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
+import EmptyPagePlaceholder from "./EmptyPagePlaceholder";
 
 
 type ActivityDataProps = {
@@ -82,7 +83,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
 
   React.useEffect(() => {
     navigation.setOptions({
-      title: activity.name,
+      title: day ? formatDate(dateListToDate(day)) : "All data",
       headerStyle: {
         backgroundColor: themeVariant == 'light' ? theme.colors.primary : theme.colors.background,
       },
@@ -201,6 +202,9 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
         ItemSeparatorComponent={() => (blackTheme ? <Divider /> : null)}
         keyExtractor={([_, i]) => i.toString()}
         windowSize={11}
+        ListEmptyComponent={() => (
+          <EmptyPagePlaceholder title="No data" subtext="Tap the + button to create a data point" />
+        )}
         ListFooterComponent={() => (
           <View style={{ height: 50 }} />
         )}
@@ -218,7 +222,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
 const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.elevation.background,
     paddingTop: 2,
   },
   sectionHeader: {

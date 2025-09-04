@@ -46,7 +46,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
       };
   
   if (!dataPoint) {
-    console.log("Data point not found", dataPointIndex, dataPoint);
+    console.error("Data point not found", dataPointIndex, dataPoint);
     return <Text style={{ color: theme.colors.error }}>Data point not found</Text>;
   }
   

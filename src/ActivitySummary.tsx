@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Fragment } from "react";
 import { ScrollView, StyleSheet, Text, View, Pressable } from "react-native";
 import { Divider } from 'react-native-paper';
 import useStore from "./Store";
@@ -38,68 +38,74 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
   return (
     <View style={styles.container}>
       <ScrollView>
-        <View style={styles.header}>
-          {activity.description && (
-            <View key="activity-description" style={styles.activityInfo}>
-              <Text style={styles.activityDescription}>{activity.description}</Text>
-            </View>
-          )}
+        <Fragment>
+          <View style={styles.header}>
+            {activity.description && (
+              <View key="activity-description" style={styles.activityInfo}>
+                <Text style={styles.activityDescription}>{activity.description}</Text>
+              </View>
+            )}
 
-          {activity.tags.length > 0 && (
-            <View key="activity-tags" style={styles.tagsRow}>
-              {renderTags(activity.tags, theme, palette)}
-            </View>
-          )}
-        </View>
-
-        <View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <View style={{}}>
-              <Text style={styles.sectionHeader}>Overview</Text>
-            </View>
-            <View style={styles.addStat}>
-              <Pressable
-                onPress={() => {
-                  addActivityStat(activityName, newStat);
-                }}
-                style={({ pressed }) => [
-                  {
-                    opacity: pressed ? 0.5 : 1,
-                  },
-                ]}
-              >
-                <AntDesign name="plus" size={24} color={theme.colors.onSurfaceVariant} />
-              </Pressable>
-            </View>
+            {activity.tags.length > 0 && (
+              <View key="activity-tags" style={styles.tagsRow}>
+                {renderTags(activity.tags, theme, palette)}
+              </View>
+            )}
           </View>
-          <Animated.View layout={LinearTransition} style={styles.statsContainer}>
-            {activity.stats.map((stat: Stat, index: number) => (
-              <StatView key={index} stat={stat} activity={activity} onPress={() =>
-                navigation.navigate("EditStat", {
-                  activityName: activityName,
-                  statId: index,
-                })
-              } sharedTransitionTag={index == 0 ? "tag" : undefined} />
-            ))}
-          </Animated.View>
-        </View>
-        <Divider />
+        </Fragment>
 
-        {activity.calendars.map((calendar: CalendarProps, index: number) => (
-          <>
-            <ActivityCalendar key={`calendar-${index}`} navigation={navigation} activityName={activityName} calendarIndex={index} />
-            <Divider key={`calendar-divider-${index}`} />
-          </>
-        ))}
+        <Fragment>
+          <View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <View style={{}}>
+                <Text style={styles.sectionHeader}>Overview</Text>
+              </View>
+              <View style={styles.addStat}>
+                <Pressable
+                  onPress={() => {
+                    addActivityStat(activityName, newStat);
+                  }}
+                  style={({ pressed }) => [
+                    {
+                      opacity: pressed ? 0.5 : 1,
+                    },
+                  ]}
+                >
+                  <AntDesign name="plus" size={24} color={theme.colors.onSurfaceVariant} />
+                </Pressable>
+              </View>
+            </View>
+            <Animated.View layout={LinearTransition} style={styles.statsContainer}>
+              {activity.stats.map((stat: Stat, index: number) => (
+                <StatView key={index} stat={stat} activity={activity} onPress={() =>
+                  navigation.navigate("EditStat", {
+                    activityName: activityName,
+                    statId: index,
+                  })
+                } sharedTransitionTag={index == 0 ? "tag" : undefined} />
+              ))}
+            </Animated.View>
+          </View>
+          <Divider />
+        </Fragment>
 
-        {activity.graphs.map((graph: GraphProps, index: number) => (
-          <>
-            <ActivityGraph key={`graph-${index}`} activityName={activityName} graphIndex={index} />
-            <Divider key={`graph-divider-${index}`} />
-          </>
-        ))}
+        <Fragment>
+          {activity.calendars.map((calendar: CalendarProps, index: number) => (
+            <>
+              <ActivityCalendar key={`calendar-${index}`} navigation={navigation} activityName={activityName} calendarIndex={index} />
+              <Divider key={`calendar-divider-${index}`} />
+            </>
+          ))}
 
-        <View key="activity-spacer" style={{ height: 20 }} />
+          {activity.graphs.map((graph: GraphProps, index: number) => (
+            <>
+              <ActivityGraph key={`graph-${index}`} activityName={activityName} graphIndex={index} />
+              <Divider key={`graph-divider-${index}`} />
+            </>
+          ))}
+
+          <View key="activity-spacer" style={{ height: 20 }} />
+        </Fragment>
       </ScrollView>
     </View>
   );
