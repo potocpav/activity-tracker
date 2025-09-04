@@ -275,7 +275,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       <>
       {multiUnitInput.map((val, idx) => (
         <View key={idx} style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <View style={{ flex: 2, marginRight: 8 }}>
+          <View style={{ flex: 1, marginRight: 8 }}>
             <TextInput
               label="Value"
               value={val.name}
@@ -288,7 +288,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
               mode="outlined"
             />
           </View>
-          <View style={{ flex: 1 }}>
+          <View style={{ flex: 2 }}>
             <UnitEditor unit={val.unit} onChange={(unit: SubUnit) => {
               // Update unit
               const newVals = [...multiUnitInput];
@@ -296,7 +296,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
               setMultiUnitInput(newVals);
             }} />
           </View>
-          <View style={{ width: 40, marginLeft: 4 }}>
+          <View>
             {multiUnitInput.length > 2 && (
               <Button compact={true} onPress={() => {
                 // Delete unit

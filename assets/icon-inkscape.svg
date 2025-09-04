@@ -210,9 +210,9 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      showgrid="false"
-     inkscape:zoom="0.59206201"
-     inkscape:cx="881.66441"
-     inkscape:cy="534.57239"
+     inkscape:zoom="0.41865106"
+     inkscape:cx="561.32665"
+     inkscape:cy="580.43565"
      inkscape:window-width="2560"
      inkscape:window-height="1371"
      inkscape:window-x="0"
@@ -278,6 +278,17 @@
        inkscape:locked="false"
        inkscape:label=""
        inkscape:color="rgb(0,134,229)" />
+    <inkscape:page
+       x="21.000002"
+       y="21.000002"
+       width="66.000008"
+       height="66"
+       id="page3"
+       margin="0"
+       bleed="0"
+       inkscape:export-filename="icon-play.png"
+       inkscape:export-xdpi="78.545448"
+       inkscape:export-ydpi="78.545448" />
   </sodipodi:namedview>
   <rect
      style="fill:#7166ff;fill-opacity:1;stroke:none;stroke-width:1.51181;stroke-linecap:round"

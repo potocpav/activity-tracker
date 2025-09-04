@@ -24,11 +24,13 @@ This app enables you to track your workouts, habits, body measurments, or other 
 
 - [x] Multiple calendars and graphs per activity
   - [ ] Animations for adding and removing calendars and graphs
-- [ ] Bluetooth integration with Tindeq Progressor and other scales
-- [ ] Improved units (time units, climbing grades, etc.)
-- [ ] Tag groups
+- [x] Improved units (time units, climbing grades, etc.)
+  - [ ] Polish UI
+  - [ ] Add more units
 - [ ] Reimplement graphs to use FlatList instead of VictoryNative
+- [ ] Bluetooth integration with Tindeq Progressor and other scales
 - [ ] JSON import validation
+- [ ] Tag groups
 
 ### 1.0
 

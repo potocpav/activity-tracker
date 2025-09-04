@@ -77,7 +77,7 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit, onChange: (unit:
         editable={false}
         mode="outlined"
       />
-      <Button onPress={() => setUnitDialogVisible(true)}>
+      <Button compact={true} onPress={() => setUnitDialogVisible(true)}>
         <AntDesign name="edit" size={24} color={theme.colors.onSurface} />
       </Button>
       <Portal>
