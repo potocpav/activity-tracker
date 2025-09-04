@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   Alert,
+  Pressable,
 } from "react-native";
 import { Dialog, Portal, SegmentedButtons } from 'react-native-paper';
 import { ActivityType, SetTag, Tag, SubUnit, Unit } from "./StoreTypes";

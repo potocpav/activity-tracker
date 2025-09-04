@@ -23,7 +23,7 @@ export type SubUnit =
   } |
   {
     type: "time",
-    unit: "seconds" | "minutes" | "hours",
+    unit: "seconds" | "hours",
   } |
   {
     type: "climbing_grade",
@@ -59,6 +59,14 @@ export type StatValue = "n_days" | "n_points" | "daily_mean" | "sum" | "mean" | 
 export const numericStatValues : StatValue[] = [
   "n_days", "n_points", "sum", "mean", "max", "min", "last"
 ];
+
+export const statValueUnit = (statValue: StatValue, unit: SubUnit) : SubUnit => {
+  if (["n_days", "n_points", "daily_mean"].includes(statValue)) {
+    return { type: "count" };
+  } else {
+    return unit;
+  }
+}
 
 export const unaryStatValues : StatValue[] = [
   "n_days", "n_points", "daily_mean"

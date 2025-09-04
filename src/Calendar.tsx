@@ -1,10 +1,20 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, useWindowDimensions } from "react-native";
-import { DataPoint, dateListToTime, normalizeDateList, DateList, ActivityType, TagFilter, dateListToDate } from "./StoreTypes";
+import { 
+  DataPoint, 
+  dateListToTime, 
+  normalizeDateList, 
+  DateList, 
+  ActivityType, 
+  TagFilter, 
+  dateListToDate, 
+  SubUnit, 
+  statValueUnit 
+} from "./StoreTypes";
 import { findZeroSlice, dayCmp, extractStatValue, extractValue, binTime } from "./ActivityUtil";
 import useStore from "./Store";
 import { getTheme } from "./Theme";
-import { renderShortFormNumber } from "./Unit";
+import { renderShortFormValue } from "./Unit";
 
 type CalendarComponentProps = {
   navigation: any;
@@ -41,6 +51,19 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName, 
 
   const weekCount = Math.min(maxWeekCount, Math.max(minWeekCount, 1 + Math.round((lastVisibleWeek.getTime() - firstVisibleWeek.getTime()) / (7 * 24 * 60 * 60 * 1000))));
   const positiveTags = calendar.tagFilters.filter((t: TagFilter) => t.state === "yes").map((t: TagFilter) => t.name);
+
+  let subUnit: SubUnit;
+  switch (activity.unit.type) {
+    case "none":
+      subUnit = { type: "count" };
+      break;
+    case "single":
+      subUnit = statValueUnit(calendar.value, activity.unit.unit);
+      break;
+    case "multiple":
+      subUnit = statValueUnit(calendar.value, activity.unit.values.find((u: { name: string, unit: SubUnit }) => u.name === calendar.subUnit)?.unit);
+      break;
+  }
 
   return (
     <FlatList
@@ -117,7 +140,11 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName, 
                   </Text>}
 
                   <Text style={[styles.value, { color: theme.colors.background }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>
-                    {hasData && (value !== null ? (activity.unit.type === "none" && value === 1 ? "✓" : renderShortFormNumber(value)) : '-')}
+                    {hasData && (value !== null ? 
+                      (activity.unit.type === "none" && value === 1 ? 
+                        "✓" : 
+                        renderShortFormValue(value, subUnit)) : 
+                      '-')}
                   </Text>
                 </TouchableOpacity>
               );
@@ -147,7 +174,7 @@ const getStyles = (itemWidth: number, dimensions: any) => StyleSheet.create({
     margin: ITEM_MARGIN,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 4,
+    paddingHorizontal: 3,
   },
   dayNumber: {
     position: 'absolute',

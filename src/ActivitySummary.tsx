@@ -91,17 +91,17 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
 
         <Fragment>
           {activity.calendars.map((calendar: CalendarProps, index: number) => (
-            <>
-              <ActivityCalendar key={`calendar-${index}`} navigation={navigation} activityName={activityName} calendarIndex={index} />
-              <Divider key={`calendar-divider-${index}`} />
-            </>
+            <Fragment key={`calendar-${index}`}>
+              <ActivityCalendar navigation={navigation} activityName={activityName} calendarIndex={index} />
+              <Divider />
+            </Fragment>
           ))}
 
           {activity.graphs.map((graph: GraphProps, index: number) => (
-            <>
-              <ActivityGraph key={`graph-${index}`} activityName={activityName} graphIndex={index} />
-              <Divider key={`graph-divider-${index}`} />
-            </>
+            <Fragment key={`graph-${index}`}>
+              <ActivityGraph activityName={activityName} graphIndex={index} />
+              <Divider />
+            </Fragment>
           ))}
 
           <View key="activity-spacer" style={{ height: 20 }} />

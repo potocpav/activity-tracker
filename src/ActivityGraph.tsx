@@ -292,7 +292,7 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
   };
   const binningOptions = Object.entries(binningLabels).map(([key, label]) => ({ key, label }));
 
-  const graphTypes = activity.unit === null ? ["bar-count", "bar-daily-mean"] : ["box", "bar-count", "bar-sum", "line-mean"];
+  const graphTypes = activity.unit.type === "none" ? ["bar-count", "bar-daily-mean"] : ["box", "bar-count", "bar-sum", "line-mean"];
 
   return (
     <View style={{ flex: 1, padding: 10, marginVertical: 16, backgroundColor: theme.colors.background }}>

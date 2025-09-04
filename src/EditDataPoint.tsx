@@ -19,7 +19,7 @@ import { cmpDateList, formatDate } from "./ActivityUtil";
 import { getTheme, getThemePalette, getThemeVariant } from "./Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
-import { toInputValue, fromInputValue } from "./Unit";
+import { toInputValue, fromInputValue, renderUnit } from "./Unit";
 import { ValueEditor } from "./UnitView";
 
 type EditDataPointProps = {
@@ -90,7 +90,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   const saveDataPointWrapper = () => {
     var newValue: any;
     var hasNonEmptyValue = false;
-    var hasNonNumbervalue = false;
+    var hasInvalidValue = false;
 
     switch (activity.unit.type) {
       case "none":
@@ -102,6 +102,9 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
         } else {
           hasNonEmptyValue = true;
           newValue = fromInputValue(inputValues[0].value[0], activity.unit.unit);
+          if (newValue === null || isNaN(newValue)) {
+            hasInvalidValue = true;
+          }
         }
         break;
       case "multiple":
@@ -112,8 +115,8 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
           } else {
             hasNonEmptyValue = true;
             const value = fromInputValue(inputValue.value[0], inputValue.subUnit.unit);
-            if (isNaN(value)) {
-              hasNonNumbervalue = true;
+            if (value === null || isNaN(value)) {
+              hasInvalidValue = true;
               break;
             } else {
               if (inputValue.subUnit.name !== null) {
@@ -129,8 +132,8 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
 
     if (!inputDate) {
       Alert.alert("Date is required");
-    } else if (hasNonNumbervalue) {
-      Alert.alert("Value must be a number");
+    } else if (hasInvalidValue) {
+      Alert.alert("All values must be valid");
     } else if (activity.unit.type !== "none" && !hasNonEmptyValue) {
       Alert.alert("Value is required");
     } else {
@@ -207,7 +210,8 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
           {inputValues.map((inputValue: { subUnit: {name: string | null, unit: SubUnit}, value: [string, (text: string) => void] }) => (
             <ValueEditor 
               key={inputValue.subUnit.name ?? "value"}
-              label={inputValue.subUnit.name === null ? "Value" : `${inputValue.subUnit.name}`} // TODO: better label
+              unit={inputValue.subUnit.unit}
+              label={`${inputValue.subUnit.name === null ? "Value" : inputValue.subUnit.name} - ${renderUnit(inputValue.subUnit.unit)}`} // TODO: better label
               value={inputValue.value[0]} 
               onChange={inputValue.value[1]} 
             />

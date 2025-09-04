@@ -105,9 +105,13 @@ const ActivityCalendar = ({ navigation, activityName, calendarIndex }: ActivityC
           </Dialog.Content>
           <Dialog.Actions>
             {activity.calendars.length > 1 && (
-              <Button onPress={() => {deleteActivityCalendar(activityName, calendarIndex); setCalendarDialogVisible(false);}}><AntDesign name="delete" size={24} color={theme.colors.onSurface} /></Button>
+              <Button onPress={() => {deleteActivityCalendar(activityName, calendarIndex); setCalendarDialogVisible(false);}}>
+                <AntDesign name="delete" size={24} color={theme.colors.onSurface} />
+              </Button>
             )}
-            <Button onPress={() => {setActivityCalendar(activityName, calendarIndex, { ...calendar, label: calendarDialogNameInput }); setCalendarDialogVisible(false);}}><AntDesign name="check" size={24} color={theme.colors.onSurface} /></Button>
+            <Button onPress={() => {setActivityCalendar(activityName, calendarIndex, { ...calendar, label: calendarDialogNameInput }); setCalendarDialogVisible(false);}}>
+              <AntDesign name="check" size={24} color={theme.colors.onSurface} />
+            </Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>
