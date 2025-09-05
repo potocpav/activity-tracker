@@ -93,7 +93,7 @@ export const EditStat = (
     navigation.goBack();
   };
 
-  const statValues = (activity.unit === null ? unaryStatValues : numericStatValues)
+  const statValues = (activity.unit.type === "none" ? unaryStatValues : numericStatValues)
     .map((v: StatValue) => ({ key: v, label: valueToLabel(v) }));
 
     React.useEffect(() => {

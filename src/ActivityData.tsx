@@ -211,7 +211,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
             <Text style={{ color: theme.colors.onSurface }}>{formatDate(dateListToDate(date as DateList))}</Text>
           </View>
         )}
-        renderItem={({ item: [dataPoint, i] }) => activity.unit === null ? renderValueless(dataPoint, i) : renderWithValue(dataPoint, i)}
+        renderItem={({ item: [dataPoint, i] }) => activity.unit.type === "none" ? renderValueless(dataPoint, i) : renderWithValue(dataPoint, i)}
       />
     </SafeAreaView>
   );

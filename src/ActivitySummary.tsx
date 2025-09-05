@@ -29,8 +29,8 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
 
   const newStat: Stat = {
     label: "Last Value",
-    value: activity.unit === null ? "n_points" : "mean",
-    subUnit: Array.isArray(activity.unit) ? activity.unit[0].name : null,
+    value: activity.unit.type === "none" ? "n_points" : "mean",
+    subUnit: activity.unit.type === "multiple" ? activity.unit.values[0].name : null,
     period: "last_active_day",
     tagFilters: [],
   };
