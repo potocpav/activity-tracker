@@ -30,7 +30,7 @@ const getUniqueIdentifier = () => {
     if (IS_DEV) {
       return '#4d4d4d';
     } else if (IS_PREVIEW) {
-      return '#00caf2';
+      return '#303f9f';
     } else {
       return '#7166ff';
     }
