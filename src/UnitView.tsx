@@ -6,7 +6,7 @@ import { useState } from "react";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { getTheme } from "./Theme";
 import { renderUnit } from "./Unit";
-import Ionicons from '@expo/vector-icons/Ionicons';
+import Animated, { FadeIn, FadeOut, LinearTransition, FadeInUp, FadeOutUp } from "react-native-reanimated";
 
 type ChosenUnit = "number" | "count" | "weight_kg" | "weight_lb" | "time_seconds" | "time_hours" | "climbing_grade_uiaa" | "climbing_grade_french" | "climbing_grade_font" | "climbing_grade_v_scale";
 
@@ -97,8 +97,8 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit, onChange: (unit:
         visible={unitDialogVisible}
         onDismiss={() => setUnitDialogVisible(false)}
       >
-        <View style={{ backgroundColor: theme.colors.surface }}>
-            <View style={{ flexDirection: 'row', paddingVertical: 10, alignItems: 'center' }}>
+        <View style={{ flex: 1}}>
+            <View style={{ backgroundColor: theme.colors.elevation.level1,elevation: 2, flexDirection: 'row', paddingVertical: 10, alignItems: 'center' }}>
               <Button onPress={() => setUnitDialogVisible(false)}>
                 <AntDesign name="arrowleft" size={24} color={theme.colors.onSurface} />
               </Button>
@@ -114,32 +114,43 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit, onChange: (unit:
                 <AntDesign name="check" size={24} color={theme.colors.onSurface} />
               </Button>
           </View>
-          {/* <View style={{ backgroundColor: theme.colors.surface }}> */}
-          <Text style={{ fontSize: 20 }}>Select Unit</Text>
-          <ScrollView style={{ borderWidth: 0, borderColor: theme.colors.outlineVariant, margin: 0 }}>
+          <ScrollView>
             <RadioButton.Group
               onValueChange={value => setUnitInput(toUnit(value as ChosenUnit))}
               value={subUnitToChosenUnit(unitInput) ?? ""}>
-              <RadioButton.Item label="Number" value="number" />
-              {unitInput.type === "number" &&
-                <TextInput
-                  label="Symbol"
-                  value={unitInput.symbol}
-                  onChangeText={text => setUnitInput({ ...unitInput, symbol: text })}
-                  mode="outlined"
-                  style={{ marginLeft: 16 }}
-                />
-              }
-              <RadioButton.Item label="Count" value="count" />
-              <RadioButton.Item label="Weight (kg)" value="weight_kg" />
-              <RadioButton.Item label="Weight (lb)" value="weight_lb" />
-              {/* <RadioButton.Item label="Time (seconds)" value="time_seconds" /> */}
-              <RadioButton.Item label="Time (hours)" value="time_hours" />
-              <RadioButton.Item label="Climbing Grade (UIAA)" value="climbing_grade_uiaa" />
-              {/* <RadioButton.Item label="Climbing Grade (French)" value="climbing_grade_french" /> */}
-              {/* <RadioButton.Item label="Climbing Grade (Font)" value="climbing_grade_font" /> */}
-              <RadioButton.Item label="Climbing Grade (V-Scale)" value="climbing_grade_v_scale" />
-            </RadioButton.Group>
+                <Animated.View key="number" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
+                  <RadioButton.Item label="Number" value="number" />
+                </Animated.View>
+                {unitInput.type === "number" &&
+                  <Animated.View key="number-symbol" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
+                    <TextInput
+                      label="Symbol"
+                      value={unitInput.symbol}
+                      onChangeText={text => setUnitInput({ ...unitInput, symbol: text })}
+                      mode="outlined"
+                      style={{ marginHorizontal: 16 }}
+                    />
+                  </Animated.View>
+                }
+                <Animated.View key="count" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
+                  <RadioButton.Item key="count" label="Count" value="count" />
+                </Animated.View>
+                <Animated.View key="weight_kg" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
+                  <RadioButton.Item key="weight_kg" label="Weight (kg)" value="weight_kg" />
+                </Animated.View>
+                <Animated.View key="weight_lb" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
+                  <RadioButton.Item key="weight_lb" label="Weight (lb)" value="weight_lb" />
+                </Animated.View>
+                <Animated.View key="time_hours" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
+                  <RadioButton.Item key="time_hours" label="Time (hours)" value="time_hours" />
+                </Animated.View>
+                <Animated.View key="climbing_grade_uiaa" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
+                  <RadioButton.Item key="climbing_grade_uiaa" label="Climbing Grade (UIAA)" value="climbing_grade_uiaa" />
+                </Animated.View>
+                <Animated.View key="climbing_grade_v_scale" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
+                  <RadioButton.Item key="climbing_grade_v_scale" label="Climbing Grade (V-Scale)" value="climbing_grade_v_scale" />
+                </Animated.View>
+              </RadioButton.Group>
           </ScrollView>
         </View>
       </Modal>

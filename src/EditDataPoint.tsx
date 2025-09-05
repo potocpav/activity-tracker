@@ -167,9 +167,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   React.useEffect(() => {
     navigation.setOptions({
       title: newDataPoint ? 'New data point' : `${formatDate(dateListToDate(dataPoint.date))} #${dataPointIndex + 1}`,
-      headerStyle: {
-        backgroundColor: themeVariant == 'light' ? theme.colors.primary : theme.colors.background,
-      },
+      headerStyle: themeVariant == 'light' ? { backgroundColor: theme.colors.primary } : undefined,
       headerTintColor: "#ffffff",
       headerRight: () => (
         <>

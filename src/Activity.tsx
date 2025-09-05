@@ -153,9 +153,7 @@ const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ 
   React.useEffect(() => {
     navigation.setOptions({
       title: activity.name,
-      headerStyle: themeVariant == 'light' ? {
-        backgroundColor: theme.colors.primary,
-      } : undefined,
+      headerStyle: themeVariant == 'light' ? { backgroundColor: theme.colors.primary } : undefined,
       headerTintColor: "#ffffff",
       headerRight: () => (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>

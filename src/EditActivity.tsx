@@ -213,9 +213,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
     React.useEffect(() => {
       navigation.setOptions({
         title: activityName === null ? "New Activity" : activity.name,
-        headerStyle: {
-          backgroundColor: themeVariant == 'light' ? theme.colors.primary : theme.colors.background,
-        },
+        headerStyle: themeVariant == 'light' ? { backgroundColor: theme.colors.primary } : undefined,
         headerTintColor: "#ffffff",
         headerRight: () => (
           <>
@@ -480,7 +478,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
     },
     content: {
       flex: 1,
-      padding: 20,
+      padding: 10,
     },
     inputContainer: {
       marginBottom: 20,

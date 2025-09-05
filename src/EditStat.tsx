@@ -98,9 +98,7 @@ export const EditStat = (
 
     React.useEffect(() => {
       navigation.setOptions({
-        headerStyle: {
-          backgroundColor: themeVariant == 'light' ? theme.colors.primary : theme.colors.background,
-        },
+        headerStyle: themeVariant == 'light' ? { backgroundColor: theme.colors.primary } : undefined,
         headerTintColor: "#ffffff",
         headerRight: () => (
           <>

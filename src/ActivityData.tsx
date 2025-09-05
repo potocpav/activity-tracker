@@ -84,9 +84,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
   React.useEffect(() => {
     navigation.setOptions({
       title: day ? formatDate(dateListToDate(day)) : "All data",
-      headerStyle: {
-        backgroundColor: themeVariant == 'light' ? theme.colors.primary : theme.colors.background,
-      },
+      headerStyle: themeVariant == 'light' ? { backgroundColor: theme.colors.primary } : undefined,
       headerTintColor: "#ffffff",
       headerRight: () => (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
