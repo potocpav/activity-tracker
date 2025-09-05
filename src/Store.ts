@@ -159,7 +159,7 @@ const useStore = create<State>()(
         set((state: any) => {
           const activityIx = state.activities.findIndex((a: ActivityType) => a.name === activityName);
           if (activityIx === -1) {
-            console.log("Activity not found");
+            console.error("Activity not found");
             return {};
           }
           const nameRoot = state.activities[activityIx].name.replace(/ \(copy(\s*\d*)\)$/, "");
@@ -282,7 +282,6 @@ const useStore = create<State>()(
       setUnit: (activityName: string, unit: Unit, unitMap: {oldName: string | null, newName: string}[]) => {
         set((state: any) => {
           const activity = state.activities.find((a: ActivityType) => a.name === activityName);
-          console.log("SET UNIT", activityName, activity?.unit, unit, unitMap);
           if (!activity) {
             console.error("Activity not found");
             return {};
@@ -427,11 +426,11 @@ const useStore = create<State>()(
         const newTagNames = tags.map((t: SetTag) => t.name);
         const oldTagNames = tags.map((t: SetTag) => t.oldTagName).filter((t: TagName | null) => t !== null);
         if (new Set(newTagNames).size !== newTagNames.length) {
-          console.log("Tag names must be unique");
+          console.error("Tag names must be unique");
           return;
         }
         if (new Set(oldTagNames).size !== oldTagNames.length) {
-          console.log("Old tag names must be unique");
+          console.error("Old tag names must be unique");
           return;
         }
 
@@ -499,7 +498,7 @@ const useStore = create<State>()(
             const activities = state.activities.map((activity: ActivityType) => activity.name === activityName ? { ...activity, tags: [...activity.tags, tag] } : activity);
             return { activities };
           } else {
-            console.log("Tag already exists");
+            console.error("Tag already exists");
             return {};
           }
         });
@@ -614,11 +613,11 @@ const useStore = create<State>()(
           const deviceConnection = await connectToDevice(device);
           set({ connectedDevice: deviceConnection, isConnected: true });
           deviceConnection.onDisconnected(async () => {
-            console.log("Device is disconnected asynchronously.");
+            console.error("Device is disconnected asynchronously.");
             set({ isConnected: false });
           });
         } catch (e) {
-          console.log("FAILED TO CONNECT", e);
+          console.error("FAILED TO CONNECT", e);
         }
       },
 
@@ -657,7 +656,7 @@ const useStore = create<State>()(
               dataPoints: newDataPoints
             };
           });
-          console.log("Data updated", data);
+          console.error("Data updated", data);
         }
       },
 
@@ -666,7 +665,7 @@ const useStore = create<State>()(
         if (device) {
           callback(device);
         } else {
-          console.log("No device connected");
+          console.error("No device connected");
         }
       },
 
@@ -701,7 +700,7 @@ const useStore = create<State>()(
 
       sampleBatteryVoltage: async () => {
         get().withDevice(async (device: Device) => {
-          console.log("Sampling battery voltage");
+          console.error("Sampling battery voltage");
           await sampleBatteryVoltage(device);
         });
       },

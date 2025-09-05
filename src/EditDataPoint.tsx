@@ -56,6 +56,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
   const [inputDate, setInputDate] = useState<CalendarDate | undefined>(dateTime);
   const [noteInput, setNoteInput] = useState<string>(dataPoint.note ?? "");
+
   let inputValues: { subUnit: {name: string | null, unit: SubUnit}, value: [string, (text: string) => void] }[];
     
   switch (activity.unit.type) {
@@ -65,14 +66,14 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
     case 'single':
       inputValues = [{ 
         subUnit: {name: null, unit: activity.unit.unit}, 
-        value: useState<string>(toInputValue((dataPoint as any).value ?? "", activity.unit.unit)) 
+        value: useState<string>(toInputValue((dataPoint as any).value ?? null, activity.unit.unit)) 
       }];
       break;
     case 'multiple':
       inputValues = activity.unit.values.map((u) => ({ 
         subUnit: u,
         value: useState<string>(
-          toInputValue(((dataPoint as any).value ?? {})[u.name] ?? "", u.unit))
+          toInputValue(((dataPoint as any).value ?? {})[u.name] ?? null, u.unit))
       }));
       break;
   }

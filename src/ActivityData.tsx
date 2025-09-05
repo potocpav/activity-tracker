@@ -229,9 +229,11 @@ const getStyles = (theme: any) => StyleSheet.create({
     padding: 5,
   },
   sectionHeaderBlackTheme: {
-    padding: 5,
-    borderTopWidth: 1,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 4,
+    backgroundColor: theme.colors.elevation.level2,
+    elevation: 2,
     borderColor: theme.colors.outline,
   },
   headerMenu: {

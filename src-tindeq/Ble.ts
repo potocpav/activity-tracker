@@ -87,7 +87,7 @@ const connectToDevice = async (device: Device) => {
     bleManager.stopDeviceScan();
     return deviceConnection;
   } catch (e) {
-    console.log("FAILED TO CONNECT", e);
+    console.error("FAILED TO CONNECT", e);
     throw e;
   }
 };
@@ -96,16 +96,16 @@ const disconnectDevice = async (device: Device) => {
   await device.cancelConnection();
   const isConnected = await device.isConnected();
   if (isConnected) {
-    console.log("Device is still connected.");
+    console.error("Device is still connected.");
   } else {
-    console.log("Device is disconnected.");
+    console.error("Device is disconnected.");
   }
 };
 
 const scanForPeripherals = (onDeviceFound: (device: Device) => void) => {
   bleManager.startDeviceScan(null, null, (error, device) => {
     if (error) {
-      console.log(error);
+      console.error(error);
     }
 
     if (
@@ -129,10 +129,10 @@ const extractData = (
   characteristic: Characteristic | null
 ): { w: number, t: number }[] | null => {
   if (error) {
-    console.log(error);
+    console.error(error);
     return null;
   } else if (!characteristic?.value) {
-    console.log("No Data was received");
+    console.error("No Data was received");
     return null;
   }
   // Convert base64 to byte array
@@ -140,7 +140,7 @@ const extractData = (
   const dataType = bytes[0];
 
   if (dataType === 0x00) {
-    console.log("Battery voltage response received");
+    console.error("Battery voltage response received");
   } else if (dataType === 0x01) {
     const length = bytes[1];
     const view = new DataView(bytes.buffer);
@@ -153,9 +153,9 @@ const extractData = (
     }
     return dataPoints;
   } else if (dataType === 0x02) {
-    console.log("Low power warning received");
+    console.error("Low power warning received");
   } else {
-    console.log("Unknown data type received:", dataType);
+    console.error("Unknown data type received:", dataType);
   }
   return null;
 };

@@ -117,67 +117,67 @@ const SubApp = () => {
 
   return (
     <GestureHandlerRootView>
-    {/* <StatusBar barStyle={themeVariant == 'light' ? "dark-content" : "light-content"}
-      backgroundColor={theme.colors.surfaceVariant} /> */}
-    <View style={[styles.container]}>
-      <NavigationContainer theme={navigationTheme}>
-        <Stack.Navigator
-          screenOptions={themeVariant == 'dark' && blackBackground ? {
-            headerStyle: {
-              backgroundColor: theme.colors.surface,
-            },
-          } :  themeVariant == 'light' 
-            ? { headerStyle: { backgroundColor: theme.colors.surfaceVariant } } 
-            : {}
-        }
-        >
-          <Stack.Group>
-            <Stack.Screen
-              name="Activities"
-              component={Activities}
-              options={{ title: "Activities" }}
-            />
-            <Stack.Screen
-              name="Activity"
-              component={Activity}
-            />
-            <Stack.Screen
-              name="ActivityData"
-              component={ActivityData}
-              options={{ title: "Data Points" }}
-            />
-            <Stack.Screen
-              name="Settings"
-              component={Settings}
-              options={{ title: "Settings" }}
-            />
-          </Stack.Group>
-          <Stack.Group screenOptions={{ presentation: 'modal' }}>
-            <Stack.Screen
-              name="EditDataPoint"
-              component={EditDataPoint}
-              options={{ title: "Edit Data Point" }}
-            />
-            <Stack.Screen
-              name="EditActivity"
-              component={EditActivity}
-              options={{ title: "Edit Activity" }}
-            />
-            <Stack.Screen
-              name="ThemeSelection"
-              component={ThemeSelectionDialog}
-              options={{ title: "Select Theme" }}
-            />
-            <Stack.Screen
-              name="EditStat"
-              component={EditStat}
-              options={{ title: "Edit Stat" }}
-            />
-          </Stack.Group>
-        </Stack.Navigator>
-      </NavigationContainer>
-    </View>
-  </GestureHandlerRootView>
+      {/* <StatusBar barStyle={themeVariant == 'light' ? "dark-content" : "light-content"}
+        backgroundColor={theme.colors.surfaceVariant} /> */}
+      <View style={[styles.container]}>
+        <NavigationContainer theme={navigationTheme}>
+          <Stack.Navigator
+            screenOptions={themeVariant == 'dark' && blackBackground ? {
+              headerStyle: {
+                backgroundColor: theme.colors.surface,
+              },
+            } :  themeVariant == 'light' 
+              ? { headerStyle: { backgroundColor: theme.colors.surfaceVariant } } 
+              : {}
+          }
+          >
+            <Stack.Group>
+              <Stack.Screen
+                name="Activities"
+                component={Activities}
+                options={{ title: "Activities" }}
+              />
+              <Stack.Screen
+                name="Activity"
+                component={Activity}
+              />
+              <Stack.Screen
+                name="ActivityData"
+                component={ActivityData}
+                options={{ title: "Data Points" }}
+              />
+              <Stack.Screen
+                name="Settings"
+                component={Settings}
+                options={{ title: "Settings" }}
+              />
+            </Stack.Group>
+            <Stack.Group screenOptions={{ presentation: 'modal' }}>
+              <Stack.Screen
+                name="EditDataPoint"
+                component={EditDataPoint}
+                options={{ title: "Edit Data Point" }}
+              />
+              <Stack.Screen
+                name="EditActivity"
+                component={EditActivity}
+                options={{ title: "Edit Activity" }}
+              />
+              <Stack.Screen
+                name="ThemeSelection"
+                component={ThemeSelectionDialog}
+                options={{ title: "Select Theme" }}
+              />
+              <Stack.Screen
+                name="EditStat"
+                component={EditStat}
+                options={{ title: "Edit Stat" }}
+              />
+            </Stack.Group>
+          </Stack.Navigator>
+        </NavigationContainer>
+      </View>
+    </GestureHandlerRootView>
   );
 }
 

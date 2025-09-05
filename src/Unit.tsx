@@ -171,7 +171,10 @@ export const renderUnit = (unit: SubUnit): string => {
 // Convert a numerical value to an editable value.
 // Function `reencode` must be idempotent over n, where:
 //   reencode(n, u) = fromInputValue(toInputValue(n, u), u)
-export const toInputValue = (value: number, unit: SubUnit): string => {
+export const toInputValue = (value: number | null, unit: SubUnit): string => {
+  if (value === null) {
+    return "";
+  }
   switch (unit.type) {
     case "number":
       return value.toString();

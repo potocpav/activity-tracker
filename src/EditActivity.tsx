@@ -277,7 +277,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
         <View key={idx} style={{ flexDirection: 'row', alignItems: 'center' }}>
           <View style={{ flex: 1, marginRight: 8 }}>
             <TextInput
-              label="Value"
+              label="Name"
               value={val.name}
               onChangeText={text => {
                 // Update sub-unit name
