@@ -23,12 +23,14 @@ export type SubUnit =
   } |
   {
     type: "time",
-    unit: "seconds" | "hours",
+    unit: TimeUnit,
   } |
   {
     type: "climbing_grade",
     grade: "uiaa" | "french" | "font" | "v-scale",
   };
+
+export type TimeUnit = "seconds" | "hours";
 
 export type Tag = {
   name: TagName;

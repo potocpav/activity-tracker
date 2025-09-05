@@ -213,6 +213,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
               label={inputValue.subUnit.name === null ? renderUnit(inputValue.subUnit.unit) : `${inputValue.subUnit.name} - ${renderUnit(inputValue.subUnit.unit)}`} // TODO: better label
               value={inputValue.value[0]} 
               onChange={inputValue.value[1]} 
+              setSubmitDisabled={() => {}}
             />
           ))}
         </View>

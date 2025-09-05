@@ -272,7 +272,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
     const editMultipleValues = () => (
       <>
       {multiUnitInput.map((val, idx) => (
-        <View key={idx} style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 4 }}>
           <View style={{ flex: 1, marginRight: 8 }}>
             <TextInput
               label="Name"
