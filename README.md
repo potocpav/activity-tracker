@@ -33,10 +33,7 @@ Track your performance metrics and their progress over time. With custom statist
 ### 2.0 (Planned)
 
 - [x] Multiple calendars and graphs per activity
-  - [ ] Animations for adding and removing calendars and graphs
 - [x] Improved units (time units, climbing grades, etc.)
-  - [ ] Polish UI
-  - [ ] Add more units
 - [ ] Reimplement graphs to use FlatList instead of VictoryNative
 - [ ] Bluetooth integration with Tindeq Progressor and other scales
 - [ ] JSON import validation
@@ -44,12 +41,23 @@ Track your performance metrics and their progress over time. With custom statist
 
 ### 1.0
 
-- [x] Activity management
-- [x] Data point management
-- [x] Tags, filtering
-- [x] Summary values, calendars and graphs
-- [x] Settings
-- [x] Data import and export
+- Activity management
+- Data point management
+- Tags, filtering
+- Summary values, calendars and graphs
+- Settings
+- Data import and export
+
+## Bugfixes and improvements
+
+- [ ] Polish unit management
+  - [x] Basic styling and usability
+  - [ ] Use React navigation for the Unit selection dialog
+  - [ ] Add more units (distance)
+  - [ ] Climbing grade input
+  - [ ] New climbing grades (French, Font)
+  - [ ] Automatic unit conversions
+- [ ] Animations for adding and removing calendars and graphs
 
 ## Development
 
