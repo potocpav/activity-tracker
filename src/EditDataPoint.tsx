@@ -210,7 +210,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
             <ValueEditor 
               key={inputValue.subUnit.name ?? "value"}
               unit={inputValue.subUnit.unit}
-              label={`${inputValue.subUnit.name === null ? "Value" : inputValue.subUnit.name} - ${renderUnit(inputValue.subUnit.unit)}`} // TODO: better label
+              label={inputValue.subUnit.name === null ? renderUnit(inputValue.subUnit.unit) : `${inputValue.subUnit.name} - ${renderUnit(inputValue.subUnit.unit)}`} // TODO: better label
               value={inputValue.value[0]} 
               onChange={inputValue.value[1]} 
             />

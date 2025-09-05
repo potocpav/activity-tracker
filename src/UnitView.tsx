@@ -1,12 +1,11 @@
-import { Text, View, ScrollView, Pressable, Modal } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Dialog, Portal, TextInput, Button, RadioButton } from "react-native-paper";
+import { Text, View, ScrollView, Pressable, Modal, FlatList, useWindowDimensions } from "react-native";
+import { TextInput, Button, RadioButton, Dialog, Portal, List } from "react-native-paper";
 import { SubUnit } from "./StoreTypes";
 import { useState } from "react";
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { getTheme } from "./Theme";
-import { renderUnit } from "./Unit";
-import Animated, { FadeIn, FadeOut, LinearTransition, FadeInUp, FadeOutUp } from "react-native-reanimated";
+import { getTheme, useWideDisplay } from "./Theme";
+import { renderUnit, mapStringValue, uiaaGrades, vScaleGrades } from "./Unit";
+import Animated, { LinearTransition, FadeInUp, FadeOutUp } from "react-native-reanimated";
 
 type ChosenUnit = "number" | "count" | "weight_kg" | "weight_lb" | "time_seconds" | "time_hours" | "climbing_grade_uiaa" | "climbing_grade_french" | "climbing_grade_font" | "climbing_grade_v_scale";
 
@@ -97,60 +96,60 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit, onChange: (unit:
         visible={unitDialogVisible}
         onDismiss={() => setUnitDialogVisible(false)}
       >
-        <View style={{ flex: 1}}>
-            <View style={{ backgroundColor: theme.colors.elevation.level1,elevation: 2, flexDirection: 'row', paddingVertical: 10, alignItems: 'center' }}>
-              <Button onPress={() => setUnitDialogVisible(false)}>
-                <AntDesign name="arrowleft" size={24} color={theme.colors.onSurface} />
-              </Button>
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 20, color: theme.colors.onSurface }}>Select Unit</Text>
-              </View>
-              <Button onPress={() => {
-                setUnitDialogVisible(false);
-                if (chosenUnit) {
-                  onChange(unitInput);
-                }
-              }}>
-                <AntDesign name="check" size={24} color={theme.colors.onSurface} />
-              </Button>
+        <View style={{ flex: 1 }}>
+          <View style={{ backgroundColor: theme.colors.elevation.level1, elevation: 2, flexDirection: 'row', paddingVertical: 10, alignItems: 'center' }}>
+            <Button onPress={() => setUnitDialogVisible(false)}>
+              <AntDesign name="arrowleft" size={24} color={theme.colors.onSurface} />
+            </Button>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 20, color: theme.colors.onSurface }}>Select Unit</Text>
+            </View>
+            <Button onPress={() => {
+              setUnitDialogVisible(false);
+              if (chosenUnit) {
+                onChange(unitInput);
+              }
+            }}>
+              <AntDesign name="check" size={24} color={theme.colors.onSurface} />
+            </Button>
           </View>
           <ScrollView>
             <RadioButton.Group
               onValueChange={value => setUnitInput(toUnit(value as ChosenUnit))}
               value={subUnitToChosenUnit(unitInput) ?? ""}>
-                <Animated.View key="number" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
-                  <RadioButton.Item label="Number" value="number" />
+              <Animated.View key="number" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
+                <RadioButton.Item label="Number" value="number" />
+              </Animated.View>
+              {unitInput.type === "number" &&
+                <Animated.View key="number-symbol" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
+                  <TextInput
+                    label="Symbol"
+                    value={unitInput.symbol}
+                    onChangeText={text => setUnitInput({ ...unitInput, symbol: text })}
+                    mode="outlined"
+                    style={{ marginHorizontal: 16 }}
+                  />
                 </Animated.View>
-                {unitInput.type === "number" &&
-                  <Animated.View key="number-symbol" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
-                    <TextInput
-                      label="Symbol"
-                      value={unitInput.symbol}
-                      onChangeText={text => setUnitInput({ ...unitInput, symbol: text })}
-                      mode="outlined"
-                      style={{ marginHorizontal: 16 }}
-                    />
-                  </Animated.View>
-                }
-                <Animated.View key="count" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
-                  <RadioButton.Item key="count" label="Count" value="count" />
-                </Animated.View>
-                <Animated.View key="weight_kg" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
-                  <RadioButton.Item key="weight_kg" label="Weight (kg)" value="weight_kg" />
-                </Animated.View>
-                <Animated.View key="weight_lb" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
-                  <RadioButton.Item key="weight_lb" label="Weight (lb)" value="weight_lb" />
-                </Animated.View>
-                <Animated.View key="time_hours" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
-                  <RadioButton.Item key="time_hours" label="Time (hours)" value="time_hours" />
-                </Animated.View>
-                <Animated.View key="climbing_grade_uiaa" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
-                  <RadioButton.Item key="climbing_grade_uiaa" label="Climbing Grade (UIAA)" value="climbing_grade_uiaa" />
-                </Animated.View>
-                <Animated.View key="climbing_grade_v_scale" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
-                  <RadioButton.Item key="climbing_grade_v_scale" label="Climbing Grade (V-Scale)" value="climbing_grade_v_scale" />
-                </Animated.View>
-              </RadioButton.Group>
+              }
+              <Animated.View key="count" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
+                <RadioButton.Item key="count" label="Count" value="count" />
+              </Animated.View>
+              <Animated.View key="weight_kg" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
+                <RadioButton.Item key="weight_kg" label="Weight (kg)" value="weight_kg" />
+              </Animated.View>
+              <Animated.View key="weight_lb" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
+                <RadioButton.Item key="weight_lb" label="Weight (lb)" value="weight_lb" />
+              </Animated.View>
+              <Animated.View key="time_hours" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
+                <RadioButton.Item key="time_hours" label="Time (hours)" value="time_hours" />
+              </Animated.View>
+              <Animated.View key="climbing_grade_uiaa" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
+                <RadioButton.Item key="climbing_grade_uiaa" label="Climbing Grade (UIAA)" value="climbing_grade_uiaa" />
+              </Animated.View>
+              <Animated.View key="climbing_grade_v_scale" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
+                <RadioButton.Item key="climbing_grade_v_scale" label="Climbing Grade (V-Scale)" value="climbing_grade_v_scale" />
+              </Animated.View>
+            </RadioButton.Group>
           </ScrollView>
         </View>
       </Modal>
@@ -170,6 +169,51 @@ export const ValueEditor = ({
   value: string,
   onChange: (value: string) => void,
 }) => {
+  const theme = getTheme();
+
+  const [climbingGradeDialogVisible, setClimbingGradeDialogVisible] = useState(false);
+  const wideDisplay = useWideDisplay();
+  const dimensions = useWindowDimensions();
+  const itemHeight = 50 * dimensions.fontScale;
+  const numColumns = wideDisplay ? 4 : 2;
+
+  const pickerDialog = (options: {s: string, n: number}[]) => {
+    return (
+      <>
+      <Pressable onPress={() => setClimbingGradeDialogVisible(true)} style={({ pressed }) => [
+        {
+          flex: 1,
+          opacity: pressed ? 0.7 : 1,
+        },
+      ]}>
+        <TextInput
+          label={label}
+          value={value}
+          onChangeText={text => onChange(text)}
+          keyboardType="numeric"
+          editable={false}
+          mode="outlined"
+        />
+      </Pressable>
+      <Portal>
+        <Dialog visible={climbingGradeDialogVisible} onDismiss={() => setClimbingGradeDialogVisible(false)}>
+          <Dialog.ScrollArea>
+            <FlatList 
+              getItemLayout={(_, index) => ({ length: itemHeight, offset: itemHeight * Math.floor(index / numColumns), index })} 
+              key={`uiaa-grade-list-${numColumns}`} 
+              numColumns={numColumns} 
+              data={options} 
+              renderItem={({item}) => (
+                <List.Item right={value === item.s ? (props) => <List.Icon {...props} icon="check" /> : undefined } style={{ flex: 1, height: itemHeight }} key={item.s} onPress={() => {onChange(item.s); setClimbingGradeDialogVisible(false);}} title={item.s} />
+              )} 
+            />
+          </Dialog.ScrollArea>
+        </Dialog>
+      </Portal>
+      </>
+    );
+  }
+
   switch (unit.type) {
     case "time":
       return <TextInput
@@ -178,6 +222,41 @@ export const ValueEditor = ({
         onChangeText={text => onChange(text)}
         mode="outlined"
       />
+    case "count":
+      return (
+        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <TextInput
+            style={{ flex: 1 }}
+            label={label}
+            value={value}
+            onChangeText={text => onChange(text)}
+            keyboardType="numeric"
+            mode="outlined"
+          />
+          <Button onPress={() => onChange(mapStringValue(unit, value, v => v - 1))} compact={true} mode="outlined" style={{ marginTop: 4 }}>
+            <AntDesign name="minus" size={24} color={theme.colors.onSurface} />
+          </Button>
+          <Button onPress={() => onChange(mapStringValue(unit, value, v => v + 1))} compact={true} mode="outlined" style={{ marginTop: 4 }}>
+            <AntDesign name="plus" size={24} color={theme.colors.onSurface} />
+          </Button>
+        </View>
+      )
+    case "climbing_grade":
+      switch (unit.grade) {
+        case "uiaa":
+          return pickerDialog(uiaaGrades);
+        // case "font":
+        //   return pickerDialog(fontGrades);
+        case "v-scale":
+          return pickerDialog(vScaleGrades);
+        default:
+          return <TextInput
+            label={label}
+            value={value}
+            onChangeText={text => onChange(text)}
+            mode="outlined"
+          />
+      }
     default:
       return <TextInput
         label={label}

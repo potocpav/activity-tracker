@@ -67,51 +67,7 @@ export const renderShortFormValue = (value: number, unit: SubUnit): string => {
           }
       }
     case "climbing_grade":
-      switch (unit.grade) {
-        case "uiaa": {
-          let rem = value % 1;
-          let base = Math.round(value - rem);
-
-          if (base < 0.9) {
-            return `<1`;
-          } else if (base > 13.1) {
-            return `>13`;
-          }
-
-          if (rem < 0.1) {
-            return `${base}`;
-          } else if (rem < 0.2) {
-            return `${base}/${base}+`;
-          } else if (rem < 0.4) {
-            return `${base}+`;
-          } else if (rem < 0.6) {
-            return `${base}+/${base+1}-`;
-          } else if (rem < 0.8) {
-            return `${base+1}-`;
-          } else if (rem < 0.9) {
-            return `${base+1}-/${base+1}`;
-          } else {
-            return `${base+1}`;
-          }
-        }
-        case "french":
-          return renderShortFormNumber(value);
-        case "font":
-          return renderShortFormNumber(value);
-        case "v-scale":
-          if (value < -1.5) {
-            return "VB-";
-          } else if (value < -0.5) {
-            return "VB";
-          } else if (value > 17.5) {
-            return "V17+"
-          }
-          if (Math.abs(value % 1 - 0.5) < 0.1) {
-            return `V${Math.round(value-1).toString()}/V${Math.round(value).toString()}`;
-          } else {
-            return `V${Math.round(value).toString()}`;
-          }
-      }
+      return toInputValue(value, unit);
   }
 }
 
@@ -209,7 +165,51 @@ export const toInputValue = (value: number | null, unit: SubUnit): string => {
         }
       }
     case "climbing_grade":
-      return value.toString();
+      switch (unit.grade) {
+        case "uiaa": {
+          let rem = value % 1;
+          let base = Math.round(value - rem);
+
+          if (base < 0.9) {
+            return `<1`;
+          } else if (base > 13.1) {
+            return `>13`;
+          }
+
+          if (rem < 0.1) {
+            return `${base}`;
+          } else if (rem < 0.2) {
+            return `${base}/${base}+`;
+          } else if (rem < 0.4) {
+            return `${base}+`;
+          } else if (rem < 0.6) {
+            return `${base}+/${base+1}-`;
+          } else if (rem < 0.8) {
+            return `${base+1}-`;
+          } else if (rem < 0.9) {
+            return `${base+1}-/${base+1}`;
+          } else {
+            return `${base+1}`;
+          }
+        }
+        case "french":
+          return renderShortFormNumber(value);
+        case "font":
+          return renderShortFormNumber(value);
+        case "v-scale":
+          if (value < -1.5) {
+            return "VB-";
+          } else if (value < -0.5) {
+            return "VB";
+          } else if (value > 17.5) {
+            return "V17+"
+          }
+          if (Math.abs(value % 1 - 0.5) < 0.1) {
+            return `V${Math.round(value-1).toString()}/V${Math.round(value).toString()}`;
+          } else {
+            return `V${Math.round(value).toString()}`;
+          }
+      }
   }
 }
 
@@ -218,6 +218,9 @@ export const toInputValue = (value: number | null, unit: SubUnit): string => {
 // Function `reencode` must be idempotent over n, where:
 //   reencode(n, u) = fromInputValue(toInputValue(n, u), u)
 export const fromInputValue = (value: string, unit: SubUnit): number | null => {
+  if (value === "") {
+    return null;
+  }
   switch (unit.type) {
     case "number":
       return parseFloat(value);
@@ -257,15 +260,47 @@ export const fromInputValue = (value: string, unit: SubUnit): number | null => {
       }
     }
     case "climbing_grade": {
-      value = value.replace(/^[vV]/, '');
-      const n = parseFloat(value);
-      if (!isFinite(n) || n < 0) {
-        return null;
-      } else {
-        return n;
+      switch (unit.grade) {
+        case "uiaa":
+          return uiaaGrades.find((g) => g.s === value)?.n ?? null;
+        case "v-scale":
+          if (value.match(/^[Vv]\d+$/)) {
+            return parseFloat(value.replace(/^[vV]/, ''));
+          } else if (value.match(/^[Vv]\d+\/[Vv]\d+$/)) {
+            const [v1, v2] = value.split('/').map(s => (Number(s.replace(/^[vV]/, ''))));
+            return (v1 + v2) / 2;
+          } else {
+            console.log("Invalid value: " + value);
+            return null;
+          }
+        default:
+          return parseFloat(value);
       }
     }
   }
+}
+
+export const uiaaGrades = [...Array(12).keys()].map((n) => {
+  let g = n + 1;
+  return [
+    {"s": `${g}-`, "n": g - 0.3},
+    {"s": `${g}-/${g}`, "n": g - 0.15},
+    {"s": `${g}`, "n": g},
+    {"s": `${g}/${g}+`, "n": g + 0.15},
+    {"s": `${g}+`, "n": g + 0.3},
+    {"s": `${g}+/${g+1}-`, "n": g + 0.5},
+  ];
+}).flat();
+
+export const vScaleGrades = [...Array(17).keys()].map((g) => {
+  return [
+    {"s": `V${g}`, "n": g},
+    {"s": `V${g}/V${g+1}`, "n": g + 0.5},
+  ];
+}).flat();
+
+export const mapStringValue = (unit: SubUnit, value: string, fn: (value: number) => number): string => {
+  return toInputValue(fn(fromInputValue(value, unit) ?? 0), unit);
 }
 
 
