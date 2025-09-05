@@ -17,6 +17,7 @@ Track your performance metrics and their progress over time. With custom statist
 ## Links
 
 - [Privacy Policy](https://potocpav.github.io/activity-tracker/privacy)
+- [FAQ](https://potocpav.github.io/activity-tracker/faq)
 
 ## Screenshots
 
@@ -64,9 +65,30 @@ Track your performance metrics and their progress over time. With custom statist
 Prerequisites:
 
 - Expo CLI
+- EAS CLI
 
-Running the App:
+This app can not be run in Expo Go. To run the app, compile a development APK with EAS:
+
+```bash
+eas build --platform android --profile development --local
+```
+
+Install the APK on your device with ADB. Then, run the Expo app and scan the QR code on your device:
 
 ```bash
 npx expo start --tunnel
 ```
+
+### Preview build
+
+Development build is not suitable for daily use. You can compile a preview build with EAS to use the app:
+
+```bash
+eas build --platform android --profile preview --local
+```
+
+Install the APK on your device, and use the app normally.
+
+### Data sharing
+
+You can transfer data among different app builds with the import & export feature. Data should never be imported from a newer app version into an older one - that way, data migrations would not work.
