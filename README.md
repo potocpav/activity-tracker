@@ -1,17 +1,20 @@
-# Activity Tracker
+[![Activity Tracker Title](google-play/feature-graphic.png)](google-play/feature-graphic.png)
 
-This app enables you to track your workouts, habits, body measurments, or other values.
+<!-- This description is formatted with HTML to be copy-pasteable into Google Play description -->
+
+Track your performance metrics and their progress over time. With custom statistics, charts and graphs, you can track anything, from body weight to Bowling scores. The app is ad-free, open-source, and gives you complete ownership of your data.
+
+<b>Simplicity</b>: Minimalistic interface focused on quick data entry and easy analysis. No notifications, no ads, no distractions. Just data.
+
+<b>Flexibility</b>: Tag your data points, add notes, use any measurement units, generate custom statistics and graphs. Everything can be tracked in one app. You can track your daily, monthly or yearly progress.
+
+<b>Data Visualization</b>: Analyze your progress with interactive charts, calendars, box plots, line graphs, and histograms.
+
+<b>Data Ownership</b>: Your data is stored locally on your device. You can export or back up your data into simple JSON or CSV files. You can open these files with your favourite spreadsheet editor or data analysis tools.
+
+## Links
 
 - [Privacy Policy](https://potocpav.github.io/activity-tracker/privacy)
-
-## Features
-
-- **Simplicity**: Clean interface focused on quick data entry and easy analysis
-- **Flexibility**: Tag your data points, track multiple values per day, use any measurement units, compute custom graphs and statistics
-- **Data Visualization**: Analyze your progress with interactive charts, including box plots, line graphs, and histograms
-- **Data Ownership**: You can back up your data into JSON or CSV files
-
-[![Screenshot 0](google-play/feature-graphic.png)](google-play/feature-graphic.png)
 
 ## Screenshots
 
