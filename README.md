@@ -11,7 +11,10 @@ This app enables you to track your workouts, habits, body measurments, or other 
 - **Data Visualization**: Analyze your progress with interactive charts, including box plots, line graphs, and histograms
 - **Data Ownership**: You can back up your data into JSON or CSV files
 
+[![Screenshot 0](google-play/feature-graphic.png)](google-play/feature-graphic.png)
+
 ## Screenshots
+
 
 [![Screenshot 1](screenshots/sshot-1.thumb.jpg)](screenshots/sshot-1.jpg)
 [![Screenshot 2](screenshots/sshot-2.thumb.jpg)](screenshots/sshot-2.jpg)
