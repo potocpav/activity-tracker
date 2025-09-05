@@ -1,5 +1,7 @@
 [![Activity Tracker Title](google-play/feature-graphic.png)](google-play/feature-graphic.png)
 
+# Activity Tracker
+
 <!-- This description is formatted with HTML to be copy-pasteable into Google Play description -->
 
 Track your performance metrics and their progress over time. With custom statistics, charts and graphs, you can track anything, from body weight to Bowling scores. The app is ad-free, open-source, and gives you complete ownership of your data.
