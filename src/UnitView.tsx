@@ -140,6 +140,9 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit, onChange: (unit:
               <Animated.View key="weight_lb" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
                 <RadioButton.Item key="weight_lb" label="Weight (lb)" value="weight_lb" />
               </Animated.View>
+              <Animated.View key="time_seconds" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
+                <RadioButton.Item key="time_seconds" label="Time (seconds)" value="time_seconds" />
+              </Animated.View>
               <Animated.View key="time_hours" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
                 <RadioButton.Item key="time_hours" label="Time (hours)" value="time_hours" />
               </Animated.View>

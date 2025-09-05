@@ -19,7 +19,7 @@ import { cmpDateList, formatDate } from "./ActivityUtil";
 import { getTheme, getThemePalette, getThemeVariant } from "./Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
-import { toInputValue, fromInputValue, renderUnit } from "./Unit";
+import { numberToString, stringToNumber, renderUnit } from "./Unit";
 import { ValueEditor } from "./UnitView";
 
 type EditDataPointProps = {
@@ -66,14 +66,14 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
     case 'single':
       inputValues = [{ 
         subUnit: {name: null, unit: activity.unit.unit}, 
-        value: useState<string>(toInputValue((dataPoint as any).value ?? null, activity.unit.unit)) 
+        value: useState<string>(numberToString((dataPoint as any).value ?? null, activity.unit.unit)) 
       }];
       break;
     case 'multiple':
       inputValues = activity.unit.values.map((u) => ({ 
         subUnit: u,
         value: useState<string>(
-          toInputValue(((dataPoint as any).value ?? {})[u.name] ?? null, u.unit))
+          numberToString(((dataPoint as any).value ?? {})[u.name] ?? null, u.unit))
       }));
       break;
   }
@@ -102,7 +102,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
           // empty value, do not set the sub-value to anything
         } else {
           hasNonEmptyValue = true;
-          newValue = fromInputValue(inputValues[0].value[0], activity.unit.unit);
+          newValue = stringToNumber(inputValues[0].value[0], activity.unit.unit);
           if (newValue === null || isNaN(newValue)) {
             hasInvalidValue = true;
           }
@@ -115,7 +115,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
             // empty value, do not set the sub-value to anything
           } else {
             hasNonEmptyValue = true;
-            const value = fromInputValue(inputValue.value[0], inputValue.subUnit.unit);
+            const value = stringToNumber(inputValue.value[0], inputValue.subUnit.unit);
             if (value === null || isNaN(value)) {
               hasInvalidValue = true;
               break;

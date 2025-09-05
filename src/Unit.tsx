@@ -56,18 +56,22 @@ export const renderShortFormValue = (value: number, unit: SubUnit): string => {
         case "hours":
           if (value > 24) {
             return renderShortFormNumber(value);
+          } else if (value >= 1) {
+            return numberToString(Math.round(value * 60) / 60, unit);
           } else {
-            return toInputValue(value, unit);
+            return numberToString(value, unit);
           }
         case "seconds":
           if (value > 10 * 3600) {
             return renderShortFormNumber(value / 3600) + " h";
+          } else if (value > 3600) {
+            return numberToString(Math.round(value), unit);
           } else {
-            return toInputValue(value, unit);
+            return numberToString(value, unit);
           }
       }
     case "climbing_grade":
-      return toInputValue(value, unit);
+      return numberToString(value, unit);
   }
 }
 
@@ -84,7 +88,24 @@ export const renderLongFormValue = (value: number, unit: SubUnit): string => {
     case "weight":
       return `${renderLongFormNumber(value)} ${unit.unit}`;
     case "time":
-      return renderShortFormValue(value, unit);
+      switch (unit.unit) {
+        case "hours":
+          if (value > 24) {
+            return renderShortFormNumber(value) + " h";
+          } else if (value >= 1) {
+            return numberToString(Math.round(value * 60) / 60, unit);
+          } else {
+            return numberToString(value, unit);
+          }
+        case "seconds":
+          if (value > 10 * 3600) {
+            return renderShortFormNumber(value / 3600) + " h";
+          } else if (value > 3600) {
+            return numberToString(Math.round(value), unit);
+          } else {
+            return numberToString(value, unit);
+          }
+      }
     case "climbing_grade":
       return renderShortFormValue(value, unit);
   }
@@ -126,8 +147,8 @@ export const renderUnit = (unit: SubUnit): string => {
 
 // Convert a numerical value to an editable value.
 // Function `reencode` must be idempotent over n, where:
-//   reencode(n, u) = fromInputValue(toInputValue(n, u), u)
-export const toInputValue = (value: number | null, unit: SubUnit): string => {
+//   reencode(n, u) = stringToNumber(numberToString(n, u), u)
+export const numberToString = (value: number | null, unit: SubUnit): string => {
   if (value === null) {
     return "";
   }
@@ -157,10 +178,11 @@ export const toInputValue = (value: number | null, unit: SubUnit): string => {
           const minutes = Math.floor((v - hours * 3600) / 60);
           const seconds = Math.floor(v - hours * 3600 - minutes * 60);
 
+          const fractionalPart = Math.abs(value % 1) < 0.005 ? "" : `.${(value % 1).toFixed(2).split('.')[1]}`;
           if (hours == 0) {
-            return `${minutes.toString()}:${seconds.toString().padStart(2, '0')}`;
+            return `${minutes.toString()}:${seconds.toString().padStart(2, '0')}${fractionalPart}`;
           } else {
-            return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}${fractionalPart}`;
           }
         }
       }
@@ -216,8 +238,8 @@ export const toInputValue = (value: number | null, unit: SubUnit): string => {
 
 // Convert an editable value to a numerical value.
 // Function `reencode` must be idempotent over n, where:
-//   reencode(n, u) = fromInputValue(toInputValue(n, u), u)
-export const fromInputValue = (value: string, unit: SubUnit): number | null => {
+//   reencode(n, u) = stringToNumber(numberToString(n, u), u)
+export const stringToNumber = (value: string, unit: SubUnit): number | null => {
   if (value === "") {
     return null;
   }
@@ -238,7 +260,7 @@ export const fromInputValue = (value: string, unit: SubUnit): number | null => {
           } else if (value.match(/^\d+:\d+:\d+$/)) {
             const [hours, minutes, seconds] = value.split(':').map(Number);
             n = hours + minutes / 60 + seconds / 3600;
-          } else if (value.match(/^\d+(.\d+)?$/)) {
+          } else if (value.match(/^\d+(\.\d+)?$/)) {
             n = parseFloat(value);
           } else {
             return null;
@@ -246,15 +268,25 @@ export const fromInputValue = (value: string, unit: SubUnit): number | null => {
           if (!isFinite(n)) {
             return null;
           } else {
-            return Math.floor(n * 100000) / 100000;
+            return Math.round(n * 100000) / 100000;
           }
         }
         case "seconds": {
-          let n = parseFloat(value);
-          if (!isFinite(n) || n < 0) {
+          if (value.match(/^\d+:\d+(\.\d+)?$/)) {
+            const [minutes, seconds] = value.split(':').map(Number);
+            n = minutes * 60 + seconds;
+          } else if (value.match(/^\d+:\d+:\d+(\.\d+)?$/)) {
+            const [hours, minutes, seconds] = value.split(':').map(Number);
+            n = hours * 3600 + minutes * 60 + seconds;
+          } else if (value.match(/^\d+(\.\d+)?$/)) {
+            n = parseFloat(value);
+          } else {
+            return null;
+          }
+          if (!isFinite(n)) {
             return null;
           } else {
-            return Math.floor(n * 100000) / 100000;
+            return Math.round(n * 100) / 100;
           }
         }
       }
@@ -300,7 +332,7 @@ export const vScaleGrades = [...Array(17).keys()].map((g) => {
 }).flat();
 
 export const mapStringValue = (unit: SubUnit, value: string, fn: (value: number) => number): string => {
-  return toInputValue(fn(fromInputValue(value, unit) ?? 0), unit);
+  return numberToString(fn(stringToNumber(value, unit) ?? 0), unit);
 }
 
 
