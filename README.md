@@ -2,6 +2,8 @@
 
 This app enables you to track your workouts, habits, body measurments, or other values.
 
+- [Privacy Policy](https://potocpav.github.io/activity-tracker/privacy.html)
+
 ## Features
 
 - **Simplicity**: Clean interface focused on quick data entry and easy analysis
