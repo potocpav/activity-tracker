@@ -43,7 +43,7 @@ export const defaultStats = (unit: Unit): Stat[] => {
 export const defaultCalendar = (unit: Unit): CalendarProps => {
   return {
     label: "Calendar",
-    value: "n_points",
+    value: "mean",
     subUnit: firstSubUnitName(unit),
     tagFilters: [],
   };
@@ -59,17 +59,4 @@ export const defaultGraph = (unit: Unit): GraphProps => {
   };
 };
 
-const defaultUnit: Unit = { type: "single", unit: { type: "number", symbol: "" } };
-
-export const defaultActivity : ActivityType = {
-  name: "",
-  description: "",
-  unit: defaultUnit,
-  dataPoints: [],
-  tags: [],
-  color: 18,
-  stats: defaultStats(defaultUnit),
-  calendars: [defaultCalendar(defaultUnit)],
-  graphs: [defaultGraph(defaultUnit)],
-};
 

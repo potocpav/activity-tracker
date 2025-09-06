@@ -15,7 +15,7 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
   const activities = useStore((state: any) => state.activities);
   const activity = activities.find((a: ActivityType) => a.name === activityName);
   const addActivityStat = useStore((state: any) => state.addActivityStat);
-  const theme = getTheme(activity);
+  const theme = getTheme(activity.color);
   const palette = getThemePalette();
   const wideDisplay = useWideDisplay();
   const styles = getStyles(theme);

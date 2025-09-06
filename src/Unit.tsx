@@ -192,9 +192,9 @@ export const numberToString = (value: number | null, unit: SubUnit): string => {
           let rem = value % 1;
           let base = Math.round(value - rem);
 
-          if (base < 0.9) {
+          if (value < 0.6) {
             return `<1`;
-          } else if (base > 13.1) {
+          } else if (value > 13.4) {
             return `>13`;
           }
 
@@ -302,7 +302,7 @@ export const stringToNumber = (value: string, unit: SubUnit): number | null => {
             const [v1, v2] = value.split('/').map(s => (Number(s.replace(/^[vV]/, ''))));
             return (v1 + v2) / 2;
           } else {
-            console.log("Invalid value: " + value);
+            console.error("Invalid value: " + value);
             return null;
           }
         default:

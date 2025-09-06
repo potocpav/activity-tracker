@@ -31,7 +31,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
   const { activityName, day } = route.params;
   const activities = useStore((state: any) => state.activities);
   const activity = activities.find((a: ActivityType) => a.name === activityName);
-  const theme = getTheme(activity);
+  const theme = getTheme(activity.color);
   const themeVariant = getThemeVariant();
   const blackBackground = useStore((state: any) => state.blackBackground);
   const blackTheme = themeVariant == 'dark' && blackBackground;

@@ -8,7 +8,7 @@ import { getTheme } from "./Theme";
 import Animated, { LinearTransition, FadeIn, FadeOut } from "react-native-reanimated";
 
 const StatView = ({ stat, activity, onPress, sharedTransitionTag }: { stat: Stat, activity: ActivityType, onPress: () => void, sharedTransitionTag?: string }) => {
-    const theme = getTheme(activity);
+    const theme = getTheme(activity.color);
     const weekStart = useStore((state: any) => state.weekStart);
     const styles = getStyles(theme);
     

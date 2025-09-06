@@ -57,7 +57,7 @@ const renderCsv = (data: (string | number | null)[][]) => {
 
 const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ activity, navigation }) => {
   const activityName = activity.name;
-  const theme = getTheme(activity);
+  const theme = getTheme(activity.color);
   const themeVariant = getThemeVariant();
   const [menuVisible, setMenuVisible] = React.useState(false);
   const duplicateActivity = useStore((state: any) => state.duplicateActivity);

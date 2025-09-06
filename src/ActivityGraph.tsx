@@ -55,7 +55,7 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
   const activity: ActivityType = activities.find((a: ActivityType) => a.name === activityName);
   const graph = activity.graphs[graphIndex];
   const weekStart = useStore((state: any) => state.weekStart);
-  const theme = getTheme(activity);
+  const theme = getTheme(activity.color);
   const windowDimensions = useWindowDimensions();
   const font = matchFont({ fontFamily: fontFamily, fontSize: 10 * windowDimensions.fontScale });  
 

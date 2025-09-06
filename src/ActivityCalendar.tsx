@@ -32,7 +32,7 @@ const ActivityCalendar = ({ navigation, activityName, calendarIndex }: ActivityC
   const activities = useStore((state: any) => state.activities);
   const activity: ActivityType = activities.find((a: ActivityType) => a.name === activityName);
   const calendar = activity.calendars[calendarIndex];
-  const theme = getTheme(activity);
+  const theme = getTheme(activity.color);
 
   const setActivityCalendar = useStore((state: any) => state.setActivityCalendar);
   const cloneActivityCalendar = useStore((state: any) => state.cloneActivityCalendar);

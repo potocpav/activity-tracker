@@ -34,8 +34,6 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   const dimensions = useWindowDimensions();
   const styles = getStyles(theme, wideDisplay, dimensions);
 
-  // setActivities(activities.filter((activity: ActivityType) => activity.name !== "None Test (copy)"));
-
   React.useEffect(() => {
     navigation.setOptions({
       // title: activity.name,

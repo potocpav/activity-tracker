@@ -31,7 +31,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   const { activityName, dataPointIndex, newDataPoint, newDataPointDate, tags } = route.params;
   const activities = useStore((state: any) => state.activities);
   const activity: ActivityType = activities.find((a: ActivityType) => a.name === activityName);
-  const theme = getTheme(activity);
+  const theme = getTheme(activity.color);
   const themeVariant = getThemeVariant();
   const palette = getThemePalette();
   const [datePickerVisible, setDatePickerVisible] = useState(false);

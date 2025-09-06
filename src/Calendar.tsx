@@ -29,7 +29,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName, 
   const activities = useStore((state: any) => state.activities);
   const activity = activities.find((a: ActivityType) => a.name === activityName);
   const calendar = activity.calendars[calendarIndex];
-  const theme = getTheme(activity);
+  const theme = getTheme(activity.color);
   const dayBackground = theme.colors.primary;
   const weekStart = useStore((state: any) => state.weekStart);
   const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);

@@ -14,9 +14,8 @@ import useStore from "./Store";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import ColorPicker from './ColorPicker';
-import { defaultActivity } from "./DefaultActivity";
 import { getTheme, getThemePalette, getThemeVariant } from "./Theme";
-import { defaultStats } from "./DefaultActivity";
+import { defaultCalendar, defaultGraph, defaultStats } from "./DefaultActivity";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
 import { UnitEditor } from "./UnitView";
@@ -38,36 +37,47 @@ const isSupersetOf = (set1: Set<string>, set2: Set<string>) => {
 const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   const { activityName } = route.params;
   const activities = useStore((state: any) => state.activities);
-  const activity: ActivityType = activities.find((a: ActivityType) => a.name === activityName) ?? defaultActivity;
-  const isNewActivity = activity.name === null;
-  const theme = getTheme(activity);
+  const activity: ActivityType | null = activities.find((a: ActivityType) => a.name === activityName) ?? null;
   const themeVariant = getThemeVariant();
   const palette = getThemePalette();
   const updateActivity = useStore((state: any) => state.updateActivity);
   const setTags = useStore((state: any) => state.setTags);
   const setUnit = useStore((state: any) => state.setUnit);
-
-  const [activityNameInput, setActivityNameInput] = useState(activity.name);
-  const [selectedColor, setSelectedColor] = useState(activity.color);
-  const [activityDescriptionInput, setActivityDescriptionInput] = useState(activity.description);
+  
+  const [activityNameInput, setActivityNameInput] = useState(activity?.name ?? "");
+  const [selectedColor, setSelectedColor] = useState(
+    activity === null ? 
+    Math.floor(Math.random() * palette.length) : 
+    activity.color
+  );
+  const theme = getTheme(selectedColor);  
+  const [activityDescriptionInput, setActivityDescriptionInput] = useState(activity?.description ?? "");
   const [unitMode, setUnitMode] = useState<'no_value' | 'single' | 'multiple'>((() => {
-    switch (activity.unit.type) {
-      case 'none':
-        return 'no_value';
-      case 'single':
-        return 'single';
-      case 'multiple':
-        return 'multiple';
+    if (!activity) {
+      return 'single';
+    } else {  
+      switch (activity.unit.type) {
+        case 'none':
+          return 'no_value';
+        case 'single':
+          return 'single';
+        case 'multiple':
+          return 'multiple';
+      }
     }
   })());
-  const [singleUnitInput, setSingleUnitInput] = useState<SubUnit>((() => {
-    switch (activity.unit.type) {
-      case 'none':
-        return { type: "number", symbol: '' };
-      case 'single':
-        return activity.unit.unit;
-      case 'multiple':
-        return activity.unit.values[0].unit;
+  const [singleUnitInput, setSingleUnitInput] = useState<SubUnit | null>((() => {
+    if (!activity) {
+      return null;
+    } else {
+      switch (activity.unit.type) {
+        case 'none':
+          return null;
+        case 'single':
+          return activity.unit.unit;
+        case 'multiple':
+          return activity.unit.values[0].unit;
+      }
     }
   })());
 
@@ -75,46 +85,51 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   // null oldName represents that the old value comes from a single-valued unit
   // String oldName represents the old value name from a multi-valued unit
   const [oldUnitMap, setOldUnitMap] = useState<{ oldName: string | null, newIndex: number }[]>((() => {
-    switch (activity.unit.type) {
-      case 'none':
-        return [];
-      case 'single':
-        return [{ oldName: null, newIndex: 0 }];
-      case 'multiple':
-        return activity.unit.values.map((u, index: number) => ({ oldName: u.name, newIndex: index }));
+    if (!activity) {
+      return [];
+    } else {
+      switch (activity.unit.type) {
+        case 'none':
+          return [];
+        case 'single':
+          return [{ oldName: null, newIndex: 0 }];
+        case 'multiple':
+          return activity.unit.values.map((u, index: number) => ({ oldName: u.name, newIndex: index }));
+      }
     }
   })());
-  const [multiUnitInput, setMultiUnitInput] = useState<{ name: string, unit: SubUnit }[]>((() => {
-    switch (activity.unit.type) {
-      case 'none':
-        return [
-          { name: '', unit: { type: "number", symbol: '' } },
-          { name: '', unit: { type: "number", symbol: '' } },
-        ];
-      case 'single':
-        return [
-          { name: '', unit: activity.unit.unit },
-          { name: '', unit: { type: "number", symbol: '' } },
-        ];
-      case 'multiple':
-        return activity.unit.values.map((u: { name: string, unit: SubUnit }) => ({ name: u.name, unit: u.unit }));
-    }
+  const [multiUnitInput, setMultiUnitInput] = useState<{ name: string, unit: SubUnit | null }[]>((() => {
+    if (!activity) {
+      return [
+        { name: '', unit: null },
+        { name: '', unit: null },
+      ];
+    } else {
+      switch (activity.unit.type) {
+        case 'none':
+          return [
+            { name: '', unit: null },
+            { name: '', unit: null },
+          ];
+        case 'single':
+          return [
+            { name: '', unit: activity.unit.unit },
+            { name: '', unit: null },
+          ];
+        case 'multiple':
+          return activity.unit.values.map((u: { name: string, unit: SubUnit }) => ({ name: u.name, unit: u.unit }));
+        }
+      }
   })());
   
-
   const [tagDialogVisible, setTagDialogVisible] = useState(false);
-  const [tagState, setTagState] = useState<SetTag[]>(activity.tags.map((t: Tag) => ({ oldTagName: t.name, ...t })));
+  const [tagState, setTagState] = useState<SetTag[]>(activity?.tags.map((t: Tag) => ({ oldTagName: t.name, ...t })) ?? []);
   const [tagDialogName, setTagDialogName] = useState("");
   const [tagDialogNameInput, setTagDialogNameInput] = useState("");
   const [tagDialogColorInput, setTagDialogColorInput] = useState(Math.floor(Math.random() * palette.length));
   const [tagColorDialogVisible, setTagColorDialogVisible] = useState(false);
 
   const [colorDialogVisible, setColorDialogVisible] = useState(false);
-
-  if (!activity) {
-    return <Text>Activity not found</Text>;
-  }
-
 
   const saveActivity = () => {
     let newUnit : Unit;
@@ -123,23 +138,49 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
         newUnit = { type: "none" };
         break;
       case 'single':
+        console.log("singleUnitInput", singleUnitInput);
+        if (singleUnitInput === null) {
+          Alert.alert("Error", "Single unit cannot be null");
+          return;
+        }
         newUnit = { type: "single", unit: singleUnitInput };
         break;
       case 'multiple':
-        newUnit = { type: "multiple", values: multiUnitInput };
+        if (multiUnitInput.findIndex((u) => u.unit === null) !== -1) {
+          Alert.alert("Error", "All value units must be non-empty");
+          return;
+        }
+        // no nulls at this point
+        newUnit = { type: "multiple", values: multiUnitInput as { name: string, unit: SubUnit }[] };
         break;
-    }
+      }
 
-    const updatedActivity = {
-      ...activity,
-      name: activityNameInput,
-      description: activityDescriptionInput,
-      color: selectedColor,
-      stats: isNewActivity ? defaultStats(newUnit) : activity.stats,
-      // don't update unit, it will be updated in the setUnit call
-    };
-    const activityName = activity.name === "" ? updatedActivity.name : activity.name;
-    updateActivity(activityName, updatedActivity);
+    let updatedActivity : ActivityType;
+    if (activity === null) {
+      const defaultUnit: Unit = { type: "single", unit: { type: "number", symbol: "" } };
+      updatedActivity = {
+        name: activityNameInput,
+        description: activityDescriptionInput,
+        unit: defaultUnit,
+        color: selectedColor,
+        dataPoints: [],
+        tags: [],
+        stats: defaultStats(defaultUnit),
+        calendars: [defaultCalendar(defaultUnit)],
+        graphs: [defaultGraph(defaultUnit)],
+      };
+    } else {
+      updatedActivity = {
+        ...activity,
+        name: activityNameInput,
+        description: activityDescriptionInput,
+        color: selectedColor,
+        // don't update unit, it will be updated in the setUnit call
+        // don't update tags, they will be updated in the setTags call
+      };
+    }
+    const currentActivityName = activity === null ? updatedActivity.name : activity.name;
+    updateActivity(currentActivityName, updatedActivity);
     setTags(updatedActivity.name, tagState);
     let unitMap;
     switch (newUnit.type) {
@@ -161,9 +202,10 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   };
 
   const saveActivityWrapper = () => {
+
     if (activityNameInput === "") {
       Alert.alert("Error", "Activity name cannot be empty");
-    } else if (activityNameInput !== activity.name && activities.find((a: ActivityType) => a.name === activityNameInput)) {
+    } else if ((activity === null || activityNameInput !== activity.name) && activities.find((a: ActivityType) => a.name === activityNameInput)) {
       Alert.alert("Error", "An activity with this name already exists");
     } else {
       if (unitMode === 'multiple' && multiUnitInput.findIndex((u) => u.name === "") !== -1) {
@@ -183,7 +225,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
         ]);
       };
       // data loss?
-      if (activity.dataPoints.length > 0) {
+      if (activity !== null && activity.dataPoints.length > 0) {
         if (unitMode === 'no_value' && activity.unit.type !== 'none') {
           dataLossAlert(saveActivity);
         } else if (unitMode === 'single' && activity.unit.type === 'multiple') {
@@ -212,7 +254,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
 
     React.useEffect(() => {
       navigation.setOptions({
-        title: activityName === null ? "New Activity" : activity.name,
+        title: activity === null ? "New Activity" : activity.name,
         headerStyle: themeVariant == 'light' ? { backgroundColor: theme.colors.primary } : undefined,
         headerTintColor: "#ffffff",
         headerRight: () => (
@@ -263,7 +305,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
 
     const editSingleValue = () => (
       <View style={styles.inputContainer}>
-        <UnitEditor unit={singleUnitInput} onChange={(unit: SubUnit) => {
+        <UnitEditor unit={singleUnitInput} onChange={(unit: SubUnit | null) => {
           setSingleUnitInput(unit);
         }} />
       </View>
@@ -287,7 +329,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
             />
           </View>
           <View style={{ flex: 2 }}>
-            <UnitEditor unit={val.unit} onChange={(unit: SubUnit) => {
+            <UnitEditor unit={val.unit} onChange={(unit: SubUnit | null) => {
               // Update unit
               const newVals = [...multiUnitInput];
               newVals[idx].unit = unit;
@@ -348,7 +390,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
 
           <View style={styles.inputContainer}>
             <TextInput
-              label="Description"
+              label="Description (optional)"
               value={activityDescriptionInput}
               onChangeText={setActivityDescriptionInput}
               multiline

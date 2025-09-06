@@ -24,7 +24,7 @@ export const EditStat = (
   const { activityName, statId } = route.params;
   const activity: ActivityType = activities.find((a: ActivityType) => a.name === activityName);
   const stat = activity?.stats[statId];
-  const theme = getTheme(activity);
+  const theme = getTheme(activity.color);
   const themeVariant = getThemeVariant();
   const addActivityStat = useStore((state: any) => state.addActivityStat);
   const setActivityStat = useStore((state: any) => state.setActivityStat);

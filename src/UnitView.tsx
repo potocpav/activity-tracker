@@ -9,7 +9,10 @@ import Animated, { LinearTransition, FadeInUp, FadeOutUp } from "react-native-re
 
 type ChosenUnit = "number" | "count" | "weight_kg" | "weight_lb" | "time_seconds" | "time_hours" | "climbing_grade_uiaa" | "climbing_grade_french" | "climbing_grade_font" | "climbing_grade_v_scale";
 
-const subUnitToChosenUnit = (subUnit: SubUnit): ChosenUnit | null => {
+const subUnitToChosenUnit = (subUnit: SubUnit | null): ChosenUnit | null => {
+  if (subUnit === null) {
+    return null;
+  }
   switch (subUnit.type) {
     case "number":
       return "number";
@@ -62,10 +65,9 @@ const toUnit = (chosenUnit: ChosenUnit): SubUnit => {
 }
 
 
-export const UnitEditor = ({ unit, onChange }: { unit: SubUnit, onChange: (unit: SubUnit) => void }) => {
+export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null, onChange: (unit: SubUnit | null) => void }) => {
   const [unitDialogVisible, setUnitDialogVisible] = useState(false);
   const [unitInput, setUnitInput] = useState(unit);
-  const [chosenUnit, setChosenUnit] = useState<ChosenUnit | null>(subUnitToChosenUnit(unit));
   const theme = getTheme();
 
   return (
@@ -82,7 +84,7 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit, onChange: (unit:
         <TextInput
           style={{ flex: 1 }}
           label="Unit"
-          value={renderUnit(unitInput)}
+          value={unitInput === null ? "" : renderUnit(unitInput)}
           editable={false}
           mode="outlined"
         />
@@ -106,9 +108,7 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit, onChange: (unit:
             </View>
             <Button onPress={() => {
               setUnitDialogVisible(false);
-              if (chosenUnit) {
-                onChange(unitInput);
-              }
+              onChange(unitInput);
             }}>
               <AntDesign name="check" size={24} color={theme.colors.onSurface} />
             </Button>
@@ -120,15 +120,19 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit, onChange: (unit:
               <Animated.View key="number" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
                 <RadioButton.Item label="Number" value="number" />
               </Animated.View>
-              {unitInput.type === "number" &&
+              {unitInput?.type === "number" &&
                 <Animated.View key="number-symbol" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
-                  <TextInput
-                    label="Symbol"
-                    value={unitInput.symbol}
-                    onChangeText={text => setUnitInput({ ...unitInput, symbol: text })}
-                    mode="outlined"
-                    style={{ marginHorizontal: 16 }}
-                  />
+                  <View style={{ marginHorizontal: 16 }}>
+                    <TextInput
+                      label="Symbol (optional)"
+                      value={unitInput.symbol}
+                      onChangeText={text => setUnitInput({ ...unitInput, symbol: text })}
+                      mode="outlined"
+                    />
+                    <Text style={{ fontSize: 12, opacity: 0.6 }}>
+                      Will be shown besides the value. E.g., "km" for kilometers.
+                    </Text>
+                  </View>
                 </Animated.View>
               }
               <Animated.View key="count" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
@@ -187,6 +191,14 @@ export const ValueEditor = ({
 
   const [timerInterval, setTimerInterval] = useState<NodeJS.Timeout | null>(null);
 
+  const resetTimer = () => {
+    setTimerActive(false);
+    setTimerStartTime(null);
+    setNow(null);
+    setSubmitDisabled(false);
+    onChange(numberToString(0, unit));
+  }
+
   const toggleTimer = (timeUnit: TimeUnit) => {
     const timeFactor = timeUnit === "hours" ? 3600e3 : 1e3;
     if (timerActive) {
@@ -210,9 +222,7 @@ export const ValueEditor = ({
         setNow(Date.now() / timeFactor);
       }, 200));
     }
-    // return interval;
   };
-  console.log('tick', now);
 
   const addTimerToValue = (val: string) => {
     return numberToString((stringToNumber(val, unit) ?? 0) + ((now ?? 0) - (timerStartTime ?? 0)), unit)
@@ -240,9 +250,14 @@ export const ValueEditor = ({
           <Dialog visible={climbingGradeDialogVisible} onDismiss={() => setClimbingGradeDialogVisible(false)}>
             <Dialog.ScrollArea>
               <FlatList
-                getItemLayout={(_, index) => ({ length: itemHeight, offset: itemHeight * Math.floor(index / numColumns), index })}
                 key={`uiaa-grade-list-${numColumns}`}
+                getItemLayout={(_, index) => ({ length: itemHeight, offset: itemHeight * index, index })}
+                initialScrollIndex={
+                  Math.max(0, Math.floor(value === "" ? 
+                    options.length / numColumns / 2 : 
+                    options.findIndex(o => o.s === value) / numColumns) - 3)}
                 numColumns={numColumns}
+                indicatorStyle="black"
                 data={options}
                 renderItem={({ item }) => (
                   <List.Item right={value === item.s ? (props) => <List.Icon {...props} icon="check" /> : undefined} style={{ flex: 1, height: itemHeight }} key={item.s} onPress={() => { onChange(item.s); setClimbingGradeDialogVisible(false); }} title={item.s} />
@@ -270,6 +285,9 @@ export const ValueEditor = ({
                   onChangeText={text => onChange(text)}
                   mode="outlined"
                 />
+                <Button onPress={() => resetTimer()} compact={true} style={{ marginTop: 4 }} mode="outlined">
+                  <AntDesign name={"reload1"} size={20} color={theme.colors.onSurface} />
+                </Button>
                 <Button onPress={() => toggleTimer(unit.unit)} compact={false} style={{ marginTop: 4 }} mode="outlined">
                   <AntDesign name={timerActive ? "pausecircleo" : "playcircleo"} size={20} color={theme.colors.onSurface} />
                 </Button>

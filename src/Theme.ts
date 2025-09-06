@@ -26,15 +26,15 @@ export const getThemePalette = () : string[] => {
   return themeVariant === "dark" ? darkPalette : lightPalette;
 }
 
-export const getTheme = (activity?: ActivityType) : MD3Theme => {
+export const getTheme = (primaryColor?: number) : MD3Theme => {
   const palette = getThemePalette();
-  if (activity) {
+  if (primaryColor !== undefined) {
     const theme = useTheme();
     return {
       ...theme,
       colors: {
         ...theme.colors,
-        primary: palette[activity.color],
+        primary: palette[primaryColor],
       },
     };
   } else {
