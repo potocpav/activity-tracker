@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { Menu, Button } from 'react-native-paper';
 import useStore from "./Store";
-import {DataPoint, ActivityType, Tag, dateListToDate} from "./StoreTypes";
+import { DataPoint, ActivityType, Tag, dateListToDate } from "./StoreTypes";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import ActivitySummary from "./ActivitySummary";
 import { File, Paths } from "expo-file-system/next";
@@ -16,6 +16,7 @@ import * as Sharing from 'expo-sharing';
 import { getTheme, getThemeVariant } from "./Theme";
 import { SystemBars } from "react-native-edge-to-edge";
 import { SafeAreaView } from "react-native-safe-area-context";
+import EmptyPagePlaceholder from "./EmptyPagePlaceholder";
 
 type ActivityProps = {
   navigation: any;
@@ -157,7 +158,7 @@ const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ 
       headerTintColor: "#ffffff",
       headerRight: () => (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Button compact={true} 
+          <Button compact={true}
             onPress={() => navigation.navigate("EditDataPoint", { activityName, newDataPoint: true })}>
             <AntDesign name="plus" size={24} color={"#ffffff"} />
           </Button>
@@ -172,31 +173,38 @@ const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ 
     });
   }, [navigation, theme, menuVisible]);
 
-  return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surface }]} edges={["left", "right"]}>
-      <SystemBars style={"light"} />
-      <View style={{ position: 'absolute', top: 10, right: 0 }}>
-        <Menu
-          visible={menuVisible}
-          onDismiss={() => setMenuVisible(false)}
-          anchor={<View style={{ width: 1, height: 1 }} />}
-        >
-          <Menu.Item onPress={() => { setMenuVisible(false); navigation.navigate("ActivityData", { activityName }) }} title="Data" />
-          <Menu.Item onPress={() => { setMenuVisible(false); exportActivityCsv() }} title="Export" />
-          <Menu.Item onPress={() => { 
-            setMenuVisible(false); 
-            duplicateActivity(activity.name);
-            navigation.reset({
-              index: 0,
-              routes: [{ name: 'Activities' }],
-            });
-          }} title="Duplicate" />
-          <Menu.Item onPress={() => { setMenuVisible(false); deleteActivityWrapper() }} title="Delete" />
-        </Menu>
-      </View>
-      <ActivitySummary activityName={activityName} navigation={navigation} />
-    </SafeAreaView>
-  );
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surface }]} edges={["left", "right"]}>
+        <SystemBars style={"light"} />
+        <View style={{ position: 'absolute', top: 10, right: 0 }}>
+          <Menu
+            visible={menuVisible}
+            onDismiss={() => setMenuVisible(false)}
+            anchor={<View style={{ width: 1, height: 1 }} />}
+          >
+            <Menu.Item onPress={() => { setMenuVisible(false); navigation.navigate("ActivityData", { activityName }) }} title="Data" />
+            <Menu.Item onPress={() => { setMenuVisible(false); exportActivityCsv() }} title="Export" />
+            <Menu.Item onPress={() => {
+              setMenuVisible(false);
+              duplicateActivity(activity.name);
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Activities' }],
+              });
+            }} title="Duplicate" />
+            <Menu.Item onPress={() => { setMenuVisible(false); deleteActivityWrapper() }} title="Delete" />
+          </Menu>
+        </View>
+        {activity?.dataPoints.length === 0 ? (
+          <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surface }]} edges={["left", "right"]}>
+            <SystemBars style={"light"} />
+            <EmptyPagePlaceholder title="No data" subtext="Tap the + button to create a data point" />
+          </SafeAreaView>) : (
+          <ActivitySummary activityName={activityName} navigation={navigation} />
+        )
+        }
+      </SafeAreaView>
+    );
 };
 
 const styles = StyleSheet.create({

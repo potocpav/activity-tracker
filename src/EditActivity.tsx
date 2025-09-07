@@ -19,6 +19,7 @@ import { defaultCalendar, defaultGraph, defaultStats } from "./DefaultActivity";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
 import { UnitEditor } from "./UnitView";
+import EmptyPagePlaceholder from "./EmptyPagePlaceholder";
 
 type EditActivityProps = {
   navigation: any;
@@ -43,19 +44,20 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   const updateActivity = useStore((state: any) => state.updateActivity);
   const setTags = useStore((state: any) => state.setTags);
   const setUnit = useStore((state: any) => state.setUnit);
-  
+  const [showErrors, setShowErrors] = useState(false);
+
   const [activityNameInput, setActivityNameInput] = useState(activity?.name ?? "");
   const [selectedColor, setSelectedColor] = useState(
-    activity === null ? 
-    Math.floor(Math.random() * palette.length) : 
-    activity.color
+    activity === null ?
+      Math.floor(Math.random() * palette.length) :
+      activity.color
   );
-  const theme = getTheme(selectedColor);  
+  const theme = getTheme(selectedColor);
   const [activityDescriptionInput, setActivityDescriptionInput] = useState(activity?.description ?? "");
   const [unitMode, setUnitMode] = useState<'no_value' | 'single' | 'multiple'>((() => {
     if (!activity) {
       return 'single';
-    } else {  
+    } else {
       switch (activity.unit.type) {
         case 'none':
           return 'no_value';
@@ -118,10 +120,10 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
           ];
         case 'multiple':
           return activity.unit.values.map((u: { name: string, unit: SubUnit }) => ({ name: u.name, unit: u.unit }));
-        }
       }
+    }
   })());
-  
+
   const [tagDialogVisible, setTagDialogVisible] = useState(false);
   const [tagState, setTagState] = useState<SetTag[]>(activity?.tags.map((t: Tag) => ({ oldTagName: t.name, ...t })) ?? []);
   const [tagDialogName, setTagDialogName] = useState("");
@@ -132,7 +134,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   const [colorDialogVisible, setColorDialogVisible] = useState(false);
 
   const saveActivity = () => {
-    let newUnit : Unit;
+    let newUnit: Unit;
     switch (unitMode) {
       case 'no_value':
         newUnit = { type: "none" };
@@ -153,9 +155,9 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
         // no nulls at this point
         newUnit = { type: "multiple", values: multiUnitInput as { name: string, unit: SubUnit }[] };
         break;
-      }
+    }
 
-    let updatedActivity : ActivityType;
+    let updatedActivity: ActivityType;
     if (activity === null) {
       const defaultUnit: Unit = { type: "single", unit: { type: "number", symbol: "" } };
       updatedActivity = {
@@ -219,9 +221,11 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       let dataLossAlert = (callback: () => void) => {
         Alert.alert("Warning", "Some numerical data may be lost.\n\nConsider backing up your data.", [
           { text: 'Cancel', style: 'cancel' },
-          { text: 'Continue', onPress: () => {
-            callback();
-          } },
+          {
+            text: 'Continue', onPress: () => {
+              callback();
+            }
+          },
         ]);
       };
       // data loss?
@@ -252,67 +256,72 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
     }
   }
 
-    React.useEffect(() => {
-      navigation.setOptions({
-        title: activity === null ? "New Activity" : activity.name,
-        headerStyle: themeVariant == 'light' ? { backgroundColor: theme.colors.primary } : undefined,
-        headerTintColor: "#ffffff",
-        headerRight: () => (
-          <>
-            <Button compact={true} onPress={saveActivityWrapper}><AntDesign name="check" size={24} color={"#ffffff"} /></Button>
-          </>
-        ),
-      });
-    }, [activityName, navigation, theme, activity, activityNameInput, activityDescriptionInput, singleUnitInput, selectedColor, tagState, multiUnitInput, unitMode]);
+  const setActivityNameWrapper = (text: string) => {
+    setActivityNameInput(text);
+    setShowErrors(true);
+  }
 
-    const onUpdateTag = (action: "delete" | "update") => {
-      if (tagDialogNameInput === "") {
-        Alert.alert("Error", "Tag name cannot be empty");
-      } else {
-        if (action === "delete") {
-          setTagState(tagState.filter((t: SetTag) => t.name !== tagDialogName));
-        } else if (action === "update") {
-          const existingTagNames = tagState.map((t: SetTag) => t.name);
-          if (tagDialogNameInput !== tagDialogName && existingTagNames.includes(tagDialogNameInput)) {
-            Alert.alert("Error", "A tag with this name already exists");
-            return;
-          }
-          if (tagDialogName === "") {
-            setTagState([...tagState, { oldTagName: null, name: tagDialogNameInput, color: tagDialogColorInput }]);
-          } else {
-            setTagState(tagState.map((t: SetTag) => t.name === tagDialogName ? { ...t, name: tagDialogNameInput, color: tagDialogColorInput } : t));
-          }
+  React.useEffect(() => {
+    navigation.setOptions({
+      title: activity === null ? "New Activity" : activity.name,
+      headerStyle: themeVariant == 'light' ? { backgroundColor: theme.colors.primary } : undefined,
+      headerTintColor: "#ffffff",
+      headerRight: () => (
+        <>
+          <Button compact={true} onPress={saveActivityWrapper}><AntDesign name="check" size={24} color={"#ffffff"} /></Button>
+        </>
+      ),
+    });
+  }, [activityName, navigation, theme, activity, activityNameInput, activityDescriptionInput, singleUnitInput, selectedColor, tagState, multiUnitInput, unitMode]);
+
+  const onUpdateTag = (action: "delete" | "update") => {
+    if (tagDialogNameInput === "") {
+      Alert.alert("Error", "Tag name cannot be empty");
+    } else {
+      if (action === "delete") {
+        setTagState(tagState.filter((t: SetTag) => t.name !== tagDialogName));
+      } else if (action === "update") {
+        const existingTagNames = tagState.map((t: SetTag) => t.name);
+        if (tagDialogNameInput !== tagDialogName && existingTagNames.includes(tagDialogNameInput)) {
+          Alert.alert("Error", "A tag with this name already exists");
+          return;
         }
-        setTagDialogVisible(false);
+        if (tagDialogName === "") {
+          setTagState([...tagState, { oldTagName: null, name: tagDialogNameInput, color: tagDialogColorInput }]);
+        } else {
+          setTagState(tagState.map((t: SetTag) => t.name === tagDialogName ? { ...t, name: tagDialogNameInput, color: tagDialogColorInput } : t));
+        }
       }
+      setTagDialogVisible(false);
     }
+  }
 
-    const handleColorSelect = (colorIx: number) => {
-      setSelectedColor(colorIx);
-      setColorDialogVisible(false);
-    };
+  const handleColorSelect = (colorIx: number) => {
+    setSelectedColor(colorIx);
+    setColorDialogVisible(false);
+  };
 
-    const handleTagColorSelect = (colorIx: number) => {
-      setTagDialogColorInput(colorIx);
-      setTagColorDialogVisible(false);
-    };
+  const handleTagColorSelect = (colorIx: number) => {
+    setTagDialogColorInput(colorIx);
+    setTagColorDialogVisible(false);
+  };
 
-    const editNoValue = () => (
-      <>
+  const editNoValue = () => (
+    <>
       <Text style={{ color: theme.colors.onSurfaceVariant }}>Value-less activities are useful to mark that an activity was done, without tracking any performance data.</Text>
-      </>
-    );
+    </>
+  );
 
-    const editSingleValue = () => (
-      <View style={styles.inputContainer}>
-        <UnitEditor unit={singleUnitInput} onChange={(unit: SubUnit | null) => {
-          setSingleUnitInput(unit);
-        }} />
-      </View>
-    );
+  const editSingleValue = () => (
+    <View style={styles.inputContainer}>
+      <UnitEditor unit={singleUnitInput} onChange={(unit: SubUnit | null) => {
+        setSingleUnitInput(unit);
+      }} />
+    </View>
+  );
 
-    const editMultipleValues = () => (
-      <>
+  const editMultipleValues = () => (
+    <>
       {multiUnitInput.map((val, idx) => (
         <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 4 }}>
           <View style={{ flex: 1, marginRight: 8 }}>
@@ -361,184 +370,184 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
           <AntDesign name="plus" size={20} color={theme.colors.onSurface} />
         </Button>
       )}
-      </>
-    );
+    </>
+  );
 
-    return (
-      <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surface }]} edges={["left", "right"]}>
-        <SystemBars style={"light"} />
-        <ScrollView style={styles.content}>
-          <View style={styles.inputContainer}>
+  return (
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surface }]} edges={["left", "right"]}>
+      <SystemBars style={"light"} />
+      <ScrollView style={styles.content}>
+        <View style={styles.inputContainer}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={{ flex: 1 }}>
+              <TextInput
+                label="Activity Name"
+                value={activityNameInput}
+                onChangeText={setActivityNameWrapper}
+                mode="outlined"
+              />
+            </View>
+            <Button
+              onPress={() => setColorDialogVisible(true)}
+              compact={true}
+              style={{ marginLeft: 10 }}
+            >
+              <View style={{ width: 30, height: 30, borderRadius: 12, backgroundColor: palette[selectedColor], borderWidth: 1, borderColor: theme.colors.onBackground }} />
+            </Button>
+          </View>
+        </View>
+
+        <View style={styles.inputContainer}>
+          <TextInput
+            label="Description (optional)"
+            value={activityDescriptionInput}
+            onChangeText={setActivityDescriptionInput}
+            multiline
+            numberOfLines={2}
+            style={{ height: 80 }}
+            mode="outlined"
+          />
+        </View>
+        <View style={styles.inputContainer}>
+          <Text style={{ marginBottom: 8, color: theme.colors.onSurface }}>Value:</Text>
+          <View style={{}}>
+            <SegmentedButtons
+              value={unitMode}
+              onValueChange={setUnitMode}
+              buttons={[
+                {
+                  value: 'no_value',
+                  label: 'None',
+                  icon: 'checkbox-marked-outline',
+                },
+                {
+                  value: 'single',
+                  label: 'Single',
+                  icon: 'numeric',
+                },
+                {
+                  value: 'multiple',
+                  label: 'Multiple',
+                  icon: 'counter',
+                },
+              ]}
+            />
+          </View>
+        </View>
+
+        <View style={styles.inputContainer}>
+          {unitMode === 'no_value' ? editNoValue() : unitMode === 'single' ? editSingleValue() : editMultipleValues()}
+        </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={[styles.label, { color: theme.colors.onSurface }]}>Tags:</Text>
+          <DraggableFlatList
+            data={tagState}
+            horizontal={true}
+            keyExtractor={(item: SetTag) => item.name}
+            renderItem={({ item, drag, isActive }: { item: SetTag, drag: () => void, isActive: boolean }) => (
+              <Chip
+                onPress={() => { setTagDialogVisible(true); setTagDialogName(item.name); setTagDialogNameInput(item.name); setTagDialogColorInput(item.color); }}
+                textStyle={{ color: theme.colors.surface }}
+                style={{
+                  backgroundColor: palette[item.color],
+                  marginRight: 8,
+                  marginBottom: 8,
+                  opacity: isActive ? 0.7 : 1,
+                }}
+                onLongPress={drag}
+              >
+                {item.name}
+              </Chip>
+            )}
+            onDragEnd={(data) => {
+              setTagState(data.data);
+            }}
+            contentContainerStyle={{ flexDirection: 'row' }}
+            style={{ marginTop: 8 }}
+          />
+          <View style={{ flexDirection: 'row' }}>
+            <Chip onPress={() => { setTagDialogVisible(true); setTagDialogName(""); setTagDialogNameInput(""); setTagDialogColorInput(19); }}
+              mode="outlined"
+              style={{
+                marginRight: 8,
+                marginBottom: 8,
+              }}
+            >
+              +
+            </Chip>
+          </View>
+        </View>
+      </ScrollView>
+      <Portal>
+        {/* Tag dialog (existing) */}
+        <Dialog visible={tagDialogVisible} onDismiss={() => setTagDialogVisible(false)}>
+          <Dialog.Content>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <View style={{ flex: 1 }}>
-                <TextInput
-                  label="Activity Name"
-                  value={activityNameInput}
-                  onChangeText={setActivityNameInput}
-                  mode="outlined"
-                />
+                <TextInput label="Tag Name" defaultValue={tagDialogNameInput} onChangeText={setTagDialogNameInput} mode="outlined" />
               </View>
               <Button
-                onPress={() => setColorDialogVisible(true)}
+                onPress={() => setTagColorDialogVisible(true)}
                 compact={true}
                 style={{ marginLeft: 10 }}
               >
-                <View style={{ width: 30, height: 30, borderRadius: 12, backgroundColor: palette[selectedColor], borderWidth: 1, borderColor: theme.colors.onBackground }} />
+                <View style={{ width: 30, height: 30, borderRadius: 12, backgroundColor: palette[tagDialogColorInput], borderWidth: 1, borderColor: theme.colors.onBackground }} />
               </Button>
             </View>
-          </View>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => onUpdateTag("delete")}><AntDesign name="delete" size={24} color={theme.colors.onSurface} /></Button>
+            <Button onPress={() => onUpdateTag("update")}><AntDesign name="check" size={24} color={theme.colors.onSurface} /></Button>
+          </Dialog.Actions>
+        </Dialog>
+        {/* Color picker dialog */}
+        <ColorPicker
+          visible={colorDialogVisible}
+          palette={palette}
+          selectedColor={selectedColor}
+          onSelect={handleColorSelect}
+          onDismiss={() => setColorDialogVisible(false)}
+          theme={theme}
+        />
+        <ColorPicker
+          visible={tagColorDialogVisible}
+          palette={palette}
+          selectedColor={tagDialogColorInput}
+          onSelect={handleTagColorSelect}
+          onDismiss={() => setTagColorDialogVisible(false)}
+          theme={theme}
+        />
+      </Portal>
+    </SafeAreaView>
+  );
+};
 
-          <View style={styles.inputContainer}>
-            <TextInput
-              label="Description (optional)"
-              value={activityDescriptionInput}
-              onChangeText={setActivityDescriptionInput}
-              multiline
-              numberOfLines={2}
-              style={{ height: 80 }}
-              mode="outlined"
-            />
-          </View>
-          <View style={styles.inputContainer}>
-            <Text style={{ marginBottom: 8, color: theme.colors.onSurface }}>Value:</Text>
-            <View style={{}}>
-              <SegmentedButtons
-                value={unitMode}
-                onValueChange={setUnitMode}
-                buttons={[
-                  {
-                    value: 'no_value',
-                    label: 'None',
-                    icon: 'checkbox-marked-outline',
-                  },
-                  {
-                    value: 'single',
-                    label: 'Single',
-                    icon: 'numeric',
-                  },
-                  {
-                    value: 'multiple',
-                    label: 'Multiple',
-                    icon: 'counter',
-                  },
-                ]}
-              />
-            </View>
-          </View>
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    padding: 10,
+  },
+  inputContainer: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: "500",
+    marginBottom: 8,
+  },
+  colorButton: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 48,
+    width: 48,
+  },
+});
 
-          <View style={styles.inputContainer}>
-            {unitMode === 'no_value' ? editNoValue() : unitMode === 'single' ? editSingleValue() : editMultipleValues()}
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Text style={[styles.label, { color: theme.colors.onSurface }]}>Tags:</Text>
-            <DraggableFlatList
-              data={tagState}
-              horizontal={true}
-              keyExtractor={(item: SetTag) => item.name}
-              renderItem={({ item, drag, isActive }: { item: SetTag, drag: () => void, isActive: boolean }) => (
-                <Chip
-                  onPress={() => { setTagDialogVisible(true); setTagDialogName(item.name); setTagDialogNameInput(item.name); setTagDialogColorInput(item.color); }}
-                  textStyle={{ color: theme.colors.surface }}
-                  style={{
-                    backgroundColor: palette[item.color],
-                    marginRight: 8,
-                    marginBottom: 8,
-                    opacity: isActive ? 0.7 : 1,
-                  }}
-                  onLongPress={drag}
-                >
-                  {item.name}
-                </Chip>
-              )}
-              onDragEnd={(data) => {
-                setTagState(data.data);
-              }}
-              contentContainerStyle={{ flexDirection: 'row' }}
-              style={{ marginTop: 8 }}
-            />
-            <View style={{ flexDirection: 'row' }}>
-              <Chip onPress={() => { setTagDialogVisible(true); setTagDialogName(""); setTagDialogNameInput(""); setTagDialogColorInput(19); }}
-                mode="outlined"
-                style={{
-                  marginRight: 8,
-                  marginBottom: 8,
-                }}
-              >
-                +
-              </Chip>
-            </View>
-          </View>
-        </ScrollView>
-        <Portal>
-          {/* Tag dialog (existing) */}
-          <Dialog visible={tagDialogVisible} onDismiss={() => setTagDialogVisible(false)}>
-            <Dialog.Content>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <View style={{ flex: 1 }}>
-                  <TextInput label="Tag Name" defaultValue={tagDialogNameInput} onChangeText={setTagDialogNameInput} mode="outlined" />
-                </View>
-                <Button
-                  onPress={() => setTagColorDialogVisible(true)}
-                  compact={true}
-                  style={{ marginLeft: 10 }}
-                >
-                  <View style={{ width: 30, height: 30, borderRadius: 12, backgroundColor: palette[tagDialogColorInput], borderWidth: 1, borderColor: theme.colors.onBackground }} />
-                </Button>
-              </View>
-            </Dialog.Content>
-            <Dialog.Actions>
-              <Button onPress={() => onUpdateTag("delete")}><AntDesign name="delete" size={24} color={theme.colors.onSurface} /></Button>
-              <Button onPress={() => onUpdateTag("update")}><AntDesign name="check" size={24} color={theme.colors.onSurface} /></Button>
-            </Dialog.Actions>
-          </Dialog>
-          {/* Color picker dialog */}
-          <ColorPicker
-            visible={colorDialogVisible}
-            palette={palette}
-            selectedColor={selectedColor}
-            onSelect={handleColorSelect}
-            onDismiss={() => setColorDialogVisible(false)}
-            theme={theme}
-          />
-          <ColorPicker
-            visible={tagColorDialogVisible}
-            palette={palette}
-            selectedColor={tagDialogColorInput}
-            onSelect={handleTagColorSelect}
-            onDismiss={() => setTagColorDialogVisible(false)}
-            theme={theme}
-          />
-        </Portal>
-      </SafeAreaView>
-    );
-  };
-
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-    },
-    content: {
-      flex: 1,
-      padding: 10,
-    },
-    inputContainer: {
-      marginBottom: 20,
-    },
-    label: {
-      fontSize: 16,
-      fontWeight: "500",
-      marginBottom: 8,
-    },
-    colorButton: {
-      borderWidth: 1,
-      borderRadius: 8,
-      padding: 0,
-      justifyContent: 'center',
-      alignItems: 'center',
-      height: 48,
-      width: 48,
-    },
-  });
-
-  export default EditActivity; 
+export default EditActivity; 

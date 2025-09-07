@@ -97,19 +97,17 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   return (
     <SafeAreaView style={[styles.container]} edges={["left", "right", "bottom"]}>
       <SystemBars style={themeVariant == 'light' ? "dark" : "light"} />
+      {activities.length === 0 ? (
+        <EmptyPagePlaceholder title="No activities" subtext="Tap the + button to create an activity" />
+      ) : (
       <DraggableFlatList
         data={activities}
         onDragEnd={({ data }) => setActivities(data)}
         renderItem={renderActivity}
-        ListEmptyComponent={() => (
-          <EmptyPagePlaceholder 
-            title="No activities" 
-            subtext="Tap the + button to create an activity" 
-          />
-        )}
         keyExtractor={(item) => item.name}
         contentContainerStyle={styles.listContainer}
       />
+      )}
     </SafeAreaView>
   );
 };

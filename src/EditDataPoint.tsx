@@ -171,10 +171,21 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
       headerTintColor: "#ffffff",
       headerRight: () => (
         <>
-          <Button compact={true} onPress={saveDataPointWrapper}><AntDesign name="check" size={24} color={"#ffffff"} /></Button>
-          <Button compact={true} onPress={duplicateDataPointWrapper}><Ionicons name="duplicate-outline" size={24} color={"#ffffff"} /></Button>
+          <Button compact={true} onPress={saveDataPointWrapper}>
+            <AntDesign name="check" size={24} color={"#ffffff"} />
+          </Button>
+          <Button compact={true} onPress={duplicateDataPointWrapper}>
+            <View style={{ position: 'relative' }}>
+            <AntDesign name="check" size={24} color={"#ffffff"} />
+            <View style={{ position: 'absolute', right: 0, bottom: 0 }}>
+            <AntDesign name="pluscircleo" size={12} color={"#ffffff"} />
+            </View>
+            </View>
+          </Button>
           {dataPointIndex !== undefined && (
-            <Button compact={true} onPress={deleteDataPointWrapper}><AntDesign name="delete" size={24} color={"#ffffff"} /></Button>
+            <Button compact={true} onPress={deleteDataPointWrapper}>
+              <AntDesign name="delete" size={24} color={"#ffffff"} />
+            </Button>
           )}
         </>
       ),
@@ -220,7 +231,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
 
         <View style={styles.inputContainer}>
           <TextInput
-            label="Note"
+            label="Note (optional)"
             value={noteInput}
             onChangeText={setNoteInput}
             mode="outlined"

@@ -28,7 +28,7 @@ const getStyles = (theme: any) => StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    paddingTop: 100,
+    paddingBottom: 100,
   },
   emptyStateText: {
     fontSize: 24,

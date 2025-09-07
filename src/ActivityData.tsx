@@ -194,15 +194,15 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
   return (
     <SafeAreaView style={[styles.container]} edges={["left", "right"]}>
       <SystemBars style={"light"} />
+      {sections.length === 0 ? (
+        <EmptyPagePlaceholder title="No data" subtext="Tap the + button to create a data point" />
+      ) : (
       <SectionList
         style={styles.scrollView}
         sections={sections}
         ItemSeparatorComponent={() => (blackTheme ? <Divider /> : null)}
         keyExtractor={([_, i]) => i.toString()}
         windowSize={11}
-        ListEmptyComponent={() => (
-          <EmptyPagePlaceholder title="No data" subtext="Tap the + button to create a data point" />
-        )}
         ListFooterComponent={() => (
           <View style={{ height: 50 }} />
         )}
@@ -213,6 +213,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
         )}
         renderItem={({ item: [dataPoint, i] }) => activity.unit.type === "none" ? renderValueless(dataPoint, i) : renderWithValue(dataPoint, i)}
       />
+      )}
     </SafeAreaView>
   );
 };

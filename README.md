@@ -31,16 +31,26 @@ Track your performance metrics and their progress over time. With custom statist
 
 ## Changelog
 
-### 2.0 (Planned)
+### 3.0.0 (Planned)
 
-- [x] Multiple calendars and graphs per activity
-- [x] Improved units (time units, climbing grades, etc.)
-- [ ] Reimplement graphs to use FlatList instead of VictoryNative
 - [ ] Bluetooth integration with Tindeq Progressor and other scales
-- [ ] JSON import validation
 - [ ] Tag groups
+- [ ] JSON import validation & data point sorting
+- [ ] Reimplement graphs to use FlatList instead of VictoryNative
 
-### 1.0
+### 2.1.0
+
+- Improve beginner user experience
+- Climbing grade unit picker
+- Stopwatch for time measurements
+
+### 2.0.0
+
+- Multiple calendars and graphs per activity
+- Introduce rich units and specialized value input
+  - New unit types: counter, time units, weight, climbing grades
+
+### 1.0.0
 
 - Activity management
 - Data point management
@@ -53,9 +63,9 @@ Track your performance metrics and their progress over time. With custom statist
 
 - [ ] Polish unit management
   - [x] Basic styling and usability
+  - [x] Climbing grade input
   - [ ] Use React navigation for the Unit selection dialog
   - [ ] Add more units (distance)
-  - [ ] Climbing grade input
   - [ ] New climbing grades (French, Font)
   - [ ] Automatic unit conversions
 - [ ] Animations for adding and removing calendars and graphs
