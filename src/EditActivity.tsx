@@ -34,6 +34,15 @@ const isSupersetOf = (set1: Set<string>, set2: Set<string>) => {
   return true;
 };
 
+const ColorButton = ({ color, onPress }: { color: number, onPress: () => void }) => {
+  const theme = getTheme(color);
+  return (
+    <Button compact={true} onPress={onPress} style={{ marginBottom: 10 }}>
+      <View style={{ width: 35, height: 35, borderRadius: 12, backgroundColor: theme.colors.primary, borderWidth: 1, borderColor: theme.colors.onBackground }} />
+    </Button>
+  );
+};
+
 const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   const { activityName } = route.params;
   const activities = useStore((state: any) => state.activities);
@@ -45,6 +54,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   const setUnit = useStore((state: any) => state.setUnit);
 
   const [showErrors, setShowErrors] = useState(false);
+  const [showTagDialogErrors, setShowTagDialogErrors] = useState(false);
 
   const [unitMode, setUnitMode] = useState<'no_value' | 'single' | 'multiple'>((() => {
     if (!activity) {
@@ -160,6 +170,13 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   const [tagState, setTagState] = useState<SetTag[]>(activity?.tags.map((t: Tag) => ({ oldTagName: t.name, ...t })) ?? []);
   const [tagDialogName, setTagDialogName] = useState("");
   const [tagDialogNameInput, setTagDialogNameInput] = useState("");
+  const tagDialogNameInputRef = useRef<InputWrapperRef>(undefined);
+  let tagDialogNameError: string | null = null;
+  if (tagDialogNameInput === "") {
+    tagDialogNameError = "Enter a tag name";
+  } else if (tagDialogNameInput !== tagDialogName && tagState.map((t: SetTag) => t.name).includes(tagDialogNameInput)) {
+    tagDialogNameError = "A tag with this name already exists";
+  }
   const [tagDialogColorInput, setTagDialogColorInput] = useState(Math.floor(Math.random() * palette.length));
   const [tagColorDialogVisible, setTagColorDialogVisible] = useState(false);
 
@@ -263,14 +280,6 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       return;
     }
 
-    if (unitMode === 'multiple' && multiUnitInput.findIndex((u) => u.name === "") !== -1) {
-      Alert.alert("Error", "All value names must be non-empty");
-      return;
-    } else if (unitMode === 'multiple' && new Set(multiUnitInput.map(u => u.name)).size !== multiUnitInput.length) {
-      Alert.alert("Error", "All value names must be unique");
-      return;
-    }
-
     let dataLossAlert = (callback: () => void) => {
       Alert.alert("Warning", "Some numerical data may be lost.\n\nConsider backing up your data.", [
         { text: 'Cancel', style: 'cancel' },
@@ -322,25 +331,32 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   }, [activityName, navigation, theme, activity, activityNameInput, activityDescriptionInput, singleUnitInput, selectedColor, tagState, multiUnitInput, unitMode]);
 
   const onUpdateTag = (action: "delete" | "update") => {
-    if (tagDialogNameInput === "") {
-      Alert.alert("Error", "Tag name cannot be empty");
-    } else {
-      if (action === "delete") {
-        setTagState(tagState.filter((t: SetTag) => t.name !== tagDialogName));
-      } else if (action === "update") {
-        const existingTagNames = tagState.map((t: SetTag) => t.name);
-        if (tagDialogNameInput !== tagDialogName && existingTagNames.includes(tagDialogNameInput)) {
-          Alert.alert("Error", "A tag with this name already exists");
-          return;
-        }
-        if (tagDialogName === "") {
-          setTagState([...tagState, { oldTagName: null, name: tagDialogNameInput, color: tagDialogColorInput }]);
-        } else {
-          setTagState(tagState.map((t: SetTag) => t.name === tagDialogName ? { ...t, name: tagDialogNameInput, color: tagDialogColorInput } : t));
-        }
-      }
-      setTagDialogVisible(false);
+    let hasError = false;
+    if (action !== "delete" && tagDialogNameError !== null) {
+      tagDialogNameInputRef?.current?.highlightError();
+      hasError = true;
     }
+    if (hasError) {
+      setShowTagDialogErrors(true);
+      return;
+    }
+
+
+    if (action === "delete") {
+      if (tagDialogName === "") {
+        // nothing to do, deleted only a temporary tag
+      } else {
+        setTagState(tagState.filter((t: SetTag) => t.name !== tagDialogName));
+      }
+    } else if (action === "update") {
+      if (tagDialogName === "") {
+        setTagState([...tagState, { oldTagName: null, name: tagDialogNameInput, color: tagDialogColorInput }]);
+      } else {
+        setTagState(tagState.map((t: SetTag) => t.name === tagDialogName ? { ...t, name: tagDialogNameInput, color: tagDialogColorInput } : t));
+      }
+    }
+    setTagDialogVisible(false);
+    setShowTagDialogErrors(false);
   }
 
   const handleColorSelect = (colorIx: number) => {
@@ -434,13 +450,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
                 mode="outlined"
               />
             </InputWrapper>
-            <Button
-              onPress={() => setColorDialogVisible(true)}
-              compact={true}
-              style={{ marginBottom: 10 }}
-            >
-              <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: palette[selectedColor], borderWidth: 1, borderColor: theme.colors.onBackground }} />
-            </Button>
+            <ColorButton color={selectedColor} onPress={() => setColorDialogVisible(true)} />
           </View>
         </View>
 
@@ -528,19 +538,13 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       </ScrollView>
       <Portal>
         {/* Tag dialog (existing) */}
-        <Dialog visible={tagDialogVisible} onDismiss={() => setTagDialogVisible(false)}>
+        <Dialog visible={tagDialogVisible} onDismiss={() => {setTagDialogVisible(false); setShowTagDialogErrors(false);}}>
           <Dialog.Content>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <View style={{ flex: 1 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <InputWrapper error={showTagDialogErrors ? tagDialogNameError : null} ref={tagDialogNameInputRef}>
                 <TextInput label="Tag Name" defaultValue={tagDialogNameInput} onChangeText={setTagDialogNameInput} mode="outlined" />
-              </View>
-              <Button
-                onPress={() => setTagColorDialogVisible(true)}
-                compact={true}
-                style={{ marginLeft: 10 }}
-              >
-                <View style={{ width: 30, height: 30, borderRadius: 12, backgroundColor: palette[tagDialogColorInput], borderWidth: 1, borderColor: theme.colors.onBackground }} />
-              </Button>
+              </InputWrapper>
+              <ColorButton color={tagDialogColorInput} onPress={() => setTagColorDialogVisible(true)} />
             </View>
           </Dialog.Content>
           <Dialog.Actions>
