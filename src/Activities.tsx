@@ -17,6 +17,7 @@ import { getTheme, getThemePalette, getThemeVariant, useWideDisplay } from "./Th
 import { SystemBars } from "react-native-edge-to-edge";
 import { SafeAreaView } from "react-native-safe-area-context";
 import EmptyPagePlaceholder from "./Components/EmptyPagePlaceholder";
+import Hint from "./Components/Hint";
 
 type ActivitiesProps = {
   navigation: any;
@@ -28,6 +29,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   const activities = useStore((state: any) => state.activities);
   const setActivities = useStore((state: any) => state.setActivities);
   const weekStart = useStore((state: any) => state.weekStart);
+  const dismissHint = useStore((state: any) => state.dismissHint);
 
   const palette = getThemePalette();
   const wideDisplay = useWideDisplay();
@@ -39,10 +41,16 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
       // title: activity.name,
       headerRight: () => (
         <View style={styles.headerRightContainer}>
-          <Button compact={true} onPress={() => navigation.navigate('EditActivity', { activityName: null })}>
+          <Button compact={true} onPress={() => {
+            dismissHint("hello");
+            navigation.navigate('EditActivity', { activityName: null });
+          }}>
             <AntDesign name="plus" size={24} color={theme.colors.onSurface} />
           </Button>
-          <Button compact={true} onPress={() => navigation.navigate('Settings')}>
+          <Button compact={true} onPress={() => {
+            dismissHint("hello");
+            navigation.navigate('Settings');
+          }}>
             <AntDesign name="setting" size={24} color={theme.colors.onSurface} />
           </Button>
         </View>
@@ -97,6 +105,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   return (
     <SafeAreaView style={[styles.container]} edges={["left", "right", "bottom"]}>
       <SystemBars style={themeVariant == 'light' ? "dark" : "light"} />
+      <Hint hint="hello" />
       {activities.length === 0 ? (
         <EmptyPagePlaceholder title="No activities" subtext="Tap the + button to create an activity" />
       ) : (
