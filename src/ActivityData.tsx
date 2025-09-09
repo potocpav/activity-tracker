@@ -17,7 +17,7 @@ import { getThemePalette, getThemeVariant } from "./Theme";
 import { getTheme } from "./Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
-import EmptyPagePlaceholder from "./EmptyPagePlaceholder";
+import EmptyPagePlaceholder from "./Components/EmptyPagePlaceholder";
 
 
 type ActivityDataProps = {

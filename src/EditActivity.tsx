@@ -1,11 +1,10 @@
-import React, { useState, FC } from "react";
+import React, { useState, FC, useRef } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   Alert,
-  Pressable,
 } from "react-native";
 import { Dialog, Portal, SegmentedButtons } from 'react-native-paper';
 import { ActivityType, SetTag, Tag, SubUnit, Unit } from "./StoreTypes";
@@ -13,13 +12,13 @@ import { TextInput, Button, Chip } from "react-native-paper";
 import useStore from "./Store";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import DraggableFlatList from 'react-native-draggable-flatlist';
-import ColorPicker from './ColorPicker';
+import ColorPicker from './Components/ColorPicker';
 import { getTheme, getThemePalette, getThemeVariant } from "./Theme";
 import { defaultCalendar, defaultGraph, defaultStats } from "./DefaultActivity";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
 import { UnitEditor } from "./UnitView";
-import EmptyPagePlaceholder from "./EmptyPagePlaceholder";
+import InputWrapper from "./Components/InputWrapper";
 
 type EditActivityProps = {
   navigation: any;
@@ -44,9 +43,20 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   const updateActivity = useStore((state: any) => state.updateActivity);
   const setTags = useStore((state: any) => state.setTags);
   const setUnit = useStore((state: any) => state.setUnit);
+
   const [showErrors, setShowErrors] = useState(false);
 
   const [activityNameInput, setActivityNameInput] = useState(activity?.name ?? "");
+  const activityNameInputRef = useRef<{ highlightError: () => void } | undefined>(undefined);
+
+  let activityNameError: string | null = null;
+  if (activityNameInput === "") {
+    activityNameError = "Enter activity name";
+  } else if (activities.find((a: ActivityType) => a.name === activityNameInput)) {
+    activityNameError = "An activity with this name already exists";
+  }
+
+  const [activityColorInput, setActivityColorInput] = useState(activity?.color ?? Math.floor(Math.random() * palette.length));
   const [selectedColor, setSelectedColor] = useState(
     activity === null ?
       Math.floor(Math.random() * palette.length) :
@@ -379,14 +389,14 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       <ScrollView style={styles.content}>
         <View style={styles.inputContainer}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <View style={{ flex: 1 }}>
+            <InputWrapper error={activityNameError} ref={activityNameInputRef}>
               <TextInput
                 label="Activity Name"
                 value={activityNameInput}
                 onChangeText={setActivityNameWrapper}
                 mode="outlined"
               />
-            </View>
+            </InputWrapper>
             <Button
               onPress={() => setColorDialogVisible(true)}
               compact={true}

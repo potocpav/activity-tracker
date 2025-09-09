@@ -16,7 +16,7 @@ import { renderStatValue } from "./ActivityUtil";
 import { getTheme, getThemePalette, getThemeVariant, useWideDisplay } from "./Theme";
 import { SystemBars } from "react-native-edge-to-edge";
 import { SafeAreaView } from "react-native-safe-area-context";
-import EmptyPagePlaceholder from "./EmptyPagePlaceholder";
+import EmptyPagePlaceholder from "./Components/EmptyPagePlaceholder";
 
 type ActivitiesProps = {
   navigation: any;

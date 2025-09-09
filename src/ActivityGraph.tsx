@@ -11,7 +11,7 @@ import { binTime, binTimeSeries, BinSize, extractValue } from "./ActivityUtil";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import TagMenu from "./TagMenu";
 import SubUnitMenu from "./SubUnitMenu";
-import DropdownMenu from "./DropdownMenu";
+import DropdownMenu from "./Components/DropdownMenu";
 import { getTheme } from "./Theme";
 
 const fontFamily = Platform.select({ default: "sans-serif" });

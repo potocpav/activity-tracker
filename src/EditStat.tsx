@@ -6,7 +6,7 @@ import { ActivityType, Stat, StatPeriod, StatValue, TagFilter, allStatPeriods, u
 import { valueToLabel, periodToLabel } from "./ActivityUtil";
 import TagMenu from "./TagMenu";
 import SubUnitMenu from "./SubUnitMenu";
-import DropdownMenu from "./DropdownMenu";
+import DropdownMenu from "./Components/DropdownMenu";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import StatView from "./StatView";
 import { getTheme, getThemeVariant } from "./Theme";

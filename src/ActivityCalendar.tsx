@@ -9,7 +9,7 @@ import {
 import useStore from "./Store";
 import { ActivityType, StatValue } from "./StoreTypes";
 import TagMenu from "./TagMenu";
-import Calendar from "./Calendar";
+import Calendar from "./Components/Calendar";
 import ValueMenu from "./ValueMenu";
 import SubUnitMenu from "./SubUnitMenu";
 import { getTheme } from "./Theme";

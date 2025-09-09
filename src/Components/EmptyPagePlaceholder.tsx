@@ -5,7 +5,7 @@ import {
   View,
 } from "react-native";
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { getTheme } from "./Theme";
+import { getTheme } from "../Theme";
 
 const ITEM_HEIGHT = 60;
 
