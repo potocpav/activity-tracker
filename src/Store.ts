@@ -33,14 +33,16 @@ import {
   DataPoint, 
   SetTag, 
   TagName, 
-  State 
+  State, 
+  HintType,
+  allHints
 } from "./StoreTypes";
 import { areUnitsEqual } from "./Unit";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { findZeroSlice, dayCmp } from "./ActivityUtil";
 
-export const version = 16;
+export const version = 18;
 
 export const migrate = (persisted: any, version: number) => {
   if (version < 6) {
@@ -106,6 +108,12 @@ export const migrate = (persisted: any, version: number) => {
       }
     });
   }
+  if (version < 17) {
+    persisted.activeHints = ["add_data_point"];
+  }
+  if (version < 18) {
+    persisted.showHints = true;
+  }
   return persisted
 };
 
@@ -115,6 +123,8 @@ export const partialize = (state: State) => ({
   theme: state.theme,
   blackBackground: state.blackBackground,
   weekStart: state.weekStart,
+  activeHints: state.activeHints,
+  showHints: state.showHints,
 });
 
 const useStore = create<State>()(
@@ -134,7 +144,26 @@ const useStore = create<State>()(
       theme: "system",
       blackBackground: false,
       weekStart: "monday",
-      
+      activeHints: ["add_data_point"],
+      showHints: true,
+
+      dismissHint: (hint: HintType) => {
+        set((state: any) => {
+          const activeHints = state.activeHints.filter((h: HintType) => h !== hint);
+          return { activeHints };
+        });
+      },
+
+      activateAllHints: () => {
+        set((state: any) => {
+          return { activeHints: allHints };
+        });
+      },
+
+      setShowHints: (showHints: boolean) => {
+        set({ showHints: showHints });
+      },
+
       setState: (state: State) => {
         set(state);
       },

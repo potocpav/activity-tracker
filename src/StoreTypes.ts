@@ -136,6 +136,12 @@ export type ActivityType = {
 
 export type WeekStart = "sunday" | "monday";
 
+export type HintType = "add_data_point";
+
+export const allHints : HintType[] = [
+  "add_data_point"
+];
+
 export type State = {
   // allDevices: Device[];
   // isConnected: boolean;
@@ -148,6 +154,9 @@ export type State = {
   theme: "system" | "light" | "dark";
   blackBackground: boolean;
   weekStart: WeekStart;
+
+  activeHints: HintType[];
+  showHints: boolean;
 /*
   requestPermissions: any;
   connectToDevice: any;

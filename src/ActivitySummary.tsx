@@ -1,5 +1,5 @@
-import React, { Fragment } from "react";
-import { ScrollView, StyleSheet, Text, View, Pressable } from "react-native";
+import React, { Fragment, useLayoutEffect } from "react";
+import { ScrollView, StyleSheet, Text, View, Pressable, useWindowDimensions } from "react-native";
 import { Divider } from 'react-native-paper';
 import useStore from "./Store";
 import { ActivityType, CalendarProps, GraphProps, Stat } from "./StoreTypes";
@@ -20,6 +20,9 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
   const palette = getThemePalette();
   const wideDisplay = useWideDisplay();
   const styles = getStyles(theme);
+  const overviewRef = React.useRef<View>(null);
+  const scrollViewRef = React.useRef<View>(null);
+  const dimensions = useWindowDimensions();
 
   // Value to display in dialog
 
@@ -35,11 +38,10 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
     period: "last_active_day",
     tagFilters: [],
   };
-  
+
   return (
     <View style={styles.container}>
       <ScrollView>
-      <Hint hint="This activity has no data. Add a data point by clicking the + button above." />
         <Fragment>
           <View style={styles.header}>
             {activity.description && (

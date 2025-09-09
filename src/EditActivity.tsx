@@ -6,7 +6,7 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
-import { Dialog, Portal, SegmentedButtons } from 'react-native-paper';
+import { Dialog, Portal, SegmentedButtons, MD3Theme } from 'react-native-paper';
 import { ActivityType, SetTag, Tag, SubUnit, Unit } from "./StoreTypes";
 import { TextInput, Button, Chip } from "react-native-paper";
 import useStore from "./Store";
@@ -105,7 +105,8 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       Math.floor(Math.random() * palette.length) :
       activity.color
   );
-  const theme = getTheme(selectedColor);
+  const theme = getTheme();
+  const styles = getStyles(theme);
   const [activityDescriptionInput, setActivityDescriptionInput] = useState(activity?.description ?? "");
 
 
@@ -189,7 +190,6 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
         newUnit = { type: "none" };
         break;
       case 'single':
-        console.log("singleUnitInput", singleUnitInput);
         if (singleUnitInput === null) {
           Alert.alert("Error", "Single unit cannot be null");
           return;
@@ -587,7 +587,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: MD3Theme) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -596,6 +596,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   header: {
+    color: theme.colors.onSurfaceVariant,
     fontSize: 16,
     marginBottom: 5,
   },

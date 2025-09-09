@@ -4,6 +4,7 @@ import {
   Text,
   View,
   Alert,
+  useWindowDimensions,
 } from "react-native";
 import { Menu, Button } from 'react-native-paper';
 import useStore from "./Store";
@@ -15,6 +16,7 @@ import * as Sharing from 'expo-sharing';
 import { getTheme, getThemeVariant } from "./Theme";
 import { SystemBars } from "react-native-edge-to-edge";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Hint from "./Components/Hint";
 
 type ActivityProps = {
   navigation: any;
@@ -61,6 +63,9 @@ const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ 
   const [menuVisible, setMenuVisible] = React.useState(false);
   const duplicateActivity = useStore((state: any) => state.duplicateActivity);
   const deleteActivity = useStore((state: any) => state.deleteActivity);
+  const dismissHint = useStore((state: any) => state.dismissHint);
+
+  const _dimensions = useWindowDimensions(); // must be present to recalculate anchor positions for hints
 
   if (!activity) {
     return (
@@ -157,7 +162,10 @@ const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ 
       headerRight: () => (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Button compact={true}
-            onPress={() => navigation.navigate("EditDataPoint", { activityName, newDataPoint: true })}>
+            onPress={() => {
+              dismissHint("add_data_point");
+              navigation.navigate("EditDataPoint", { activityName, newDataPoint: true });
+            }}>
             <AntDesign name="plus" size={24} color={"#ffffff"} />
           </Button>
           <Button compact={true} onPress={() => navigation.navigate("EditActivity", { activityName })}>
@@ -193,6 +201,7 @@ const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ 
           <Menu.Item onPress={() => { setMenuVisible(false); deleteActivityWrapper() }} title="Delete" />
         </Menu>
       </View>
+      <Hint hint="add_data_point" arrowPos={0.7} />
       <ActivitySummary activityName={activityName} navigation={navigation} />
     </SafeAreaView>
   );

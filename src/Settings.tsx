@@ -8,6 +8,8 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as Sharing from 'expo-sharing';
 import { getTheme } from './Theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AntDesign from '@expo/vector-icons/AntDesign';
+import { allHints } from './StoreTypes';
 
 const Settings = () => {
   const theme = getTheme();
@@ -19,6 +21,10 @@ const Settings = () => {
   const setWeekStart = useStore((state: any) => state.setWeekStart);
   const state = useStore((state: any) => state);
   const setState = useStore((state: any) => state.setState);
+  const activeHints = useStore((state: any) => state.activeHints);
+  const showHints = useStore((state: any) => state.showHints);
+  const setShowHints = useStore((state: any) => state.setShowHints);
+  const activateAllHints = useStore((state: any) => state.activateAllHints);
 
   const openThemeSelection = () => {
     (navigation as any).navigate('ThemeSelection', { currentTheme: themeState });
@@ -69,7 +75,7 @@ const Settings = () => {
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={["left", "right"]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={["left", "right", "bottom"]}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <List.Section>
           <List.Subheader>Interface</List.Subheader>
@@ -117,7 +123,31 @@ const Settings = () => {
         </List.Section>
 
         <List.Section>
-          <List.Subheader>Links</List.Subheader>
+          <List.Subheader>Help</List.Subheader>
+          <List.Item
+            title="Show hints"
+            description="Show hints to help you use the app."
+            onPress={() => setShowHints(!showHints)}
+            left={(props) => <List.Icon {...props} icon="lightbulb" />}
+            right={() => (
+              <Switch
+                value={showHints}
+                onValueChange={() => setShowHints(!showHints)}
+              />
+            )}
+          />
+          <List.Item
+            title="Activate all hints"
+            description="Re-activate dismissed hints."
+            onPress={activateAllHints}
+            left={(props) => <List.Icon {...props} icon="lightbulb-group" />}
+            right={(props) => (
+              activeHints.length === allHints.length ? (
+                <List.Icon {...props} icon="check" />
+                // <AntDesign name="check" size={24} color={theme.colors.primary} />
+              ) : null
+            )}
+          />
           <List.Item
             title="Visit us on GitHub"
             description="View source code and contribute"

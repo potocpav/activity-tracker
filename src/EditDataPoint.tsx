@@ -8,7 +8,7 @@ import {
   ToastAndroid,
   Pressable,
 } from "react-native";
-import { Chip, TextInput, Button } from 'react-native-paper';
+import { Chip, TextInput, Button, MD3Theme } from 'react-native-paper';
 import { ActivityType, dateToDateList, DataPoint, dateListToDate, SubUnit, DateList } from "./StoreTypes";
 import useStore from "./Store";
 import { DatePickerModal } from "react-native-paper-dates";
@@ -32,6 +32,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   const activities = useStore((state: any) => state.activities);
   const activity: ActivityType = activities.find((a: ActivityType) => a.name === activityName);
   const theme = getTheme(activity.color);
+  const styles = getStyles(theme);
   const themeVariant = getThemeVariant();
   const palette = getThemePalette();
   const [datePickerVisible, setDatePickerVisible] = useState(false);
@@ -266,7 +267,8 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
           />
         </InputWrapper>
 
-        <InputWrapper error={showErrors ? emptyValueError : null} ref={valueRef}>
+        {activity.unit.type !== "none" && (
+          <InputWrapper error={showErrors ? emptyValueError : null} ref={valueRef}>
           <Text style={styles.header}>{activity.unit.type === "single" ? "Value:" : "Values:"}</Text>
 
         <View>
@@ -287,11 +289,11 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
           ))}
         </View>
         </InputWrapper>
+        )}
 
-        <View style={{ gap: 10 }}>
+        {activity.tags.length > 0 && (<View style={{ gap: 10 }}>
           <Text style={styles.header}>Tags:</Text>
           <View style={styles.tagsContainer}>
-
             {activity.tags.map((tag: any, index: number) => (
               <Chip
                 key={tag.name}
@@ -310,7 +312,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
               </Chip>
             ))}
           </View>
-        </View>
+        </View>)}
         </View>
       </ScrollView>
 
@@ -334,7 +336,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: MD3Theme) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -348,6 +350,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   header: {
+    color: theme.colors.onSurfaceVariant,
     fontSize: 16,
   },
 });
