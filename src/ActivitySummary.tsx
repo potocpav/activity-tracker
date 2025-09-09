@@ -10,6 +10,7 @@ import ActivityCalendar from "./ActivityCalendar";
 import StatView from "./StatView";
 import { getTheme, getThemePalette, useWideDisplay } from "./Theme";
 import Animated, { LinearTransition } from "react-native-reanimated";
+import Hint from "./Components/Hint";
 
 const ActivitySummary = ({ navigation, activityName }: { navigation: any, activityName: string }) => {
   const activities = useStore((state: any) => state.activities);
@@ -38,6 +39,7 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
   return (
     <View style={styles.container}>
       <ScrollView>
+      <Hint hint="This activity has no data. Add a data point by clicking the + button above." />
         <Fragment>
           <View style={styles.header}>
             {activity.description && (
