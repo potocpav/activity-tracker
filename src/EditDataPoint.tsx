@@ -1,4 +1,4 @@
-import React, { useState, FC } from "react";
+import React, { useState, FC, useRef } from "react";
 import {
   View,
   Text,
@@ -9,18 +9,18 @@ import {
   Pressable,
 } from "react-native";
 import { Chip, TextInput, Button } from 'react-native-paper';
-import { ActivityType, dateToDateList, DataPoint, dateListToDate, SubUnit } from "./StoreTypes";
+import { ActivityType, dateToDateList, DataPoint, dateListToDate, SubUnit, DateList } from "./StoreTypes";
 import useStore from "./Store";
 import { DatePickerModal } from "react-native-paper-dates";
 import { CalendarDate } from "react-native-paper-dates/lib/typescript/Date/Calendar";
 import AntDesign from '@expo/vector-icons/AntDesign';
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { cmpDateList, formatDate } from "./ActivityUtil";
 import { getTheme, getThemePalette, getThemeVariant } from "./Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
 import { numberToString, stringToNumber, renderUnit } from "./Unit";
 import { ValueEditor } from "./UnitView";
+import InputWrapper, { InputWrapperRef } from "./Components/InputWrapper";
 
 type EditDataPointProps = {
   navigation: any;
@@ -51,13 +51,29 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   }
   
   const dateTime = dateListToDate(dataPoint.date);
+  const today = dateToDateList(new Date());
+  const [showErrors, setShowErrors] = useState(false);
 
   const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);
   const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
-  const [inputDate, setInputDate] = useState<CalendarDate | undefined>(dateTime);
+  const [inputDate, setInputDate] = useState<CalendarDate>(dateTime);
   const [noteInput, setNoteInput] = useState<string>(dataPoint.note ?? "");
 
-  let inputValues: { subUnit: {name: string | null, unit: SubUnit}, value: [string, (text: string) => void] }[];
+  const dateInputRef = useRef<InputWrapperRef>(undefined);
+  let dateError: string | null = null;
+  let inputDateList: DateList | undefined = inputDate ? dateToDateList(inputDate) : undefined;
+  if (inputDateList === undefined) {
+    dateError = "Date is required";
+  } else if (cmpDateList(inputDateList, today) > 0) {
+    dateError = "Date cannot be in the future";
+  } else if (cmpDateList(inputDateList, [2000, 1, 1]) < 0) {
+    dateError = "Date must be from this millenium";
+  }
+
+  let inputValues: { subUnit: 
+    {name: string | null, unit: SubUnit}, 
+    value: [string, (text: string) => void]
+  }[];
     
   switch (activity.unit.type) {
     case 'none':
@@ -77,6 +93,27 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
       }));
       break;
   }
+
+  let inputValueRefs: React.RefObject<InputWrapperRef>[] = inputValues.map((v) => useRef<InputWrapperRef>(undefined));
+  let inputValueErrors: (string | null)[] = inputValues.map((v) => {
+    let error: string | null = null;
+    let numValue = stringToNumber(v.value[0], v.subUnit.unit);
+    if (v.value[0] !== "" && (numValue === null || isNaN(numValue))) {
+      error = "Enter a valid value";
+    }
+    return error;
+  });
+
+  let valueRef = useRef<InputWrapperRef>(undefined);
+  let emptyValueError = null;
+  if (activity.unit.type !== "none" && !inputValues.find((v) => v.value[0] !== "")) {
+    if (activity.unit.type === "single") {
+      emptyValueError = "Enter a value";
+    } else {
+      emptyValueError = "Enter at least one value";
+    }
+  }
+
   const [inputTags, setInputTags] = useState<string[]>(dataPoint.tags ?? tags ?? []);
 
   const toggleInputTag = (tag: string) => {
@@ -89,10 +126,33 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   };
 
   const saveDataPointWrapper = () => {
-    var newValue: any;
-    var hasNonEmptyValue = false;
-    var hasInvalidValue = false;
+    // check for errors
+    let hasError = false;
 
+    if (dateError !== null) {
+      dateInputRef?.current?.highlightError();
+      hasError = true;
+    }
+    if (emptyValueError !== null) {
+      valueRef?.current?.highlightError();
+      hasError = true;
+    }
+    if (inputValueErrors.find((e) => e !== null) !== undefined) {
+      inputValueRefs.forEach((ref, idx) => {
+        if (inputValueErrors[idx] !== null) { 
+          ref.current?.highlightError();
+        }
+      });
+      hasError = true;
+    }
+
+    if (hasError) {
+      setShowErrors(true);
+      return;
+    }
+
+    // all is OK, save the data point
+    var newValue: any;
     switch (activity.unit.type) {
       case "none":
         newValue = undefined;
@@ -101,11 +161,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
         if (inputValues[0].value[0] === "") {
           // empty value, do not set the sub-value to anything
         } else {
-          hasNonEmptyValue = true;
           newValue = stringToNumber(inputValues[0].value[0], activity.unit.unit);
-          if (newValue === null || isNaN(newValue)) {
-            hasInvalidValue = true;
-          }
         }
         break;
       case "multiple":
@@ -114,48 +170,26 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
           if (inputValue.value[0] === "") {
             // empty value, do not set the sub-value to anything
           } else {
-            hasNonEmptyValue = true;
             const value = stringToNumber(inputValue.value[0], inputValue.subUnit.unit);
-            if (value === null || isNaN(value)) {
-              hasInvalidValue = true;
-              break;
+            if (inputValue.subUnit.name !== null) {
+              newValue[inputValue.subUnit.name] = value;
             } else {
-              if (inputValue.subUnit.name !== null) {
-                newValue[inputValue.subUnit.name] = value;
-              } else {
-                console.error("Sub-unit name is null");
-              }
+              console.error("Sub-unit name is null");
             }
           }
         }
         break;
     }
 
-    if (!inputDate) {
-      Alert.alert("Date is required");
-    } else if (hasInvalidValue) {
-      Alert.alert("All values must be valid");
-    } else if (activity.unit.type !== "none" && !hasNonEmptyValue) {
-      Alert.alert("Value is required");
-    } else {
-      const newDate = dateToDateList(inputDate);
-      const today = dateToDateList(new Date());
-      if (cmpDateList(newDate, today) > 0) {
-        Alert.alert("Date cannot be in the future");
-      } else if (cmpDateList(newDate, [2000, 1, 1]) < 0) {
-        Alert.alert("Date must be from this millenium");
-      } else {
-        const note = noteInput === "" ? {} : { "note": noteInput };
-        const newIndex = updateActivityDataPoint(activityName, newDataPoint ? undefined : dataPointIndex, {
-          date: newDate,
-          ...(newValue === undefined ? {} : {value: newValue}),
-          ...(inputTags.length > 0 ? { tags: inputTags } : {}),
-          ...note,
-        });
-        navigation.goBack();
-        return newIndex;
-      }
-    }
+    const note = noteInput === "" ? {} : { "note": noteInput };
+    const newIndex = updateActivityDataPoint(activityName, newDataPoint ? undefined : dataPointIndex, {
+      date: inputDateList,
+      ...(newValue === undefined ? {} : {value: newValue}),
+      ...(inputTags.length > 0 ? { tags: inputTags } : {}),
+      ...note,
+    });
+    navigation.goBack();
+    return newIndex;
   };
 
   const duplicateDataPointWrapper = () => {
@@ -196,7 +230,9 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surface }]} edges={["left", "right"]}>
       <SystemBars style={"light"} />
       <ScrollView style={styles.content}>
-        <View style={styles.pickerContainer}>
+        <View style={{ gap: 10 }}>
+          <InputWrapper error={showErrors ? dateError : null} ref={dateInputRef}>
+          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
           <Pressable onPress={() => { setDatePickerVisible(true); }}
           style={({pressed}) => [
             {
@@ -211,16 +247,38 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
               label="Date"
               editable={false}
               value={inputDate ? inputDate.toLocaleDateString(locale) : "Select date"}
-              right={<TextInput.Icon icon="calendar" />}
             />
           </Pressable>
-        </View>
+          <Button compact={true} onPress={() => { setDatePickerVisible(true); }}>
+            <View>
+              <AntDesign name="calendar" size={24} color={theme.colors.onSurface} />
+            </View>
+          </Button>
+          </View>
+          </InputWrapper>
 
-        <View style={styles.inputContainer}>
-          {inputValues.map((inputValue: { subUnit: {name: string | null, unit: SubUnit}, value: [string, (text: string) => void] }) => (
+        <InputWrapper>
+          <TextInput
+            label="Note (optional)"
+            value={noteInput}
+            onChangeText={setNoteInput}
+            mode="outlined"
+          />
+        </InputWrapper>
+
+        <InputWrapper error={showErrors ? emptyValueError : null} ref={valueRef}>
+          <Text style={styles.header}>{activity.unit.type === "single" ? "Value:" : "Values:"}</Text>
+
+        <View>
+          {inputValues.map((inputValue: { 
+            subUnit: {name: string | null, unit: SubUnit}, 
+            value: [string, (text: string) => void] 
+          }, index: number) => (
             <ValueEditor 
               key={inputValue.subUnit.name ?? "value"}
               unit={inputValue.subUnit.unit}
+              error={showErrors ? inputValueErrors[index] : null}
+              inputWrapperRef={inputValueRefs[index]}
               label={inputValue.subUnit.name === null ? renderUnit(inputValue.subUnit.unit) : `${inputValue.subUnit.name} - ${renderUnit(inputValue.subUnit.unit)}`} // TODO: better label
               value={inputValue.value[0]} 
               onChange={inputValue.value[1]} 
@@ -228,17 +286,10 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
             />
           ))}
         </View>
+        </InputWrapper>
 
-        <View style={styles.inputContainer}>
-          <TextInput
-            label="Note (optional)"
-            value={noteInput}
-            onChangeText={setNoteInput}
-            mode="outlined"
-          />
-        </View>
-
-        <View style={styles.inputContainer}>
+        <View style={{ gap: 10 }}>
+          <Text style={styles.header}>Tags:</Text>
           <View style={styles.tagsContainer}>
 
             {activity.tags.map((tag: any, index: number) => (
@@ -260,7 +311,9 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
             ))}
           </View>
         </View>
+        </View>
       </ScrollView>
+
       <DatePickerModal
           mode="single"
           endYear={new Date().getFullYear()}
@@ -286,18 +339,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
+    marginTop: 10,
     flex: 1,
-    padding: 20,
-  },
-  pickerContainer: {
-    marginBottom: 20,
-  },
-  inputContainer: {
-    marginBottom: 20,
+    padding: 10,
   },
   tagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+  },
+  header: {
+    fontSize: 16,
   },
 });
 

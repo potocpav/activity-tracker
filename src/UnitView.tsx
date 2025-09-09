@@ -6,6 +6,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import { getTheme, useWideDisplay } from "./Theme";
 import { renderUnit, mapStringValue, uiaaGrades, vScaleGrades, numberToString, renderShortFormValue, stringToNumber } from "./Unit";
 import Animated, { LinearTransition, FadeInUp, FadeOutUp } from "react-native-reanimated";
+import InputWrapper, { InputWrapperRef } from "./Components/InputWrapper";
 
 type ChosenUnit = "number" | "count" | "weight_kg" | "weight_lb" | "time_seconds" | "time_hours" | "climbing_grade_uiaa" | "climbing_grade_french" | "climbing_grade_font" | "climbing_grade_v_scale";
 
@@ -169,12 +170,16 @@ export const ValueEditor = ({
   unit,
   label,
   value,
+  error,
+  inputWrapperRef,
   onChange,
   setSubmitDisabled, // whether to disable submitting the value
 }: {
   unit: SubUnit,
   label: string,
   value: string,
+  error: string | null,
+  inputWrapperRef: React.RefObject<InputWrapperRef>,
   onChange: (value: string) => void,
   setSubmitDisabled: (disabled: boolean) => void,
 }) => {
@@ -271,6 +276,7 @@ export const ValueEditor = ({
   }
 
   return (
+    <InputWrapper error={error} ref={inputWrapperRef}>
     <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, marginVertical: 4 }}>
       {(() => {
         switch (unit.type) {
@@ -286,10 +292,14 @@ export const ValueEditor = ({
                   mode="outlined"
                 />
                 <Button onPress={() => resetTimer()} compact={true} style={{ marginTop: 4 }} mode="outlined">
-                  <AntDesign name={"reload1"} size={20} color={theme.colors.onSurface} />
+                  <View>
+                    <AntDesign name={"reload1"} size={22} color={theme.colors.onSurface} />
+                  </View>
                 </Button>
-                <Button onPress={() => toggleTimer(unit.unit)} compact={false} style={{ marginTop: 4 }} mode="outlined">
-                  <AntDesign name={timerActive ? "pausecircleo" : "playcircleo"} size={20} color={theme.colors.onSurface} />
+                <Button onPress={() => toggleTimer(unit.unit)} compact={true} style={{ marginTop: 4 }} mode="outlined">
+                  <View>
+                    <AntDesign name={timerActive ? "pausecircleo" : "playcircleo"} size={22} color={theme.colors.onSurface} />
+                  </View>
                 </Button>
               </>
             );
@@ -305,10 +315,14 @@ export const ValueEditor = ({
                   mode="outlined"
                 />
                 <Button onPress={() => onChange(mapStringValue(unit, value, v => v - 1))} compact={true} mode="outlined" style={{ marginTop: 4 }}>
+                  <View>
                   <AntDesign name="minus" size={24} color={theme.colors.onSurface} />
+                  </View>
                 </Button>
                 <Button onPress={() => onChange(mapStringValue(unit, value, v => v + 1))} compact={true} mode="outlined" style={{ marginTop: 4 }}>
-                  <AntDesign name="plus" size={24} color={theme.colors.onSurface} />
+                  <View>
+                    <AntDesign name="plus" size={22} color={theme.colors.onSurface} />
+                  </View>
                 </Button>
               </>
             )
@@ -341,5 +355,6 @@ export const ValueEditor = ({
         }
       })()}
     </View>
+    </InputWrapper>
   );
 }
