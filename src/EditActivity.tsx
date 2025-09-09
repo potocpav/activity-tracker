@@ -18,7 +18,7 @@ import { defaultCalendar, defaultGraph, defaultStats } from "./DefaultActivity";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
 import { UnitEditor } from "./UnitView";
-import InputWrapper from "./Components/InputWrapper";
+import InputWrapper, { InputWrapperRef } from "./Components/InputWrapper";
 
 type EditActivityProps = {
   navigation: any;
@@ -46,24 +46,6 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
 
   const [showErrors, setShowErrors] = useState(false);
 
-  const [activityNameInput, setActivityNameInput] = useState(activity?.name ?? "");
-  const activityNameInputRef = useRef<{ highlightError: () => void } | undefined>(undefined);
-
-  let activityNameError: string | null = null;
-  if (activityNameInput === "") {
-    activityNameError = "Enter activity name";
-  } else if (activities.find((a: ActivityType) => a.name === activityNameInput)) {
-    activityNameError = "An activity with this name already exists";
-  }
-
-  const [activityColorInput, setActivityColorInput] = useState(activity?.color ?? Math.floor(Math.random() * palette.length));
-  const [selectedColor, setSelectedColor] = useState(
-    activity === null ?
-      Math.floor(Math.random() * palette.length) :
-      activity.color
-  );
-  const theme = getTheme(selectedColor);
-  const [activityDescriptionInput, setActivityDescriptionInput] = useState(activity?.description ?? "");
   const [unitMode, setUnitMode] = useState<'no_value' | 'single' | 'multiple'>((() => {
     if (!activity) {
       return 'single';
@@ -78,6 +60,16 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       }
     }
   })());
+
+  const [activityNameInput, setActivityNameInput] = useState(activity?.name ?? "");
+  const activityNameInputRef = useRef<InputWrapperRef>(undefined);
+  let activityNameError: string | null = null;
+  if (activityNameInput === "") {
+    activityNameError = "Enter activity name";
+  } else if ((activity === null || activityNameInput !== activity.name) && activities.find((a: ActivityType) => a.name === activityNameInput)) {
+    activityNameError = "An activity with this name already exists";
+  }
+
   const [singleUnitInput, setSingleUnitInput] = useState<SubUnit | null>((() => {
     if (!activity) {
       return null;
@@ -92,6 +84,20 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       }
     }
   })());
+  const singleUnitInputRef = useRef<InputWrapperRef>(undefined);
+  let singleUnitInputError: string | null = null;
+  if (unitMode === 'single' && singleUnitInput === null) {
+    singleUnitInputError = "Select a unit";
+  }
+
+  const [selectedColor, setSelectedColor] = useState(
+    activity === null ?
+      Math.floor(Math.random() * palette.length) :
+      activity.color
+  );
+  const theme = getTheme(selectedColor);
+  const [activityDescriptionInput, setActivityDescriptionInput] = useState(activity?.description ?? "");
+
 
   // Missing oldName represents there is no old name
   // null oldName represents that the old value comes from a single-valued unit
@@ -133,6 +139,22 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       }
     }
   })());
+  
+  const multiUnitInputRef: { name: React.RefObject<InputWrapperRef>, unit: React.RefObject<InputWrapperRef> }[] = 
+    multiUnitInput.map((_) => ({ name: useRef<InputWrapperRef>(undefined), unit: useRef<InputWrapperRef>(undefined) }));
+  const multiUnitInputError: { name: string | null, unit: string | null }[] = multiUnitInput.map((val, idx) => {
+    if (unitMode === 'multiple') {
+    return { 
+      name: val.name === "" ? "Enter a name" : multiUnitInput.findIndex((u) => u.name === val.name) !== idx ? "Name must be unique" : null, 
+      unit: val.unit === null ? "Select a unit" : null,
+    }
+    } else {
+      return { 
+        name: null, 
+        unit: null 
+      }
+    };
+  });
 
   const [tagDialogVisible, setTagDialogVisible] = useState(false);
   const [tagState, setTagState] = useState<SetTag[]>(activity?.tags.map((t: Tag) => ({ oldTagName: t.name, ...t })) ?? []);
@@ -214,61 +236,76 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   };
 
   const saveActivityWrapper = () => {
+    // check for errors
+    let hasError = false;
+    if (activityNameError !== null) {
+      activityNameInputRef?.current?.highlightError();
+      hasError = true;
+    }
+    if (singleUnitInputError !== null) {
+      singleUnitInputRef?.current?.highlightError();
+      hasError = true;
+    }
+    if (multiUnitInputError.find((e) => e.name !== null || e.unit !== null) !== undefined) {
+      multiUnitInputError.forEach((e, idx) => {
+        if (e.name !== null) {
+          multiUnitInputRef[idx].name.current?.highlightError();
+        }
+        if (e.unit !== null) {
+          multiUnitInputRef[idx].unit.current?.highlightError();
+        }
+      });
+      hasError = true;
+    }
+    
+    if (hasError) {
+      setShowErrors(true);
+      return;
+    }
 
-    if (activityNameInput === "") {
-      Alert.alert("Error", "Activity name cannot be empty");
-    } else if ((activity === null || activityNameInput !== activity.name) && activities.find((a: ActivityType) => a.name === activityNameInput)) {
-      Alert.alert("Error", "An activity with this name already exists");
-    } else {
-      if (unitMode === 'multiple' && multiUnitInput.findIndex((u) => u.name === "") !== -1) {
-        Alert.alert("Error", "All value names must be non-empty");
-        return;
-      } else if (unitMode === 'multiple' && new Set(multiUnitInput.map(u => u.name)).size !== multiUnitInput.length) {
-        Alert.alert("Error", "All value names must be unique");
-        return;
-      }
+    if (unitMode === 'multiple' && multiUnitInput.findIndex((u) => u.name === "") !== -1) {
+      Alert.alert("Error", "All value names must be non-empty");
+      return;
+    } else if (unitMode === 'multiple' && new Set(multiUnitInput.map(u => u.name)).size !== multiUnitInput.length) {
+      Alert.alert("Error", "All value names must be unique");
+      return;
+    }
 
-      let dataLossAlert = (callback: () => void) => {
-        Alert.alert("Warning", "Some numerical data may be lost.\n\nConsider backing up your data.", [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Continue', onPress: () => {
-              callback();
-            }
-          },
-        ]);
-      };
-      // data loss?
-      if (activity !== null && activity.dataPoints.length > 0) {
-        if (unitMode === 'no_value' && activity.unit.type !== 'none') {
-          dataLossAlert(saveActivity);
-        } else if (unitMode === 'single' && activity.unit.type === 'multiple') {
-          dataLossAlert(saveActivity);
-        } else if (unitMode === 'multiple' && activity.unit.type === 'single') {
-          if (oldUnitMap.findIndex((u) => u.oldName === null) === -1) {
-            dataLossAlert(saveActivity);
-          } else {
-            saveActivity();
+    let dataLossAlert = (callback: () => void) => {
+      Alert.alert("Warning", "Some numerical data may be lost.\n\nConsider backing up your data.", [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Continue', onPress: () => {
+            callback();
           }
-        } else if (unitMode === 'multiple' && activity.unit.type === 'multiple') {
-          let oldNames: any[] = oldUnitMap.map((u) => u.oldName)
-          if (isSupersetOf(new Set(oldNames), new Set(activity.unit.values.map((u: { name: string, unit: SubUnit }) => u.name)))) {
-            saveActivity();
-          } else {
-            dataLossAlert(saveActivity);
-          }
+        },
+      ]);
+    };
+    // data loss?
+    if (activity !== null && activity.dataPoints.length > 0) {
+      if (unitMode === 'no_value' && activity.unit.type !== 'none') {
+        dataLossAlert(saveActivity);
+      } else if (unitMode === 'single' && activity.unit.type === 'multiple') {
+        dataLossAlert(saveActivity);
+      } else if (unitMode === 'multiple' && activity.unit.type === 'single') {
+        if (oldUnitMap.findIndex((u) => u.oldName === null) === -1) {
+          dataLossAlert(saveActivity);
         } else {
           saveActivity();
+        }
+      } else if (unitMode === 'multiple' && activity.unit.type === 'multiple') {
+        let oldNames: any[] = oldUnitMap.map((u) => u.oldName)
+        if (isSupersetOf(new Set(oldNames), new Set(activity.unit.values.map((u: { name: string, unit: SubUnit }) => u.name)))) {
+          saveActivity();
+        } else {
+          dataLossAlert(saveActivity);
         }
       } else {
         saveActivity();
       }
+    } else {
+      saveActivity();
     }
-  }
-
-  const setActivityNameWrapper = (text: string) => {
-    setActivityNameInput(text);
-    setShowErrors(true);
   }
 
   React.useEffect(() => {
@@ -323,18 +360,18 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   );
 
   const editSingleValue = () => (
-    <View style={styles.inputContainer}>
+    <InputWrapper error={showErrors ? singleUnitInputError : null} ref={singleUnitInputRef}>
       <UnitEditor unit={singleUnitInput} onChange={(unit: SubUnit | null) => {
         setSingleUnitInput(unit);
       }} />
-    </View>
+    </InputWrapper>
   );
 
   const editMultipleValues = () => (
     <>
       {multiUnitInput.map((val, idx) => (
-        <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 4 }}>
-          <View style={{ flex: 1, marginRight: 8 }}>
+        <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <InputWrapper error={showErrors ? multiUnitInputError[idx].name : null} ref={multiUnitInputRef[idx].name}>
             <TextInput
               label="Name"
               value={val.name}
@@ -346,15 +383,15 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
               }}
               mode="outlined"
             />
-          </View>
-          <View style={{ flex: 2 }}>
+          </InputWrapper>
+          <InputWrapper error={showErrors ? multiUnitInputError[idx].unit : null} ref={multiUnitInputRef[idx].unit}>
             <UnitEditor unit={val.unit} onChange={(unit: SubUnit | null) => {
               // Update unit
               const newVals = [...multiUnitInput];
               newVals[idx].unit = unit;
               setMultiUnitInput(newVals);
             }} />
-          </View>
+          </InputWrapper>
           <View>
             {multiUnitInput.length > 2 && (
               <Button compact={true} onPress={() => {
@@ -388,21 +425,21 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       <SystemBars style={"light"} />
       <ScrollView style={styles.content}>
         <View style={styles.inputContainer}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <InputWrapper error={activityNameError} ref={activityNameInputRef}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <InputWrapper error={showErrors ? activityNameError : null} ref={activityNameInputRef}>
               <TextInput
                 label="Activity Name"
                 value={activityNameInput}
-                onChangeText={setActivityNameWrapper}
+                onChangeText={setActivityNameInput}
                 mode="outlined"
               />
             </InputWrapper>
             <Button
               onPress={() => setColorDialogVisible(true)}
               compact={true}
-              style={{ marginLeft: 10 }}
+              style={{ marginBottom: 10 }}
             >
-              <View style={{ width: 30, height: 30, borderRadius: 12, backgroundColor: palette[selectedColor], borderWidth: 1, borderColor: theme.colors.onBackground }} />
+              <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: palette[selectedColor], borderWidth: 1, borderColor: theme.colors.onBackground }} />
             </Button>
           </View>
         </View>
