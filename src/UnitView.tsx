@@ -8,7 +8,7 @@ import { renderUnit, mapStringValue, uiaaGrades, vScaleGrades, numberToString, r
 import Animated, { LinearTransition, FadeInUp, FadeOutUp } from "react-native-reanimated";
 import InputWrapper, { InputWrapperRef } from "./Components/InputWrapper";
 
-type ChosenUnit = "number" | "count" | "weight_kg" | "weight_lb" | "time_seconds" | "time_hours" | "climbing_grade_uiaa" | "climbing_grade_french" | "climbing_grade_font" | "climbing_grade_v_scale";
+type ChosenUnit = "number" | "count" | "distance_km" | "distance_mi" | "weight_kg" | "weight_lb" | "time_seconds" | "time_hours" | "climbing_grade_uiaa" | "climbing_grade_french" | "climbing_grade_font" | "climbing_grade_v_scale";
 
 const subUnitToChosenUnit = (subUnit: SubUnit | null): ChosenUnit | null => {
   if (subUnit === null) {
@@ -19,6 +19,13 @@ const subUnitToChosenUnit = (subUnit: SubUnit | null): ChosenUnit | null => {
       return "number";
     case "count":
       return "count";
+    case "distance":
+      switch (subUnit.unit) {
+        case "km":
+          return "distance_km";
+        case "mi":
+          return "distance_mi";
+      }
     case "weight":
       switch (subUnit.unit) {
         case "kg":
@@ -46,6 +53,10 @@ const toUnit = (chosenUnit: ChosenUnit): SubUnit => {
       return { type: "number", symbol: "" };
     case "count":
       return { type: "count" };
+    case "distance_km":
+      return { type: "distance", unit: "km" };
+    case "distance_mi":
+      return { type: "distance", unit: "mi" };
     case "weight_kg":
       return { type: "weight", unit: "kg" };
     case "weight_lb":
@@ -138,6 +149,12 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null, onChange:
               }
               <Animated.View key="count" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
                 <RadioButton.Item key="count" label="Count" value="count" />
+              </Animated.View>
+              <Animated.View key="distance_km" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
+                <RadioButton.Item key="distance_km" label="Distance (km)" value="distance_km" />
+              </Animated.View>
+              <Animated.View key="distance_mi" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
+                <RadioButton.Item key="distance_mi" label="Distance (mi)" value="distance_mi" />
               </Animated.View>
               <Animated.View key="weight_kg" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
                 <RadioButton.Item key="weight_kg" label="Weight (kg)" value="weight_kg" />

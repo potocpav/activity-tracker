@@ -6,6 +6,8 @@ export const isSummable = (unit: SubUnit): boolean => {
       return true;
     case "count":
       return true;
+    case "distance":
+      return true;
     case "weight":
       return true;
     case "time":
@@ -49,6 +51,8 @@ export const renderShortFormValue = (value: number, unit: SubUnit): string => {
       return renderShortFormNumber(value);
     case "count":
       return renderShortFormNumber(value);
+    case "distance":
+      return renderShortFormNumber(value);
     case "weight":
       return renderShortFormNumber(value);
     case "time":
@@ -85,6 +89,8 @@ export const renderLongFormValue = (value: number, unit: SubUnit): string => {
     }
     case "count":
       return renderLongFormNumber(value);
+    case "distance":
+      return `${renderLongFormNumber(value)} ${unit.unit}`;
     case "weight":
       return `${renderLongFormNumber(value)} ${unit.unit}`;
     case "time":
@@ -117,6 +123,13 @@ export const renderUnit = (unit: SubUnit): string => {
       return "Number" + (unit.symbol === "" ? "" : ` (${unit.symbol})`);
     case "count":
       return "Count";
+    case "distance":
+      switch (unit.unit) {
+        case "km":
+          return "Distance (km)";
+        case "mi":
+          return "Distance (mi)";
+      }
     case "weight":
       switch (unit.unit) {
         case "kg":
@@ -156,6 +169,8 @@ export const numberToString = (value: number | null, unit: SubUnit): string => {
     case "number":
       return value.toString();
     case "count":
+      return value.toString();
+    case "distance":
       return value.toString();
     case "weight":
       return value.toString();
@@ -248,6 +263,8 @@ export const stringToNumber = (value: string, unit: SubUnit): number | null => {
       return parseFloat(value);
     case "count":
       return parseInt(value);
+    case "distance":
+      return parseFloat(value);
     case "weight":
       return parseFloat(value);
     case "time": {
@@ -357,6 +374,8 @@ export const areSubUnitsEqual = (subUnit1: SubUnit, subUnit2: SubUnit): boolean 
         return subUnit1.symbol === subUnit2Copy.symbol;
       case "count":
         return true;
+      case "distance":
+        return subUnit1.unit === subUnit2Copy.unit;
       case "weight":
         return subUnit1.unit === subUnit2Copy.unit;
       case "time":

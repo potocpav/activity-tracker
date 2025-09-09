@@ -18,6 +18,10 @@ export type SubUnit =
     type: "count",
   } |
   {
+    type: "distance",
+    unit: "km" | "mi",
+  } |
+  {
     type: "weight",
     unit: "kg" | "lb",
   } |
