@@ -59,7 +59,7 @@ export const renderShortFormValue = (value: number, unit: SubUnit): string => {
           } else if (value >= 1) {
             return numberToString(Math.round(value * 60) / 60, unit);
           } else {
-            return numberToString(value, unit);
+            return numberToString(Math.round(value * 60) / 60, unit);
           }
         case "seconds":
           if (value > 10 * 3600) {

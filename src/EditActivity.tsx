@@ -149,19 +149,19 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       }
     }
   })());
-  
-  const multiUnitInputRef: { name: React.RefObject<InputWrapperRef>, unit: React.RefObject<InputWrapperRef> }[] = 
+
+  const multiUnitInputRef: { name: React.RefObject<InputWrapperRef>, unit: React.RefObject<InputWrapperRef> }[] =
     multiUnitInput.map((_) => ({ name: useRef<InputWrapperRef>(undefined), unit: useRef<InputWrapperRef>(undefined) }));
   const multiUnitInputError: { name: string | null, unit: string | null }[] = multiUnitInput.map((val, idx) => {
     if (unitMode === 'multiple') {
-    return { 
-      name: val.name === "" ? "Enter a name" : multiUnitInput.findIndex((u) => u.name === val.name) !== idx ? "Name must be unique" : null, 
-      unit: val.unit === null ? "Select a unit" : null,
-    }
+      return {
+        name: val.name === "" ? "Enter a name" : multiUnitInput.findIndex((u) => u.name === val.name) !== idx ? "Name must be unique" : null,
+        unit: val.unit === null ? "Select a unit" : null,
+      }
     } else {
-      return { 
-        name: null, 
-        unit: null 
+      return {
+        name: null,
+        unit: null
       }
     };
   });
@@ -177,7 +177,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   } else if (tagDialogNameInput !== tagDialogName && tagState.map((t: SetTag) => t.name).includes(tagDialogNameInput)) {
     tagDialogNameError = "A tag with this name already exists";
   }
-  const [tagDialogColorInput, setTagDialogColorInput] = useState(Math.floor(Math.random() * palette.length));
+  const [tagDialogColorInput, setTagDialogColorInput] = useState(0);
   const [tagColorDialogVisible, setTagColorDialogVisible] = useState(false);
 
   const [colorDialogVisible, setColorDialogVisible] = useState(false);
@@ -274,7 +274,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       });
       hasError = true;
     }
-    
+
     if (hasError) {
       setShowErrors(true);
       return;
@@ -440,105 +440,118 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surface }]} edges={["left", "right"]}>
       <SystemBars style={"light"} />
       <ScrollView style={styles.content}>
-        <View style={styles.inputContainer}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-            <InputWrapper error={showErrors ? activityNameError : null} ref={activityNameInputRef}>
-              <TextInput
-                label="Activity Name"
-                value={activityNameInput}
-                onChangeText={setActivityNameInput}
-                mode="outlined"
-              />
-            </InputWrapper>
-            <ColorButton color={selectedColor} onPress={() => setColorDialogVisible(true)} />
+        <View style={{ gap: 10 }}>
+          <View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <InputWrapper error={showErrors ? activityNameError : null} ref={activityNameInputRef}>
+                <TextInput
+                  label="Activity Name"
+                  value={activityNameInput}
+                  onChangeText={setActivityNameInput}
+                  mode="outlined"
+                />
+              </InputWrapper>
+              <ColorButton color={selectedColor} onPress={() => setColorDialogVisible(true)} />
+            </View>
           </View>
-        </View>
 
-        <View style={styles.inputContainer}>
-          <TextInput
-            label="Description (optional)"
-            value={activityDescriptionInput}
-            onChangeText={setActivityDescriptionInput}
-            multiline
-            numberOfLines={2}
-            style={{ height: 80 }}
-            mode="outlined"
-          />
-        </View>
-        <View style={styles.inputContainer}>
-          <Text style={{ marginBottom: 8, color: theme.colors.onSurface }}>Value:</Text>
-          <View style={{}}>
-            <SegmentedButtons
-              value={unitMode}
-              onValueChange={setUnitMode}
-              buttons={[
-                {
-                  value: 'no_value',
-                  label: 'None',
-                  icon: 'checkbox-marked-outline',
-                },
-                {
-                  value: 'single',
-                  label: 'Single',
-                  icon: 'numeric',
-                },
-                {
-                  value: 'multiple',
-                  label: 'Multiple',
-                  icon: 'counter',
-                },
-              ]}
+          <View>
+            <TextInput
+              label="Description (optional)"
+              value={activityDescriptionInput}
+              onChangeText={setActivityDescriptionInput}
+              multiline
+              numberOfLines={2}
+              style={{ height: 80 }}
+              mode="outlined"
             />
           </View>
-        </View>
 
-        <View style={styles.inputContainer}>
-          {unitMode === 'no_value' ? editNoValue() : unitMode === 'single' ? editSingleValue() : editMultipleValues()}
-        </View>
-
-        <View style={styles.inputContainer}>
-          <Text style={[styles.label, { color: theme.colors.onSurface }]}>Tags:</Text>
-          <DraggableFlatList
-            data={tagState}
-            horizontal={true}
-            keyExtractor={(item: SetTag) => item.name}
-            renderItem={({ item, drag, isActive }: { item: SetTag, drag: () => void, isActive: boolean }) => (
-              <Chip
-                onPress={() => { setTagDialogVisible(true); setTagDialogName(item.name); setTagDialogNameInput(item.name); setTagDialogColorInput(item.color); }}
-                textStyle={{ color: theme.colors.surface }}
+          <View>
+            <Text style={styles.header}>Tags:</Text>
+            <DraggableFlatList
+              data={tagState}
+              horizontal={true}
+              keyExtractor={(item: SetTag) => item.name}
+              renderItem={({ item, drag, isActive }: { item: SetTag, drag: () => void, isActive: boolean }) => (
+                <Chip
+                  onPress={() => { 
+                    setTagDialogVisible(true); 
+                    setTagDialogName(item.name); 
+                    setTagDialogNameInput(item.name); 
+                    setTagDialogColorInput(item.color); 
+                  }}
+                  textStyle={{ color: theme.colors.surface }}
+                  style={{
+                    backgroundColor: palette[item.color],
+                    marginRight: 8,
+                    marginBottom: 8,
+                    opacity: isActive ? 0.7 : 1,
+                  }}
+                  onLongPress={drag}
+                >
+                  {item.name}
+                </Chip>
+              )}
+              onDragEnd={(data) => {
+                setTagState(data.data);
+              }}
+              contentContainerStyle={{ flexDirection: 'row' }}
+              style={{ marginTop: 8 }}
+            />
+            <View style={{ flexDirection: 'row' }}>
+              <Chip onPress={() => { 
+                setTagDialogVisible(true); 
+                setTagDialogName(""); 
+                setTagDialogNameInput(""); 
+                setTagDialogColorInput(Math.floor(Math.random() * palette.length)); 
+              }}
+                mode="outlined"
                 style={{
-                  backgroundColor: palette[item.color],
                   marginRight: 8,
                   marginBottom: 8,
-                  opacity: isActive ? 0.7 : 1,
                 }}
-                onLongPress={drag}
               >
-                {item.name}
+                +
               </Chip>
-            )}
-            onDragEnd={(data) => {
-              setTagState(data.data);
-            }}
-            contentContainerStyle={{ flexDirection: 'row' }}
-            style={{ marginTop: 8 }}
-          />
-          <View style={{ flexDirection: 'row' }}>
-            <Chip onPress={() => { setTagDialogVisible(true); setTagDialogName(""); setTagDialogNameInput(""); setTagDialogColorInput(19); }}
-              mode="outlined"
-              style={{
-                marginRight: 8,
-                marginBottom: 8,
-              }}
-            >
-              +
-            </Chip>
+            </View>
+          </View>
+
+          <View>
+            <Text style={styles.header}>Value:</Text>
+            <View style={{}}>
+              <SegmentedButtons
+                value={unitMode}
+                onValueChange={setUnitMode}
+                buttons={[
+                  {
+                    value: 'no_value',
+                    label: 'None',
+                    icon: 'checkbox-marked-outline',
+                  },
+                  {
+                    value: 'single',
+                    label: 'Single',
+                    icon: 'numeric',
+                  },
+                  {
+                    value: 'multiple',
+                    label: 'Multiple',
+                    icon: 'counter',
+                  },
+                ]}
+              />
+            </View>
+          </View>
+
+          <View>
+            {unitMode === 'no_value' ? editNoValue() : unitMode === 'single' ? editSingleValue() : editMultipleValues()}
           </View>
         </View>
       </ScrollView>
       <Portal>
         {/* Tag dialog (existing) */}
-        <Dialog visible={tagDialogVisible} onDismiss={() => {setTagDialogVisible(false); setShowTagDialogErrors(false);}}>
+        <Dialog visible={tagDialogVisible} onDismiss={() => { setTagDialogVisible(false); setShowTagDialogErrors(false); }}>
           <Dialog.Content>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
               <InputWrapper error={showTagDialogErrors ? tagDialogNameError : null} ref={tagDialogNameInputRef}>
@@ -582,13 +595,9 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 10,
   },
-  inputContainer: {
-    marginBottom: 20,
-  },
-  label: {
+  header: {
     fontSize: 16,
-    fontWeight: "500",
-    marginBottom: 8,
+    marginBottom: 5,
   },
   colorButton: {
     borderWidth: 1,
