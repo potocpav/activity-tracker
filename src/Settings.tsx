@@ -8,7 +8,6 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as Sharing from 'expo-sharing';
 import { getTheme } from './Theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import AntDesign from '@expo/vector-icons/AntDesign';
 import { allHints } from './StoreTypes';
 
 const Settings = () => {

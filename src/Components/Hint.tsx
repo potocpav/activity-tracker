@@ -12,25 +12,32 @@ const hintInfo = (hint: HintType) => {
     case "hello":
       return {
         text: [
-        "Welcome to Activity Tracker! These hints will help you use the app.",
-        "You can disable hints in the settings, if you don't want to see them anymore.",
-      ],
-      arrowPos: 1.0,
-    };
-    case "add_data_point":
+          "Welcome to Activity Tracker! These hints will help you use the app.",
+          "You can disable hints in the settings, if you don't want to see them anymore.",
+        ],
+        arrowPos: 1.0,
+      };
+    case "quickly_add_point":
       return {
         text: [
-        "Add a data point by clicking the + button above.",
-      ],
-      arrowPos: 0.7,
-    };
+          "You can quickly add a data point by clicking the + button.",
+        ],
+        arrowPos: 1.0,
+      };
     case "reorder_activities":
       return {
         text: [
-        "You can reorder activities by long-pressing and dragging an activity.",
-      ],
-      arrowPos: 0.5,
-    };
+          "You can reorder activities by long-pressing and dragging an activity.",
+        ],
+        arrowPos: 0.5,
+      };
+    case "add_data_point":
+      return {
+        text: [
+          "Add a data point by clicking the + button above.",
+        ],
+        arrowPos: 0.7,
+      };
   }
 };
 
@@ -42,14 +49,14 @@ const Hint = ({ hint }: { hint: HintType }) => {
   const [height, setHeight] = useState(0);
   const showHints = useStore((state: any) => state.showHints);
   const activeHints = useStore((state: any) => state.activeHints);
+  const hintDependencyChains = useStore((state: any) => state.hintDependencyChains);
   const dismissHint = useStore((state: any) => state.dismissHint);
 
-  let showHint = showHints && activeHints.includes(hint);
-  
-  // hint sequencing
-  if (hint === "reorder_activities") {
-    showHint = showHint && !activeHints.includes("hello");
-  }
+  let nextActiveHints = hintDependencyChains.map((chain: HintType[]) =>
+    chain.filter((h: HintType) =>
+      activeHints.includes(h)).slice(0, 1))
+    .flat(Infinity);
+  let showHint = showHints && nextActiveHints.includes(hint);
 
   const TOP = 10;
   const R = 10;

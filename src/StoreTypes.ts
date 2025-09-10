@@ -140,11 +140,25 @@ export type ActivityType = {
 
 export type WeekStart = "sunday" | "monday";
 
-export type HintType = "hello" | "reorder_activities" | "add_data_point";
+export type HintType = "hello" | "quickly_add_point" | "reorder_activities" | "add_data_point";
 
-export const allHints : HintType[] = [
-  "hello", "reorder_activities", "add_data_point"
+// hint sequencing. Must contain all hints.
+const hintDependencyChains : HintType[][] = [
+  // Activities screen
+  ["hello", "quickly_add_point", "reorder_activities"],
+  // Activity screen
+  ["add_data_point"],
+  // Edit activity screen
+  // TODO
+  // Edit data point screen
+  // TODO
+  // Edit stat screen
+  // TODO
+  // Data list screen
+  // TODO
 ];
+
+export const allHints : HintType[] = hintDependencyChains.flat(Infinity) as HintType[];
 
 export type State = {
   // allDevices: Device[];
