@@ -92,7 +92,10 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
             </View>
           ))}
           <TouchableOpacity
-            onPress={() => { navigation.navigate('EditDataPoint', { activityName: activity.name, dataPointName: null, newDataPoint: true }); }}
+            onPress={() => { 
+              dismissHint("quickly_add_point");
+              navigation.navigate('EditDataPoint', { activityName: activity.name, dataPointName: null, newDataPoint: true }); 
+            }}
             style={styles.addDataPointButton}
           >
             <AntDesign name="plus" size={24} color={palette[activity.color]} />
@@ -117,6 +120,9 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
         keyExtractor={(item) => item.name}
         contentContainerStyle={styles.listContainer}
       />
+      )}
+      {activities.length >= 2 && (
+        <Hint hint="quickly_add_point" />
       )}
       {activities.length >= 3 && (
         <Hint hint="reorder_activities" />

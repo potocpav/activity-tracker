@@ -21,6 +21,7 @@ import { SystemBars } from "react-native-edge-to-edge";
 import { numberToString, stringToNumber, renderUnit } from "../Model/Unit";
 import { ValueEditor } from "../Components/UnitView";
 import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
+import Hint from "../Components/Hint";
 
 type EditDataPointProps = {
   navigation: any;
@@ -38,6 +39,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   const [datePickerVisible, setDatePickerVisible] = useState(false);
   const locale = Intl.DateTimeFormat().resolvedOptions().locale;
   const weekStart = useStore((state: any) => state.weekStart);
+  const dismissHint = useStore((state: any) => state.dismissHint);
 
   const dataPoint : DataPoint = 
     dataPointIndex !== undefined ? 
@@ -127,6 +129,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   };
 
   const saveDataPointWrapper = () => {
+    dismissHint("save_data_point");
     // check for errors
     let hasError = false;
 
@@ -229,6 +232,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surface }]} edges={["left", "right"]}>
+      <Hint hint="save_data_point" />
       <SystemBars style={"light"} />
       <ScrollView style={styles.content}>
         <View style={{ gap: 10 }}>
@@ -267,29 +271,6 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
           />
         </InputWrapper>
 
-        {activity.unit.type !== "none" && (
-          <InputWrapper error={showErrors ? emptyValueError : null} ref={valueRef}>
-          <Text style={styles.header}>{activity.unit.type === "single" ? "Value:" : "Values:"}</Text>
-
-        <View>
-          {inputValues.map((inputValue: { 
-            subUnit: {name: string | null, unit: SubUnit}, 
-            value: [string, (text: string) => void] 
-          }, index: number) => (
-            <ValueEditor 
-              key={inputValue.subUnit.name ?? "value"}
-              unit={inputValue.subUnit.unit}
-              error={showErrors ? inputValueErrors[index] : null}
-              inputWrapperRef={inputValueRefs[index]}
-              label={inputValue.subUnit.name === null ? renderUnit(inputValue.subUnit.unit) : `${inputValue.subUnit.name} - ${renderUnit(inputValue.subUnit.unit)}`} // TODO: better label
-              value={inputValue.value[0]} 
-              onChange={inputValue.value[1]} 
-              setSubmitDisabled={() => {}}
-            />
-          ))}
-        </View>
-        </InputWrapper>
-        )}
 
         {activity.tags.length > 0 && (<View style={{ gap: 10 }}>
           <Text style={styles.header}>Tags:</Text>
@@ -313,6 +294,30 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
             ))}
           </View>
         </View>)}
+
+        {activity.unit.type !== "none" && (
+          <InputWrapper error={showErrors ? emptyValueError : null} ref={valueRef}>
+          <Text style={styles.header}>{activity.unit.type === "single" ? "Value:" : "Values:"}</Text>
+
+        <View>
+          {inputValues.map((inputValue: { 
+            subUnit: {name: string | null, unit: SubUnit}, 
+            value: [string, (text: string) => void] 
+          }, index: number) => (
+            <ValueEditor 
+              key={inputValue.subUnit.name ?? "value"}
+              unit={inputValue.subUnit.unit}
+              error={showErrors ? inputValueErrors[index] : null}
+              inputWrapperRef={inputValueRefs[index]}
+              label={inputValue.subUnit.name === null ? renderUnit(inputValue.subUnit.unit) : `${inputValue.subUnit.name} - ${renderUnit(inputValue.subUnit.unit)}`} // TODO: better label
+              value={inputValue.value[0]} 
+              onChange={inputValue.value[1]} 
+              setSubmitDisabled={() => {}}
+            />
+          ))}
+        </View>
+        </InputWrapper>
+        )}
         </View>
       </ScrollView>
 

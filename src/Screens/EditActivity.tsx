@@ -19,6 +19,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
 import { UnitEditor } from "../Components/UnitView";
 import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
+import Hint from "../Components/Hint";
 
 type EditActivityProps = {
   navigation: any;
@@ -56,9 +57,9 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   const [showErrors, setShowErrors] = useState(false);
   const [showTagDialogErrors, setShowTagDialogErrors] = useState(false);
 
-  const [unitMode, setUnitMode] = useState<'no_value' | 'single' | 'multiple'>((() => {
+  const [unitMode, setUnitMode] = useState<'no_value' | 'single' | 'multiple' | null>((() => {
     if (!activity) {
-      return 'single';
+      return null;
     } else {
       switch (activity.unit.type) {
         case 'none':
@@ -78,6 +79,12 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
     activityNameError = "Enter activity name";
   } else if ((activity === null || activityNameInput !== activity.name) && activities.find((a: ActivityType) => a.name === activityNameInput)) {
     activityNameError = "An activity with this name already exists";
+  }
+
+  let unitModeError = null;
+  const unitModeInputRef = useRef<InputWrapperRef>(undefined);
+  if (unitMode === null) {
+    unitModeError = "Select a unit mode";
   }
 
   const [singleUnitInput, setSingleUnitInput] = useState<SubUnit | null>((() => {
@@ -191,19 +198,22 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
         break;
       case 'single':
         if (singleUnitInput === null) {
-          Alert.alert("Error", "Single unit cannot be null");
+          console.error("Error", "Single unit cannot be null");
           return;
         }
         newUnit = { type: "single", unit: singleUnitInput };
         break;
       case 'multiple':
         if (multiUnitInput.findIndex((u) => u.unit === null) !== -1) {
-          Alert.alert("Error", "All value units must be non-empty");
+          console.error("Error", "All value units must be non-empty");
           return;
         }
         // no nulls at this point
         newUnit = { type: "multiple", values: multiUnitInput as { name: string, unit: SubUnit }[] };
         break;
+      case null:
+        console.error("Error", "Unit mode cannot be null");
+        return;
     }
 
     let updatedActivity: ActivityType;
@@ -257,6 +267,9 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
     let hasError = false;
     if (activityNameError !== null) {
       activityNameInputRef?.current?.highlightError();
+      hasError = true;
+    }
+    if (unitMode === null) {
       hasError = true;
     }
     if (singleUnitInputError !== null) {
@@ -438,6 +451,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surface }]} edges={["left", "right"]}>
+      <Hint hint="edit_activity_introduction" />
       <SystemBars style={"light"} />
       <ScrollView style={styles.content}>
         <View style={{ gap: 10 }}>
@@ -519,10 +533,10 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
 
           <View>
             <Text style={styles.header}>Value:</Text>
-            <View style={{}}>
+            <InputWrapper error={showErrors ? unitModeError : null} ref={unitModeInputRef}>
               <SegmentedButtons
-                value={unitMode}
-                onValueChange={setUnitMode}
+                value={unitMode ?? ""}
+                onValueChange={(value) => setUnitMode(value as "no_value" | "single" | "multiple" | null)}   // TODO: fix this
                 buttons={[
                   {
                     value: 'no_value',
@@ -541,12 +555,14 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
                   },
                 ]}
               />
-            </View>
+            </InputWrapper>
           </View>
 
           <View>
-            {unitMode === 'no_value' ? editNoValue() : unitMode === 'single' ? editSingleValue() : editMultipleValues()}
+            
+            {unitMode === null  ? null : unitMode === 'no_value' ? editNoValue() : unitMode === 'single' ? editSingleValue() : editMultipleValues()}
           </View>
+          <Hint hint="activity_value_help" inline />
         </View>
       </ScrollView>
       <Portal>

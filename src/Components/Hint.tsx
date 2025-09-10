@@ -1,11 +1,11 @@
 import { Text, StyleSheet, View, useWindowDimensions } from "react-native";
 import { useEffect, useRef, useLayoutEffect, useState } from "react";
-import { getTheme } from "../Theme";
+import { getTheme } from "../Model/Theme";
 import { MD3Theme, Button } from "react-native-paper";
 import Animated, { FadeIn, FadeOut, measure } from "react-native-reanimated";
 import { Svg, Rect, Circle, Path } from "react-native-svg";
-import { HintType } from "../StoreTypes";
-import useStore from "../Store";
+import { HintType, hintDependencyChains } from "../Model/StoreTypes";
+import useStore from "../Model/Store";
 
 const hintInfo = (hint: HintType) => {
   switch (hint) {
@@ -14,6 +14,41 @@ const hintInfo = (hint: HintType) => {
         text: [
           "Welcome to Activity Tracker! These hints will help you use the app.",
           "You can disable hints in the settings, if you don't want to see them anymore.",
+        ],
+        arrowPos: 1.0,
+      };
+    case "add_data_point":
+      return {
+        text: [
+          "Add a data point by clicking the + button above.",
+        ],
+        arrowPos: 0.7,
+      };
+    case "calendar_introduction":
+      return {
+        text: [
+          "You can view, add, and edit calendars here.",
+        ],
+        arrowPos: 1.0,
+      };
+    case "duplicate_calendar":
+      return {
+        text: [
+          "You can duplicate a calendar by clicking the duplicate button above.",
+        ],
+        arrowPos: 1.0,
+      };
+    case "rename_calendar":
+      return {
+        text: [
+          "You can rename a calendar by clicking the rename button above.",
+        ],
+        arrowPos: 1.0,
+      };
+    case "quick_check_daily_activity":
+      return {
+        text: [
+          "You can quickly check your daily activity by clicking the quick check button above.",
         ],
         arrowPos: 1.0,
       };
@@ -31,25 +66,57 @@ const hintInfo = (hint: HintType) => {
         ],
         arrowPos: 0.5,
       };
-    case "add_data_point":
+    case "edit_activity_introduction":
       return {
         text: [
-          "Add a data point by clicking the + button above.",
+          "Activities can always be edited later. Don't be afraid to experiment.",
         ],
-        arrowPos: 0.7,
+        arrowPos: 0.2,
+      };
+    case "activity_value_help":
+      return {
+        text: [
+          "There ar three types of activities:",
+          "1. No value - no numbers are recorded, just the date. Examples: flossing, exercised today, etc.",
+          "1. Single value - one number is recorded. Examples: body weight, time spent running, number of pull-ups, etc.",
+          "2. Multiple values - one exercise is measured in multiple ways. For example, for running we may want to record both time and distance.",
+        ],
+        arrowPos: 0.5,
+      };
+    case "save_data_point":
+      return {
+        text: [
+          "When ready, save the data point (✓), or save and immediately start editing a new one (✓+).",
+        ],
+        arrowPos: 1.0,
+      };
+    case "data_list_day_introduction":
+      return {
+        text: [
+          "This is a list of data points for one day.",
+          "You can view, add, and edit data points here.",
+        ],
+        arrowPos: 0.5,
+      };
+    case "data_list_all_introduction":
+      return {
+        text: [
+          "This is a list of all data points.",
+          "You can view, add, and edit data points here.",
+        ],
+        arrowPos: 0.5,
       };
   }
 };
 
 
-const Hint = ({ hint }: { hint: HintType }) => {
+const Hint = ({ hint, inline }: { hint: HintType, inline?: boolean }) => {
   const theme = getTheme();
   const styles = getStyles(theme);
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
   const showHints = useStore((state: any) => state.showHints);
   const activeHints = useStore((state: any) => state.activeHints);
-  const hintDependencyChains = useStore((state: any) => state.hintDependencyChains);
   const dismissHint = useStore((state: any) => state.dismissHint);
 
   let nextActiveHints = hintDependencyChains.map((chain: HintType[]) =>
@@ -68,41 +135,44 @@ const Hint = ({ hint }: { hint: HintType }) => {
 
   return (
     showHint && (
-      <Animated.View
-        entering={FadeIn.delay(1000).duration(500)}
-        exiting={FadeOut.duration(300)}
-        style={[
-          styles.hintContainer
-        ]}>
-        <View
-          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-          onLayout={(l) => {
-            setWidth(l.nativeEvent.layout.width);
-            setHeight(l.nativeEvent.layout.height);
-          }}
-        >
-          <Svg style={{ position: 'absolute', top: -TOP, left: 0 }} height={height + TOP} width={width} viewBox={`0 0 ${width} ${height + TOP}`}>
-            {/* <Rect x="0" y={TOP} width={width} height={height} rx="10" ry="10"
+      <View style={{ position: 'relative' }}>
+        <Animated.View
+          entering={FadeIn.delay(500).duration(500)}
+          exiting={FadeOut.duration(300)}
+          style={[
+            styles.hintContainer,
+            inline ? {} : { position: 'absolute' }]
+          }>
+          <View
+            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+            onLayout={(l) => {
+              setWidth(l.nativeEvent.layout.width);
+              setHeight(l.nativeEvent.layout.height);
+            }}
+          >
+            <Svg style={{ position: 'absolute', top: -TOP, left: 0 }} height={height + TOP} width={width} viewBox={`0 0 ${width} ${height + TOP}`}>
+              {/* <Rect x="0" y={TOP} width={width} height={height} rx="10" ry="10"
             stroke={theme.colors.onSurface} strokeWidth="1" fill={theme.colors.primary} /> */}
 
-            <Path
-              d={`M0,${TOP + R} A${R},${R} 0 0 1 ${R},${TOP} L${W * arrowPos + ARROW_LIM},${TOP} L${W * arrowPos + ARROW_LIM + ARROW_W},${0} L${W * arrowPos + ARROW_LIM + ARROW_W * 2},${TOP} L${width - R},${TOP} A${R},${R} 0 0 1 ${width},${TOP + R} L${width},${height + TOP - R} A${R},${R} 0 0 1 ${width - R},${height + TOP} L${R},${height + TOP} A${R},${R} 0 0 1 0,${height + TOP - R} Z`}
-              fill={theme.colors.primary}
-              strokeWidth={1}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </Svg>
-        </View>
-        <View style={{ padding: 10, gap: 5 }}>
-          {text.map((h, i) => (
-            <Text key={i} style={styles.hintText}>{i === 0 ? (<Text style={{ fontWeight: 'bold' }}>Hint: </Text>) : ""}{h}</Text>
-          ))}
-        </View>
-        <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-          <Button mode="text" textColor={theme.colors.surface} onPress={() => { dismissHint(hint) }}>Dismiss</Button>
-        </View>
-      </Animated.View>
+              <Path
+                d={`M0,${TOP + R} A${R},${R} 0 0 1 ${R},${TOP} L${W * arrowPos + ARROW_LIM},${TOP} L${W * arrowPos + ARROW_LIM + ARROW_W},${0} L${W * arrowPos + ARROW_LIM + ARROW_W * 2},${TOP} L${width - R},${TOP} A${R},${R} 0 0 1 ${width},${TOP + R} L${width},${height + TOP - R} A${R},${R} 0 0 1 ${width - R},${height + TOP} L${R},${height + TOP} A${R},${R} 0 0 1 0,${height + TOP - R} Z`}
+                fill={theme.colors.primary}
+                strokeWidth={1}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </Svg>
+          </View>
+          <View style={{ padding: 10, gap: 5 }}>
+            {text.map((h, i) => (
+              <Text key={i} style={styles.hintText}>{i === 0 ? (<Text style={{ fontWeight: 'bold' }}>Hint: </Text>) : ""}{h}</Text>
+            ))}
+          </View>
+          <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+            <Button mode="text" textColor={theme.colors.surface} onPress={() => { dismissHint(hint) }}>Dismiss</Button>
+          </View>
+        </Animated.View>
+      </View>
     )
   );
 };
@@ -114,7 +184,6 @@ const getStyles = (theme: MD3Theme) => StyleSheet.create({
     borderRadius: 10,
     margin: 10,
     elevation: 5,
-    position: "absolute",
     left: 0,
     right: 0,
     zIndex: 1000,

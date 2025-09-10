@@ -10,11 +10,11 @@ import {
   dateListToDate, 
   SubUnit, 
   statValueUnit 
-} from "../StoreTypes";
-import { findZeroSlice, dayCmp, extractStatValue, extractValue, binTime } from "../ActivityUtil";
-import useStore from "../Store";
-import { getTheme } from "../Theme";
-import { renderShortFormValue } from "../Unit";
+} from "../Model/StoreTypes";
+import { findZeroSlice, dayCmp, extractStatValue, extractValue, binTime } from "../Model/Activity";
+import useStore from "../Model/Store";
+import { getTheme } from "../Model/Theme";
+import { renderShortFormValue } from "../Model/Unit";
 
 type CalendarComponentProps = {
   navigation: any;

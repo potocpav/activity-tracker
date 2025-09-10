@@ -140,22 +140,27 @@ export type ActivityType = {
 
 export type WeekStart = "sunday" | "monday";
 
-export type HintType = "hello" | "quickly_add_point" | "reorder_activities" | "add_data_point";
+export type HintType = 
+  "hello" | "quickly_add_point" | "reorder_activities" | 
+  "add_data_point" | "duplicate_calendar" | "rename_calendar" | "calendar_introduction" | "quick_check_daily_activity" |
+  "edit_activity_introduction" | "activity_value_help" |
+  "save_data_point" |
+  "data_list_day_introduction" | "data_list_all_introduction";
 
 // hint sequencing. Must contain all hints.
-const hintDependencyChains : HintType[][] = [
+export const hintDependencyChains : HintType[][] = [
   // Activities screen
   ["hello", "quickly_add_point", "reorder_activities"],
   // Activity screen
-  ["add_data_point"],
+  ["add_data_point", "calendar_introduction", "duplicate_calendar", "rename_calendar"],
+  ["quick_check_daily_activity"], // TODO: duplicate "add_data_point" and "calendar_introduction" dependency here
   // Edit activity screen
-  // TODO
+  ["edit_activity_introduction", "activity_value_help"],
   // Edit data point screen
-  // TODO
-  // Edit stat screen
-  // TODO
+  ["save_data_point"],
   // Data list screen
-  // TODO
+  [ "data_list_day_introduction" ],
+  [ "data_list_all_introduction" ],
 ];
 
 export const allHints : HintType[] = hintDependencyChains.flat(Infinity) as HintType[];

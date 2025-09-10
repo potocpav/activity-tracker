@@ -19,6 +19,7 @@ import { getTheme } from "../Model/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
 import EmptyPagePlaceholder from "../Components/EmptyPagePlaceholder";
+import Hint from "../Components/Hint";
 
 
 type ActivityDataProps = {
@@ -194,6 +195,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
 
   return (
     <SafeAreaView style={[styles.container]} edges={["left", "right"]}>
+      {day ? <Hint hint="data_list_day_introduction" /> : <Hint hint="data_list_all_introduction" />}
       <SystemBars style={"light"} />
       {sections.length === 0 ? (
         <EmptyPagePlaceholder title="No data" subtext="Tap the + button to create a data point" />

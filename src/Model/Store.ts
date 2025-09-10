@@ -40,7 +40,7 @@ import {
 import { areUnitsEqual } from "./Unit";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { findZeroSlice, dayCmp } from "./ActivityUtil";
+import { findZeroSlice, dayCmp } from "./Activity";
 
 export const version = 18;
 

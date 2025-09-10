@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { View, Text } from "react-native";
 import Animated, { useSharedValue, withSequence, withTiming, withRepeat, useAnimatedStyle, FadeIn, FadeOut, FadeInUp, FadeOutUp } from "react-native-reanimated";
-import { getTheme } from "../Theme";
+import { getTheme } from "../Model/Theme";
 
 type InputWrapperProps = {
   children: React.ReactNode;
@@ -56,7 +56,7 @@ export const InputWrapper = ({ children, key, error, hint, ref }: InputWrapperPr
           {hint}
         </Text>
         )}
-        {true && (
+        {error && (
           <Animated.View>
             <Text style={{ fontSize: 12, color: theme.colors.error }}>
               {error}

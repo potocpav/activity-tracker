@@ -1,12 +1,12 @@
 import { Text, View, ScrollView, Pressable, Modal, FlatList, useWindowDimensions } from "react-native";
 import { TextInput, Button, RadioButton, Dialog, Portal, List } from "react-native-paper";
-import { SubUnit, TimeUnit } from "./StoreTypes";
+import { SubUnit, TimeUnit } from "../Model/StoreTypes";
 import { useState } from "react";
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { getTheme, useWideDisplay } from "./Theme";
-import { renderUnit, mapStringValue, uiaaGrades, vScaleGrades, numberToString, renderShortFormValue, stringToNumber } from "./Unit";
+import { getTheme, useWideDisplay } from "../Model/Theme";
+import { renderUnit, mapStringValue, uiaaGrades, vScaleGrades, numberToString, renderShortFormValue, stringToNumber } from "../Model/Unit";
 import Animated, { LinearTransition, FadeInUp, FadeOutUp } from "react-native-reanimated";
-import InputWrapper, { InputWrapperRef } from "./Components/InputWrapper";
+import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
 
 type ChosenUnit = "number" | "count" | "distance_km" | "distance_mi" | "weight_kg" | "weight_lb" | "time_seconds" | "time_hours" | "climbing_grade_uiaa" | "climbing_grade_french" | "climbing_grade_font" | "climbing_grade_v_scale";
 
