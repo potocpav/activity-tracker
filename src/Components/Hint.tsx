@@ -40,8 +40,16 @@ const Hint = ({ hint }: { hint: HintType }) => {
   const styles = getStyles(theme);
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
-  const showHint = useStore((state: any) => state.showHints && state.activeHints.includes(hint));
+  const showHints = useStore((state: any) => state.showHints);
+  const activeHints = useStore((state: any) => state.activeHints);
   const dismissHint = useStore((state: any) => state.dismissHint);
+
+  let showHint = showHints && activeHints.includes(hint);
+  
+  // hint sequencing
+  if (hint === "reorder_activities") {
+    showHint = showHint && !activeHints.includes("hello");
+  }
 
   const TOP = 10;
   const R = 10;
@@ -79,9 +87,9 @@ const Hint = ({ hint }: { hint: HintType }) => {
             />
           </Svg>
         </View>
-        <View style={{ padding: 10 }}>
+        <View style={{ padding: 10, gap: 5 }}>
           {text.map((h, i) => (
-            <Text key={i} style={styles.hintText}>{i === 0 ? (<Text style={{ fontWeight: 'bold' }}>Hint:</Text>) : ""} {h}</Text>
+            <Text key={i} style={styles.hintText}>{i === 0 ? (<Text style={{ fontWeight: 'bold' }}>Hint: </Text>) : ""}{h}</Text>
           ))}
         </View>
         <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
@@ -99,7 +107,6 @@ const getStyles = (theme: MD3Theme) => StyleSheet.create({
     borderRadius: 10,
     margin: 10,
     elevation: 5,
-    gap: 5,
     position: "absolute",
     left: 0,
     right: 0,
