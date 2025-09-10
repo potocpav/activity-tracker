@@ -40,9 +40,10 @@ Track your performance metrics and their progress over time. With custom statist
 
 ### 2.2.0
 
-- Introduce beginner hints
-- Forms now indicate which fields are filled incorrectly
-- Introduce distance units
+- [x] Introduce beginner hints
+  - [ ] Add many more hints
+- [x] Forms now indicate which fields are filled incorrectly
+- [x] Introduce distance units
 
 ### 2.1.0
 

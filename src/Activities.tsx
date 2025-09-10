@@ -111,11 +111,15 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
       ) : (
       <DraggableFlatList
         data={activities}
+        onDragBegin={() => dismissHint("reorder_activities")}
         onDragEnd={({ data }) => setActivities(data)}
         renderItem={renderActivity}
         keyExtractor={(item) => item.name}
         contentContainerStyle={styles.listContainer}
       />
+      )}
+      {activities.length >= 3 && (
+        <Hint hint="reorder_activities" />
       )}
     </SafeAreaView>
   );

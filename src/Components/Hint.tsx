@@ -24,6 +24,13 @@ const hintInfo = (hint: HintType) => {
       ],
       arrowPos: 0.7,
     };
+    case "reorder_activities":
+      return {
+        text: [
+        "You can reorder activities by long-pressing and dragging an activity.",
+      ],
+      arrowPos: 0.5,
+    };
   }
 };
 

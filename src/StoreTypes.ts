@@ -140,10 +140,10 @@ export type ActivityType = {
 
 export type WeekStart = "sunday" | "monday";
 
-export type HintType = "hello" | "add_data_point";
+export type HintType = "hello" | "reorder_activities" | "add_data_point";
 
 export const allHints : HintType[] = [
-  "hello", "add_data_point"
+  "hello", "reorder_activities", "add_data_point"
 ];
 
 export type State = {
