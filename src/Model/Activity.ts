@@ -306,21 +306,6 @@ export const extractStatValue = (filteredValues: [DateList, number][], statValue
   return Number.isFinite(value) ? value : null;
 }
 
-
-export const renderTags = (tags: Tag[], theme: any, palette: string[], wrap: boolean = true) => {
-  if (tags.length === 0) return null;
-
-  return (
-    <View style={[styles.tagsContainer, { flexWrap: wrap ? 'wrap' : 'nowrap' }]}>
-      {tags.map((tag, index) => (
-        <View key={index} style={[styles.tag, { backgroundColor: palette[tag.color], borderColor: theme.colors.surface }]}>
-          <Text style={[styles.tagText, { color: theme.colors.surface }]}>{tag.name}</Text>
-        </View>
-      ))}
-    </View>
-  );
-};
-
 export const periodToLabel = (period: StatPeriod): string => {
   switch (period) {
     case "today":
@@ -368,20 +353,3 @@ export const valueToLabel = (value: StatValue): string => {
 export const formatDate = (date: Date) => {
   return date.toLocaleDateString(locale, { year: "numeric", month: "short", day: "numeric" });
 };
-
-const styles = StyleSheet.create({
-  tagsContainer: {
-    flexDirection: 'row',
-    gap: 4,
-  },
-  tag: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-  },
-  tagText: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-});
