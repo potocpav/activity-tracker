@@ -15,6 +15,7 @@ import SubUnitMenu from "../SubUnitMenu";
 import { getTheme } from "../../Model/Theme";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { Dialog, Portal, TextInput, Button } from "react-native-paper";
+import Hint from "../Hint";
 
 const locale = NativeModules.I18nManager.localeIdentifier;
 
@@ -37,6 +38,7 @@ const ActivityCalendar = ({ navigation, activityName, calendarIndex }: ActivityC
   const setActivityCalendar = useStore((state: any) => state.setActivityCalendar);
   const cloneActivityCalendar = useStore((state: any) => state.cloneActivityCalendar);
   const deleteActivityCalendar = useStore((state: any) => state.deleteActivityCalendar);
+  const dismissHint = useStore((state: any) => state.dismissHint);
   const styles = getStyles(theme);
 
   const [tagsMenuVisible, setTagsMenuVisible] = useState(false);
@@ -55,14 +57,26 @@ const ActivityCalendar = ({ navigation, activityName, calendarIndex }: ActivityC
   return (
     <View style={[styles.container, { paddingHorizontal: 4, backgroundColor: theme.colors.background }]}>
       <View style={styles.headerContainer}>
-        <Pressable onPress={() => setCalendarDialogVisible(true)} android_ripple={{ color: theme.colors.outline, foreground: false }}>
+        <Pressable onPress={() => {
+          setCalendarDialogVisible(true);
+          dismissHint("rename_calendar");
+        }} android_ripple={{ color: theme.colors.outline, foreground: false }}>
           <Text style={styles.headerText}>{calendar.label}</Text>
         </Pressable>
-        <Button compact={true} onPress={() => cloneActivityCalendar(activityName, calendarIndex)}>
+        <Button compact={true} onPress={() => {
+          dismissHint("duplicate_calendar");
+          cloneActivityCalendar(activityName, calendarIndex);
+        }}>
           <AntDesign name="plus" size={24} color={theme.colors.onSurfaceVariant} style={{ marginLeft: 6 }} /> 
         </Button>
       </View>
+      {calendarIndex === 0 && activity.dataPoints.length > 15 && <Hint hint="duplicate_calendar" />}
+      {calendarIndex === 0 && activity.calendars.length > 1 && 
+        <Hint hint="rename_calendar" />}
       <Calendar navigation={navigation} activityName={activityName} calendarIndex={calendarIndex}/>
+      {calendarIndex === 0 && activity.dataPoints.length > 0 && <Hint hint="calendar_introduction" />}
+      {calendarIndex === 0 && activity.unit.type === "none" && activity.dataPoints.length > 3 && 
+        <Hint hint="quick_check_daily_activity" />}
       <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
         {activity.tags.length > 0 && (
           <TagMenu

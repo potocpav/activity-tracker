@@ -16,13 +16,10 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
   const activities = useStore((state: any) => state.activities);
   const activity = activities.find((a: ActivityType) => a.name === activityName);
   const addActivityStat = useStore((state: any) => state.addActivityStat);
+  const dismissHint = useStore((state: any) => state.dismissHint);
   const theme = getTheme(activity.color);
   const palette = getThemePalette();
-  const wideDisplay = useWideDisplay();
   const styles = getStyles(theme);
-  const overviewRef = React.useRef<View>(null);
-  const scrollViewRef = React.useRef<View>(null);
-  const dimensions = useWindowDimensions();
 
   // Value to display in dialog
 
@@ -82,13 +79,18 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
             <Animated.View layout={LinearTransition} style={styles.statsContainer}>
               {activity.stats.map((stat: Stat, index: number) => (
                 <StatView key={index} stat={stat} activity={activity} onPress={() =>
-                  navigation.navigate("EditStat", {
-                    activityName: activityName,
-                    statId: index,
-                  })
+                  {
+                    dismissHint("overview_edit_hint");
+                    navigation.navigate("EditStat", {
+                      activityName: activityName,
+                      statId: index,
+                    })
+                  }
                 } sharedTransitionTag={index == 0 ? "tag" : undefined} />
               ))}
             </Animated.View>
+            {activities.length > 2 && activity.dataPoints.length > 10 && activity.stats.length > 0 && 
+            <Hint hint="overview_edit_hint" />}
           </View>
           <Divider />
         </Fragment>

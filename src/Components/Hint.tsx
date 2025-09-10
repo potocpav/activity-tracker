@@ -27,30 +27,38 @@ const hintInfo = (hint: HintType) => {
     case "calendar_introduction":
       return {
         text: [
-          "You can view, add, and edit calendars here.",
+          "Calendar shows daily summaries of your activity, and allows you to add and edit data for each day.",
         ],
-        arrowPos: 1.0,
+        arrowPos: 0.5,
       };
     case "duplicate_calendar":
       return {
         text: [
-          "You can duplicate a calendar by clicking the duplicate button above.",
+          "You can duplicate a calendar by clicking the + button above.",
         ],
         arrowPos: 1.0,
       };
     case "rename_calendar":
       return {
         text: [
-          "You can rename a calendar by clicking the rename button above.",
+          "You can rename or delete a calendar by clicking the calendar name.",
         ],
-        arrowPos: 1.0,
+        arrowPos: 0.0,
       };
     case "quick_check_daily_activity":
       return {
         text: [
-          "You can quickly check your daily activity by clicking the quick check button above.",
+          "You can quickly note your daily activity by long-pressing on a day in the calendar.",
         ],
         arrowPos: 1.0,
+      };
+    case "overview_edit_hint":
+      return {
+        text: [
+          "You can edit overview stats by clicking them.",
+          "First stat is shown in the activity list."
+        ],
+        arrowPos: 0.5,
       };
     case "quickly_add_point":
       return {
@@ -76,10 +84,10 @@ const hintInfo = (hint: HintType) => {
     case "activity_value_help":
       return {
         text: [
-          "There ar three types of activities:",
+          "There are three types of activities:",
           "1. No value - no numbers are recorded, just the date. Examples: flossing, exercised today, etc.",
-          "1. Single value - one number is recorded. Examples: body weight, time spent running, number of pull-ups, etc.",
-          "2. Multiple values - one exercise is measured in multiple ways. For example, for running we may want to record both time and distance.",
+          "1. Single value - one number is recorded. Examples: body weight, number of pull-ups, etc.",
+          "2. Multiple values - performance is measured in multiple ways. For example, for running, you may want to record both time and distance.",
         ],
         arrowPos: 0.5,
       };
@@ -165,7 +173,7 @@ const Hint = ({ hint, inline }: { hint: HintType, inline?: boolean }) => {
           </View>
           <View style={{ padding: 10, gap: 5 }}>
             {text.map((h, i) => (
-              <Text key={i} style={styles.hintText}>{i === 0 ? (<Text style={{ fontWeight: 'bold' }}>Hint: </Text>) : ""}{h}</Text>
+              <Text key={i}>{h}</Text>
             ))}
           </View>
           <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>

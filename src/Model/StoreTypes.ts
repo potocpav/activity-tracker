@@ -142,7 +142,7 @@ export type WeekStart = "sunday" | "monday";
 
 export type HintType = 
   "hello" | "quickly_add_point" | "reorder_activities" | 
-  "add_data_point" | "duplicate_calendar" | "rename_calendar" | "calendar_introduction" | "quick_check_daily_activity" |
+  "add_data_point" | "overview_edit_hint" | "duplicate_calendar" | "rename_calendar" | "calendar_introduction" | "quick_check_daily_activity" |
   "edit_activity_introduction" | "activity_value_help" |
   "save_data_point" |
   "data_list_day_introduction" | "data_list_all_introduction";
@@ -153,7 +153,8 @@ export const hintDependencyChains : HintType[][] = [
   ["hello", "quickly_add_point", "reorder_activities"],
   // Activity screen
   ["add_data_point", "calendar_introduction", "duplicate_calendar", "rename_calendar"],
-  ["quick_check_daily_activity"], // TODO: duplicate "add_data_point" and "calendar_introduction" dependency here
+  ["overview_edit_hint"],
+  ["quick_check_daily_activity"],
   // Edit activity screen
   ["edit_activity_introduction", "activity_value_help"],
   // Edit data point screen
@@ -163,7 +164,7 @@ export const hintDependencyChains : HintType[][] = [
   [ "data_list_all_introduction" ],
 ];
 
-export const allHints : HintType[] = hintDependencyChains.flat(Infinity) as HintType[];
+export const allHints : HintType[] = [...new Set(hintDependencyChains.flat(Infinity))] as HintType[];
 
 export type State = {
   // allDevices: Device[];

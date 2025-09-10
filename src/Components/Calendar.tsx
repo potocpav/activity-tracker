@@ -35,7 +35,8 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName, 
   const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);
   const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
   const dimensions = useWindowDimensions();
-
+  const dismissHint = useStore((state: any) => state.dismissHint);
+  
   const itemWidth = 35 * dimensions.fontScale;
   const minWeekCount = Math.ceil(dimensions.width / itemWidth);
   const maxWeekCount = 52 * 10;
@@ -118,6 +119,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName, 
                   key={dayIdx}
                   onLongPress={() => {
                     if (activity.unit.type === "none") {
+                      dismissHint("quick_check_daily_activity");
                       if (hasData) {
                         deleteActivityDataPoint(activityName, dayDataAndIndex[0][1]);
                       } else {
