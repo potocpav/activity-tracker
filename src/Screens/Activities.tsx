@@ -109,6 +109,14 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
     <SafeAreaView style={[styles.container]} edges={["left", "right", "bottom"]}>
       <SystemBars style={themeVariant == 'light' ? "dark" : "light"} />
       <Hint hint="hello" />
+      <View style={{ position: 'absolute', top: 100, left: 0, right: 0 }}>
+      {activities.length >= 2 && (
+        <Hint hint="quickly_add_point" />
+      )}
+      {activities.length >= 4 && (
+        <Hint hint="reorder_activities" />
+      )}
+      </View>
       {activities.length === 0 ? (
         <EmptyPagePlaceholder title="No activities" subtext="Tap the + button to create an activity" />
       ) : (
@@ -120,12 +128,6 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
         keyExtractor={(item) => item.name}
         contentContainerStyle={styles.listContainer}
       />
-      )}
-      {activities.length >= 2 && (
-        <Hint hint="quickly_add_point" />
-      )}
-      {activities.length >= 3 && (
-        <Hint hint="reorder_activities" />
       )}
     </SafeAreaView>
   );

@@ -42,7 +42,7 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { findZeroSlice, dayCmp } from "./Activity";
 
-export const version = 18;
+export const version = 19;
 
 export const migrate = (persisted: any, version: number) => {
   if (version < 6) {
@@ -113,6 +113,9 @@ export const migrate = (persisted: any, version: number) => {
   }
   if (version < 18) {
     persisted.showHints = true;
+  }
+  if (version < 19) {
+    persisted.activeHints = allHints;
   }
   return persisted
 };

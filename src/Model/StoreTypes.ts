@@ -152,9 +152,7 @@ export const hintDependencyChains : HintType[][] = [
   // Activities screen
   ["hello", "quickly_add_point", "reorder_activities"],
   // Activity screen
-  ["add_data_point", "calendar_introduction", "duplicate_calendar", "rename_calendar"],
-  ["overview_edit_hint"],
-  ["quick_check_daily_activity"],
+  ["add_data_point", "calendar_introduction", "overview_edit_hint", "quick_check_daily_activity", "duplicate_calendar", "rename_calendar"],
   // Edit activity screen
   ["edit_activity_introduction", "activity_value_help"],
   // Edit data point screen

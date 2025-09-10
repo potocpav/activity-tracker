@@ -173,7 +173,7 @@ const Hint = ({ hint, inline }: { hint: HintType, inline?: boolean }) => {
           </View>
           <View style={{ padding: 10, gap: 5 }}>
             {text.map((h, i) => (
-              <Text key={i}>{h}</Text>
+              <Text style={styles.hintText} key={i}>{h}</Text>
             ))}
           </View>
           <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
