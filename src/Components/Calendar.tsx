@@ -36,7 +36,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName, 
   const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
   const dimensions = useWindowDimensions();
   const dismissHint = useStore((state: any) => state.dismissHint);
-  
+
   const itemWidth = 35 * dimensions.fontScale;
   const minWeekCount = Math.ceil(dimensions.width / itemWidth);
   const maxWeekCount = 52 * 10;
@@ -95,20 +95,23 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName, 
                 return;
               }
               const daySlice = findZeroSlice(activity.dataPoints, (dp) => dayCmp(dp, day));
-              const dayDataAndIndex: [DataPoint, number][] = 
+              const dayDataAndIndexUnfiltered: [DataPoint, number][] = 
                 activity.dataPoints
                   .map((dp: DataPoint, i: number): [DataPoint, number] => [dp, i])
                   .slice(...daySlice)
                   .map(([dp, i]: [DataPoint, number]) => 
-                    [dp.date, i, extractValue(dp, calendar.tagFilters, calendar.subUnit)])
+                    [dp.date, i, extractValue(dp, calendar.tagFilters, calendar.subUnit)]);
+              const dayDataAndIndex = dayDataAndIndexUnfiltered
                   .filter((v: any) => v[2] !== null);
               const value = extractStatValue(dayDataAndIndex.map((v: any) => [v[0], v[2]]), calendar.value, calendar.period, weekStart);
-              const hasData = dayDataAndIndex.length > 0;
+              const hasData = dayDataAndIndexUnfiltered.length > 0;
+              const hasFilteredData = dayDataAndIndex.length > 0;
               return (
                 <TouchableOpacity
                   style={[styles.daySquare, hasData ?
                     {
                       backgroundColor: dayBackground,
+                      opacity: hasFilteredData ? 1 : 0.5,
                     } :
                     {
                       backgroundColor: [0, 6].includes((itemWeekStart.getDay() + dayIdx) % 7) 
@@ -120,7 +123,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName, 
                   onLongPress={() => {
                     if (activity.unit.type === "none") {
                       dismissHint("quick_check_daily_activity");
-                      if (hasData) {
+                      if (hasFilteredData) {
                         deleteActivityDataPoint(activityName, dayDataAndIndex[0][1]);
                       } else {
                         updateActivityDataPoint(activityName, undefined, { date: day, tags: positiveTags });
@@ -142,7 +145,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName, 
                   </Text>}
 
                   <Text style={[styles.value, { color: theme.colors.background }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>
-                    {hasData && (value !== null ? 
+                    {hasFilteredData && (value !== null ? 
                       (activity.unit.type === "none" && value === 1 ? 
                         "✓" : 
                         renderShortFormValue(value, subUnit)) : 
