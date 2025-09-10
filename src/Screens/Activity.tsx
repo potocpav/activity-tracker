@@ -7,16 +7,16 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { Menu, Button } from 'react-native-paper';
-import useStore from "./Store";
-import { DataPoint, ActivityType, Tag, dateListToDate } from "./StoreTypes";
+import useStore from "../Model/Store";
+import { DataPoint, ActivityType, Tag, dateListToDate } from "../Model/StoreTypes";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import ActivitySummary from "./ActivitySummary";
 import { File, Paths } from "expo-file-system/next";
 import * as Sharing from 'expo-sharing';
-import { getTheme, getThemeVariant } from "./Theme";
+import { getTheme, getThemeVariant } from "../Model/Theme";
 import { SystemBars } from "react-native-edge-to-edge";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Hint from "./Components/Hint";
+import Hint from "../Components/Hint";
 
 type ActivityProps = {
   navigation: any;
@@ -201,7 +201,7 @@ const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ 
           <Menu.Item onPress={() => { setMenuVisible(false); deleteActivityWrapper() }} title="Delete" />
         </Menu>
       </View>
-      <Hint hint="add_data_point" arrowPos={0.7} />
+      <Hint hint="add_data_point" />
       <ActivitySummary activityName={activityName} navigation={navigation} />
     </SafeAreaView>
   );

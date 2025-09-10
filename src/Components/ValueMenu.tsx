@@ -2,8 +2,8 @@ import React from "react";
 import { View, Text } from "react-native";
 import { Menu, Button } from 'react-native-paper';
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { numericStatValues, StatValue } from "./StoreTypes";
-import { valueToLabel } from "./ActivityUtil";
+import { numericStatValues, StatValue } from "../Model/StoreTypes";
+import { valueToLabel } from "../Model/Activity";
 
 interface ValueMenuProps {
   menuVisible: boolean

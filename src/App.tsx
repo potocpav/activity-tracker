@@ -5,24 +5,24 @@ import {
 } from "react-native";
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import Activities from "./Activities";
-import useStore from "./Store";
-import Activity from "./Activity";
-import Settings from "./Settings";
-import EditDataPoint from "./EditDataPoint";
-import EditActivity from "./EditActivity";
-import ThemeSelectionDialog from "./ThemeSelectionDialog";
+import Activities from "./Screens/Activities";
+import useStore from "./Model/Store";
+import Activity from "./Screens/Activity";
+import Settings from "./Screens/Settings";
+import EditDataPoint from "./Screens/EditDataPoint";
+import EditActivity from "./Screens/EditActivity";
+import ThemeSelectionDialog from "./Screens/ThemeSelectionDialog";
 import {
   PaperProvider,
   MD3LightTheme,
   MD3DarkTheme,
   adaptNavigationTheme,
 } from 'react-native-paper';
-import ActivityData from "./ActivityData";
+import ActivityData from "./Screens/ActivityData";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { getTheme, getThemeVariant } from "./Theme";
+import { getTheme, getThemeVariant } from "./Model/Theme";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import EditStat from "./EditStat";
+import EditStat from "./Screens/EditStat";
 import { enGB, registerTranslation } from 'react-native-paper-dates'
 
 const { LightTheme, DarkTheme: PaperDarkTheme } = adaptNavigationTheme({

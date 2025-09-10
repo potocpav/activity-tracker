@@ -4,15 +4,15 @@ import { Menu, Button, Portal, Dialog, TextInput } from 'react-native-paper';
 import { getTransformComponents, Line, Scatter, setScale, setTranslate, useChartTransformState } from "victory-native";
 import { CartesianChart } from "victory-native";
 import { matchFont, RoundedRect, Text as SkiaText } from "@shopify/react-native-skia";
-import useStore from "./Store";
-import { DataPoint, dateListToTime, ActivityType, GraphType } from "./StoreTypes";
+import useStore from "../../Model/Store";
+import { DataPoint, dateListToTime, ActivityType, GraphType } from "../../Model/StoreTypes";
 import { useAnimatedReaction, useSharedValue, withTiming } from "react-native-reanimated";
-import { binTime, binTimeSeries, BinSize, extractValue } from "./ActivityUtil";
+import { binTime, binTimeSeries, BinSize, extractValue } from "../../Model/Activity";
 import AntDesign from '@expo/vector-icons/AntDesign';
-import TagMenu from "./TagMenu";
-import SubUnitMenu from "./SubUnitMenu";
-import DropdownMenu from "./Components/DropdownMenu";
-import { getTheme } from "./Theme";
+import TagMenu from "../TagMenu";
+import SubUnitMenu from "../SubUnitMenu";
+import DropdownMenu from "../DropdownMenu";
+import { getTheme } from "../../Model/Theme";
 
 const fontFamily = Platform.select({ default: "sans-serif" });
 

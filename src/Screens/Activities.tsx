@@ -8,16 +8,16 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { Button } from 'react-native-paper';
-import useStore from "./Store";
-import { ActivityType, Stat } from "./StoreTypes";
+import useStore from "../Model/Store";
+import { ActivityType, Stat } from "../Model/StoreTypes";
 import DraggableFlatList from 'react-native-draggable-flatlist'
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { renderStatValue } from "./ActivityUtil";
-import { getTheme, getThemePalette, getThemeVariant, useWideDisplay } from "./Theme";
+import { renderStatValue } from "../Model/Activity";
+import { getTheme, getThemePalette, getThemeVariant, useWideDisplay } from "../Model/Theme";
 import { SystemBars } from "react-native-edge-to-edge";
 import { SafeAreaView } from "react-native-safe-area-context";
-import EmptyPagePlaceholder from "./Components/EmptyPagePlaceholder";
-import Hint from "./Components/Hint";
+import EmptyPagePlaceholder from "../Components/EmptyPagePlaceholder";
+import Hint from "../Components/Hint";
 
 type ActivitiesProps = {
   navigation: any;

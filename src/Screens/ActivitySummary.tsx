@@ -1,16 +1,16 @@
 import React, { Fragment, useLayoutEffect } from "react";
 import { ScrollView, StyleSheet, Text, View, Pressable, useWindowDimensions } from "react-native";
 import { Divider } from 'react-native-paper';
-import useStore from "./Store";
-import { ActivityType, CalendarProps, GraphProps, Stat } from "./StoreTypes";
-import { renderTags } from "./ActivityUtil";
+import useStore from "../Model/Store";
+import { ActivityType, CalendarProps, GraphProps, Stat } from "../Model/StoreTypes";
+import { renderTags } from "../Components/Tags";
 import AntDesign from '@expo/vector-icons/AntDesign';
-import ActivityGraph from "./ActivityGraph";
-import ActivityCalendar from "./ActivityCalendar";
-import StatView from "./StatView";
-import { getTheme, getThemePalette, useWideDisplay } from "./Theme";
+import ActivityGraph from "../Components/Activity/ActivityGraph";
+import ActivityCalendar from "../Components/Activity/ActivityCalendar";
+import StatView from "../Components/StatView";
+import { getTheme, getThemePalette, useWideDisplay } from "../Model/Theme";
 import Animated, { LinearTransition } from "react-native-reanimated";
-import Hint from "./Components/Hint";
+import Hint from "../Components/Hint";
 
 const ActivitySummary = ({ navigation, activityName }: { navigation: any, activityName: string }) => {
   const activities = useStore((state: any) => state.activities);

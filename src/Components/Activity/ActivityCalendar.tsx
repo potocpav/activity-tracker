@@ -6,13 +6,13 @@ import {
   NativeModules,
   Pressable,
 } from "react-native";
-import useStore from "./Store";
-import { ActivityType, StatValue } from "./StoreTypes";
-import TagMenu from "./TagMenu";
-import Calendar from "./Components/Calendar";
-import ValueMenu from "./ValueMenu";
-import SubUnitMenu from "./SubUnitMenu";
-import { getTheme } from "./Theme";
+import useStore from "../../Model/Store";
+import { ActivityType, StatValue } from "../../Model/StoreTypes";
+import TagMenu from "../TagMenu";
+import Calendar from "../Calendar";
+import ValueMenu from "../ValueMenu";
+import SubUnitMenu from "../SubUnitMenu";
+import { getTheme } from "../../Model/Theme";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { Dialog, Portal, TextInput, Button } from "react-native-paper";
 

@@ -2,13 +2,13 @@ import React from 'react';
 import { StyleSheet, ScrollView, ToastAndroid, View, Linking } from 'react-native';
 import { List, Divider, Switch } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
-import useStore, { version, partialize, migrate } from './Store';
+import useStore, { version, partialize, migrate } from '../Model/Store';
 import { File, Paths } from 'expo-file-system/next';
 import * as DocumentPicker from 'expo-document-picker';
 import * as Sharing from 'expo-sharing';
-import { getTheme } from './Theme';
+import { getTheme } from '../Model/Theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { allHints } from './StoreTypes';
+import { allHints } from '../Model/StoreTypes';
 
 const Settings = () => {
   const theme = getTheme();

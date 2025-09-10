@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { RadioButton } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
-import useStore from './Store';
+import useStore from '../Model/Store';
 
 const ThemeSelectionDialog: React.FC = () => {
   const navigation = useNavigation();

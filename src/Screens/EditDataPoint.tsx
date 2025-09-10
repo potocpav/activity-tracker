@@ -9,18 +9,18 @@ import {
   Pressable,
 } from "react-native";
 import { Chip, TextInput, Button, MD3Theme } from 'react-native-paper';
-import { ActivityType, dateToDateList, DataPoint, dateListToDate, SubUnit, DateList } from "./StoreTypes";
-import useStore from "./Store";
+import { ActivityType, dateToDateList, DataPoint, dateListToDate, SubUnit, DateList } from "../Model/StoreTypes";
+import useStore from "../Model/Store";
 import { DatePickerModal } from "react-native-paper-dates";
 import { CalendarDate } from "react-native-paper-dates/lib/typescript/Date/Calendar";
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { cmpDateList, formatDate } from "./ActivityUtil";
-import { getTheme, getThemePalette, getThemeVariant } from "./Theme";
+import { cmpDateList, formatDate } from "../Model/Activity";
+import { getTheme, getThemePalette, getThemeVariant } from "../Model/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
-import { numberToString, stringToNumber, renderUnit } from "./Unit";
-import { ValueEditor } from "./UnitView";
-import InputWrapper, { InputWrapperRef } from "./Components/InputWrapper";
+import { numberToString, stringToNumber, renderUnit } from "../Model/Unit";
+import { ValueEditor } from "../Components/UnitView";
+import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
 
 type EditDataPointProps = {
   navigation: any;

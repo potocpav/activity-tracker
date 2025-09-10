@@ -2,8 +2,8 @@ import React from "react";
 import { View, Text } from "react-native";
 import { Menu, Button } from 'react-native-paper';
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { Tag, ActivityType } from "./StoreTypes";
-import { getTheme, getThemePalette } from "./Theme";
+import { Tag, ActivityType } from "../Model/StoreTypes";
+import { getTheme, getThemePalette } from "../Model/Theme";
 
 interface TagMenuProps {
   activity: ActivityType;

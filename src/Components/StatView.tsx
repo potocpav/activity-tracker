@@ -1,10 +1,10 @@
 import React from "react";
 import { Text, View, Pressable, StyleSheet } from "react-native";
-import { ActivityType, Stat } from "./StoreTypes";
-import { renderStatValue } from "./ActivityUtil";
-import { calcStatValue } from "./ActivityUtil";
-import useStore from "./Store";
-import { getTheme } from "./Theme";
+import { ActivityType, Stat } from "../Model/StoreTypes";
+import { renderStatValue } from "../Model/Activity";
+import { calcStatValue } from "../Model/Activity";
+import useStore from "../Model/Store";
+import { getTheme } from "../Model/Theme";
 import Animated, { LinearTransition, FadeIn, FadeOut } from "react-native-reanimated";
 
 const StatView = ({ stat, activity, onPress, sharedTransitionTag }: { stat: Stat, activity: ActivityType, onPress: () => void, sharedTransitionTag?: string }) => {

@@ -1,15 +1,15 @@
 import React from "react";
 import { ScrollView, Text, View } from "react-native";
 import { Dialog, Button, TextInput } from 'react-native-paper';
-import useStore from "./Store";
-import { ActivityType, Stat, StatPeriod, StatValue, TagFilter, allStatPeriods, unaryStatValues, numericStatValues } from "./StoreTypes";
-import { valueToLabel, periodToLabel } from "./ActivityUtil";
-import TagMenu from "./TagMenu";
-import SubUnitMenu from "./SubUnitMenu";
-import DropdownMenu from "./Components/DropdownMenu";
+import useStore from "../Model/Store";
+import { ActivityType, Stat, StatPeriod, StatValue, TagFilter, allStatPeriods, unaryStatValues, numericStatValues } from "../Model/StoreTypes";
+import { valueToLabel, periodToLabel } from "../Model/Activity";
+import TagMenu from "../Components/TagMenu";
+import SubUnitMenu from "../Components/SubUnitMenu";
+import DropdownMenu from "../Components/DropdownMenu";
 import AntDesign from '@expo/vector-icons/AntDesign';
-import StatView from "./StatView";
-import { getTheme, getThemeVariant } from "./Theme";
+import StatView from "../Components/StatView";
+import { getTheme, getThemeVariant } from "../Model/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
 

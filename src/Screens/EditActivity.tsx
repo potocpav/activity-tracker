@@ -7,18 +7,18 @@ import {
   Alert,
 } from "react-native";
 import { Dialog, Portal, SegmentedButtons, MD3Theme } from 'react-native-paper';
-import { ActivityType, SetTag, Tag, SubUnit, Unit } from "./StoreTypes";
+import { ActivityType, SetTag, Tag, SubUnit, Unit } from "../Model/StoreTypes";
 import { TextInput, Button, Chip } from "react-native-paper";
-import useStore from "./Store";
+import useStore from "../Model/Store";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import DraggableFlatList from 'react-native-draggable-flatlist';
-import ColorPicker from './Components/ColorPicker';
-import { getTheme, getThemePalette, getThemeVariant } from "./Theme";
-import { defaultCalendar, defaultGraph, defaultStats } from "./DefaultActivity";
+import ColorPicker from '../Components/ColorPicker';
+import { getTheme, getThemePalette, getThemeVariant } from "../Model/Theme";
+import { defaultCalendar, defaultGraph, defaultStats } from "../Model/DefaultActivity";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
-import { UnitEditor } from "./UnitView";
-import InputWrapper, { InputWrapperRef } from "./Components/InputWrapper";
+import { UnitEditor } from "../Components/UnitView";
+import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
 
 type EditActivityProps = {
   navigation: any;

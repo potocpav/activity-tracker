@@ -7,17 +7,18 @@ import {
   Pressable,
 } from "react-native";
 import { Button, Divider } from 'react-native-paper';
-import useStore from "./Store";
-import { DataPoint, ActivityType, Tag, DateList, dateListToDate, Unit } from "./StoreTypes";
-import { cmpDateList, dayCmp, findZeroSlice, renderTags, formatDate } from "./ActivityUtil";
-import TagMenu from "./TagMenu";
-import { renderLongFormValue } from "./Unit";
+import useStore from "../Model/Store";
+import { DataPoint, ActivityType, Tag, DateList, dateListToDate, Unit } from "../Model/StoreTypes";
+import { cmpDateList, dayCmp, findZeroSlice, formatDate } from "../Model/Activity";
+import { renderTags } from "../Components/Tags";
+import TagMenu from "../Components/TagMenu";
+import { renderLongFormValue } from "../Model/Unit";
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { getThemePalette, getThemeVariant } from "./Theme";
-import { getTheme } from "./Theme";
+import { getThemePalette, getThemeVariant } from "../Model/Theme";
+import { getTheme } from "../Model/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
-import EmptyPagePlaceholder from "./Components/EmptyPagePlaceholder";
+import EmptyPagePlaceholder from "../Components/EmptyPagePlaceholder";
 
 
 type ActivityDataProps = {
