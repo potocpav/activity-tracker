@@ -13,7 +13,7 @@ const hintInfo = (hint: HintType) => {
       return {
         text: [
           "Welcome to Activity Tracker! These hints will help you use the app.",
-          "You can disable hints in the settings, if you don't want to see them anymore.",
+          "You can disable hints in the settings.",
         ],
         arrowPos: 1.0,
       };
@@ -27,7 +27,7 @@ const hintInfo = (hint: HintType) => {
     case "calendar_introduction":
       return {
         text: [
-          "Calendar shows daily summaries of your activity, and allows you to add and edit data for each day.",
+          "Calendar allows you to add and edit data for each day.",
         ],
         arrowPos: 0.5,
       };
@@ -63,7 +63,7 @@ const hintInfo = (hint: HintType) => {
     case "quickly_add_point":
       return {
         text: [
-          "You can quickly add a data point by clicking the + button.",
+          "You can quickly add data by clicking the + button.",
         ],
         arrowPos: 1.0,
       };
@@ -84,10 +84,10 @@ const hintInfo = (hint: HintType) => {
     case "activity_value_help":
       return {
         text: [
-          "There are three types of activities:",
-          "1. No value - no numbers are recorded, just the date. Examples: flossing, exercised today, etc.",
-          "1. Single value - one number is recorded. Examples: body weight, number of pull-ups, etc.",
-          "2. Multiple values - performance is measured in multiple ways. For example, for running, you may want to record both time and distance.",
+          "There are three types of activity values:",
+          "1. None - no numbers are recorded, just the date. Examples: flossing, went exercising, etc.",
+          "2. Single - one number is recorded. Examples: body weight, number of pull-ups, etc.",
+          "3. Multiple - performance is measured by multiple numbers. For example, for running - time and distance.",
         ],
         arrowPos: 0.5,
       };

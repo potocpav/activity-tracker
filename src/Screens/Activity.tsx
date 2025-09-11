@@ -201,7 +201,7 @@ const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ 
           <Menu.Item onPress={() => { setMenuVisible(false); deleteActivityWrapper() }} title="Delete" />
         </Menu>
       </View>
-      <Hint hint="add_data_point" />
+      { activity.dataPoints.length === 0 && <Hint hint="add_data_point" />}
       <ActivitySummary activityName={activityName} navigation={navigation} />
     </SafeAreaView>
   );

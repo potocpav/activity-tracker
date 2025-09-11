@@ -47,7 +47,6 @@ const Settings = () => {
         dialogTitle: 'Export Activities',
         mimeType: 'application/json',
       });
-      ToastAndroid.show("Data exported successfully", ToastAndroid.SHORT);
     } catch (error) {
       console.error(error);
     }

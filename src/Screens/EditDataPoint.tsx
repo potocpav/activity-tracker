@@ -97,13 +97,18 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
       break;
   }
 
+  let inputValueDisabled: 
+    [string | null, (disabled: string | null) => void][] = 
+    inputValues.map((v) => useState<string | null>(null));
   let inputValueRefs: React.RefObject<InputWrapperRef>[] = inputValues.map((v) => useRef<InputWrapperRef>(undefined));
-  let inputValueErrors: (string | null)[] = inputValues.map((v) => {
+  let inputValueErrors: (string | null)[] = inputValues.map((v, idx) => {
     let error: string | null = null;
     let numValue = stringToNumber(v.value[0], v.subUnit.unit);
-    if (v.value[0] !== "" && (numValue === null || isNaN(numValue))) {
+    if (inputValueDisabled[idx][0] !== null) {
+      error = inputValueDisabled[idx][0];
+    } else if (v.value[0] !== "" && (numValue === null || isNaN(numValue))) {
       error = "Enter a valid value";
-    }
+    } 
     return error;
   });
 
@@ -312,7 +317,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
               label={inputValue.subUnit.name === null ? renderUnit(inputValue.subUnit.unit) : `${inputValue.subUnit.name} - ${renderUnit(inputValue.subUnit.unit)}`} // TODO: better label
               value={inputValue.value[0]} 
               onChange={inputValue.value[1]} 
-              setSubmitDisabled={() => {}}
+              setSubmitDisabled={inputValueDisabled[index][1]}
             />
           ))}
         </View>

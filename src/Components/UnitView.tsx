@@ -198,7 +198,7 @@ export const ValueEditor = ({
   error: string | null,
   inputWrapperRef: React.RefObject<InputWrapperRef>,
   onChange: (value: string) => void,
-  setSubmitDisabled: (disabled: boolean) => void,
+  setSubmitDisabled: (disabled: string | null) => void,
 }) => {
   const theme = getTheme();
   const wideDisplay = useWideDisplay();
@@ -217,7 +217,7 @@ export const ValueEditor = ({
     setTimerActive(false);
     setTimerStartTime(null);
     setNow(null);
-    setSubmitDisabled(false);
+    setSubmitDisabled(null);
     onChange(numberToString(0, unit));
   }
 
@@ -228,17 +228,20 @@ export const ValueEditor = ({
       onChange(addTimerToValue(value));
       setTimerActive(false);
       setTimerStartTime(null);
-      setSubmitDisabled(false);
+      setSubmitDisabled(null);
       if (timerInterval) {
         clearInterval(timerInterval);
         setTimerInterval(null);
       }
     } else {
       // start timer
+      if (value === "") {
+        onChange(numberToString(0, unit));
+      }
       setTimerActive(true);
       setTimerStartTime(Date.now() / timeFactor);
       setNow(Date.now() / timeFactor);
-      setSubmitDisabled(true);
+      setSubmitDisabled("Timer is running");
 
       setTimerInterval(setInterval(() => {
         setNow(Date.now() / timeFactor);

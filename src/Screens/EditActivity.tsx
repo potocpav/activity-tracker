@@ -112,10 +112,9 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       Math.floor(Math.random() * palette.length) :
       activity.color
   );
-  const theme = getTheme();
+  const theme = getTheme(selectedColor);
   const styles = getStyles(theme);
   const [activityDescriptionInput, setActivityDescriptionInput] = useState(activity?.description ?? "");
-
 
   // Missing oldName represents there is no old name
   // null oldName represents that the old value comes from a single-valued unit
@@ -270,6 +269,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       hasError = true;
     }
     if (unitMode === null) {
+      unitModeInputRef?.current?.highlightError();
       hasError = true;
     }
     if (singleUnitInputError !== null) {
