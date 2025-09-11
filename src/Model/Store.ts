@@ -147,7 +147,7 @@ const useStore = create<State>()(
       theme: "system",
       blackBackground: false,
       weekStart: "monday",
-      activeHints: ["add_data_point"],
+      activeHints: allHints,
       showHints: true,
 
       dismissHint: (hint: HintType) => {
