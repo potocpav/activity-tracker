@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, ScrollView, ToastAndroid, View, Linking } from 'react-native';
+import { StyleSheet, ScrollView, ToastAndroid, Alert, View, Linking } from 'react-native';
 import { List, Divider, Switch } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import useStore, { version, partialize, migrate } from '../Model/Store';
@@ -8,7 +8,8 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as Sharing from 'expo-sharing';
 import { getTheme } from '../Model/Theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { allHints } from '../Model/StoreTypes';
+import { allHints, State, ActivityType } from '../Model/StoreTypes';
+import { cmpDateList } from '../Model/Activity';
 
 const Settings = () => {
   const theme = getTheme();
@@ -62,13 +63,37 @@ const Settings = () => {
     });
     if (!result.canceled) {
       const asset = result.assets[0];
-      const file = new File(asset.uri);
-      const contents = file.text()
-      const json = JSON.parse(contents);
-      const migrated = migrate(json, json.version);
-      setState(migrated);
-      ToastAndroid.show("Data imported successfully", ToastAndroid.SHORT);
-      // TODO: sanity check and import the file
+      
+      try {
+        const file = new File(asset.uri);
+        const contents = file.text()
+        const json = JSON.parse(contents);
+        
+        if (json.version === undefined) {
+          Alert.alert("Import Error", "Version is missing");
+          return;
+        }
+        let migrated = migrate(json, json.version);
+
+        // slight sanity check
+        // sort data points by date
+
+        migrated = {
+          ...migrated,
+          activities: migrated.activities.map((activity: ActivityType) => ({
+            ...activity,
+            dataPoints: [...activity.dataPoints].sort((a, b) => cmpDateList(a.date, b.date))
+          })),
+        };
+
+        setState(migrated);
+        ToastAndroid.show("Data imported successfully", ToastAndroid.SHORT);
+      } catch (error) {
+        console.error(error);
+        Alert.alert((error as Error).name, (error as Error).message);
+        return;
+      }
+
     }
   }
 
