@@ -2,7 +2,7 @@
   "expo": {
     "name": "Activities",
     "slug": "activity-tracker",
-    "version": "2.2.0",
+    "version": "2.2.1",
     "icon": "./assets/icon.png",
     "splash": {
       "image": "./assets/icon-fg.png",
