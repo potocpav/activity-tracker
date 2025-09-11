@@ -144,8 +144,7 @@ export type HintType =
   "hello" | "quickly_add_point" | "reorder_activities" | 
   "add_data_point" | "overview_edit_hint" | "duplicate_calendar" | "rename_calendar" | "calendar_introduction" | "quick_check_daily_activity" |
   "edit_activity_introduction" | "activity_value_help" |
-  "save_data_point" |
-  "data_list_day_introduction" | "data_list_all_introduction";
+  "save_data_point"
 
 // hint sequencing. Must contain all hints.
 export const hintDependencyChains : HintType[][] = [
@@ -158,8 +157,7 @@ export const hintDependencyChains : HintType[][] = [
   // Edit data point screen
   ["save_data_point"],
   // Data list screen
-  [ "data_list_day_introduction" ],
-  [ "data_list_all_introduction" ],
+  // (none)
 ];
 
 export const allHints : HintType[] = [...new Set(hintDependencyChains.flat(Infinity))] as HintType[];

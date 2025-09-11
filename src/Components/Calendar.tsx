@@ -22,8 +22,7 @@ type CalendarComponentProps = {
   calendarIndex: number;
 };
 
-const ITEM_MARGIN = 1;
-
+const ITEM_MARGIN = 2;
 
 const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName, calendarIndex }) => {
   const activities = useStore((state: any) => state.activities);
@@ -52,7 +51,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName, 
 
   const weekCount = Math.min(maxWeekCount, Math.max(minWeekCount, 1 + Math.round((lastVisibleWeek.getTime() - firstVisibleWeek.getTime()) / (7 * 24 * 60 * 60 * 1000))));
   const positiveTags = calendar.tagFilters.filter((t: TagFilter) => t.state === "yes").map((t: TagFilter) => t.name);
-
+  
   let subUnit: SubUnit;
   switch (activity.unit.type) {
     case "none":
@@ -106,19 +105,9 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName, 
               const value = extractStatValue(dayDataAndIndex.map((v: any) => [v[0], v[2]]), calendar.value, calendar.period, weekStart);
               const hasData = dayDataAndIndexUnfiltered.length > 0;
               const hasFilteredData = dayDataAndIndex.length > 0;
+              const isWeekend = [0, 6].includes((itemWeekStart.getDay() + dayIdx) % 7)
               return (
                 <TouchableOpacity
-                  style={[styles.daySquare, hasData ?
-                    {
-                      backgroundColor: dayBackground,
-                      opacity: hasFilteredData ? 1 : 0.5,
-                    } :
-                    {
-                      backgroundColor: [0, 6].includes((itemWeekStart.getDay() + dayIdx) % 7) 
-                      ? "#88888860" 
-                      : "#88888840",
-                    }
-                  ]}
                   key={dayIdx}
                   onLongPress={() => {
                     if (activity.unit.type === "none") {
@@ -140,10 +129,17 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName, 
                   activeOpacity={0.3}
                 >
                   {(dayIdx == 0) && 
-                  <Text style={[styles.dayNumber, { color: theme.colors.outline, backgroundColor: theme.colors.background }]}>
+                  <Text style={[styles.dayNumber, { color: theme.colors.outline, backgroundColor: theme.colors.background, zIndex: 10 }]}>
                     {day[2]}
                   </Text>}
 
+                  <View style={
+                    {
+                      ...styles.daySquareInternal,
+                      backgroundColor: hasData ? dayBackground : "#888888",
+                      opacity: hasFilteredData ? 1 : isWeekend ? 0.5 : 0.3,
+                    }
+                  }>
                   <Text style={[styles.value, { color: theme.colors.background }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>
                     {hasFilteredData && (value !== null ? 
                       (activity.unit.type === "none" && value === 1 ? 
@@ -151,6 +147,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName, 
                         renderShortFormValue(value, subUnit)) : 
                       '-')}
                   </Text>
+                  </View>
                 </TouchableOpacity>
               );
             })}
@@ -172,11 +169,11 @@ const getStyles = (itemWidth: number, dimensions: any) => StyleSheet.create({
     flexDirection: 'column',
     width: itemWidth,
   },
-  daySquare: {
-    width: itemWidth - ITEM_MARGIN * 2,
-    height: itemWidth - ITEM_MARGIN * 2,
+  daySquareInternal: {
+    width: itemWidth - ITEM_MARGIN,
+    height: itemWidth - ITEM_MARGIN,
     borderRadius: 8,
-    margin: ITEM_MARGIN,
+    marginBottom: ITEM_MARGIN,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 3,
@@ -184,9 +181,8 @@ const getStyles = (itemWidth: number, dimensions: any) => StyleSheet.create({
   dayNumber: {
     position: 'absolute',
     fontSize: 8 * dimensions.fontScale,
-    marginBottom: 2,
-    marginTop: -30 * dimensions.fontScale,
-    marginLeft: -25 * dimensions.fontScale,
+    top: -5 * dimensions.fontScale,
+    left: -3 * dimensions.fontScale,
     paddingHorizontal: 3,
     paddingVertical: 1,
     borderRadius: 4,

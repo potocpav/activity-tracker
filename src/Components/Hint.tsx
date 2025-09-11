@@ -98,22 +98,6 @@ const hintInfo = (hint: HintType) => {
         ],
         arrowPos: 1.0,
       };
-    case "data_list_day_introduction":
-      return {
-        text: [
-          "This is a list of data points for one day.",
-          "You can view, add, and edit data points here.",
-        ],
-        arrowPos: 0.5,
-      };
-    case "data_list_all_introduction":
-      return {
-        text: [
-          "This is a list of all data points.",
-          "You can view, add, and edit data points here.",
-        ],
-        arrowPos: 0.5,
-      };
   }
 };
 

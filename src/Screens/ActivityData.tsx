@@ -195,7 +195,6 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
 
   return (
     <SafeAreaView style={[styles.container]} edges={["left", "right"]}>
-      {day ? <Hint hint="data_list_day_introduction" /> : <Hint hint="data_list_all_introduction" />}
       <SystemBars style={"light"} />
       {sections.length === 0 ? (
         <EmptyPagePlaceholder title="No data" subtext="Tap the + button to create a data point" />
