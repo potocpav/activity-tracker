@@ -273,13 +273,28 @@ export const ValueEditor = ({
         </Pressable>
         <Portal>
           <Dialog visible={climbingGradeDialogVisible} onDismiss={() => setClimbingGradeDialogVisible(false)}>
+            <Dialog.Title>
+              <View style={{ flex: 1, alignItems: 'flex-end', width: '100%' }}>
+              <Button onPress={() => { 
+                setClimbingGradeDialogVisible(false);
+                onChange("");
+              }} compact={true}>
+                <AntDesign name="close" size={24} color={theme.colors.onSurface} />
+              </Button>
+              </View>
+            </Dialog.Title>
             <Dialog.ScrollArea>
+              <View style={{ flex: 1, alignItems: 'flex-end', justifyContent: 'flex-end' }}>
+                <Button onPress={() => { setClimbingGradeDialogVisible(false) }}>
+                  <AntDesign name="close" size={24} color={theme.colors.onSurface} />
+                </Button>
+              </View>
               <FlatList
                 key={`uiaa-grade-list-${numColumns}`}
                 getItemLayout={(_, index) => ({ length: itemHeight, offset: itemHeight * index, index })}
                 initialScrollIndex={
-                  Math.max(0, Math.floor(value === "" ? 
-                    options.length / numColumns / 2 : 
+                  Math.max(0, Math.floor(value === "" ?
+                    options.length / numColumns / 2 :
                     options.findIndex(o => o.s === value) / numColumns) - 3)}
                 numColumns={numColumns}
                 indicatorStyle="black"
@@ -297,84 +312,84 @@ export const ValueEditor = ({
 
   return (
     <InputWrapper error={error} ref={inputWrapperRef}>
-    <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, marginVertical: 4 }}>
-      {(() => {
-        switch (unit.type) {
-          case "time":
-            return (
-              <>
-                <TextInput
-                  style={{ flex: 1 }}
-                  label={label}
-                  value={timerActive ? addTimerToValue(value) : value}
-                  editable={!timerActive}
-                  onChangeText={text => onChange(text)}
-                  mode="outlined"
-                />
-                <Button onPress={() => resetTimer()} compact={true} style={{ marginTop: 4 }} mode="outlined">
-                  <View>
-                    <AntDesign name={"reload1"} size={22} color={theme.colors.onSurface} />
-                  </View>
-                </Button>
-                <Button onPress={() => toggleTimer(unit.unit)} compact={true} style={{ marginTop: 4 }} mode="outlined">
-                  <View>
-                    <AntDesign name={timerActive ? "pausecircleo" : "playcircleo"} size={22} color={theme.colors.onSurface} />
-                  </View>
-                </Button>
-              </>
-            );
-          case "count":
-            return (
-              <>
-                <TextInput
-                  style={{ flex: 1 }}
-                  label={label}
-                  value={value}
-                  onChangeText={text => onChange(text)}
-                  keyboardType="numeric"
-                  mode="outlined"
-                />
-                <Button onPress={() => onChange(mapStringValue(unit, value, v => v - 1))} compact={true} mode="outlined" style={{ marginTop: 4 }}>
-                  <View>
-                  <AntDesign name="minus" size={24} color={theme.colors.onSurface} />
-                  </View>
-                </Button>
-                <Button onPress={() => onChange(mapStringValue(unit, value, v => v + 1))} compact={true} mode="outlined" style={{ marginTop: 4 }}>
-                  <View>
-                    <AntDesign name="plus" size={22} color={theme.colors.onSurface} />
-                  </View>
-                </Button>
-              </>
-            )
-          case "climbing_grade":
-            switch (unit.grade) {
-              case "uiaa":
-                return pickerDialog(uiaaGrades);
-              // case "font":
-              //   return pickerDialog(fontGrades);
-              case "v-scale":
-                return pickerDialog(vScaleGrades);
-              default:
-                return <TextInput
-                  style={{ flex: 1 }}
-                  label={label}
-                  value={value}
-                  onChangeText={text => onChange(text)}
-                  mode="outlined"
-                />
-            }
-          default:
-            return <TextInput
-              style={{ flex: 1 }}
-              label={label}
-              value={value}
-              onChangeText={text => onChange(text)}
-              keyboardType="numeric"
-              mode="outlined"
-            />
-        }
-      })()}
-    </View>
+      <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, marginVertical: 4 }}>
+        {(() => {
+          switch (unit.type) {
+            case "time":
+              return (
+                <>
+                  <TextInput
+                    style={{ flex: 1 }}
+                    label={label}
+                    value={timerActive ? addTimerToValue(value) : value}
+                    editable={!timerActive}
+                    onChangeText={text => onChange(text)}
+                    mode="outlined"
+                  />
+                  <Button onPress={() => resetTimer()} compact={true} style={{ marginTop: 4 }} mode="outlined">
+                    <View>
+                      <AntDesign name={"reload1"} size={22} color={theme.colors.onSurface} />
+                    </View>
+                  </Button>
+                  <Button onPress={() => toggleTimer(unit.unit)} compact={true} style={{ marginTop: 4 }} mode="outlined">
+                    <View>
+                      <AntDesign name={timerActive ? "pausecircleo" : "playcircleo"} size={22} color={theme.colors.onSurface} />
+                    </View>
+                  </Button>
+                </>
+              );
+            case "count":
+              return (
+                <>
+                  <TextInput
+                    style={{ flex: 1 }}
+                    label={label}
+                    value={value}
+                    onChangeText={text => onChange(text)}
+                    keyboardType="numeric"
+                    mode="outlined"
+                  />
+                  <Button onPress={() => onChange(mapStringValue(unit, value, v => v - 1))} compact={true} mode="outlined" style={{ marginTop: 4 }}>
+                    <View>
+                      <AntDesign name="minus" size={24} color={theme.colors.onSurface} />
+                    </View>
+                  </Button>
+                  <Button onPress={() => onChange(mapStringValue(unit, value, v => v + 1))} compact={true} mode="outlined" style={{ marginTop: 4 }}>
+                    <View>
+                      <AntDesign name="plus" size={22} color={theme.colors.onSurface} />
+                    </View>
+                  </Button>
+                </>
+              )
+            case "climbing_grade":
+              switch (unit.grade) {
+                case "uiaa":
+                  return pickerDialog(uiaaGrades);
+                // case "font":
+                //   return pickerDialog(fontGrades);
+                case "v-scale":
+                  return pickerDialog(vScaleGrades);
+                default:
+                  return <TextInput
+                    style={{ flex: 1 }}
+                    label={label}
+                    value={value}
+                    onChangeText={text => onChange(text)}
+                    mode="outlined"
+                  />
+              }
+            default:
+              return <TextInput
+                style={{ flex: 1 }}
+                label={label}
+                value={value}
+                onChangeText={text => onChange(text)}
+                keyboardType="numeric"
+                mode="outlined"
+              />
+          }
+        })()}
+      </View>
     </InputWrapper>
   );
 }
