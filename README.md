@@ -38,6 +38,10 @@ Track your performance metrics and their progress over time. With custom statist
 - [ ] JSON import validation & data point sorting
 - [ ] Reimplement graphs to use FlatList instead of VictoryNative
 
+### 2.3.0
+
+- General improvments based on user feedback
+
 ### 2.2.0
 
 - Introduce beginner hints
