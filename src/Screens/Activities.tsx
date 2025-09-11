@@ -9,10 +9,10 @@ import {
 } from "react-native";
 import { Button } from 'react-native-paper';
 import useStore from "../Model/Store";
-import { ActivityType, Stat } from "../Model/StoreTypes";
+import { ActivityType, DataPoint, dateToDateList, Stat } from "../Model/StoreTypes";
 import DraggableFlatList from 'react-native-draggable-flatlist'
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { renderStatValue } from "../Model/Activity";
+import { dayCmp, findZeroSlice, renderStatValue } from "../Model/Activity";
 import { getTheme, getThemePalette, getThemeVariant, useWideDisplay } from "../Model/Theme";
 import { SystemBars } from "react-native-edge-to-edge";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -35,6 +35,9 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   const wideDisplay = useWideDisplay();
   const dimensions = useWindowDimensions();
   const styles = getStyles(theme, wideDisplay, dimensions);
+  const today = dateToDateList(new Date());
+  const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
+  const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);
 
   React.useEffect(() => {
     navigation.setOptions({
@@ -67,7 +70,15 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
     } else {
       stats = activity.stats.slice(0, 1);
     }
-    const values = stats.map((stat: Stat) => renderStatValue(stat, activity, weekStart));
+    const statValues = stats.map((stat: Stat) => renderStatValue(stat, activity, weekStart));
+
+    // for none unit type, we need to count the number of data points for today
+    let todayPointIndices: number[] = [];
+    if (activity.unit.type === "none") {
+      todayPointIndices = activity.dataPoints
+        .map((_: DataPoint, i: number) => i)
+        .slice(...findZeroSlice(activity.dataPoints, (dp) => dayCmp(dp, today)))
+    }
 
     return (
       <Pressable
@@ -84,22 +95,52 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
           <View style={styles.activityTitleContainer}>
             <Text numberOfLines={1} style={[styles.activityTitle, { color: palette[activity.color] }]}>{activity.name}</Text>
           </View>
-          {values.map((value, index) => (
+          {statValues.map((value, index) => (
             <View key={index} style={styles.activityValueContainer}>
               <Text numberOfLines={1} adjustsFontSizeToFit style={[styles.activityValue, { color: palette[activity.color] }]}>
                 {value}
               </Text>
             </View>
           ))}
-          <TouchableOpacity
-            onPress={() => { 
+          <Pressable
+            onPress={() => {
               dismissHint("quickly_add_point");
-              navigation.navigate('EditDataPoint', { activityName: activity.name, dataPointName: null, newDataPoint: true }); 
+              navigation.navigate('EditDataPoint', { activityName: activity.name, dataPointName: null, newDataPoint: true });
             }}
+            onLongPress={() => {
+              if (activity.unit.type === "none") {
+                if (todayPointIndices.length > 0) {
+                  deleteActivityDataPoint(activity.name, todayPointIndices[0]);
+                } else {
+                  updateActivityDataPoint(activity.name, undefined, { date: today });
+                }
+              }
+            }}
+            android_ripple={{ color: theme.colors.outline, foreground: false }}
             style={styles.addDataPointButton}
           >
-            <AntDesign name="plus" size={24} color={palette[activity.color]} />
-          </TouchableOpacity>
+            <View style={{ width: 40, height: 35, alignItems: 'center', justifyContent: 'center' }}>
+              {
+                activity.unit.type === "none" ? (
+                  todayPointIndices.length > 1 ? (
+                    <View>
+                    <AntDesign name="check" size={22} color={theme.colors.onSurface} />
+                    <View style={{position: "absolute", top: 0, left: 5, opacity: 0.5}}>
+                    <AntDesign name="check" size={22} color={theme.colors.onSurface} />
+                    </View>
+                    </View>
+                  ) :
+                  todayPointIndices.length === 1 ? (
+                    <AntDesign name="check" size={22} color={theme.colors.onSurface} />
+                  ) : (
+                    <AntDesign name="close" size={22} color={theme.colors.onSurface} />
+                  )) : 
+                  (
+                  <AntDesign name="plus" size={24} color={theme.colors.onSurface} />
+                )
+              }
+            </View>
+          </Pressable>
         </View>
       </Pressable>
     );
@@ -110,24 +151,24 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
       <SystemBars style={themeVariant == 'light' ? "dark" : "light"} />
       <Hint hint="hello" />
       <View style={{ position: 'absolute', top: 100, left: 0, right: 0 }}>
-      {activities.length >= 2 && (
-        <Hint hint="quickly_add_point" />
-      )}
-      {activities.length >= 4 && (
-        <Hint hint="reorder_activities" />
-      )}
+        {activities.length >= 2 && (
+          <Hint hint="quickly_add_point" />
+        )}
+        {activities.length >= 4 && (
+          <Hint hint="reorder_activities" />
+        )}
       </View>
       {activities.length === 0 ? (
         <EmptyPagePlaceholder title="No activities" subtext="Tap the + button to create an activity" />
       ) : (
-      <DraggableFlatList
-        data={activities}
-        onDragBegin={() => dismissHint("reorder_activities")}
-        onDragEnd={({ data }) => setActivities(data)}
-        renderItem={renderActivity}
-        keyExtractor={(item) => item.name}
-        contentContainerStyle={styles.listContainer}
-      />
+        <DraggableFlatList
+          data={activities}
+          onDragBegin={() => dismissHint("reorder_activities")}
+          onDragEnd={({ data }) => setActivities(data)}
+          renderItem={renderActivity}
+          keyExtractor={(item) => item.name}
+          contentContainerStyle={styles.listContainer}
+        />
       )}
     </SafeAreaView>
   );
@@ -169,8 +210,7 @@ const getStyles = (theme: any, wideDisplay: boolean, dimensions: any) => StyleSh
     justifyContent: 'center',
   },
   addDataPointButton: {
-    padding: 6,
-    flexShrink: 0,
+    width: 40,
   },
   activityTitle: {
     fontSize: 16,
