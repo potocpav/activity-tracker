@@ -137,7 +137,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName, 
                     {
                       ...styles.daySquareInternal,
                       backgroundColor: hasData ? dayBackground : "#888888",
-                      opacity: hasFilteredData ? 1 : isWeekend ? 0.5 : 0.3,
+                      opacity: hasFilteredData ? 1 : hasData ? (isWeekend ? 0.6 : 0.4) : (isWeekend ? 0.5 : 0.3),
                     }
                   }>
                   <Text style={[styles.value, { color: theme.colors.background }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>
