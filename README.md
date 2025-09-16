@@ -18,6 +18,7 @@ Track your performance metrics and their progress over time. With custom statist
 
 - [Privacy Policy](https://potocpav.github.io/activity-tracker/privacy)
 - [FAQ](https://potocpav.github.io/activity-tracker/faq)
+- [APK Downloads](https://github.com/potocpav/activity-tracker/releases)
 
 ## Screenshots
 
