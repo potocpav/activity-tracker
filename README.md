@@ -1,6 +1,11 @@
 [![Activity Tracker Title](google-play/feature-graphic.png)](google-play/feature-graphic.png)
 
-# Activity Tracker
+
+<h1 align="center">Activity Tracker</h1>
+
+<center>
+<a href="https://play.google.com/store/apps/details?id=com.pavelpotocek.activitytracker"><img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" alt="Get it on Google Play" height="80"></a>
+</center>
 
 <!-- This description is formatted with HTML to be copy-pasteable into Google Play description -->
 
