@@ -41,6 +41,7 @@ Track your performance metrics and their progress over time. With custom statist
 - [ ] Reimplement graphs to use FlatList instead of VictoryNative
   - [ ] Regression computation in graphs based on multi-touch range selection
 - [ ] Polish unit selection dialog
+  - [ ] More distance units (m, ft, yd)
 - [ ] Redesign the data list screen
 - [ ] Tag groups
 - [ ] Activity archive to hide old activities without deleting them
@@ -52,6 +53,11 @@ Track your performance metrics and their progress over time. With custom statist
 - [ ] Animations for adding and removing calendars and graphs
 
 ## Changelog
+
+### 2.2.2
+
+- Fix crash when adding a third measurement unit
+- Various improvements and fixes based on user feedback
 
 ### 2.2.1
 

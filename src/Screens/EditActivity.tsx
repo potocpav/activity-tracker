@@ -84,7 +84,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   let unitModeError = null;
   const unitModeInputRef = useRef<InputWrapperRef>(undefined);
   if (unitMode === null) {
-    unitModeError = "Select a unit mode";
+    unitModeError = "Choose measurement type";
   }
 
   const [singleUnitInput, setSingleUnitInput] = useState<SubUnit | null>((() => {
@@ -133,45 +133,42 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       }
     }
   })());
-  const [multiUnitInput, setMultiUnitInput] = useState<{ name: string, unit: SubUnit | null }[]>((() => {
+
+  const emptyMultiUnit = { name: '', unit: null, nameRef: null, unitRef: null, nameError: null, unitError: null };
+
+  const computeMultiUnitInputErrors = (vals: { name: string, unit: SubUnit | null, nameRef: InputWrapperRef | null, unitRef: InputWrapperRef | null }[]) => {
+    return vals.map((val, idx) => {
+      return {
+        ...val,
+        nameError: val.name === "" ? "Enter a name" : vals.findIndex((u) => u.name === val.name) !== idx ? "Name must be unique" : null,
+        unitError: val.unit === null ? "Select a unit" : null,
+      }
+    });
+  };
+
+  const [multiUnitInput, setMultiUnitInputInternal] = useState<{ name: string, unit: SubUnit | null, nameRef: InputWrapperRef | null, unitRef: InputWrapperRef | null, nameError: string | null, unitError: string | null }[]>((() => {
+    let res = [];
     if (!activity) {
-      return [
-        { name: '', unit: null },
-        { name: '', unit: null },
-      ];
+      res = [emptyMultiUnit, emptyMultiUnit];
     } else {
       switch (activity.unit.type) {
         case 'none':
-          return [
-            { name: '', unit: null },
-            { name: '', unit: null },
-          ];
+          res = [emptyMultiUnit, emptyMultiUnit];
+          break;
         case 'single':
-          return [
-            { name: '', unit: activity.unit.unit },
-            { name: '', unit: null },
-          ];
+          res = [{ ...emptyMultiUnit, unit: activity.unit.unit }, emptyMultiUnit];
+          break;
         case 'multiple':
-          return activity.unit.values.map((u: { name: string, unit: SubUnit }) => ({ name: u.name, unit: u.unit }));
+          res = activity.unit.values.map((u: { name: string, unit: SubUnit }) => ({ ...emptyMultiUnit, name: u.name, unit: u.unit }));
+          break;
       }
     }
+    return computeMultiUnitInputErrors(res);
   })());
 
-  const multiUnitInputRef: { name: React.RefObject<InputWrapperRef>, unit: React.RefObject<InputWrapperRef> }[] =
-    multiUnitInput.map((_) => ({ name: useRef<InputWrapperRef>(undefined), unit: useRef<InputWrapperRef>(undefined) }));
-  const multiUnitInputError: { name: string | null, unit: string | null }[] = multiUnitInput.map((val, idx) => {
-    if (unitMode === 'multiple') {
-      return {
-        name: val.name === "" ? "Enter a name" : multiUnitInput.findIndex((u) => u.name === val.name) !== idx ? "Name must be unique" : null,
-        unit: val.unit === null ? "Select a unit" : null,
-      }
-    } else {
-      return {
-        name: null,
-        unit: null
-      }
-    };
-  });
+  const setMultiUnitInput = (vals: { name: string, unit: SubUnit | null, nameRef: InputWrapperRef | null, unitRef: InputWrapperRef | null }[]) => {
+    setMultiUnitInputInternal(computeMultiUnitInputErrors(vals));
+  };
 
   const [tagDialogVisible, setTagDialogVisible] = useState(false);
   const [tagState, setTagState] = useState<SetTag[]>(activity?.tags.map((t: Tag) => ({ oldTagName: t.name, ...t })) ?? []);
@@ -272,17 +269,17 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       unitModeInputRef?.current?.highlightError();
       hasError = true;
     }
-    if (singleUnitInputError !== null) {
+    if (unitMode === 'single' && singleUnitInputError !== null) {
       singleUnitInputRef?.current?.highlightError();
       hasError = true;
     }
-    if (multiUnitInputError.find((e) => e.name !== null || e.unit !== null) !== undefined) {
-      multiUnitInputError.forEach((e, idx) => {
-        if (e.name !== null) {
-          multiUnitInputRef[idx].name.current?.highlightError();
+    if (unitMode === 'multiple' && multiUnitInput.find((e) => e.nameError !== null || e.unitError !== null) !== undefined) {
+      multiUnitInput.forEach((e, idx) => {
+        if (e.nameError !== null) {
+          multiUnitInput[idx].nameRef?.highlightError();
         }
-        if (e.unit !== null) {
-          multiUnitInputRef[idx].unit.current?.highlightError();
+        if (e.unitError !== null) {
+          multiUnitInput[idx].unitRef?.highlightError();
         }
       });
       hasError = true;
@@ -400,7 +397,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
     <>
       {multiUnitInput.map((val, idx) => (
         <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <InputWrapper error={showErrors ? multiUnitInputError[idx].name : null} ref={multiUnitInputRef[idx].name}>
+          <InputWrapper error={showErrors ? multiUnitInput[idx].nameError : null} ref={el => multiUnitInput[idx].nameRef = el}>
             <TextInput
               label="Name"
               value={val.name}
@@ -413,7 +410,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
               mode="outlined"
             />
           </InputWrapper>
-          <InputWrapper error={showErrors ? multiUnitInputError[idx].unit : null} ref={multiUnitInputRef[idx].unit}>
+          <InputWrapper error={showErrors ? multiUnitInput[idx].unitError : null} ref={el => multiUnitInput[idx].unitRef = el}>
             <UnitEditor unit={val.unit} onChange={(unit: SubUnit | null) => {
               // Update unit
               const newVals = [...multiUnitInput];
@@ -441,7 +438,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       {multiUnitInput.length < 4 && (
         <Button compact={true} onPress={() => {
           // Add unit to the end
-          setMultiUnitInput([...multiUnitInput, { name: '', unit: { type: "number", symbol: '' } }]);
+          setMultiUnitInput([...multiUnitInput, emptyMultiUnit]);
         }}>
           <AntDesign name="plus" size={20} color={theme.colors.onSurface} />
         </Button>
@@ -450,7 +447,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surface }]} edges={["left", "right"]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surface }]} edges={["left", "right", "bottom"]}>
       <Hint hint="edit_activity_introduction" />
       <SystemBars style={"light"} />
       <ScrollView style={styles.content}>
@@ -489,11 +486,11 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
               keyExtractor={(item: SetTag) => item.name}
               renderItem={({ item, drag, isActive }: { item: SetTag, drag: () => void, isActive: boolean }) => (
                 <Chip
-                  onPress={() => { 
-                    setTagDialogVisible(true); 
-                    setTagDialogName(item.name); 
-                    setTagDialogNameInput(item.name); 
-                    setTagDialogColorInput(item.color); 
+                  onPress={() => {
+                    setTagDialogVisible(true);
+                    setTagDialogName(item.name);
+                    setTagDialogNameInput(item.name);
+                    setTagDialogColorInput(item.color);
                   }}
                   textStyle={{ color: theme.colors.surface }}
                   style={{
@@ -514,11 +511,11 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
               style={{ marginTop: 8 }}
             />
             <View style={{ flexDirection: 'row' }}>
-              <Chip onPress={() => { 
-                setTagDialogVisible(true); 
-                setTagDialogName(""); 
-                setTagDialogNameInput(""); 
-                setTagDialogColorInput(Math.floor(Math.random() * palette.length)); 
+              <Chip onPress={() => {
+                setTagDialogVisible(true);
+                setTagDialogName("");
+                setTagDialogNameInput("");
+                setTagDialogColorInput(Math.floor(Math.random() * palette.length));
               }}
                 mode="outlined"
                 style={{
@@ -532,7 +529,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
           </View>
 
           <View>
-            <Text style={styles.header}>Value:</Text>
+            <Text style={styles.header}>Measurement:</Text>
             <InputWrapper error={showErrors ? unitModeError : null} ref={unitModeInputRef}>
               <SegmentedButtons
                 value={unitMode ?? ""}
@@ -557,10 +554,8 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
               />
             </InputWrapper>
           </View>
-
           <View>
-            
-            {unitMode === null  ? null : unitMode === 'no_value' ? editNoValue() : unitMode === 'single' ? editSingleValue() : editMultipleValues()}
+            {unitMode === null ? null : unitMode === 'no_value' ? editNoValue() : unitMode === 'single' ? editSingleValue() : editMultipleValues()}
           </View>
           <Hint hint="activity_value_help" inline />
         </View>

@@ -8,7 +8,7 @@ type InputWrapperProps = {
   key?: string;
   error?: string | null;
   hint?: string;
-  ref?: React.RefObject<InputWrapperRef>;
+  ref?: React.RefObject<InputWrapperRef> | ((el: InputWrapperRef) => void);
 }
 
 export type InputWrapperRef = undefined | {
@@ -24,7 +24,7 @@ export const InputWrapper = ({ children, key, error, hint, ref }: InputWrapperPr
   
   
   if (ref !== undefined) {
-    ref.current = {
+    const el = {
       highlightError: () => {
         offset.value = withSequence(
           // start from -OFFSET
@@ -36,6 +36,11 @@ export const InputWrapper = ({ children, key, error, hint, ref }: InputWrapperPr
         );
       },
     };
+    if (typeof ref === 'function') {
+      ref(el);
+    } else {
+      ref.current = el;
+    }
   }
 
 
