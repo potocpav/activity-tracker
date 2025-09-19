@@ -447,118 +447,120 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surface }]} edges={["left", "right", "bottom"]}>
-      <Hint hint="edit_activity_introduction" />
+    <View style={{ flex: 1 }}>
       <SystemBars style={"light"} />
-      <ScrollView style={styles.content}>
-        <View style={{ gap: 10 }}>
-          <View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <InputWrapper error={showErrors ? activityNameError : null} ref={activityNameInputRef}>
-                <TextInput
-                  label="Activity Name"
-                  value={activityNameInput}
-                  onChangeText={setActivityNameInput}
-                  mode="outlined"
-                />
-              </InputWrapper>
-              <ColorButton color={selectedColor} onPress={() => setColorDialogVisible(true)} />
+      <Hint hint="edit_activity_introduction" />
+      <ScrollView>
+        <SafeAreaView edges={["left", "right", "bottom"]}>
+          <View style={{ padding: 10, gap: 10 }}>
+            <View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <InputWrapper error={showErrors ? activityNameError : null} ref={activityNameInputRef}>
+                  <TextInput
+                    label="Activity Name"
+                    value={activityNameInput}
+                    onChangeText={setActivityNameInput}
+                    mode="outlined"
+                  />
+                </InputWrapper>
+                <ColorButton color={selectedColor} onPress={() => setColorDialogVisible(true)} />
+              </View>
             </View>
-          </View>
 
-          <View>
-            <TextInput
-              label="Description (optional)"
-              value={activityDescriptionInput}
-              onChangeText={setActivityDescriptionInput}
-              multiline
-              numberOfLines={2}
-              style={{ height: 80 }}
-              mode="outlined"
-            />
-          </View>
+            <View>
+              <TextInput
+                label="Description (optional)"
+                value={activityDescriptionInput}
+                onChangeText={setActivityDescriptionInput}
+                multiline
+                numberOfLines={2}
+                style={{ height: 80 }}
+                mode="outlined"
+              />
+            </View>
 
-          <View>
-            <Text style={styles.header}>Tags:</Text>
-            <DraggableFlatList
-              data={tagState}
-              horizontal={true}
-              keyExtractor={(item: SetTag) => item.name}
-              renderItem={({ item, drag, isActive }: { item: SetTag, drag: () => void, isActive: boolean }) => (
-                <Chip
-                  onPress={() => {
-                    setTagDialogVisible(true);
-                    setTagDialogName(item.name);
-                    setTagDialogNameInput(item.name);
-                    setTagDialogColorInput(item.color);
-                  }}
-                  textStyle={{ color: theme.colors.surface }}
+            <View>
+              <Text style={styles.header}>Tags:</Text>
+              <DraggableFlatList
+                data={tagState}
+                horizontal={true}
+                keyExtractor={(item: SetTag) => item.name}
+                renderItem={({ item, drag, isActive }: { item: SetTag, drag: () => void, isActive: boolean }) => (
+                  <Chip
+                    onPress={() => {
+                      setTagDialogVisible(true);
+                      setTagDialogName(item.name);
+                      setTagDialogNameInput(item.name);
+                      setTagDialogColorInput(item.color);
+                    }}
+                    textStyle={{ color: theme.colors.surface }}
+                    style={{
+                      backgroundColor: palette[item.color],
+                      marginRight: 8,
+                      marginBottom: 8,
+                      opacity: isActive ? 0.7 : 1,
+                    }}
+                    onLongPress={drag}
+                  >
+                    {item.name}
+                  </Chip>
+                )}
+                onDragEnd={(data) => {
+                  setTagState(data.data);
+                }}
+                contentContainerStyle={{ flexDirection: 'row' }}
+                style={{ marginTop: 8 }}
+              />
+              <View style={{ flexDirection: 'row' }}>
+                <Chip onPress={() => {
+                  setTagDialogVisible(true);
+                  setTagDialogName("");
+                  setTagDialogNameInput("");
+                  setTagDialogColorInput(Math.floor(Math.random() * palette.length));
+                }}
+                  mode="outlined"
                   style={{
-                    backgroundColor: palette[item.color],
                     marginRight: 8,
                     marginBottom: 8,
-                    opacity: isActive ? 0.7 : 1,
                   }}
-                  onLongPress={drag}
                 >
-                  {item.name}
+                  +
                 </Chip>
-              )}
-              onDragEnd={(data) => {
-                setTagState(data.data);
-              }}
-              contentContainerStyle={{ flexDirection: 'row' }}
-              style={{ marginTop: 8 }}
-            />
-            <View style={{ flexDirection: 'row' }}>
-              <Chip onPress={() => {
-                setTagDialogVisible(true);
-                setTagDialogName("");
-                setTagDialogNameInput("");
-                setTagDialogColorInput(Math.floor(Math.random() * palette.length));
-              }}
-                mode="outlined"
-                style={{
-                  marginRight: 8,
-                  marginBottom: 8,
-                }}
-              >
-                +
-              </Chip>
+              </View>
             </View>
-          </View>
 
-          <View>
-            <Text style={styles.header}>Measurement:</Text>
-            <InputWrapper error={showErrors ? unitModeError : null} ref={unitModeInputRef}>
-              <SegmentedButtons
-                value={unitMode ?? ""}
-                onValueChange={(value) => setUnitMode(value as "no_value" | "single" | "multiple" | null)}   // TODO: fix this
-                buttons={[
-                  {
-                    value: 'no_value',
-                    label: 'None',
-                    icon: 'checkbox-marked-outline',
-                  },
-                  {
-                    value: 'single',
-                    label: 'Single',
-                    icon: 'numeric',
-                  },
-                  {
-                    value: 'multiple',
-                    label: 'Multiple',
-                    icon: 'counter',
-                  },
-                ]}
-              />
-            </InputWrapper>
+            <View>
+              <Text style={styles.header}>Measurement:</Text>
+              <InputWrapper error={showErrors ? unitModeError : null} ref={unitModeInputRef}>
+                <SegmentedButtons
+                  value={unitMode ?? ""}
+                  onValueChange={(value) => setUnitMode(value as "no_value" | "single" | "multiple" | null)}   // TODO: fix this
+                  buttons={[
+                    {
+                      value: 'no_value',
+                      label: 'None',
+                      icon: 'checkbox-marked-outline',
+                    },
+                    {
+                      value: 'single',
+                      label: 'Single',
+                      icon: 'numeric',
+                    },
+                    {
+                      value: 'multiple',
+                      label: 'Multiple',
+                      icon: 'counter',
+                    },
+                  ]}
+                />
+              </InputWrapper>
+            </View>
+            <View>
+              {unitMode === null ? null : unitMode === 'no_value' ? editNoValue() : unitMode === 'single' ? editSingleValue() : editMultipleValues()}
+            </View>
+            <Hint hint="activity_value_help" inline />
           </View>
-          <View>
-            {unitMode === null ? null : unitMode === 'no_value' ? editNoValue() : unitMode === 'single' ? editSingleValue() : editMultipleValues()}
-          </View>
-          <Hint hint="activity_value_help" inline />
-        </View>
+        </SafeAreaView>
       </ScrollView>
       <Portal>
         {/* Tag dialog (existing) */}
@@ -594,7 +596,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
           theme={theme}
         />
       </Portal>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -604,7 +606,7 @@ const getStyles = (theme: MD3Theme) => StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 10,
+    paddingHorizontal: 10,
   },
   header: {
     color: theme.colors.onSurfaceVariant,

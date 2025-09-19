@@ -1,4 +1,4 @@
-import React, { useState, FC, useRef } from "react";
+import React, { useState, FC, useRef, Fragment } from "react";
 import {
   View,
   Text,
@@ -236,11 +236,11 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   }, [navigation, theme, activity, inputDate, ...inputValues.map((inputValue: any) => inputValue.value[0]), inputTags, noteInput]);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surface }]} edges={["left", "right"]}>
+    <Fragment>
       <Hint hint="save_data_point" />
       <SystemBars style={"light"} />
-      <ScrollView style={styles.content}>
-        <View style={{ gap: 10 }}>
+      <ScrollView>
+        <SafeAreaView style={{ gap: 10, padding: 10 }} edges={["left", "right", "bottom"]}>
           <InputWrapper error={showErrors ? dateError : null} ref={dateInputRef}>
           <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
           <Pressable onPress={() => { setDatePickerVisible(true); }}
@@ -323,7 +323,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
         </View>
         </InputWrapper>
         )}
-        </View>
+        </SafeAreaView>
       </ScrollView>
 
       <DatePickerModal
@@ -342,7 +342,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
           startWeekOnMonday={weekStart === "monday"}
           onConfirm={(d) => { setInputDate(d.date); setDatePickerVisible(false); }}
         />
-    </SafeAreaView>
+    </Fragment>
   );
 };
 

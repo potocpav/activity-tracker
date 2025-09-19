@@ -1,11 +1,12 @@
-import { Text, StyleSheet, View, useWindowDimensions } from "react-native";
-import { useEffect, useRef, useLayoutEffect, useState } from "react";
+import { Text, StyleSheet, View } from "react-native";
+import { useState } from "react";
 import { getTheme } from "../Model/Theme";
 import { MD3Theme, Button } from "react-native-paper";
-import Animated, { FadeIn, FadeOut, measure } from "react-native-reanimated";
-import { Svg, Rect, Circle, Path } from "react-native-svg";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import { Svg, Path } from "react-native-svg";
 import { HintType, hintDependencyChains } from "../Model/StoreTypes";
 import useStore from "../Model/Store";
+import { useSafeAreaInsets, EdgeInsets } from "react-native-safe-area-context";
 
 const hintInfo = (hint: HintType) => {
   switch (hint) {
@@ -63,7 +64,7 @@ const hintInfo = (hint: HintType) => {
     case "quickly_add_point":
       return {
         text: [
-          "You can quickly add data by clicking the + button.",
+          "You can quickly add data by clicking the button on the right.",
         ],
         arrowPos: 1.0,
       };
@@ -103,8 +104,9 @@ const hintInfo = (hint: HintType) => {
 
 
 const Hint = ({ hint, inline }: { hint: HintType, inline?: boolean }) => {
+  const insets = useSafeAreaInsets();
   const theme = getTheme();
-  const styles = getStyles(theme);
+  const styles = getStyles(theme, insets);
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
   const showHints = useStore((state: any) => state.showHints);
@@ -135,6 +137,7 @@ const Hint = ({ hint, inline }: { hint: HintType, inline?: boolean }) => {
             styles.hintContainer,
             inline ? {} : { position: 'absolute' }]
           }>
+
           <View
             style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
             onLayout={(l) => {
@@ -169,15 +172,15 @@ const Hint = ({ hint, inline }: { hint: HintType, inline?: boolean }) => {
   );
 };
 
-const getStyles = (theme: MD3Theme) => StyleSheet.create({
+const getStyles = (theme: MD3Theme, insets: EdgeInsets) => StyleSheet.create({
   hintContainer: {
     // backgroundColor: theme.colors.primary,
     padding: 5,
     borderRadius: 10,
     margin: 10,
     elevation: 5,
-    left: 0,
-    right: 0,
+    left: insets.left,
+    right: insets.right,
     zIndex: 1000,
   },
   hintText: {

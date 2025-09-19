@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { StyleSheet, ScrollView, ToastAndroid, Alert, View, Linking } from 'react-native';
 import { List, Divider, Switch } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
@@ -6,15 +6,17 @@ import useStore, { version, partialize, migrate } from '../Model/Store';
 import { File, Paths } from 'expo-file-system/next';
 import * as DocumentPicker from 'expo-document-picker';
 import * as Sharing from 'expo-sharing';
-import { getTheme } from '../Model/Theme';
+import { getTheme, getThemeVariant } from '../Model/Theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { allHints, State, ActivityType } from '../Model/StoreTypes';
 import { cmpDateList } from '../Model/Activity';
+import { SystemBars } from 'react-native-edge-to-edge';
 
 const Settings = () => {
   const theme = getTheme();
   const navigation = useNavigation();
   const themeState = useStore((state: any) => state.theme);
+  const themeVariant = getThemeVariant();
   const blackBackground = useStore((state: any) => state.blackBackground);
   const setBlackBackground = useStore((state: any) => state.setBlackBackground);
   const weekStart = useStore((state: any) => state.weekStart);
@@ -98,8 +100,10 @@ const Settings = () => {
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={["left", "right", "bottom"]}>
+    <Fragment>
+      <SystemBars style={themeVariant == 'light' ? "dark" : "light"} />
       <ScrollView showsVerticalScrollIndicator={false}>
+      <SafeAreaView style={{ backgroundColor: theme.colors.background }} edges={["left", "right", "bottom"]}>
         <List.Section>
           <List.Subheader>Interface</List.Subheader>
           <List.Item
@@ -179,15 +183,10 @@ const Settings = () => {
             onPress={() => Linking.openURL('https://github.com/potocpav/activity-tracker')}
           />
         </List.Section>
+      </SafeAreaView>
       </ScrollView>
-    </SafeAreaView>
+    </Fragment>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
 
 export default Settings; 

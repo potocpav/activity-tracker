@@ -1,5 +1,5 @@
 import React, { Fragment, useLayoutEffect } from "react";
-import { ScrollView, StyleSheet, Text, View, Pressable, useWindowDimensions } from "react-native";
+import { ScrollView, StyleSheet, Text, View, Pressable } from "react-native";
 import { Divider } from 'react-native-paper';
 import useStore from "../Model/Store";
 import { ActivityType, CalendarProps, GraphProps, Stat } from "../Model/StoreTypes";
@@ -11,6 +11,7 @@ import StatView from "../Components/StatView";
 import { getTheme, getThemePalette, useWideDisplay } from "../Model/Theme";
 import Animated, { LinearTransition } from "react-native-reanimated";
 import Hint from "../Components/Hint";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const ActivitySummary = ({ navigation, activityName }: { navigation: any, activityName: string }) => {
   const activities = useStore((state: any) => state.activities);
@@ -39,6 +40,7 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
   return (
     <View style={styles.container}>
       <ScrollView>
+        <SafeAreaView edges={["left", "right", "bottom"]}>
         <Fragment>
           <View style={styles.header}>
             {activity.description && (
@@ -109,9 +111,8 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
               <Divider />
             </Fragment>
           ))}
-
-          <View key="activity-spacer" style={{ height: 20 }} />
         </Fragment>
+        </SafeAreaView>
       </ScrollView>
     </View>
   );

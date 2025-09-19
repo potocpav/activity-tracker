@@ -4,7 +4,6 @@ import {
   Text,
   View,
   Alert,
-  useWindowDimensions,
 } from "react-native";
 import { Menu, Button } from 'react-native-paper';
 import useStore from "../Model/Store";
@@ -64,8 +63,6 @@ const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ 
   const duplicateActivity = useStore((state: any) => state.duplicateActivity);
   const deleteActivity = useStore((state: any) => state.deleteActivity);
   const dismissHint = useStore((state: any) => state.dismissHint);
-
-  const _dimensions = useWindowDimensions(); // must be present to recalculate anchor positions for hints
 
   if (!activity) {
     return (
@@ -180,7 +177,7 @@ const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ 
   }, [navigation, theme, menuVisible]);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surface }]} edges={["left", "right"]}>
+    <View style={{flex: 1}}>
       <SystemBars style={"light"} />
       <View style={{ position: 'absolute', top: 10, right: 0 }}>
         <Menu
@@ -203,7 +200,7 @@ const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ 
       </View>
       { activity.dataPoints.length === 0 && <Hint hint="add_data_point" />}
       <ActivitySummary activityName={activityName} navigation={navigation} />
-    </SafeAreaView>
+    </View>
   );
 };
 

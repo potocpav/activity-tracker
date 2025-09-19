@@ -20,6 +20,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
 import EmptyPagePlaceholder from "../Components/EmptyPagePlaceholder";
 import Hint from "../Components/Hint";
+import Inset from "../Components/SafeAreaInset";
 
 
 type ActivityDataProps = {
@@ -206,7 +207,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
         keyExtractor={([_, i]) => i.toString()}
         windowSize={11}
         ListFooterComponent={() => (
-          <View style={{ height: 50 }} />
+          <Inset type="bottom" />
         )}
         renderSectionHeader={({ section: { date } }) => (
           <View style={blackTheme ? styles.sectionHeaderBlackTheme : styles.sectionHeader}>
@@ -224,7 +225,6 @@ const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.elevation.background,
-    paddingTop: 2,
   },
   sectionHeader: {
     padding: 5,

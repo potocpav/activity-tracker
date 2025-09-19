@@ -1,6 +1,6 @@
-import React from "react";
+import React, { Fragment } from "react";
 import { ScrollView, Text, View } from "react-native";
-import { Dialog, Button, TextInput } from 'react-native-paper';
+import { Button, TextInput } from 'react-native-paper';
 import useStore from "../Model/Store";
 import { ActivityType, Stat, StatPeriod, StatValue, TagFilter, allStatPeriods, unaryStatValues, numericStatValues } from "../Model/StoreTypes";
 import { valueToLabel, periodToLabel } from "../Model/Activity";
@@ -117,9 +117,10 @@ export const EditStat = (
 
 
   return (
-    <SafeAreaView style={[{flex: 1, backgroundColor: theme.colors.background }]} edges={["left", "right"]}>
+    <Fragment>
       <SystemBars style={"light"} />
-      <ScrollView style={{ flex: 1 }}>
+      <ScrollView>
+        <SafeAreaView edges={["left", "right", "bottom"]}>
         <View style={{ flexDirection: 'row', justifyContent: 'center', elevation: 2, backgroundColor: theme.colors.elevation.level1, marginBottom: 10, marginHorizontal: 4 }}>
           {dialogStat && (
             <StatView
@@ -185,8 +186,9 @@ export const EditStat = (
             />
           )}
         </View>
+        </SafeAreaView>
       </ScrollView>
-    </SafeAreaView>
+    </Fragment>
   );
 };
 

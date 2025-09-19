@@ -18,6 +18,7 @@ import { SystemBars } from "react-native-edge-to-edge";
 import { SafeAreaView } from "react-native-safe-area-context";
 import EmptyPagePlaceholder from "../Components/EmptyPagePlaceholder";
 import Hint from "../Components/Hint";
+import Inset from "../Components/SafeAreaInset";
 
 type ActivitiesProps = {
   navigation: any;
@@ -48,13 +49,13 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
             dismissHint("hello");
             navigation.navigate('EditActivity', { activityName: null });
           }}>
-            <AntDesign name="plus" size={24} color={theme.colors.onSurface} />
+            <AntDesign name="plus" size={23} color={theme.colors.onSurface} />
           </Button>
           <Button compact={true} onPress={() => {
             dismissHint("hello");
             navigation.navigate('Settings');
           }}>
-            <AntDesign name="setting" size={24} color={theme.colors.onSurface} />
+            <AntDesign name="setting" size={23} color={theme.colors.onSurface} />
           </Button>
         </View>
       ),
@@ -147,7 +148,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={[styles.container]} edges={["left", "right", "bottom"]}>
+    <SafeAreaView style={[styles.container]} edges={["left", "right"]}>
       <SystemBars style={themeVariant == 'light' ? "dark" : "light"} />
       <Hint hint="hello" />
       <View style={{ position: 'absolute', top: 100, left: 0, right: 0 }}>
@@ -168,6 +169,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
           renderItem={renderActivity}
           keyExtractor={(item) => item.name}
           contentContainerStyle={styles.listContainer}
+          ListFooterComponent={() => <Inset type="bottom" />}
         />
       )}
     </SafeAreaView>
