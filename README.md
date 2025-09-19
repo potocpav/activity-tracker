@@ -54,7 +54,7 @@ Track your performance metrics and their progress over time. With custom statist
 
 ## Changelog
 
-### 2.2.2
+### 2.3.0
 
 - Fix crash when adding a third measurement unit
 - Various improvements and fixes based on user feedback
