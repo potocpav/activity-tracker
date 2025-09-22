@@ -4,7 +4,7 @@ import { ClimbingGrade, DistanceUnit, SubUnit, SubUnitType, TimeUnit, WeightUnit
 import { useState } from "react";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { getTheme, useWideDisplay } from "../Model/Theme";
-import { renderUnit, mapStringValue, uiaaGrades, vScaleGrades, numberToString, renderShortFormValue, stringToNumber, ydsGrades, frenchGrades } from "../Model/Unit";
+import { renderUnit, mapStringValue, uiaaGrades, vScaleGrades, numberToString, stringToNumber, ydsGrades, frenchGrades, fontGrades } from "../Model/Unit";
 import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
 
 
@@ -420,8 +420,8 @@ export const ValueEditor = ({
                   return pickerDialog(ydsGrades);
                 case "french":
                   return pickerDialog(frenchGrades);
-                // case "font":
-                //   return pickerDialog(fontGrades);
+                case "font":
+                  return pickerDialog(fontGrades);
                 case "v-scale":
                   return pickerDialog(vScaleGrades);
                 default:

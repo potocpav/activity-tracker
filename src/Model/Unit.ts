@@ -238,7 +238,18 @@ export const numberToString = (value: number | null, unit: SubUnit): string => {
             return "≥10a";
           }
         case "font":
-          return renderShortFormNumber(value);
+          if (value < 2.75) {
+            return "<3";
+          } else if (value < 5.75) {
+            let w = value + 0.25;
+            return `${Math.floor(w)}${w % 1 < 0.5 ? "" : "+"}`;
+          } else if (value < 9.17) {
+            let w = value + 0.08;
+            let r = w % 1;
+            return `${Math.floor(w)}${r < 0.16 ? "A" : r < 0.33 ? "A+" : r < 0.5 ? "B" : r < 0.67 ? "B+" : r < 0.84 ? "C" : "C+"}`;
+          } else {
+            return ">9A";
+          }
         case "v-scale":
           if (value < -1.5) {
             return "VB-";
@@ -367,7 +378,21 @@ export const stringToNumber = (value: string, unit: SubUnit): number | null => {
             return null;
           }
         case "font":
-          return parseFloat(value);
+          if (value.match(/^[345]$/)) {
+            return parseFloat(value);
+          } else if (value.match(/^[345]\+$/)) {
+            return parseFloat(value) + 0.5;
+          } else if (value.match(/^[6789][ABC]$/)) {
+            let num = parseFloat(value.slice(0, -1));
+            let letter = value.slice(-1);
+            return num + (letter === "A" ? 0 : letter === "B" ? 0.33 : letter === "C" ? 0.67 : 0);
+          } else if (value.match(/^[6789][ABC]\+$/)) {
+            let num = parseFloat(value.slice(0, -2));
+            let letter = value.slice(-2, -1);
+            return num + 0.17 + (letter === "A" ? 0 : letter === "B" ? 0.33 : letter === "C" ? 0.67 : 0);
+          } else {
+            return null;
+          }
         case "v-scale":
           if (value.match(/^[Vv]\d+$/)) {
             return parseFloat(value.replace(/^[vV]/, ''));
@@ -407,6 +432,21 @@ export const frenchGrades =
       {"s": `${n}c+`, "n": n + 0.84},
     ])),
   ].flat(Infinity) as {s: string, n: number}[];
+
+
+export const fontGrades = 
+[
+  [3, 4, 5].map((n) => ([{"s": `${n}`, "n": n}, {"s": `${n}+`, "n": n + 0.5}])),
+  [6, 7, 8].map((n) => ([
+    {"s": `${n}A`, "n": n},
+    {"s": `${n}A+`, "n": n + 0.17},
+    {"s": `${n}B`, "n": n + 0.33},
+    {"s": `${n}B+`, "n": n + 0.5},
+    {"s": `${n}C`, "n": n + 0.67},
+    {"s": `${n}C+`, "n": n + 0.84},
+  ])),
+  {"s": "9A", "n": 9},
+].flat(Infinity) as {s: string, n: number}[];
 
 export const ydsGrades = 
   [
