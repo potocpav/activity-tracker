@@ -1,7 +1,7 @@
 import { Text, View, ScrollView, Pressable, Modal, FlatList, useWindowDimensions } from "react-native";
 import { TextInput, Button, RadioButton, Dialog, Portal, List, SegmentedButtons } from "react-native-paper";
 import { ClimbingGrade, DistanceUnit, SubUnit, SubUnitType, TimeUnit, WeightUnit } from "../Model/StoreTypes";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { getTheme, useWideDisplay } from "../Model/Theme";
 import { renderUnit, mapStringValue, uiaaGrades, vScaleGrades, numberToString, stringToNumber, ydsGrades, frenchGrades, fontGrades } from "../Model/Unit";
@@ -304,10 +304,16 @@ export const ValueEditor = ({
     return numberToString((stringToNumber(val, unit) ?? 0) + ((now ?? 0) - (timerStartTime ?? 0)), unit)
   };
 
+  const flatListRef = useRef<FlatList<{ s: string, n: number }>>(null);
+
   const pickerDialog = (options: { s: string, n: number }[]) => {
     return (
       <>
-        <Pressable onPress={() => setClimbingGradeDialogVisible(true)} style={({ pressed }) => [
+        <Pressable onPress={() => {
+          setClimbingGradeDialogVisible(true);
+          console.log(flatListRef.current);
+          flatListRef.current?.scrollToIndex({ index: options.findIndex(o => o.s === value) });
+        }} style={({ pressed }) => [
           {
             flex: 1,
             opacity: pressed ? 0.7 : 1,
@@ -343,11 +349,18 @@ export const ValueEditor = ({
               <FlatList
                 key={`uiaa-grade-list-${numColumns}`}
                 getItemLayout={(_, index) => ({ length: itemHeight, offset: itemHeight * index, index })}
-                initialScrollIndex={
-                  Math.max(0, Math.floor(value === "" ?
-                    options.length / numColumns / 2 :
-                    options.findIndex(o => o.s === value) / numColumns) - 3)}
+                // initialScrollIndex={
+                //   Math.max(0, Math.floor(value === "" ?
+                //     options.length / numColumns / 2 :
+                //     options.findIndex(o => o.s === value) / numColumns) - 3)}
                 numColumns={numColumns}
+                ref={(ref) => { 
+                  flatListRef.current = ref; 
+                  console.log(flatListRef.current); 
+                  const itemIx = options.findIndex(o => o.s === value);
+                  const scrollIx = itemIx === -1 ? options.length / 2 : itemIx;
+                  ref?.scrollToIndex({ index: Math.max(0, Math.floor(scrollIx / numColumns)), viewPosition: 0.0 }); 
+                }}
                 indicatorStyle="black"
                 data={options}
                 renderItem={({ item }) => (
@@ -424,14 +437,6 @@ export const ValueEditor = ({
                   return pickerDialog(fontGrades);
                 case "v-scale":
                   return pickerDialog(vScaleGrades);
-                default:
-                  return <TextInput
-                    style={{ flex: 1 }}
-                    label={label}
-                    value={value}
-                    onChangeText={text => onChange(text)}
-                    mode="outlined"
-                  />
               }
             default:
               return <TextInput

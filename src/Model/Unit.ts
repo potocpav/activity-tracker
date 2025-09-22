@@ -21,8 +21,8 @@ export const renderLongFormNumber = (value: number): string => {
   let a = Math.abs(value);
   let e = Math.max(0, Math.floor(Math.log10(a) / 3 + 1e-10));
   let ab = a / Math.pow(1000, e);
-  
-  if (e <=3) {
+
+  if (e <= 3) {
     let prefix = value < 0 ? "-" : "";
     let suffix = ["", "k", "M", "G"][e];
     if (ab < 10) {
@@ -84,8 +84,8 @@ export const renderShortFormValue = (value: number, unit: SubUnit): string => {
 export const renderLongFormValue = (value: number, unit: SubUnit): string => {
   switch (unit.type) {
     case "number": {
-        let suffix = unit.symbol === "" ? "" : " " + unit.symbol;
-        return renderLongFormNumber(value) + suffix;
+      let suffix = unit.symbol === "" ? "" : " " + unit.symbol;
+      return renderLongFormNumber(value) + suffix;
     }
     case "count":
       return renderLongFormNumber(value);
@@ -169,7 +169,7 @@ export const numberToString = (value: number | null, unit: SubUnit): string => {
     case "time":
       switch (unit.unit) {
         case "hours": {
-          const v = value + 0.5/3600; // add 0.5 seconds to avoid rounding errors
+          const v = value + 0.5 / 3600; // add 0.5 seconds to avoid rounding errors
           const hours = Math.floor(v);
           const minutes = Math.floor((v - hours) * 60);
           const seconds = Math.floor(((v - hours) * 60 - minutes) * 60);
@@ -212,13 +212,13 @@ export const numberToString = (value: number | null, unit: SubUnit): string => {
           } else if (rem < 0.4) {
             return `${base}+`;
           } else if (rem < 0.6) {
-            return `${base}+/${base+1}-`;
+            return `${base}+/${base + 1}-`;
           } else if (rem < 0.8) {
-            return `${base+1}-`;
+            return `${base + 1}-`;
           } else if (rem < 0.9) {
-            return `${base+1}-/${base+1}`;
+            return `${base + 1}-/${base + 1}`;
           } else {
-            return `${base+1}`;
+            return `${base + 1}`;
           }
         }
         case "french":
@@ -259,7 +259,7 @@ export const numberToString = (value: number | null, unit: SubUnit): string => {
             return "V17+"
           }
           if (Math.abs(value % 1 - 0.5) < 0.1) {
-            return `V${Math.round(value-1).toString()}/V${Math.round(value).toString()}`;
+            return `V${Math.round(value - 1).toString()}/V${Math.round(value).toString()}`;
           } else {
             return `V${Math.round(value).toString()}`;
           }
@@ -270,7 +270,7 @@ export const numberToString = (value: number | null, unit: SubUnit): string => {
           } else if (w < 10) {
             return `5.${Math.floor(w)}`;
           } else if (w < 16) {
-            const num =  Math.floor(w);
+            const num = Math.floor(w);
             let letter;
             if (w % 1 < 0.25) {
               letter = "a";
@@ -411,60 +411,63 @@ export const stringToNumber = (value: string, unit: SubUnit): number | null => {
 export const uiaaGrades = [...Array(12).keys()].map((n) => {
   let g = n + 1;
   return [
-    {"s": `${g}-`, "n": g - 0.3},
-    {"s": `${g}-/${g}`, "n": g - 0.15},
-    {"s": `${g}`, "n": g},
-    {"s": `${g}/${g}+`, "n": g + 0.15},
-    {"s": `${g}+`, "n": g + 0.3},
-    {"s": `${g}+/${g+1}-`, "n": g + 0.5},
+    { "s": `${g}-`, "n": g - 0.3 },
+    { "s": `${g}-/${g}`, "n": g - 0.15 },
+    { "s": `${g}`, "n": g },
+    { "s": `${g}/${g}+`, "n": g + 0.15 },
+    { "s": `${g}+`, "n": g + 0.3 },
+    { "s": `${g}+/${g + 1}-`, "n": g + 0.5 },
   ];
-}).flat(Infinity) as {s: string, n: number}[];
+}).flat(Infinity) as { s: string, n: number }[];
 
-export const frenchGrades = 
+export const frenchGrades =
   [
-    [1, 2, 3].map((n) => ([{"s": `${n}`, "n": n}, {"s": `${n}+`, "n": n + 0.5}])),
+    [1, 2, 3].map((n) => ([{ "s": `${n}`, "n": n }, { "s": `${n}+`, "n": n + 0.5 }])),
     [4, 5, 6, 7, 8, 9].map((n) => ([
-      {"s": `${n}a`, "n": n},
-      {"s": `${n}a+`, "n": n + 0.17},
-      {"s": `${n}b`, "n": n + 0.33},
-      {"s": `${n}b+`, "n": n + 0.5},
-      {"s": `${n}c`, "n": n + 0.67},
-      {"s": `${n}c+`, "n": n + 0.84},
+      { "s": `${n}a`, "n": n },
+      { "s": `${n}a+`, "n": n + 0.17 },
+      { "s": `${n}b`, "n": n + 0.33 },
+      { "s": `${n}b+`, "n": n + 0.5 },
+      { "s": `${n}c`, "n": n + 0.67 },
+      { "s": `${n}c+`, "n": n + 0.84 },
     ])),
-  ].flat(Infinity) as {s: string, n: number}[];
+  ].flat(Infinity) as { s: string, n: number }[];
 
 
-export const fontGrades = 
-[
-  [3, 4, 5].map((n) => ([{"s": `${n}`, "n": n}, {"s": `${n}+`, "n": n + 0.5}])),
-  [6, 7, 8].map((n) => ([
-    {"s": `${n}A`, "n": n},
-    {"s": `${n}A+`, "n": n + 0.17},
-    {"s": `${n}B`, "n": n + 0.33},
-    {"s": `${n}B+`, "n": n + 0.5},
-    {"s": `${n}C`, "n": n + 0.67},
-    {"s": `${n}C+`, "n": n + 0.84},
-  ])),
-  {"s": "9A", "n": 9},
-].flat(Infinity) as {s: string, n: number}[];
-
-export const ydsGrades = 
+export const fontGrades =
   [
-    [...Array(10).keys()].map((n) => ([{"s": `5.${n}`, "n": n}])),
-    [...Array(6).keys()].map((n) => ([
-      {"s": `5.1${n}a`, "n": n},
-      {"s": `5.1${n}b`, "n": n + 0.25},
-      {"s": `5.1${n}c`, "n": n + 0.5},
-      {"s": `5.1${n}d`, "n": n + 0.75},
+    [3, 4, 5].map((n) => ([
+      { "s": `${n}`, "n": n },
+      { "s": `${n}+`, "n": n + 0.5 }
     ])),
-  ].flat(Infinity) as {s: string, n: number}[];
+    [6, 7, 8].map((n) => ([
+      { "s": `${n}A`, "n": n },
+      { "s": `${n}A+`, "n": n + 0.17 },
+      { "s": `${n}B`, "n": n + 0.33 },
+      { "s": `${n}B+`, "n": n + 0.5 },
+      { "s": `${n}C`, "n": n + 0.67 },
+      { "s": `${n}C+`, "n": n + 0.84 },
+    ])),
+    [[{ "s": "9A", "n": 9 }, { "s": "9A+", "n": 9.17 }]],
+  ].flat(Infinity) as { s: string, n: number }[];
+
+export const ydsGrades =
+  [
+    [...Array(10).keys()].map((n) => ([{ "s": `5.${n}`, "n": n }])),
+    [...Array(6).keys()].map((n) => ([
+      { "s": `5.1${n}a`, "n": n },
+      { "s": `5.1${n}b`, "n": n + 0.25 },
+      { "s": `5.1${n}c`, "n": n + 0.5 },
+      { "s": `5.1${n}d`, "n": n + 0.75 },
+    ])),
+  ].flat(Infinity) as { s: string, n: number }[];
 
 export const vScaleGrades = [...Array(17).keys()].map((g) => {
   return [
-    {"s": `V${g}`, "n": g},
-    {"s": `V${g}/V${g+1}`, "n": g + 0.5},
+    { "s": `V${g}`, "n": g },
+    { "s": `V${g}/V${g + 1}`, "n": g + 0.5 },
   ];
-}).flat(Infinity) as {s: string, n: number}[];
+}).flat(Infinity) as { s: string, n: number }[];
 
 export const mapStringValue = (unit: SubUnit, value: string, fn: (value: number) => number): string => {
   return numberToString(fn(stringToNumber(value, unit) ?? 0), unit);
@@ -486,7 +489,7 @@ export const areUnitsEqual = (unit1: Unit, unit2: Unit): boolean => {
 
 export const areSubUnitsEqual = (subUnit1: SubUnit, subUnit2: SubUnit): boolean => {
   if (subUnit1.type === subUnit2.type) {
-    let subUnit2Copy : any = subUnit2; // we know the constructor is the same as subUnit1 here.
+    let subUnit2Copy: any = subUnit2; // we know the constructor is the same as subUnit1 here.
     switch (subUnit1.type) {
       case "number":
         return subUnit1.symbol === subUnit2Copy.symbol;

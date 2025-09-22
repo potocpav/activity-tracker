@@ -40,12 +40,9 @@ Track your performance metrics and their progress over time. With custom statist
 - [ ] Bluetooth integration with Tindeq Progressor and other scales
 - [ ] Reimplement graphs to use FlatList instead of VictoryNative
   - [ ] Regression computation in graphs based on multi-touch range selection
-- [ ] Polish unit selection dialog
-  - [ ] More distance units (m, ft, yd)
 - [ ] Redesign the data list screen
 - [ ] Tag groups
 - [ ] Activity archive to hide old activities without deleting them
-- [ ] Add more climbing grade systems (French, Font, YDS)
 - [ ] Unit conversions
 
 #### Minor improvements
@@ -53,6 +50,12 @@ Track your performance metrics and their progress over time. With custom statist
 - [ ] Animations for adding and removing calendars and graphs
 
 ## Changelog
+
+### 2.4.0
+
+- Redesign unit selection dialog
+- Add YDS, French and Font climbing grade systems
+- Introduce new weight and distance units
 
 ### 2.3.1
 
