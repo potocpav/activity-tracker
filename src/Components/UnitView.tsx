@@ -1,86 +1,154 @@
 import { Text, View, ScrollView, Pressable, Modal, FlatList, useWindowDimensions } from "react-native";
-import { TextInput, Button, RadioButton, Dialog, Portal, List } from "react-native-paper";
-import { SubUnit, TimeUnit } from "../Model/StoreTypes";
+import { TextInput, Button, RadioButton, Dialog, Portal, List, SegmentedButtons } from "react-native-paper";
+import { ClimbingGrade, DistanceUnit, SubUnit, SubUnitType, TimeUnit, WeightUnit } from "../Model/StoreTypes";
 import { useState } from "react";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { getTheme, useWideDisplay } from "../Model/Theme";
 import { renderUnit, mapStringValue, uiaaGrades, vScaleGrades, numberToString, renderShortFormValue, stringToNumber } from "../Model/Unit";
-import Animated, { LinearTransition, FadeInUp, FadeOutUp } from "react-native-reanimated";
 import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
 
-type ChosenUnit = "number" | "count" | "distance_km" | "distance_mi" | "weight_kg" | "weight_lb" | "time_seconds" | "time_hours" | "climbing_grade_uiaa" | "climbing_grade_french" | "climbing_grade_font" | "climbing_grade_v_scale";
 
-const subUnitToChosenUnit = (subUnit: SubUnit | null): ChosenUnit | null => {
-  if (subUnit === null) {
-    return null;
-  }
-  switch (subUnit.type) {
-    case "number":
-      return "number";
+const subUnitProps = (subUnitType: SubUnitType, allUnits: SubUnit[], setAllUnits: (units: SubUnit[]) => void): { title: string, icon: string, description: string | null, children: React.ReactNode | null } => {
+
+  switch (subUnitType) {
     case "count":
-      return "count";
+      return {
+        title: "Count",
+        icon: "numeric-3-circle-outline",
+        description: "reps, sets, etc.",
+        children: null,
+      };
     case "distance":
-      switch (subUnit.unit) {
-        case "km":
-          return "distance_km";
-        case "mi":
-          return "distance_mi";
-      }
+      return {
+        title: "Distance",
+        icon: "ruler",
+        description: null,
+        children: (
+          <View style={{ gap: 10 }}>
+            <SegmentedButtons
+              value={allUnits.find(unit => unit.type === subUnitType)?.unit ?? ""}
+              onValueChange={value => {setAllUnits(allUnits.map(unit => unit.type === subUnitType ? { ...unit, unit: value as DistanceUnit } : unit))}}
+              buttons={[
+                { value: "mm", label: "mm" },
+                { value: "cm", label: "cm" },
+                { value: "m", label: "m" },
+                { value: "km", label: "km" },
+              ]} />
+            <SegmentedButtons
+              value={allUnits.find(unit => unit.type === subUnitType)?.unit ?? ""}
+              onValueChange={value => {setAllUnits(allUnits.map(unit => unit.type === subUnitType ? { ...unit, unit: value as DistanceUnit } : unit))}}
+              buttons={[
+                { value: "in", label: "in" },
+                { value: "ft", label: "ft" },
+                { value: "yd", label: "yd" },
+                { value: "mi", label: "mi" },
+              ]}
+            />
+          </View> 
+        ),
+      };
     case "weight":
-      switch (subUnit.unit) {
-        case "kg":
-          return "weight_kg";
-        case "lb":
-          return "weight_lb";
-      }
+      return {
+        title: "Weight",
+        icon: "weight-kilogram",
+        description: null,
+        children: (
+          <View style={{ gap: 10 }}>
+            <SegmentedButtons
+              value={allUnits.find(unit => unit.type === subUnitType)?.unit ?? ""}
+              onValueChange={value => {setAllUnits(allUnits.map(unit => unit.type === subUnitType ? { ...unit, unit: value as WeightUnit } : unit))}}
+              buttons={[
+                { value: "g", label: "g" },
+                { value: "kg", label: "kg" },
+              ]} />
+            <SegmentedButtons
+              value={allUnits.find(unit => unit.type === subUnitType)?.unit ?? ""}
+              onValueChange={value => {setAllUnits(allUnits.map(unit => unit.type === subUnitType ? { ...unit, unit: value as WeightUnit } : unit))}}
+              buttons={[
+                { value: "oz", label: "oz" },
+                { value: "lb", label: "lb" },
+              ]}
+            />
+          </View> 
+        ),
+      };
     case "time":
-      switch (subUnit.unit) {
-        case "seconds":
-          return "time_seconds";
-        case "hours":
-          return "time_hours";
-      }
+      return {
+        title: "Time",
+        icon: "timer",
+        description: null,
+        children: (
+            <SegmentedButtons
+              value={allUnits.find(unit => unit.type === subUnitType)?.unit ?? ""}
+              onValueChange={value => {setAllUnits(allUnits.map(unit => unit.type === subUnitType ? { ...unit, unit: value as TimeUnit } : unit))}}
+              buttons={[
+                { value: "seconds", label: "seconds" },
+                { value: "hours", label: "hours" },
+              ]} />
+        ),
+      };
     case "climbing_grade":
-      return subUnit.grade === "uiaa" ? "climbing_grade_uiaa" : subUnit.grade === "french" ? "climbing_grade_french" : subUnit.grade === "font" ? "climbing_grade_font" : "climbing_grade_v_scale";
-    default:
-      return null;
+      return {
+        title: "Climbing Grade",
+        icon: "numeric-9-plus",
+        description: null,
+        children: (
+          <View style={{ gap: 10 }}>
+            <SegmentedButtons
+              value={allUnits.find(unit => unit.type === subUnitType)?.grade ?? ""}
+              onValueChange={value => {setAllUnits(allUnits.map(unit => unit.type === subUnitType ? { ...unit, grade: value as ClimbingGrade } : unit))}}
+              buttons={[
+                { value: "uiaa", label: "UIAA" },
+                { value: "french", label: "French" },
+                { value: "yds", label: "YDS" },
+              ]} />
+            <SegmentedButtons
+              value={allUnits.find(unit => unit.type === subUnitType)?.grade ?? ""}
+              onValueChange={value => {setAllUnits(allUnits.map(unit => unit.type === subUnitType ? { ...unit, grade: value as ClimbingGrade } : unit))}}
+              buttons={[
+                { value: "font", label: "Font" },
+                { value: "v-scale", label: "V-Scale" },
+              ]}
+            />
+          </View> 
+        ),
+      };
+      case "number":
+        return {
+          title: "Other",
+          icon: "numeric",
+          description: "Numerical value",
+          children: (
+            <InputWrapper>
+              <TextInput
+                label="Unit"
+                value={allUnits.find(unit => unit.type === subUnitType)?.symbol ?? ""}
+                onChangeText={text => setAllUnits(allUnits.map(unit => unit.type === subUnitType ? { ...unit, symbol: text } : unit))}
+                mode="outlined"
+              />
+            </InputWrapper>
+          ),
+        };
   }
 }
-
-const toUnit = (chosenUnit: ChosenUnit): SubUnit => {
-  switch (chosenUnit) {
-    case "number":
-      return { type: "number", symbol: "" };
-    case "count":
-      return { type: "count" };
-    case "distance_km":
-      return { type: "distance", unit: "km" };
-    case "distance_mi":
-      return { type: "distance", unit: "mi" };
-    case "weight_kg":
-      return { type: "weight", unit: "kg" };
-    case "weight_lb":
-      return { type: "weight", unit: "lb" };
-    case "time_seconds":
-      return { type: "time", unit: "seconds" };
-    case "time_hours":
-      return { type: "time", unit: "hours" };
-    case "climbing_grade_uiaa":
-      return { type: "climbing_grade", grade: "uiaa" };
-    case "climbing_grade_french":
-      return { type: "climbing_grade", grade: "french" };
-    case "climbing_grade_font":
-      return { type: "climbing_grade", grade: "font" };
-    case "climbing_grade_v_scale":
-      return { type: "climbing_grade", grade: "v-scale" };
-  }
-}
-
 
 export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null, onChange: (unit: SubUnit | null) => void }) => {
   const [unitDialogVisible, setUnitDialogVisible] = useState(false);
-  const [unitInput, setUnitInput] = useState(unit);
   const theme = getTheme();
+  
+  const [unitInput, setUnitInput] = useState<SubUnit | null>(unit ?? null);
+  const [chosenUnitType, setChosenUnitType] = useState<SubUnitType | null>(unit?.type ?? null);
+  const [allUnits, setAllUnits] = useState<SubUnit[]>((() => {
+    let defaultUnits : SubUnit[] = [
+      { type: "count" },
+      { type: "distance", unit: "km" },
+      { type: "weight", unit: "kg" },
+      { type: "time", unit: "seconds" },
+      { type: "climbing_grade", grade: "uiaa" },
+      { type: "number", symbol: "" },
+      ];
+    return defaultUnits.map(defaultUnit => unit?.type === defaultUnit.type ? unit : defaultUnit);
+  })());
 
   return (
     <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -120,61 +188,43 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null, onChange:
             </View>
             <Button onPress={() => {
               setUnitDialogVisible(false);
+              setUnitInput(allUnits.find(unit => unit.type === chosenUnitType) ?? null);
               onChange(unitInput);
             }}>
               <AntDesign name="check" size={24} color={theme.colors.onSurface} />
             </Button>
           </View>
           <ScrollView>
-            <RadioButton.Group
-              onValueChange={value => setUnitInput(toUnit(value as ChosenUnit))}
-              value={subUnitToChosenUnit(unitInput) ?? ""}>
-              <Animated.View key="number" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
-                <RadioButton.Item label="Number" value="number" />
-              </Animated.View>
-              {unitInput?.type === "number" &&
-                <Animated.View key="number-symbol" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
-                  <View style={{ marginHorizontal: 16 }}>
-                    <TextInput
-                      label="Symbol (optional)"
-                      value={unitInput.symbol}
-                      onChangeText={text => setUnitInput({ ...unitInput, symbol: text })}
-                      mode="outlined"
-                    />
-                    <Text style={{ fontSize: 12, opacity: 0.6 }}>
-                      Will be shown besides the value. E.g., "km" for kilometers.
-                    </Text>
-                  </View>
-                </Animated.View>
+            <View style={{ gap: 10, padding: 10 }}>
+            {allUnits.map((subUnit) => {
+              const { title, icon, description, children } = subUnitProps(subUnit.type, allUnits, setAllUnits);
+              if (children) {
+                return (
+                  <List.Accordion
+                    key={subUnit.type}
+                    title={title}
+                    left={() => <List.Icon icon={icon} />}
+                    description={description}
+                    expanded={chosenUnitType === subUnit.type}
+                    onPress={() => setChosenUnitType(chosenUnitType === subUnit.type ? null : subUnit.type)}
+                  >
+                    {children}
+                  </List.Accordion>
+                );
+              } else {
+                return (
+                  <List.Item
+                    key={subUnit.type}
+                    title={title}
+                    titleStyle={{ color: chosenUnitType === subUnit.type ? theme.colors.primary : theme.colors.onSurface }}
+                    onPress={() => setChosenUnitType(subUnit.type)}
+                    left={() => <List.Icon icon={icon} />}
+                    description={description}
+                  />
+                );
               }
-              <Animated.View key="count" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
-                <RadioButton.Item key="count" label="Count" value="count" />
-              </Animated.View>
-              <Animated.View key="distance_km" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
-                <RadioButton.Item key="distance_km" label="Distance (km)" value="distance_km" />
-              </Animated.View>
-              <Animated.View key="distance_mi" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
-                <RadioButton.Item key="distance_mi" label="Distance (mi)" value="distance_mi" />
-              </Animated.View>
-              <Animated.View key="weight_kg" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
-                <RadioButton.Item key="weight_kg" label="Weight (kg)" value="weight_kg" />
-              </Animated.View>
-              <Animated.View key="weight_lb" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
-                <RadioButton.Item key="weight_lb" label="Weight (lb)" value="weight_lb" />
-              </Animated.View>
-              <Animated.View key="time_seconds" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
-                <RadioButton.Item key="time_seconds" label="Time (seconds)" value="time_seconds" />
-              </Animated.View>
-              <Animated.View key="time_hours" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
-                <RadioButton.Item key="time_hours" label="Time (hours)" value="time_hours" />
-              </Animated.View>
-              <Animated.View key="climbing_grade_uiaa" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
-                <RadioButton.Item key="climbing_grade_uiaa" label="Climbing Grade (UIAA)" value="climbing_grade_uiaa" />
-              </Animated.View>
-              <Animated.View key="climbing_grade_v_scale" layout={LinearTransition} entering={FadeInUp} exiting={FadeOutUp}>
-                <RadioButton.Item key="climbing_grade_v_scale" label="Climbing Grade (V-Scale)" value="climbing_grade_v_scale" />
-              </Animated.View>
-            </RadioButton.Group>
+            })}
+            </View>
           </ScrollView>
         </View>
       </Modal>
@@ -275,12 +325,12 @@ export const ValueEditor = ({
           <Dialog visible={climbingGradeDialogVisible} onDismiss={() => setClimbingGradeDialogVisible(false)}>
             <Dialog.Title>
               <View style={{ flex: 1, alignItems: 'flex-end', width: '100%' }}>
-              <Button onPress={() => { 
-                setClimbingGradeDialogVisible(false);
-                onChange("");
-              }} compact={true}>
-                <AntDesign name="close" size={24} color={theme.colors.onSurface} />
-              </Button>
+                <Button onPress={() => {
+                  setClimbingGradeDialogVisible(false);
+                  onChange("");
+                }} compact={true}>
+                  <AntDesign name="close" size={24} color={theme.colors.onSurface} />
+                </Button>
               </View>
             </Dialog.Title>
             <Dialog.ScrollArea>

@@ -19,11 +19,11 @@ export type SubUnit =
   } |
   {
     type: "distance",
-    unit: "km" | "mi",
+    unit: DistanceUnit,
   } |
   {
     type: "weight",
-    unit: "kg" | "lb",
+    unit: WeightUnit,
   } |
   {
     type: "time",
@@ -31,10 +31,18 @@ export type SubUnit =
   } |
   {
     type: "climbing_grade",
-    grade: "uiaa" | "french" | "font" | "v-scale",
+    grade: ClimbingGrade,
   };
 
+export type SubUnitType = "number" | "count" | "distance" | "weight" | "time" | "climbing_grade";
+
+export type DistanceUnit = "mm" | "cm" | "m" | "km" | "in" | "ft" | "yd" | "mi";
+
+export type WeightUnit = "g" | "kg" | "oz" | "lb";
+
 export type TimeUnit = "seconds" | "hours";
+
+export type ClimbingGrade = "uiaa" | "french" | "font" | "v-scale" | "yds";
 
 export type Tag = {
   name: TagName;

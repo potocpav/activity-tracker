@@ -124,19 +124,9 @@ export const renderUnit = (unit: SubUnit): string => {
     case "count":
       return "Count";
     case "distance":
-      switch (unit.unit) {
-        case "km":
-          return "Distance (km)";
-        case "mi":
-          return "Distance (mi)";
-      }
+      return `Distance (${unit.unit})`;
     case "weight":
-      switch (unit.unit) {
-        case "kg":
-          return "Weight (kg)";
-        case "lb":
-          return "Weight (lb)";
-      }
+      return `Weight (${unit.unit})`;
     case "time":
       switch (unit.unit) {
         case "seconds":
@@ -154,6 +144,8 @@ export const renderUnit = (unit: SubUnit): string => {
           return "Climbing Grade (Font)";
         case "v-scale":
           return "Climbing Grade (V-Scale)";
+        case "yds":
+          return "Climbing Grade (YDS)";
       }
   }
 }
@@ -246,6 +238,8 @@ export const numberToString = (value: number | null, unit: SubUnit): string => {
           } else {
             return `V${Math.round(value).toString()}`;
           }
+        case "yds":
+          return renderShortFormNumber(value); // TODO: implement
       }
   }
 }
