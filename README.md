@@ -37,17 +37,18 @@ Track your performance metrics and their progress over time. With custom statist
 
 ## Planned features
 
-- [ ] Bluetooth integration with Tindeq Progressor and other scales
+- [ ] Redesign the data list screen
 - [ ] Reimplement graphs to use FlatList instead of VictoryNative
   - [ ] Regression computation in graphs based on multi-touch range selection
-- [ ] Redesign the data list screen
-- [ ] Tag groups
+- [ ] Bluetooth integration with Tindeq Progressor and other scales
 - [ ] Activity archive to hide old activities without deleting them
 - [ ] Unit conversions
+- [ ] Tag groups
 
 #### Minor improvements
 
 - [ ] Animations for adding and removing calendars and graphs
+- [ ] Scroll climbing grade picker to have the selected grade in the middle of the screen (not the top)
 
 ## Changelog
 

@@ -311,7 +311,6 @@ export const ValueEditor = ({
       <>
         <Pressable onPress={() => {
           setClimbingGradeDialogVisible(true);
-          console.log(flatListRef.current);
           flatListRef.current?.scrollToIndex({ index: options.findIndex(o => o.s === value) });
         }} style={({ pressed }) => [
           {
@@ -355,8 +354,7 @@ export const ValueEditor = ({
                 //     options.findIndex(o => o.s === value) / numColumns) - 3)}
                 numColumns={numColumns}
                 ref={(ref) => { 
-                  flatListRef.current = ref; 
-                  console.log(flatListRef.current); 
+                  flatListRef.current = ref;
                   const itemIx = options.findIndex(o => o.s === value);
                   const scrollIx = itemIx === -1 ? options.length / 2 : itemIx;
                   ref?.scrollToIndex({ index: Math.max(0, Math.floor(scrollIx / numColumns)), viewPosition: 0.0 }); 
