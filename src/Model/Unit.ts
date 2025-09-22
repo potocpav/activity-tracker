@@ -222,7 +222,21 @@ export const numberToString = (value: number | null, unit: SubUnit): string => {
           }
         }
         case "french":
-          return renderShortFormNumber(value);
+          if (value < 0.75) {
+            return "<1";
+          } else if (value < 2.82) {
+            let w = value + 0.25;
+            return `${Math.floor(w)}${w % 1 < 0.5 ? "" : "+"}`;
+          } else if (value < 4.92) {
+            let w = value + 0.17;
+            return `${Math.floor(w)}${w % 1 < 0.33 ? "a" : w % 1 < 0.67 ? "b" : "c"}`;
+          } else if (value < 9.92) {
+            let w = value + 0.08;
+            let r = w % 1;
+            return `${Math.floor(w)}${r < 0.16 ? "a" : r < 0.33 ? "a+" : r < 0.5 ? "b" : r < 0.67 ? "b+" : r < 0.84 ? "c" : "c+"}`;
+          } else {
+            return "≥10a";
+          }
         case "font":
           return renderShortFormNumber(value);
         case "v-scale":
@@ -327,7 +341,21 @@ export const stringToNumber = (value: string, unit: SubUnit): number | null => {
         case "uiaa":
           return uiaaGrades.find((g) => g.s === value)?.n ?? null;
         case "french":
-          return parseFloat(value);
+          if (value.match(/^[1234]$/)) {
+            return parseFloat(value);
+          } else if (value.match(/^[1234]\+$/)) {
+            return parseFloat(value) + 0.5;
+          } else if (value.match(/^[3456789][abc]$/)) {
+            let num = parseFloat(value.slice(0, -1));
+            let letter = value.slice(-1);
+            return num + (letter === "a" ? 0 : letter === "b" ? 0.33 : letter === "c" ? 0.67 : 0);
+          } else if (value.match(/^[3456789][abc]\+$/)) {
+            let num = parseFloat(value.slice(0, -2));
+            let letter = value.slice(-2, -1);
+            return num + 0.17 + (letter === "a" ? 0 : letter === "b" ? 0.33 : letter === "c" ? 0.67 : 0);
+          } else {
+            return null;
+          }
         case "yds":
           if (value.match(/^5\.[0-9]$/)) {
             return parseFloat(value.slice(2));
@@ -366,6 +394,19 @@ export const uiaaGrades = [...Array(12).keys()].map((n) => {
     {"s": `${g}+/${g+1}-`, "n": g + 0.5},
   ];
 }).flat(Infinity) as {s: string, n: number}[];
+
+export const frenchGrades = 
+  [
+    [1, 2, 3].map((n) => ([{"s": `${n}`, "n": n}, {"s": `${n}+`, "n": n + 0.5}])),
+    [4, 5, 6, 7, 8, 9].map((n) => ([
+      {"s": `${n}a`, "n": n},
+      {"s": `${n}a+`, "n": n + 0.17},
+      {"s": `${n}b`, "n": n + 0.33},
+      {"s": `${n}b+`, "n": n + 0.5},
+      {"s": `${n}c`, "n": n + 0.67},
+      {"s": `${n}c+`, "n": n + 0.84},
+    ])),
+  ].flat(Infinity) as {s: string, n: number}[];
 
 export const ydsGrades = 
   [
