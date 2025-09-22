@@ -239,7 +239,27 @@ export const numberToString = (value: number | null, unit: SubUnit): string => {
             return `V${Math.round(value).toString()}`;
           }
         case "yds":
-          return renderShortFormNumber(value); // TODO: implement
+          const w = value + 0.12;
+          if (w < 0) {
+            return "<5.0";
+          } else if (w < 10) {
+            return `5.${Math.floor(w)}`;
+          } else if (w < 16) {
+            const num =  Math.floor(w);
+            let letter;
+            if (w % 1 < 0.25) {
+              letter = "a";
+            } else if (w % 1 < 0.5) {
+              letter = "b";
+            } else if (w % 1 < 0.75) {
+              letter = "c";
+            } else {
+              letter = "d";
+            }
+            return `5.${num}${letter}`;
+          } else {
+            return "≥5.16";
+          }
       }
   }
 }
@@ -306,6 +326,20 @@ export const stringToNumber = (value: string, unit: SubUnit): number | null => {
       switch (unit.grade) {
         case "uiaa":
           return uiaaGrades.find((g) => g.s === value)?.n ?? null;
+        case "french":
+          return parseFloat(value);
+        case "yds":
+          if (value.match(/^5\.[0-9]$/)) {
+            return parseFloat(value.slice(2));
+          } else if (value.match(/^5\.1[0-5][abcd]?$/)) {
+            let num = parseFloat(value.slice(2, -1));
+            let letter = value.slice(-1);
+            return num + (letter === "a" ? 0 : letter === "b" ? 0.25 : letter === "c" ? 0.5 : letter === "d" ? 0.75 : 0);
+          } else {
+            return null;
+          }
+        case "font":
+          return parseFloat(value);
         case "v-scale":
           if (value.match(/^[Vv]\d+$/)) {
             return parseFloat(value.replace(/^[vV]/, ''));
@@ -316,8 +350,6 @@ export const stringToNumber = (value: string, unit: SubUnit): number | null => {
             console.error("Invalid value: " + value);
             return null;
           }
-        default:
-          return parseFloat(value);
       }
     }
   }
@@ -333,14 +365,25 @@ export const uiaaGrades = [...Array(12).keys()].map((n) => {
     {"s": `${g}+`, "n": g + 0.3},
     {"s": `${g}+/${g+1}-`, "n": g + 0.5},
   ];
-}).flat();
+}).flat(Infinity) as {s: string, n: number}[];
+
+export const ydsGrades = 
+  [
+    [...Array(10).keys()].map((n) => ([{"s": `5.${n}`, "n": n}])),
+    [...Array(6).keys()].map((n) => ([
+      {"s": `5.1${n}a`, "n": n},
+      {"s": `5.1${n}b`, "n": n + 0.25},
+      {"s": `5.1${n}c`, "n": n + 0.5},
+      {"s": `5.1${n}d`, "n": n + 0.75},
+    ])),
+  ].flat(Infinity) as {s: string, n: number}[];
 
 export const vScaleGrades = [...Array(17).keys()].map((g) => {
   return [
     {"s": `V${g}`, "n": g},
     {"s": `V${g}/V${g+1}`, "n": g + 0.5},
   ];
-}).flat();
+}).flat(Infinity) as {s: string, n: number}[];
 
 export const mapStringValue = (unit: SubUnit, value: string, fn: (value: number) => number): string => {
   return numberToString(fn(stringToNumber(value, unit) ?? 0), unit);

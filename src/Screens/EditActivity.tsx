@@ -385,13 +385,16 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
     </>
   );
 
+  
   const editSingleValue = () => (
     <InputWrapper error={showErrors ? singleUnitInputError : null} ref={singleUnitInputRef}>
       <UnitEditor unit={singleUnitInput} onChange={(unit: SubUnit | null) => {
         setSingleUnitInput(unit);
+        console.log("singleUnitInput", unit);
       }} />
     </InputWrapper>
   );
+  
 
   const editMultipleValues = () => (
     <>

@@ -4,7 +4,7 @@ import { ClimbingGrade, DistanceUnit, SubUnit, SubUnitType, TimeUnit, WeightUnit
 import { useState } from "react";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { getTheme, useWideDisplay } from "../Model/Theme";
-import { renderUnit, mapStringValue, uiaaGrades, vScaleGrades, numberToString, renderShortFormValue, stringToNumber } from "../Model/Unit";
+import { renderUnit, mapStringValue, uiaaGrades, vScaleGrades, numberToString, renderShortFormValue, stringToNumber, ydsGrades } from "../Model/Unit";
 import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
 
 
@@ -144,7 +144,7 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null, onChange:
       { type: "distance", unit: "km" },
       { type: "weight", unit: "kg" },
       { type: "time", unit: "seconds" },
-      { type: "climbing_grade", grade: "uiaa" },
+      { type: "climbing_grade", grade: "french" },
       { type: "number", symbol: "" },
       ];
     return defaultUnits.map(defaultUnit => unit?.type === defaultUnit.type ? unit : defaultUnit);
@@ -188,8 +188,9 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null, onChange:
             </View>
             <Button onPress={() => {
               setUnitDialogVisible(false);
-              setUnitInput(allUnits.find(unit => unit.type === chosenUnitType) ?? null);
-              onChange(unitInput);
+              const newUnitInput = allUnits.find(unit => unit.type === chosenUnitType) ?? null;
+              setUnitInput(newUnitInput);
+              onChange(newUnitInput);
             }}>
               <AntDesign name="check" size={24} color={theme.colors.onSurface} />
             </Button>
@@ -415,6 +416,8 @@ export const ValueEditor = ({
               switch (unit.grade) {
                 case "uiaa":
                   return pickerDialog(uiaaGrades);
+                case "yds":
+                  return pickerDialog(ydsGrades);
                 // case "font":
                 //   return pickerDialog(fontGrades);
                 case "v-scale":

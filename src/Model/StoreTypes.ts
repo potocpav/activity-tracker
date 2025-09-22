@@ -42,7 +42,7 @@ export type WeightUnit = "g" | "kg" | "oz" | "lb";
 
 export type TimeUnit = "seconds" | "hours";
 
-export type ClimbingGrade = "uiaa" | "french" | "font" | "v-scale" | "yds";
+export type ClimbingGrade = "uiaa" | "french" | "yds" | "font" | "v-scale";
 
 export type Tag = {
   name: TagName;
