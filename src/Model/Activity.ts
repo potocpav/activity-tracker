@@ -239,16 +239,19 @@ export const binTimeSeries = (binSize: BinSize, dataPoints: any[], weekStart: We
   var binIx = 0;
   for (let i = 0; i < dataPoints.length; i++) {
     const dp = dataPoints[i];
-    var newBin = false;
     while (binTime(binSize, t0, binIx + 1, weekStart).getTime() <= dateListToTime(dp.date)) {
       binIx++;
-      newBin = true;
-    }
-    if (newBin) {
       bins.push({ time: binTime(binSize, t0, binIx, weekStart).getTime(), nDays: nDays(binSize, binIx), values: [] });
     }
     bins[bins.length - 1].values.push(dp);
   };
+  // pad till today
+  const t1 = new Date().getTime();
+  while (binTime(binSize, t0, binIx + 1, weekStart).getTime() <= t1) {
+    binIx++;
+    bins.push({ time: binTime(binSize, t0, binIx, weekStart).getTime(), nDays: nDays(binSize, binIx), values: [] });
+  }
+
   return bins;
 };
 

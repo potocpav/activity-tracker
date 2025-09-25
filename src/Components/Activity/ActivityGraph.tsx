@@ -1,12 +1,10 @@
 import React, { Fragment, useLayoutEffect, useRef, useState } from "react";
 import { View, Text, Platform, useWindowDimensions, Pressable, StyleSheet, FlatList } from "react-native";
 import { Menu, Button, Portal, Dialog, TextInput } from 'react-native-paper';
-import { getTransformComponents, Line, Scatter, setScale, setTranslate, useChartTransformState } from "victory-native";
-import { CartesianChart } from "victory-native";
-import { matchFont, RoundedRect, Text as SkiaText } from "@shopify/react-native-skia";
+import { useChartTransformState } from "victory-native";
+import { Canvas, matchFont, Rect, RoundedRect, Text as SkiaText } from "@shopify/react-native-skia";
 import useStore from "../../Model/Store";
 import { DataPoint, dateListToTime, ActivityType, GraphType } from "../../Model/StoreTypes";
-import { useAnimatedReaction, useSharedValue, withTiming } from "react-native-reanimated";
 import { binTime, binTimeSeries, BinSize, extractValue } from "../../Model/Activity";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import TagMenu from "../TagMenu";
@@ -100,21 +98,33 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
     }
   }
 
-  const bins = binTimeSeries(graph.binSize, activity.dataPoints, weekStart);
+  const bins = binTimeSeries(graph.binSize, activity.dataPoints, weekStart).reverse();
   const binStats: { t: number, q0: number, q1: number, q2: number, q3: number, q4: number, count: number, sum: number, mean: number, zero: number, dailyMean: number }[]
     = bins.map((bin) => {
       const values = bin.values.map((dp: DataPoint) => extractValue(dp, graph.tagFilters, graph.subUnit)).filter((v: number | null) => v !== null);
       if (values.length === 0) {
-        return null
+        return {
+          t: bin.time,
+          count: 0,
+          sum: 0,
+          mean: 0,
+          zero: 0,
+          dailyMean: 0,
+          q0: 0,
+          q1: 0,
+          q2: 0,
+          q3: 0,
+          q4: 0,
+        }
       } else {
         return {
-          ...quartiles(values),
+          t: bin.time,
           count: values.length,
           sum: values.reduce((a, b) => a + b, 0),
           mean: values.reduce((a, b) => a + b, 0) / values.length,
           zero: 0,
           dailyMean: values.length / bin.nDays * 100,
-          t: bin.time
+          ...quartiles(values),
         };
       }
     }).filter((b) => b !== null);
@@ -269,18 +279,10 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
       <View key="activityGraph" style={{ width: '100%', marginVertical: 8 }}>
         <FlatListChart
           height={300}
-          binWidth={30}
+          binSize={graph.binSize}
           data={binStats}
           xKey="t"
-          yKeys={yKeys}
-          xAxis={{
-            tickValues: ticks, // binStats.map((q) => q.t),
-          }}
-          yAxis={{
-            yKeys: yKeys,
-            font: font,
-            tickCount: 10,
-          }}
+          theme={theme}
         />
       </View>
       <View key="menusRow" style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -361,29 +363,44 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
   );
 };
 
+const xLabel = (t: number, binSize: BinSize) => {
+  const d = new Date(t);
+  if (binSize === "day") {
+    return "" + d.getDate();
+  } else if (binSize === "week") {
+    return "" + (d.getDate());
+  } else if (binSize === "month") {
+    const m = d.getMonth() + 1;
+    return m > 1 ? `${m}` : `'${d.getFullYear() % 100}`;
+  } else if (binSize === "quarter") {
+    const q = d.getMonth() / 3 + 1;
+    return q > 1 ? `q${q}` : `'${d.getFullYear() % 100}`;
+  } else if (binSize === "year") {
+    return "" + d.getFullYear();
+  } else {
+    throw new Error("Invalid bin size");
+  }
+};
+
 type FlatListChartData = { 
   height: number,
-  binWidth: number,
+  binSize: BinSize,
   data: any[], 
-  xKey: string, 
-  yKeys: string[], 
-  xAxis: any, 
-  yAxis: any 
+  xKey: string,
+  theme: any,
 }
+
 
 const FlatListChart = (
   { 
     height,
-    binWidth,
+    binSize,
     data, 
     xKey, 
-    yKeys, 
-    xAxis, 
-    yAxis 
+    theme,
   }: 
   FlatListChartData
 ) => {
-
   const rootRef = useRef<View>(null);
   const [rootWidth, setRootWidth] = useState(0);
   const [rootHeight, setRootHeight] = useState(0);
@@ -392,6 +409,14 @@ const FlatListChart = (
   let xAxisHeight = 50;
   let viewportWidth = rootWidth - yAxisWidth;
   let viewportHeight = rootHeight - xAxisHeight;
+  let binWidth = viewportWidth / 12;
+  let barWidth = binWidth * 0.5;
+
+  let yRange = { min: 0, max: 100 };
+
+  const yToPx = (y: number) => {
+    return (y - yRange.min) * viewportHeight / (yRange.max - yRange.min);
+  }
 
   useLayoutEffect(() => {
     rootRef.current?.measure((x, y, width, height, pageX, pageY) => {
@@ -403,8 +428,20 @@ const FlatListChart = (
   }, [ /* add dependencies here */]);
 
   return (
-    <View ref={rootRef} style={{ height, flex: 1, position: 'relative', overflow: 'hidden' }}>
-      <View style={{ position: 'absolute', width: yAxisWidth, height: viewportHeight, borderWidth: 1, borderColor: 'green' }}>
+    <View key="root" ref={rootRef} style={{ height, flex: 1, position: 'relative', overflow: 'hidden' }}>
+      {/* <Canvas style={{ width: rootWidth, height: rootHeight }}>
+        <Rect x={yAxisWidth} y={0} width={viewportWidth} height={viewportHeight} color="black" />
+      </Canvas> */}
+      <View key="frame" style={{ 
+        position: 'absolute', 
+        top: 0, 
+        left: yAxisWidth, 
+        width: viewportWidth, 
+        height: viewportHeight, 
+        borderWidth: 1, 
+        borderColor: 'black' 
+        }} />
+      <View key="yAxis" style={{ position: 'absolute', width: yAxisWidth, height: viewportHeight, borderWidth: 1, borderColor: 'green' }}>
         <Text>1</Text>
         <Text>1</Text>
         <Text>1</Text>
@@ -430,6 +467,7 @@ const FlatListChart = (
         <Text>1</Text>
       </View>
       <FlatList 
+        key="flatlist"
         style={{ left: yAxisWidth, top: 0, width: viewportWidth, height: viewportHeight }}
         data={data} 
         getItemLayout={(_, index) => (
@@ -440,11 +478,20 @@ const FlatListChart = (
             <View style={{ width: binWidth, height: rootHeight }}>
               {/* Data points */}
               <View style={{ width: binWidth, height: viewportHeight, borderWidth: 1, borderColor: 'red' }}>
-                <Text>{item[xKey]}</Text>
+                <Canvas style={{ width: binWidth, height: viewportHeight }}>
+                  <RoundedRect 
+                    x={(binWidth - barWidth) / 2} 
+                    y={viewportHeight} 
+                    width={barWidth} 
+                    height={-yToPx(item.mean)} 
+                    color={theme.colors.primary}
+                    r={barWidth / 3} 
+                  />
+                </Canvas>
               </View>
               {/* X axis labels */}
-              <View style={{ width: binWidth, height: xAxisHeight, borderWidth: 1, borderColor: 'blue' }}>
-                <Text>{item[xKey]}</Text>
+              <View style={{ width: binWidth, height: xAxisHeight, alignItems: 'center', borderWidth: 1, borderColor: 'blue' }}>
+                <Text style={{ fontSize: 10 }}>{xLabel(item.t, binSize)}</Text>
               </View>
             </View>
           )
@@ -452,8 +499,8 @@ const FlatListChart = (
         keyExtractor={(item) => item[xKey].toString()}
         extraData={data}
         removeClippedSubviews={true}
-        inverted={true}
         windowSize={2}
+        inverted={true}
         horizontal={true}
       />
     </View>
