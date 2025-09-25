@@ -1,5 +1,5 @@
-import React, { Fragment, useLayoutEffect, useRef, useState } from "react";
-import { View, Text, Platform, useWindowDimensions, Pressable, StyleSheet, FlatList } from "react-native";
+import React, { Fragment, useState } from "react";
+import { View, Text, Platform, useWindowDimensions, Pressable, StyleSheet } from "react-native";
 import { Menu, Button, Portal, Dialog, TextInput } from 'react-native-paper';
 import { getTransformComponents, Line, Scatter, setScale, setTranslate, useChartTransformState } from "victory-native";
 import { CartesianChart } from "victory-native";
@@ -50,7 +50,7 @@ const quartiles = (values: number[]) => {
   return { q0, q1, q2, q3, q4 };
 };
 
-const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, graphIndex: number }) => {
+const OldActivityGraph = ({ activityName, graphIndex }: { activityName: string, graphIndex: number }) => {
   const activities = useStore((state: any) => state.activities);
   const activity: ActivityType = activities.find((a: ActivityType) => a.name === activityName);
   const graph = activity.graphs[graphIndex];
@@ -204,6 +204,44 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
     return { domain, viewport };
   })();
 
+  const kx = useSharedValue(1);
+  const ky = useSharedValue(1);
+  const tx = useSharedValue(0);
+  const ty = useSharedValue(0);
+
+
+  const resetTransform = () => {
+    tx.value = withTiming(0);
+  }
+
+  // enforce limits when panning
+  useAnimatedReaction(
+    () => {
+      return transformState.panActive.value || transformState.zoomActive.value;
+    },
+    (cv, pv) => {
+      if (!cv && pv) {
+        const vals = getTransformComponents(transformState.matrix.value);
+        kx.value = vals.scaleX;
+        tx.value = vals.translateX;
+
+        if (tx.value < 0) {
+          tx.value = withTiming(0);
+        }
+      }
+    },
+  );
+
+
+  useAnimatedReaction(
+    () => {
+      return { kx: kx.value, ky: ky.value, tx: tx.value, ty: ty.value };
+    },
+    ({ kx, ky, tx, ty }) => {
+      const m = setTranslate(transformState.matrix.value, tx, ty);
+      transformState.matrix.value = setScale(m, kx, ky);
+    },
+  );
 
   const barPlot = (values: any, zero: any, stat: string, unit?: string) => {
     return (
@@ -266,22 +304,149 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
           <AntDesign name="plus" size={24} color={theme.colors.onSurfaceVariant} style={{ marginLeft: 6 }} /> 
         </Button>
       </View>
-      <View key="activityGraph" style={{ width: '100%', marginVertical: 8 }}>
-        <FlatListChart
-          height={300}
-          binWidth={30}
+      <View key="activityGraph" style={{ height: 300, width: '100%', marginVertical: 8 }}>
+        <CartesianChart
           data={binStats}
+          transformState={transformState}
+          transformConfig={{
+            pan: { dimensions: "x" },
+            pinch: { enabled: false }
+          }}
+          domain={domain}
+          viewport={viewport}
           xKey="t"
           yKeys={yKeys}
+          // frame={{
+          //   lineWidth: 0,
+          //   lineColor: theme.colors.onSurfaceVariant,
+          // }}
           xAxis={{
             tickValues: ticks, // binStats.map((q) => q.t),
-          }}
-          yAxis={{
-            yKeys: yKeys,
             font: font,
-            tickCount: 10,
+            // enableRescaling: true,
+            lineWidth: 0,
+            lineColor: theme.colors.onSurfaceVariant,
+            labelColor: theme.colors.onSurfaceVariant,
+
+            formatXLabel: (t: number) => {
+              const d = new Date(t);
+              if (graph.binSize === "day") {
+                return "" + d.getDate();
+              } else if (graph.binSize === "week") {
+                return "" + (d.getDate());
+              } else if (graph.binSize === "month") {
+                const m = d.getMonth() + 1;
+                return m > 1 ? `${m}` : `'${d.getFullYear() % 100}`;
+              } else if (graph.binSize === "quarter") {
+                const q = d.getMonth() / 3 + 1;
+                return q > 1 ? `q${q}` : `'${d.getFullYear() % 100}`;
+              } else if (graph.binSize === "year") {
+                return "" + d.getFullYear();
+              } else {
+                throw new Error("Invalid bin size");
+              }
+            },
+            tickCount: 1000,
           }}
-        />
+          yAxis={[
+            {
+              yKeys: yKeys,
+              font: font,
+              tickCount: 10,
+              // lineWidth: 1,
+              lineColor: theme.colors.outline,
+              labelColor: theme.colors.outline,
+            },
+          ]}
+        >
+          {({ points }) => {
+            if (graph.graphType === "box") {
+              return (
+                <>
+                  {(() => {
+                    const elements = [];
+                    for (let i = 0; i < points.q0.length; i++) {
+                      const w = barWidth / 2;
+                      const ws = w * 0.4;
+                      const wcircle = w * 0.5;
+
+                      const q0 = points.q0[i];
+                      const q1 = points.q1[i];
+                      const q2 = points.q2[i];
+                      const q3 = points.q3[i];
+                      const q4 = points.q4[i];
+                      const [q0x, q0y] = [q0.x, q0.y ?? NaN];
+                      const [q2x, q2y] = [q2.x, q2.y ?? NaN];
+                      var [q1x, q1y] = [q1.x, Math.max(q1.y ?? NaN, q2y + w)];
+                      var [q3x, q3y] = [q3.x, Math.min(q3.y ?? NaN, q2y - w)];
+                      const [q4x, q4y] = [q4.x, q4.y ?? NaN];
+
+                      elements.push(
+                        <Fragment key={"" + i}>
+                          <RoundedRect
+                            x={q1x - w}
+                            y={q1y}
+                            width={2 * w}
+                            height={q3y - q1y}
+                            color={theme.colors.primary}
+                            r={w}
+                          />
+                          <RoundedRect
+                            x={q0x - ws}
+                            y={q0y}
+                            width={2 * ws}
+                            height={q4y - q0y}
+                            color={theme.colors.primary}
+                            r={ws}
+                          />
+                          <RoundedRect
+                            x={q2x - wcircle}
+                            y={q2y - wcircle}
+                            width={2 * wcircle}
+                            height={2 * wcircle}
+                            color={theme.colors.surface}
+                            r={wcircle}
+                          />
+                        </Fragment>
+                      );
+                    }
+                    return elements;
+                  })()}
+                </>
+              );
+            } else if (graph.graphType === "bar-count") {
+              return barPlot(points.count, points.zero, "count");
+            } else if (graph.graphType === "bar-daily-mean") {
+              return barPlot(points.dailyMean, points.zero, "dailyMean", "%");
+            } else if (graph.graphType === "bar-sum") {
+              return barPlot(points.sum, points.zero, "sum");
+            } else if (graph.graphType === "line-mean") {
+              return (
+                <>
+                  <Line
+                    points={points.mean}
+                    color={theme.colors.primary}
+                    strokeWidth={4}
+                  />
+                  <Scatter
+                    points={points.mean}
+                    shape="circle"
+                    radius={7}
+                    style="fill"
+                    color={theme.colors.surface}
+                  />
+                  <Scatter
+                    points={points.mean}
+                    shape="circle"
+                    radius={5}
+                    style="fill"
+                    color={theme.colors.primary}
+                  />
+                </>
+              );
+            }
+          }}
+        </CartesianChart>
       </View>
       <View key="menusRow" style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
         {/* Binning menu */}
@@ -289,7 +454,7 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
           options={binningOptions}
           selectedKey={graph.binSize}
           onSelect={(key) => {
-            // TODO: reset viewport
+            resetTransform();
             setActivityGraph(activityName, graphIndex, { ...graph, binSize: key as BinSize });
           }}
           visible={binMenuVisible}
@@ -361,106 +526,6 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
   );
 };
 
-type FlatListChartData = { 
-  height: number,
-  binWidth: number,
-  data: any[], 
-  xKey: string, 
-  yKeys: string[], 
-  xAxis: any, 
-  yAxis: any 
-}
-
-const FlatListChart = (
-  { 
-    height,
-    binWidth,
-    data, 
-    xKey, 
-    yKeys, 
-    xAxis, 
-    yAxis 
-  }: 
-  FlatListChartData
-) => {
-
-  const rootRef = useRef<View>(null);
-  const [rootWidth, setRootWidth] = useState(0);
-  const [rootHeight, setRootHeight] = useState(0);
-  
-  let yAxisWidth = 50;
-  let xAxisHeight = 50;
-  let viewportWidth = rootWidth - yAxisWidth;
-  let viewportHeight = rootHeight - xAxisHeight;
-
-  useLayoutEffect(() => {
-    rootRef.current?.measure((x, y, width, height, pageX, pageY) => {
-      //do something with the measurements
-      console.log(x, y, width, height, pageX, pageY);
-      setRootWidth(width);
-      setRootHeight(height);
-    });
-  }, [ /* add dependencies here */]);
-
-  return (
-    <View ref={rootRef} style={{ height, flex: 1, position: 'relative', overflow: 'hidden' }}>
-      <View style={{ position: 'absolute', width: yAxisWidth, height: viewportHeight, borderWidth: 1, borderColor: 'green' }}>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-      </View>
-      <FlatList 
-        style={{ left: yAxisWidth, top: 0, width: viewportWidth, height: viewportHeight }}
-        data={data} 
-        getItemLayout={(_, index) => (
-          { length: binWidth, offset: binWidth * index, index }
-        )}
-        renderItem={({ item }) => {
-          return (
-            <View style={{ width: binWidth, height: rootHeight }}>
-              {/* Data points */}
-              <View style={{ width: binWidth, height: viewportHeight, borderWidth: 1, borderColor: 'red' }}>
-                <Text>{item[xKey]}</Text>
-              </View>
-              {/* X axis labels */}
-              <View style={{ width: binWidth, height: xAxisHeight, borderWidth: 1, borderColor: 'blue' }}>
-                <Text>{item[xKey]}</Text>
-              </View>
-            </View>
-          )
-        }}
-        keyExtractor={(item) => item[xKey].toString()}
-        extraData={data}
-        removeClippedSubviews={true}
-        inverted={true}
-        windowSize={2}
-        horizontal={true}
-      />
-    </View>
-  );
-}
-
-
 const getStyles = (theme: any) => StyleSheet.create({
   headerContainer: {
     marginHorizontal: 8,
@@ -476,4 +541,4 @@ const getStyles = (theme: any) => StyleSheet.create({
   },
 });
 
-export default ActivityGraph; 
+export default OldActivityGraph; 

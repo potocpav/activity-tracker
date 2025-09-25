@@ -1,6 +1,5 @@
 
 import { 
-  Tag, 
   StatPeriod, 
   DataPoint, 
   DateList, 
@@ -13,11 +12,8 @@ import {
   ActivityType, 
   WeekStart, 
   dateListToDate, 
-  Unit,
-  SubUnit
 } from "./StoreTypes";
 import { renderLongFormNumber, renderLongFormValue } from "./Unit";
-import { View, Text, StyleSheet } from "react-native";
 import { NativeModules } from "react-native";
 
 const locale = NativeModules.I18nManager.localeIdentifier;
