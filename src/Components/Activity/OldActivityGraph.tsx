@@ -7,7 +7,7 @@ import { matchFont, RoundedRect, Text as SkiaText } from "@shopify/react-native-
 import useStore from "../../Model/Store";
 import { DataPoint, dateListToTime, ActivityType, GraphType } from "../../Model/StoreTypes";
 import { useAnimatedReaction, useSharedValue, withTiming } from "react-native-reanimated";
-import { binTime, binTimeSeries, BinSize, extractValue } from "../../Model/Activity";
+import { binTime, binTimeSeries, BinSize, extractValue, binTimeSeriesOld } from "../../Model/Activity";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import TagMenu from "../TagMenu";
 import SubUnitMenu from "../SubUnitMenu";
@@ -100,7 +100,7 @@ const OldActivityGraph = ({ activityName, graphIndex }: { activityName: string, 
     }
   }
 
-  const bins = binTimeSeries(graph.binSize, activity.dataPoints, weekStart);
+  const bins = binTimeSeriesOld(graph.binSize, activity.dataPoints, weekStart);
   const binStats: { t: number, q0: number, q1: number, q2: number, q3: number, q4: number, count: number, sum: number, mean: number, zero: number, dailyMean: number }[]
     = bins.map((bin) => {
       const values = bin.values.map((dp: DataPoint) => extractValue(dp, graph.tagFilters, graph.subUnit)).filter((v: number | null) => v !== null);

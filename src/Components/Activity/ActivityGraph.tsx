@@ -1,16 +1,17 @@
 import React, { Fragment, useLayoutEffect, useRef, useState } from "react";
 import { View, Text, Platform, useWindowDimensions, Pressable, StyleSheet, FlatList } from "react-native";
 import { Menu, Button, Portal, Dialog, TextInput } from 'react-native-paper';
-import { useChartTransformState } from "victory-native";
-import { Canvas, matchFont, Rect, RoundedRect, Text as SkiaText } from "@shopify/react-native-skia";
+import { Canvas, matchFont, Rect, RoundedRect, Text as SkiaText, vec, Line } from "@shopify/react-native-skia";
 import useStore from "../../Model/Store";
-import { DataPoint, dateListToTime, ActivityType, GraphType } from "../../Model/StoreTypes";
+import { DataPoint, dateListToTime, ActivityType, GraphType, WeekStart, DateList, SubUnit } from "../../Model/StoreTypes";
 import { binTime, binTimeSeries, BinSize, extractValue } from "../../Model/Activity";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import TagMenu from "../TagMenu";
 import SubUnitMenu from "../SubUnitMenu";
 import DropdownMenu from "../DropdownMenu";
 import { getTheme } from "../../Model/Theme";
+import { FlashList } from "@shopify/flash-list";
+import { renderShortFormValue } from "../../Model/Unit";
 
 const fontFamily = Platform.select({ default: "sans-serif" });
 
@@ -54,12 +55,6 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
   const graph = activity.graphs[graphIndex];
   const weekStart = useStore((state: any) => state.weekStart);
   const theme = getTheme(activity.color);
-  const windowDimensions = useWindowDimensions();
-  const font = matchFont({ fontFamily: fontFamily, fontSize: 10 * windowDimensions.fontScale });  
-
-  if (!activity) {
-    return <Text>Activity not found</Text>;
-  }
 
   const setActivityGraph = useStore((state: any) => state.setActivityGraph);
   const cloneActivityGraph = useStore((state: any) => state.cloneActivityGraph);
@@ -67,10 +62,6 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
 
   const styles = getStyles(theme);
 
-  const transformState = useChartTransformState({
-    scaleX: 1.0, // Initial X-axis scale
-    scaleY: 1.0, // Initial Y-axis scale
-  }).state;
   const subUnitNames = activity.unit.type === "multiple" ? activity.unit.values.map(u => u.name) : null;
 
   const [binMenuVisible, setBinMenuVisible] = useState(false);
@@ -82,9 +73,6 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
   const [graphDialogNameInput, setGraphDialogNameInput] = useState(graph.label);
 
   const now = new Date();
-  const graphWidth = windowDimensions.width * 0.9;
-  const barWidth = 10 * windowDimensions.fontScale;
-  const nBars = Math.floor(graphWidth / barWidth / 2);
 
   var ticks = [];
   if (activity.dataPoints.length > 0) {
@@ -96,52 +84,6 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
         break; // limit
       }
     }
-  }
-
-  const bins = binTimeSeries(graph.binSize, activity.dataPoints, weekStart).reverse();
-  const binStats: { t: number, q0: number, q1: number, q2: number, q3: number, q4: number, count: number, sum: number, mean: number, zero: number, dailyMean: number }[]
-    = bins.map((bin) => {
-      const values = bin.values.map((dp: DataPoint) => extractValue(dp, graph.tagFilters, graph.subUnit)).filter((v: number | null) => v !== null);
-      if (values.length === 0) {
-        return {
-          t: bin.time,
-          count: 0,
-          sum: 0,
-          mean: 0,
-          zero: 0,
-          dailyMean: 0,
-          q0: 0,
-          q1: 0,
-          q2: 0,
-          q3: 0,
-          q4: 0,
-        }
-      } else {
-        return {
-          t: bin.time,
-          count: values.length,
-          sum: values.reduce((a, b) => a + b, 0),
-          mean: values.reduce((a, b) => a + b, 0) / values.length,
-          zero: 0,
-          dailyMean: values.length / bin.nDays * 100,
-          ...quartiles(values),
-        };
-      }
-    }).filter((b) => b !== null);
-
-  var yKeys: (keyof typeof binStats[number])[];
-  if (graph.graphType === "box") {
-    yKeys = ["q0", "q1", "q2", "q3", "q4"];
-  } else if (graph.graphType === "bar-count") {
-    yKeys = ["count", "zero"];
-  } else if (graph.graphType === "bar-daily-mean") {
-    yKeys = ["dailyMean", "zero"];
-  } else if (graph.graphType === "bar-sum") {
-    yKeys = ["sum", "zero"];
-  } else if (graph.graphType === "line-mean") {
-    yKeys = ["mean"];
-  } else {
-    throw new Error("Invalid graph type");
   }
 
   const graphLabel = (gType: any) => {
@@ -183,78 +125,6 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
     }
   }
 
-  const { domain, viewport }: { domain: { x: [number, number], y?: [number, number] }, viewport: { x: [number, number] } } = (() => {
-    const firstBinTime = bins.length ? bins[0].time : now.getTime();
-    const lastBinTime = bins.length ? bins[bins.length - 1].time : now.getTime();
-    const nowBin = binTime(graph.binSize, now.getTime(), 0, weekStart).getTime();
-    const t1 = Math.max(lastBinTime, nowBin) + approximateBinSize(graph.binSize) / 2;
-    const t0view = t1 - approximateBinSize(graph.binSize) * nBars;
-    const t0 = Math.min(firstBinTime - approximateBinSize(graph.binSize) / 2, t0view);
-
-    var domain: { x: [number, number], y?: [number, number] } = { x: [t0, t1] };
-    var viewport: { x: [number, number] } = { x: [t0view, t1] };
-    if (graph.graphType === "box") {
-      const [ymin, ymax] = [Math.min(...binStats.map((b) => b.q0)), Math.max(...binStats.map((b) => b.q4))];
-      domain.y = [ymin - (ymax - ymin) * 0.05, ymax + (ymax - ymin) * 0.05];
-    } else if (graph.graphType === "bar-count") {
-      const ymax = Math.max(...binStats.map((b) => b.count));
-      domain.y = [0, ymax * 1.1];
-    } else if (graph.graphType === "bar-daily-mean") {
-      const ymax = Math.max(...binStats.map((b) => b.dailyMean));
-      domain.y = [0, ymax * 1.1];
-    } else if (graph.graphType === "bar-sum") {
-      const ymax = Math.max(...binStats.map((b) => b.sum));
-      domain.y = [0, ymax * 1.1];
-    } else if (graph.graphType === "line-mean") {
-      const [ymin, ymax] = [Math.min(...binStats.map((b) => b.mean)), Math.max(...binStats.map((b) => b.mean))];
-      domain.y = [ymin - (ymax - ymin) * 0.05, ymax + (ymax - ymin) * 0.05];
-    } else {
-      throw new Error("Invalid graph type");
-    }
-    return { domain, viewport };
-  })();
-
-
-  const barPlot = (values: any, zero: any, stat: string, unit?: string) => {
-    return (
-      <>
-        {(() => {
-          const elements = [];
-          for (let i = 0; i < values.length; i++) {
-            const label = (binStats as any)[i][stat].toFixed(0) + (unit ?? "");
-            const val = values[i];
-            const [vx, vy] = [val.x, val.y ?? NaN];
-            const w = barWidth / 2;
-
-            const labelSize = font.measureText(label);
-
-            elements.push(
-              <Fragment key={"bar" + i}>
-                <RoundedRect
-                  x={vx - w}
-                  y={vy}
-                  width={w * 2}
-                  height={zero[i].y ?? NaN}
-                  color={theme.colors.primary}
-                  r={w * 2 / 3}
-                />
-
-                <SkiaText
-                  key={"label" + i}
-                  x={vx - labelSize.width / 2}
-                  color={theme.colors.onSurface}
-                  y={vy - labelSize.height / 2}
-                  text={label}
-                  font={font}
-                ></SkiaText>
-              </Fragment>
-            );
-          }
-          return elements;
-        })()}
-      </>);
-  }
-
   const binningLabels: Record<typeof graph.binSize, string> = {
     day: "Day",
     week: "Week",
@@ -266,6 +136,34 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
 
   const graphTypes = activity.unit.type === "none" ? ["bar-count", "bar-daily-mean"] : ["box", "bar-count", "bar-sum", "line-mean"];
 
+  const filteredValues: { date: DateList, value: number }[] = activity.dataPoints
+    .map((dp: DataPoint) => ({
+      date: dp.date,
+      value: extractValue(dp, graph.tagFilters, graph.subUnit)
+    }
+    ))
+    .filter(x => x.value !== null) as { date: DateList, value: number }[];
+
+
+  let unit: SubUnit;
+  if (graph.graphType === "bar-count") {
+    unit = { type: "count" };
+  } else if (graph.graphType === "bar-daily-mean") {
+    unit = { type: "number", symbol: "%" };
+  } else {
+    switch (activity.unit.type) {
+      case "none":
+        unit = { type: "count" };
+        break;
+      case "single":
+        unit = activity.unit.unit;
+        break;
+      case "multiple":
+        unit = activity.unit.values.find((u) => u.name === graph.subUnit)?.unit ?? { type: "number", symbol: "n/a" };
+        break;
+    }
+  }
+
   return (
     <View style={{ flex: 1, padding: 10, marginVertical: 16, backgroundColor: theme.colors.background }}>
       <View style={styles.headerContainer}>
@@ -273,14 +171,16 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
           <Text style={styles.headerText}>{graph.label}</Text>
         </Pressable>
         <Button compact={true} onPress={() => cloneActivityGraph(activityName, graphIndex)}>
-          <AntDesign name="plus" size={24} color={theme.colors.onSurfaceVariant} style={{ marginLeft: 6 }} /> 
+          <AntDesign name="plus" size={24} color={theme.colors.onSurfaceVariant} style={{ marginLeft: 6 }} />
         </Button>
       </View>
       <View key="activityGraph" style={{ width: '100%', marginVertical: 8 }}>
         <FlatListChart
           height={300}
           binSize={graph.binSize}
-          data={binStats}
+          unit={unit}
+          values={filteredValues}
+          weekStart={weekStart}
           xKey="t"
           theme={theme}
         />
@@ -353,9 +253,9 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
           </Dialog.Content>
           <Dialog.Actions>
             {activity.graphs.length > 1 && (
-              <Button onPress={() => {deleteActivityGraph(activityName, graphIndex); setGraphDialogVisible(false);}}><AntDesign name="delete" size={24} color={theme.colors.onSurface} /></Button>
+              <Button onPress={() => { deleteActivityGraph(activityName, graphIndex); setGraphDialogVisible(false); }}><AntDesign name="delete" size={24} color={theme.colors.onSurface} /></Button>
             )}
-            <Button onPress={() => {setActivityGraph(activityName, graphIndex, { ...graph, label: graphDialogNameInput }); setGraphDialogVisible(false);}}><AntDesign name="check" size={24} color={theme.colors.onSurface} /></Button>
+            <Button onPress={() => { setActivityGraph(activityName, graphIndex, { ...graph, label: graphDialogNameInput }); setGraphDialogVisible(false); }}><AntDesign name="check" size={24} color={theme.colors.onSurface} /></Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>
@@ -382,127 +282,273 @@ const xLabel = (t: number, binSize: BinSize) => {
   }
 };
 
-type FlatListChartData = { 
+type BoundingBox = {
+  min: number, // domain units
+  max: number, // domain units
+  padMin: number, // px units
+  padMax: number, // px units
+} | null;
+
+const mergeBoundingBoxes = (boxes: BoundingBox[]): BoundingBox => {
+  const validBoxes = boxes.filter((b) => b !== null);
+  if (validBoxes.length === 0) {
+    return null;
+  } else {
+    // without knowing conversion between domain and pixels, this can be only an upper bound estimate
+    return {
+      min: Math.min(...validBoxes.map((b) => b.min)),
+      max: Math.max(...validBoxes.map((b) => b.max)),
+      padMin: Math.max(...validBoxes.map((b) => b.padMin)),
+      padMax: Math.max(...validBoxes.map((b) => b.padMax)),
+    };
+  }
+}
+
+const boundingBoxToYRange = (viewportHeight: number, box: BoundingBox): { min: number, max: number } => {
+  if (box === null) {
+    return { min: 0, max: 1 };
+  } else {
+    let vh = viewportHeight - box.padMin - box.padMax;
+    let pxSize = (box.max - box.min) / vh;
+    const lim1 = box.min - box.padMin * pxSize;
+    const lim2 = box.max + box.padMax * pxSize;
+    const min = Math.min(lim1, lim2);
+    const max = Math.max(lim1, lim2);
+    if (min == max) {
+      return { min: min - 0.5, max: max + 0.5 };
+    } else {
+      return { min: min, max: max };
+    }
+  }
+}
+
+const barBoundingBox = (data: number[], stat: "mean"): BoundingBox => {
+  if (data.length === 0) {
+    return null;
+  }
+  let cmpStat;
+  switch (stat) {
+    case "mean":
+      cmpStat = (l: number[]) => l.length > 0 ? l.reduce((a, b) => a + b, 0) / l.length : 0;
+      break;
+  }
+  let statValue = cmpStat(data);
+  return {
+    min: Math.min(0, statValue),
+    max: Math.max(0, statValue),
+    padMin: statValue < 0 ? 15 : 0,
+    padMax: statValue > 0 ? 15 : 0,
+  };
+}
+
+const cmpMajorTicks = (unit: SubUnit, range: { min: number, max: number }, approxNTicks: number): number[] => {
+  const numberTicks = () => {
+    const idealStride = (range.max - range.min) / approxNTicks;
+    const stride = Math.pow(10, Math.round(Math.log10(idealStride)));
+
+    let ticks = [];
+    for (let i = Math.ceil(range.min / stride); i <= Math.floor(range.max / stride); i++) {
+      ticks.push(i * stride);
+    }
+    return ticks;
+  }
+
+  const countTicks = () => {
+    // TODO: forbid fractional ticks
+    return numberTicks();
+  }
+
+  switch (unit.type) {
+    case "count":
+      return countTicks();
+
+    case "number":
+    case "distance":
+    case "weight":
+      return numberTicks();
+
+    case "time":
+      return numberTicks();
+
+    case "climbing_grade":
+      return numberTicks();
+  }
+}
+
+
+type FlatListChartData = {
   height: number,
   binSize: BinSize,
-  data: any[], 
+  unit: SubUnit,
+  values: { date: DateList, value: number }[],
+  weekStart: WeekStart,
   xKey: string,
   theme: any,
 }
 
-
 const FlatListChart = (
-  { 
+  {
     height,
     binSize,
-    data, 
-    xKey, 
+    unit,
+    values,
+    weekStart,
+    xKey,
     theme,
-  }: 
-  FlatListChartData
+  }:
+    FlatListChartData
 ) => {
   const rootRef = useRef<View>(null);
   const [rootWidth, setRootWidth] = useState(0);
   const [rootHeight, setRootHeight] = useState(0);
-  
-  let yAxisWidth = 50;
+  const windowDimensions = useWindowDimensions();
+  const font = matchFont({ fontFamily: fontFamily, fontSize: 10 * windowDimensions.fontScale });
+
+
+  let yAxisWidth = 30;
   let xAxisHeight = 50;
   let viewportWidth = rootWidth - yAxisWidth;
   let viewportHeight = rootHeight - xAxisHeight;
-  let binWidth = viewportWidth / 12;
+  let binWidth = viewportWidth / 15;
   let barWidth = binWidth * 0.5;
 
-  let yRange = { min: 0, max: 100 };
+  let stat: "mean" = "mean";
+
+  const bins = binTimeSeries(binSize, values, weekStart).reverse();
+  const boundingBox = mergeBoundingBoxes(bins.map((bin) => barBoundingBox(bin.values, stat)));
+  let yRange = boundingBoxToYRange(viewportHeight, boundingBox);
+  let majorTicks = cmpMajorTicks(unit, yRange, 10);
+
+  // const binStats: { t: number, q0: number, q1: number, q2: number, q3: number, q4: number, count: number, sum: number, mean: number, zero: number, dailyMean: number }[]
+  //   = bins.map((bin) => {
+  //     const values = bin.values;
+  //     if (values.length === 0) {
+  //       return {
+  //         t: bin.time,
+  //         count: 0,
+  //         sum: 0,
+  //         mean: 0,
+  //         zero: 0,
+  //         dailyMean: 0,
+  //         q0: 0,
+  //         q1: 0,
+  //         q2: 0,
+  //         q3: 0,
+  //         q4: 0,
+  //       }
+  //     } else {
+  //       return {
+  //         t: bin.time,
+  //         count: values.length,
+  //         sum: values.reduce((a, b) => a + b, 0),
+  //         mean: values.reduce((a, b) => a + b, 0) / values.length,
+  //         zero: 0,
+  //         dailyMean: values.length / bin.nDays * 100,
+  //         ...quartiles(values),
+  //       };
+  //     }
+  //   });
 
   const yToPx = (y: number) => {
-    return (y - yRange.min) * viewportHeight / (yRange.max - yRange.min);
+    return viewportHeight - (y - yRange.min) * viewportHeight / (yRange.max - yRange.min);
   }
 
   useLayoutEffect(() => {
     rootRef.current?.measure((x, y, width, height, pageX, pageY) => {
-      //do something with the measurements
-      console.log(x, y, width, height, pageX, pageY);
       setRootWidth(width);
       setRootHeight(height);
     });
-  }, [ /* add dependencies here */]);
+  }, [windowDimensions]);
 
   return (
     <View key="root" ref={rootRef} style={{ height, flex: 1, position: 'relative', overflow: 'hidden' }}>
-      {/* <Canvas style={{ width: rootWidth, height: rootHeight }}>
-        <Rect x={yAxisWidth} y={0} width={viewportWidth} height={viewportHeight} color="black" />
-      </Canvas> */}
-      <View key="frame" style={{ 
-        position: 'absolute', 
-        top: 0, 
-        left: yAxisWidth, 
-        width: viewportWidth, 
-        height: viewportHeight, 
-        borderWidth: 1, 
-        borderColor: 'black' 
-        }} />
-      <View key="yAxis" style={{ position: 'absolute', width: yAxisWidth, height: viewportHeight, borderWidth: 1, borderColor: 'green' }}>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-        <Text>1</Text>
-      </View>
-      <FlatList 
-        key="flatlist"
-        style={{ left: yAxisWidth, top: 0, width: viewportWidth, height: viewportHeight }}
-        data={data} 
-        getItemLayout={(_, index) => (
-          { length: binWidth, offset: binWidth * index, index }
-        )}
-        renderItem={({ item }) => {
+      <Canvas key="grid" style={{
+        position: 'absolute',
+        width: rootWidth,
+        height: rootHeight,
+        borderWidth: 1,
+        borderColor: 'blue'
+      }}>
+        {majorTicks.map((tick) => {
+          const tickLabel = renderShortFormValue(tick, unit);
+          const tickBox = font.measureText(tickLabel);
           return (
-            <View style={{ width: binWidth, height: rootHeight }}>
-              {/* Data points */}
-              <View style={{ width: binWidth, height: viewportHeight, borderWidth: 1, borderColor: 'red' }}>
-                <Canvas style={{ width: binWidth, height: viewportHeight }}>
-                  <RoundedRect 
-                    x={(binWidth - barWidth) / 2} 
-                    y={viewportHeight} 
-                    width={barWidth} 
-                    height={-yToPx(item.mean)} 
-                    color={theme.colors.primary}
-                    r={barWidth / 3} 
-                  />
-                </Canvas>
+          <Fragment key={tickLabel}>
+            <Line
+              p1={vec(yAxisWidth, yToPx(tick))}
+              p2={vec(rootWidth, yToPx(tick))}
+              color={theme.colors.onSurfaceVariant}
+              strokeWidth={0}
+              opacity={0.5}
+            />
+            <SkiaText
+              x={yAxisWidth - tickBox.width - 7}
+              y={yToPx(tick) + tickBox.height * 0.4}
+              color={theme.colors.onSurfaceVariant}
+              font={font}
+              text={tickLabel}
+            />
+          </Fragment>
+        )})}
+      </Canvas>
+      <View style={{
+        position: 'absolute',
+        left: yAxisWidth,
+        top: 0,
+        width: viewportWidth,
+        height: rootHeight
+      }}>
+        <FlashList
+          key="flashlist"
+          // style={{ position: 'absolute', left: yAxisWidth, top: 0, width: viewportWidth, height: viewportHeight }}
+          data={bins}
+          estimatedItemSize={binWidth}
+          renderItem={({ item }) => {
+            let mean = item.values.reduce((a, b) => a + b, 0) / item.values.length;
+            return (
+              <View style={{ width: binWidth, height: rootHeight }}>
+                {/* Data points */}
+                {item.values.length > 0 && <View key="data view" style={{
+                  width: binWidth,
+                  height: viewportHeight,
+                }}>
+                  <View key="value text" style={{ top: yToPx(mean) - 15, alignItems: 'center' }}>
+                    <Text style={{ fontSize: 10, color: theme.colors.onSurfaceVariant }}>{mean.toFixed(0)}</Text>
+                  </View>
+                  <Canvas key="bar" style={{ position: 'absolute', width: binWidth, height: viewportHeight }}>
+                    <RoundedRect
+                      rect={{
+                        rect: { x: (binWidth - barWidth) / 2, y: yToPx(0), width: barWidth, height: yToPx(mean) - yToPx(0) },
+                        topLeft: vec(barWidth / 3, barWidth / 3),
+                        topRight: vec(barWidth / 3, barWidth / 3),
+                        bottomRight: vec(0, 0),
+                        bottomLeft: vec(0, 0),
+
+                      }}
+                      color={theme.colors.primary}
+                      r={barWidth / 3}
+                    />
+                  </Canvas>
+                </View>}
+                {/* X axis labels */}
+                <View style={{
+                  position: 'absolute',
+                  top: viewportHeight,
+                  width: binWidth,
+                  height: xAxisHeight,
+                  alignItems: 'center',
+                  paddingTop: 4,
+                }}>
+                  <Text style={{ fontSize: 10, color: theme.colors.onSurfaceVariant }}>{xLabel(item.time, binSize)}</Text>
+                </View>
               </View>
-              {/* X axis labels */}
-              <View style={{ width: binWidth, height: xAxisHeight, alignItems: 'center', borderWidth: 1, borderColor: 'blue' }}>
-                <Text style={{ fontSize: 10 }}>{xLabel(item.t, binSize)}</Text>
-              </View>
-            </View>
-          )
-        }}
-        keyExtractor={(item) => item[xKey].toString()}
-        extraData={data}
-        removeClippedSubviews={true}
-        windowSize={2}
-        inverted={true}
-        horizontal={true}
-      />
+            )
+          }}
+          keyExtractor={(item) => item.time.toString()}
+          inverted={true}
+          horizontal={true}
+        />
+      </View>
     </View>
   );
 }
