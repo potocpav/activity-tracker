@@ -178,6 +178,7 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
         <FlatListChart
           height={300}
           binSize={graph.binSize}
+          graphType={graph.graphType}
           unit={unit}
           values={filteredValues}
           weekStart={weekStart}
@@ -266,17 +267,19 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
 const xLabel = (t: number, binSize: BinSize) => {
   const d = new Date(t);
   if (binSize === "day") {
-    return "" + d.getDate();
+    const date = d.getDate();
+    return date > 1 ? `${date}` : `${date}\n${d.toLocaleString('default', { month: 'short' })}`;
   } else if (binSize === "week") {
-    return "" + (d.getDate());
+    const date = d.getDate();
+    return date > 7 ? `${date}` : `${date}\n${d.toLocaleString('default', { month: 'short' })}`;
   } else if (binSize === "month") {
     const m = d.getMonth() + 1;
-    return m > 1 ? `${m}` : `'${d.getFullYear() % 100}`;
+    return m > 1 ? `${m}` : `${m}\n${d.getFullYear()}`;
   } else if (binSize === "quarter") {
     const q = d.getMonth() / 3 + 1;
-    return q > 1 ? `q${q}` : `'${d.getFullYear() % 100}`;
+    return q > 1 ? `q${q}` : `q${q}\n${d.getFullYear()}`;
   } else if (binSize === "year") {
-    return "" + d.getFullYear();
+    return `'${d.getFullYear() % 100}`;
   } else {
     throw new Error("Invalid bin size");
   }
@@ -379,6 +382,7 @@ const cmpMajorTicks = (unit: SubUnit, range: { min: number, max: number }, appro
 type FlatListChartData = {
   height: number,
   binSize: BinSize,
+  graphType: GraphType,
   unit: SubUnit,
   values: { date: DateList, value: number }[],
   weekStart: WeekStart,
@@ -390,6 +394,7 @@ const FlatListChart = (
   {
     height,
     binSize,
+    graphType,
     unit,
     values,
     weekStart,
@@ -404,20 +409,25 @@ const FlatListChart = (
   const windowDimensions = useWindowDimensions();
   const font = matchFont({ fontFamily: fontFamily, fontSize: 10 * windowDimensions.fontScale });
 
+  let stat: "mean" = "mean";
 
-  let yAxisWidth = 30;
-  let xAxisHeight = 50;
-  let viewportWidth = rootWidth - yAxisWidth;
+  let xAxisHeight = 30;
   let viewportHeight = rootHeight - xAxisHeight;
+
+  const bins = binTimeSeries(binSize, values, weekStart).reverse();
+  const boundingBox = mergeBoundingBoxes(bins.map(bin => barBoundingBox(bin.values, stat)));
+  let yRange = boundingBoxToYRange(viewportHeight, boundingBox);
+  let majorTicks = cmpMajorTicks(unit, yRange, 10);
+  const majorTickLabels = majorTicks.map((tick) => renderShortFormValue(tick, unit));
+  const maxTickWidth = Math.max(...majorTickLabels.map((label) => font.measureText(label).width));
+
+  let yAxisPadding = 5;
+  let yAxisWidth = maxTickWidth + yAxisPadding;
+  let viewportWidth = rootWidth - yAxisWidth;
   let binWidth = viewportWidth / 15;
   let barWidth = binWidth * 0.5;
 
-  let stat: "mean" = "mean";
-
-  const bins = binTimeSeries(binSize, values, weekStart).reverse();
-  const boundingBox = mergeBoundingBoxes(bins.map((bin) => barBoundingBox(bin.values, stat)));
-  let yRange = boundingBoxToYRange(viewportHeight, boundingBox);
-  let majorTicks = cmpMajorTicks(unit, yRange, 10);
+  console.log(graphType);
 
   // const binStats: { t: number, q0: number, q1: number, q2: number, q3: number, q4: number, count: number, sum: number, mean: number, zero: number, dailyMean: number }[]
   //   = bins.map((bin) => {
@@ -466,8 +476,6 @@ const FlatListChart = (
         position: 'absolute',
         width: rootWidth,
         height: rootHeight,
-        borderWidth: 1,
-        borderColor: 'blue'
       }}>
         {majorTicks.map((tick) => {
           const tickLabel = renderShortFormValue(tick, unit);
@@ -482,7 +490,7 @@ const FlatListChart = (
               opacity={0.5}
             />
             <SkiaText
-              x={yAxisWidth - tickBox.width - 7}
+              x={yAxisWidth - tickBox.width - yAxisPadding}
               y={yToPx(tick) + tickBox.height * 0.4}
               color={theme.colors.onSurfaceVariant}
               font={font}
@@ -496,13 +504,12 @@ const FlatListChart = (
         left: yAxisWidth,
         top: 0,
         width: viewportWidth,
-        height: rootHeight
+        height: rootHeight,
       }}>
-        <FlashList
+        <FlatList
           key="flashlist"
-          // style={{ position: 'absolute', left: yAxisWidth, top: 0, width: viewportWidth, height: viewportHeight }}
           data={bins}
-          estimatedItemSize={binWidth}
+          // estimatedItemSize={binWidth}
           renderItem={({ item }) => {
             let mean = item.values.reduce((a, b) => a + b, 0) / item.values.length;
             return (
@@ -512,8 +519,8 @@ const FlatListChart = (
                   width: binWidth,
                   height: viewportHeight,
                 }}>
-                  <View key="value text" style={{ top: yToPx(mean) - 15, alignItems: 'center' }}>
-                    <Text style={{ fontSize: 10, color: theme.colors.onSurfaceVariant }}>{mean.toFixed(0)}</Text>
+                  <View key="value text" style={{ top: yToPx(mean) - 13, alignItems: 'center' }}>
+                    <Text style={{ fontSize: 9, color: theme.colors.primary }} numberOfLines={1} adjustsFontSizeToFit>{renderShortFormValue(mean, unit)}</Text>
                   </View>
                   <Canvas key="bar" style={{ position: 'absolute', width: binWidth, height: viewportHeight }}>
                     <RoundedRect
@@ -539,7 +546,9 @@ const FlatListChart = (
                   alignItems: 'center',
                   paddingTop: 4,
                 }}>
-                  <Text style={{ fontSize: 10, color: theme.colors.onSurfaceVariant }}>{xLabel(item.time, binSize)}</Text>
+                  <Text style={{ textAlign: 'center', fontSize: 10, color: theme.colors.onSurfaceVariant }}>
+                    {xLabel(item.time, binSize)}
+                  </Text>
                 </View>
               </View>
             )
