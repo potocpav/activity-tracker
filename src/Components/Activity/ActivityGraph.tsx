@@ -314,11 +314,11 @@ const ActivityChart = (
       renderItem = (item: any, view: ViewDimensions) => (
         <BoxChart view={view} values={item.values} unit={unit} color={theme.colors.primary} surfaceColor={theme.colors.surface} />
       );
-      itemBoundingBox = (item: any) => item.values.length > 0 ? {
+      itemBoundingBox = (item: any, itemWidthPx: number) => item.values.length > 0 ? {
         min: Math.min(...item.values),
         max: Math.max(...item.values),
-        padMin: 10, // TODO: make more precise
-        padMax: 10,
+        padMin: itemWidthPx / 2,
+        padMax: itemWidthPx / 2,
       } : null;
       break;
     }

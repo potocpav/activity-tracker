@@ -76,10 +76,27 @@ export const barBoundingBox = (value: number | null): BoundingBox => {
 }
 
 const cmpMajorTicks = (unit: SubUnit, range: { min: number, max: number }, approxNTicks: number): number[] => {
-  const numberTicks = () => {
+  const numberStride = () => {
     const idealStride = (range.max - range.min) / approxNTicks;
-    const stride = Math.pow(10, Math.round(Math.log10(idealStride)));
+    const logBase = Math.pow(10, 1/3); 
+    const logStride = Math.round(Math.log(idealStride) / Math.log(logBase));
+    let fractionalStride = 0;
+    switch ((Math.round(logStride) % 3 + 3) % 3) {
+      case 0:
+        fractionalStride = 1;
+        break;
+      case 1:
+        fractionalStride = 2;
+        break;
+      case 2:
+        fractionalStride = 5;
+        break;
+    }
+    const stride = Math.pow(10, Math.floor(logStride / 3)) * fractionalStride;
+    return stride;
+  }
 
+  const stridedTicks = (stride: number) => {
     let ticks = [];
     for (let i = Math.ceil(range.min / stride); i <= Math.floor(range.max / stride); i++) {
       ticks.push(i * stride);
@@ -87,26 +104,25 @@ const cmpMajorTicks = (unit: SubUnit, range: { min: number, max: number }, appro
     return ticks;
   }
 
-  const countTicks = () => {
-    // TODO: forbid fractional ticks
-    return numberTicks();
-  }
+  let stride = Infinity;
 
   switch (unit.type) {
     case "count":
-      return countTicks();
-
+      stride = numberStride();
+      break;
     case "number":
     case "distance":
     case "weight":
-      return numberTicks();
-
+      stride = numberStride();
+      break;
+    
     case "time":
-      return numberTicks();
-
+      stride = numberStride();
+      break;
     case "climbing_grade":
-      return numberTicks();
+      break;  
   }
+  return stridedTicks(stride);
 }
 
 export type ViewDimensions = {
@@ -123,7 +139,7 @@ type FlatListChartData = {
   gridLineColor: string,
   items: { time: number, values: number[], nDays: number }[], // todo: swap for any[]
   renderItem: (item: any, view: ViewDimensions) => React.ReactNode,
-  itemBoundingBox: (item: any) => BoundingBox,
+  itemBoundingBox: (item: any, itemWidthPx: number) => BoundingBox,
   itemLabel: (item: any) => string,
 }
 
@@ -147,8 +163,9 @@ const FlatListChart = (
   let topViewportPadding = 5;
   let xAxisHeight = 30;
   let viewportHeight = height - xAxisHeight - topViewportPadding;
+  let binWidth = 20 * windowDimensions.fontScale;
 
-  const boundingBox = mergeBoundingBoxes(items.map((item) => itemBoundingBox(item)));
+  const boundingBox = mergeBoundingBoxes(items.map((item) => itemBoundingBox(item, binWidth)));
   let yRange = boundingBoxToYRange(viewportHeight, boundingBox);
   let majorTicks = cmpMajorTicks(unit, yRange, 10);
   const majorTickLabels = majorTicks.map((tick) => renderShortFormValue(tick, unit));
@@ -157,7 +174,6 @@ const FlatListChart = (
   let yLabelPadding = 5;
   let yAxisWidth = maxTickLabelWidth + yLabelPadding;
   let viewportWidth = width - yAxisWidth;
-  let binWidth = 20 * windowDimensions.fontScale;
 
   const yToPx = (y: number) => {
     return viewportHeight - (y - yRange.min) * viewportHeight / (yRange.max - yRange.min);
