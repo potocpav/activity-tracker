@@ -5,11 +5,10 @@ import useStore from "../Model/Store";
 import { ActivityType, CalendarProps, GraphProps, Stat } from "../Model/StoreTypes";
 import { renderTags } from "../Components/Tags";
 import AntDesign from '@expo/vector-icons/AntDesign';
-import OldActivityGraph from "../Components/Activity/OldActivityGraph";
 import ActivityGraph from "../Components/Activity/ActivityGraph";
 import ActivityCalendar from "../Components/Activity/ActivityCalendar";
 import StatView from "../Components/StatView";
-import { getTheme, getThemePalette, useWideDisplay } from "../Model/Theme";
+import { getTheme, getThemePalette } from "../Model/Theme";
 import Animated, { LinearTransition } from "react-native-reanimated";
 import Hint from "../Components/Hint";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -22,13 +21,6 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
   const theme = getTheme(activity.color);
   const palette = getThemePalette();
   const styles = getStyles(theme);
-
-  // Value to display in dialog
-
-  if (!activity) {
-    return <Text>Activity not found</Text>;
-  }
-
 
   const newStat: Stat = {
     label: "Last Value",
@@ -108,8 +100,6 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
 
           {activity.graphs.map((graph: GraphProps, index: number) => (
             <Fragment key={`graph-${index}`}>
-              <OldActivityGraph activityName={activityName} graphIndex={index} />
-              <Divider />
               <ActivityGraph activityName={activityName} graphIndex={index} />
               <Divider />
             </Fragment>
