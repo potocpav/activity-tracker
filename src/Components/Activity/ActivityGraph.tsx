@@ -114,6 +114,7 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
       </View>
       <View key="activityGraph" style={{ width: '100%', marginVertical: 8 }}>
         <ActivityChart
+          key={`activityChart-${graph.binSize}`}
           width={windowDimensions.width - insets.left - insets.right - 20}
           height={300}
           graph={graph}
@@ -211,10 +212,10 @@ const xLabel = (t: number, binSize: BinSize) => {
     return date > 7 ? `${date}` : `${date}\n${d.toLocaleString('default', { month: 'short' })}`;
   } else if (binSize === "month") {
     const m = d.getMonth() + 1;
-    return m > 1 ? `${m}` : `${m}\n${d.getFullYear()}`;
+    return m > 1 ? `${m}` : `${m}\n'${d.getFullYear() % 100}`;
   } else if (binSize === "quarter") {
     const q = d.getMonth() / 3 + 1;
-    return q > 1 ? `q${q}` : `q${q}\n${d.getFullYear()}`;
+    return q > 1 ? `q${q}` : `q${q}\n'${d.getFullYear() % 100}`;
   } else if (binSize === "year") {
     return `'${d.getFullYear() % 100}`;
   } else {

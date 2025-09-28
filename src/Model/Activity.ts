@@ -368,7 +368,7 @@ export const valueToLabel = (value: StatValue): string => {
     case "n_days":
       return "# Days";
     case "n_points":
-      return "# Points";
+      return "Count";
     case "daily_mean":
       return "Daily %";
     case "sum":

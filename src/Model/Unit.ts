@@ -70,8 +70,10 @@ export const renderShortFormValue = (value: number, unit: SubUnit): string => {
             return renderShortFormNumber(value / 3600) + " h";
           } else if (value > 3600) {
             return numberToString(Math.round(value), unit);
-          } else {
+          } else if (value >= 60) {
             return numberToString(value, unit);
+          } else {
+            return renderShortFormNumber(value);
           }
       }
     case "climbing_grade":
