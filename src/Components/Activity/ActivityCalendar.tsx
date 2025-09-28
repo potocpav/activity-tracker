@@ -5,6 +5,7 @@ import {
   View,
   NativeModules,
   Pressable,
+  ToastAndroid,
 } from "react-native";
 import useStore from "../../Model/Store";
 import { ActivityType, StatValue } from "../../Model/StoreTypes";
@@ -63,14 +64,7 @@ const ActivityCalendar = ({ navigation, activityName, calendarIndex }: ActivityC
         }} android_ripple={{ color: theme.colors.outline, foreground: false }}>
           <Text style={styles.headerText}>{calendar.label}</Text>
         </Pressable>
-        <Button compact={true} onPress={() => {
-          dismissHint("duplicate_calendar");
-          cloneActivityCalendar(activityName, calendarIndex);
-        }}>
-          <AntDesign name="plus" size={24} color={theme.colors.onSurfaceVariant} style={{ marginLeft: 6 }} /> 
-        </Button>
       </View>
-      {calendarIndex === 0 && activity.dataPoints.length > 15 && <Hint hint="duplicate_calendar" />}
       {calendarIndex === 0 && activity.calendars.length > 1 && 
         <Hint hint="rename_calendar" />}
       <Calendar navigation={navigation} activityName={activityName} calendarIndex={calendarIndex}/>
@@ -119,12 +113,23 @@ const ActivityCalendar = ({ navigation, activityName, calendarIndex }: ActivityC
           </Dialog.Content>
           <Dialog.Actions>
             {activity.calendars.length > 1 && (
-              <Button onPress={() => {deleteActivityCalendar(activityName, calendarIndex); setCalendarDialogVisible(false);}}>
-                <AntDesign name="delete" size={24} color={theme.colors.onSurface} />
+              <Button onPress={() => {
+                deleteActivityCalendar(activityName, calendarIndex); 
+                setCalendarDialogVisible(false);
+                ToastAndroid.show('Calendar deleted', ToastAndroid.SHORT);
+                }}>
+                <AntDesign name="delete" size={22} color={theme.colors.onSurface} />
               </Button>
             )}
+            <Button onPress={() => {
+              cloneActivityCalendar(activityName, calendarIndex); 
+              setCalendarDialogVisible(false);
+              ToastAndroid.show('Calendar cloned', ToastAndroid.SHORT);
+              }}>
+              <AntDesign name="copy1" size={22} color={theme.colors.onSurface} />
+            </Button>
             <Button onPress={() => {setActivityCalendar(activityName, calendarIndex, { ...calendar, label: calendarDialogNameInput }); setCalendarDialogVisible(false);}}>
-              <AntDesign name="check" size={24} color={theme.colors.onSurface} />
+              <AntDesign name="check" size={22} color={theme.colors.onSurface} />
             </Button>
           </Dialog.Actions>
         </Dialog>

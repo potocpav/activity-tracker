@@ -1,5 +1,5 @@
 import React, { Fragment } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, ToastAndroid, View } from "react-native";
 import { Button, TextInput } from 'react-native-paper';
 import useStore from "../Model/Store";
 import { ActivityType, Stat, StatPeriod, StatValue, TagFilter, allStatPeriods, unaryStatValues, numericStatValues } from "../Model/StoreTypes";
@@ -15,18 +15,18 @@ import { SystemBars } from "react-native-edge-to-edge";
 
 
 export const EditStat = (
-  { navigation, route }: 
-  {
-    navigation: any, 
-    route: any,
-  }) => {
+  { navigation, route }:
+    {
+      navigation: any,
+      route: any,
+    }) => {
   const activities = useStore((state: any) => state.activities);
   const { activityName, statId } = route.params;
   const activity: ActivityType = activities.find((a: ActivityType) => a.name === activityName);
   const stat = activity?.stats[statId];
   const theme = getTheme(activity.color);
   const themeVariant = getThemeVariant();
-  const addActivityStat = useStore((state: any) => state.addActivityStat);
+  const cloneActivityStat = useStore((state: any) => state.cloneActivityStat);
   const setActivityStat = useStore((state: any) => state.setActivityStat);
   const deleteActivityStat = useStore((state: any) => state.deleteActivityStat);
 
@@ -76,12 +76,16 @@ export const EditStat = (
   }
 
   const handleApply = () => {
-    if (dialogStat !== null) {
-      if (statId === null) {
-        addActivityStat(activityName, dialogStat, null);
-      } else {
+    if (dialogStat !== null) { 
         setActivityStat(activityName, statId, dialogStat);
-      }
+    }
+    navigation.goBack();
+  };
+
+  const handleDuplicate = () => {
+    if (statId !== null) {
+      cloneActivityStat(activityName, statId);
+      ToastAndroid.show('Stat cloned', ToastAndroid.SHORT);
     }
     navigation.goBack();
   };
@@ -89,6 +93,7 @@ export const EditStat = (
   const handleDelete = () => {
     if (statId !== null) {
       deleteActivityStat(activityName, statId);
+      ToastAndroid.show('Stat deleted', ToastAndroid.SHORT);
     }
     navigation.goBack();
   };
@@ -96,24 +101,31 @@ export const EditStat = (
   const statValues = (activity.unit.type === "none" ? unaryStatValues : numericStatValues)
     .map((v: StatValue) => ({ key: v, label: valueToLabel(v) }));
 
-    React.useEffect(() => {
-      navigation.setOptions({
-        headerStyle: themeVariant == 'light' ? { backgroundColor: theme.colors.primary } : undefined,
-        headerTintColor: "#ffffff",
-        headerRight: () => (
-          <>
-            <Button compact={true} onPress={handleApply}><AntDesign name="check" size={24} color={"#ffffff"} /></Button>
-            <Button
+  React.useEffect(() => {
+    navigation.setOptions({
+      headerStyle: themeVariant == 'light' ? { backgroundColor: theme.colors.primary } : undefined,
+      headerTintColor: "#ffffff",
+      headerRight: () => (
+        <>
+          <Button compact={true} onPress={handleApply}><AntDesign name="check" size={24} color={"#ffffff"} /></Button>
+          <Button
+            compact={true}
+            onPress={handleDuplicate}
+            style={{ marginLeft: 8 }}
+          >
+            <AntDesign name="copy1" size={22} color={"#ffffff"} />
+          </Button>
+          <Button
             compact={true}
             onPress={handleDelete}
             style={{ marginLeft: 8 }}
           >
             <AntDesign name="delete" size={22} color={"#ffffff"} />
           </Button>
-          </>
-        ),
-      });
-    }, [activityName, navigation, theme, activity]);
+        </>
+      ),
+    });
+  }, [activityName, navigation, theme, activity]);
 
 
   return (
@@ -121,16 +133,16 @@ export const EditStat = (
       <SystemBars style={"light"} />
       <ScrollView>
         <SafeAreaView edges={["left", "right", "bottom"]}>
-        <View style={{ flexDirection: 'row', justifyContent: 'center', elevation: 2, backgroundColor: theme.colors.elevation.level1, marginBottom: 10, marginHorizontal: 4 }}>
-          {dialogStat && (
-            <StatView
-              sharedTransitionTag="tag"
-              stat={dialogStat}
-              activity={activity}
-              onPress={() => {}}
-            />
-          )}
-        </View>
+          <View style={{ flexDirection: 'row', justifyContent: 'center', elevation: 2, backgroundColor: theme.colors.elevation.level1, marginBottom: 10, marginHorizontal: 4 }}>
+            {dialogStat && (
+              <StatView
+                sharedTransitionTag="tag"
+                stat={dialogStat}
+                activity={activity}
+                onPress={() => { }}
+              />
+            )}
+          </View>
 
           <TextInput
             label="Label"
@@ -140,52 +152,52 @@ export const EditStat = (
             style={{ flex: 1, margin: 10 }}
           />
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center', marginVertical: 5 }}>
-          {/* Period */}
-          <DropdownMenu
-            options={allStatPeriods.map((p: StatPeriod) => ({ key: p, label: periodToLabel(p) }))}
-            selectedKey={inputPeriod || ""}
-            onSelect={(key: string) => setInputPeriod(key as StatPeriod)}
-            visible={periodMenuVisible}
-            setVisible={setPeriodMenuVisible}
-            label="Period"
-            themeColors={theme.colors}
-          />
-
-          {/* SubUnit menu */}
-          <SubUnitMenu
-            subUnitNames={subUnitNames}
-            subUnitName={inputSubUnit}
-            setSubUnitName={(name) => setInputSubUnit(name)}
-            menuVisible={subUnitMenuVisible}
-            setMenuVisible={setSubUnitMenuVisible}
-            themeColors={theme.colors}
-          />
-
-          {/* Value */}
-          <DropdownMenu
-            options={statValues}
-            selectedKey={inputValue || ""}
-            onSelect={(key: string) => setInputValue(key as StatValue)}
-            visible={valueMenuVisible}
-            setVisible={setValueMenuVisible}
-            label="Value"
-            themeColors={theme.colors}
-          />
-
-
-          {/* Tags */}
-          {activity.tags.length > 0 && (
-            <TagMenu
-              tags={inputTagFilters}
-              onChange={(tags) => setInputTagFilters(tags)}
-              menuVisible={tagsMenuVisible}
-              setMenuVisible={setTagsMenuVisible}
-              activityTags={activity.tags}
-              activity={activity}
+          <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center', marginVertical: 5 }}>
+            {/* Period */}
+            <DropdownMenu
+              options={allStatPeriods.map((p: StatPeriod) => ({ key: p, label: periodToLabel(p) }))}
+              selectedKey={inputPeriod || ""}
+              onSelect={(key: string) => setInputPeriod(key as StatPeriod)}
+              visible={periodMenuVisible}
+              setVisible={setPeriodMenuVisible}
+              label="Period"
+              themeColors={theme.colors}
             />
-          )}
-        </View>
+
+            {/* SubUnit menu */}
+            <SubUnitMenu
+              subUnitNames={subUnitNames}
+              subUnitName={inputSubUnit}
+              setSubUnitName={(name) => setInputSubUnit(name)}
+              menuVisible={subUnitMenuVisible}
+              setMenuVisible={setSubUnitMenuVisible}
+              themeColors={theme.colors}
+            />
+
+            {/* Value */}
+            <DropdownMenu
+              options={statValues}
+              selectedKey={inputValue || ""}
+              onSelect={(key: string) => setInputValue(key as StatValue)}
+              visible={valueMenuVisible}
+              setVisible={setValueMenuVisible}
+              label="Value"
+              themeColors={theme.colors}
+            />
+
+
+            {/* Tags */}
+            {activity.tags.length > 0 && (
+              <TagMenu
+                tags={inputTagFilters}
+                onChange={(tags) => setInputTagFilters(tags)}
+                menuVisible={tagsMenuVisible}
+                setMenuVisible={setTagsMenuVisible}
+                activityTags={activity.tags}
+                activity={activity}
+              />
+            )}
+          </View>
         </SafeAreaView>
       </ScrollView>
     </Fragment>

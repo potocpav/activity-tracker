@@ -16,7 +16,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 const ActivitySummary = ({ navigation, activityName }: { navigation: any, activityName: string }) => {
   const activities = useStore((state: any) => state.activities);
   const activity = activities.find((a: ActivityType) => a.name === activityName);
-  const addActivityStat = useStore((state: any) => state.addActivityStat);
   const dismissHint = useStore((state: any) => state.dismissHint);
   const theme = getTheme(activity.color);
   const palette = getThemePalette();
@@ -55,20 +54,6 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
               <View style={{}}>
                 <Text style={styles.sectionHeader}>Overview</Text>
-              </View>
-              <View style={styles.addStat}>
-                <Pressable
-                  onPress={() => {
-                    addActivityStat(activityName, newStat);
-                  }}
-                  style={({ pressed }) => [
-                    {
-                      opacity: pressed ? 0.5 : 1,
-                    },
-                  ]}
-                >
-                  <AntDesign name="plus" size={24} color={theme.colors.onSurfaceVariant} />
-                </Pressable>
               </View>
             </View>
             <Animated.View layout={LinearTransition} style={styles.statsContainer}>

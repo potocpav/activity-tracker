@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, useWindowDimensions, Pressable, StyleSheet, FlatList } from "react-native";
+import { View, Text, useWindowDimensions, Pressable, StyleSheet, FlatList, ToastAndroid } from "react-native";
 import { Menu, Button, Portal, Dialog, TextInput } from 'react-native-paper';
 import useStore from "../../Model/Store";
 import { DataPoint, dateListToTime, ActivityType, GraphType, WeekStart, DateList, SubUnit, GraphProps, Unit } from "../../Model/StoreTypes";
@@ -108,9 +108,6 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
         <Pressable onPress={() => setGraphDialogVisible(true)} android_ripple={{ color: theme.colors.outline, foreground: false }}>
           <Text style={styles.headerText}>{graph.label}</Text>
         </Pressable>
-        <Button compact={true} onPress={() => cloneActivityGraph(activityName, graphIndex)}>
-          <AntDesign name="plus" size={24} color={theme.colors.onSurfaceVariant} style={{ marginLeft: 6 }} />
-        </Button>
       </View>
       <View key="activityGraph" style={{ width: '100%', marginVertical: 8 }}>
         <ActivityChart
@@ -191,9 +188,27 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
           </Dialog.Content>
           <Dialog.Actions>
             {activity.graphs.length > 1 && (
-              <Button onPress={() => { deleteActivityGraph(activityName, graphIndex); setGraphDialogVisible(false); }}><AntDesign name="delete" size={24} color={theme.colors.onSurface} /></Button>
+              <Button onPress={() => {
+                deleteActivityGraph(activityName, graphIndex);
+                setGraphDialogVisible(false);
+                ToastAndroid.show('Graph deleted', ToastAndroid.SHORT);
+              }}>
+                <AntDesign name="delete" size={22} color={theme.colors.onSurface} />
+              </Button>
             )}
-            <Button onPress={() => { setActivityGraph(activityName, graphIndex, { ...graph, label: graphDialogNameInput }); setGraphDialogVisible(false); }}><AntDesign name="check" size={24} color={theme.colors.onSurface} /></Button>
+            <Button onPress={() => {
+              cloneActivityGraph(activityName, graphIndex);
+              setGraphDialogVisible(false);
+              ToastAndroid.show('Graph cloned', ToastAndroid.SHORT);
+            }}>
+              <AntDesign name="copy1" size={22} color={theme.colors.onSurface} />
+            </Button>
+            <Button onPress={() => {
+              setActivityGraph(activityName, graphIndex, { ...graph, label: graphDialogNameInput });
+              setGraphDialogVisible(false);
+            }}>
+              <AntDesign name="check" size={22} color={theme.colors.onSurface} />
+            </Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>

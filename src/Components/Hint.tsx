@@ -32,17 +32,10 @@ const hintInfo = (hint: HintType) => {
         ],
         arrowPos: 0.5,
       };
-    case "duplicate_calendar":
-      return {
-        text: [
-          "You can duplicate a calendar by clicking the + button above.",
-        ],
-        arrowPos: 1.0,
-      };
     case "rename_calendar":
       return {
         text: [
-          "You can rename or delete a calendar by clicking the calendar name.",
+          "You can rename, clone or delete a calendar by clicking the calendar name.",
         ],
         arrowPos: 0.0,
       };

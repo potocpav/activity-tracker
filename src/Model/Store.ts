@@ -42,7 +42,7 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { findZeroSlice, dayCmp } from "./Activity";
 
-export const version = 19;
+export const version = 20;
 
 export const migrate = (persisted: any, version: number) => {
   if (version < 6) {
@@ -116,6 +116,9 @@ export const migrate = (persisted: any, version: number) => {
   }
   if (version < 19) {
     persisted.activeHints = allHints;
+  }
+  if (version < 20) {
+    persisted.activeHints = persisted.activeHints.filter((h: HintType | "duplicate_calendar") => h !== "duplicate_calendar");
   }
   return persisted
 };
@@ -285,13 +288,13 @@ const useStore = create<State>()(
         });
       },
 
-      addActivityStat: (activityName: string, stat: Stat) => {
+      cloneActivityStat: (activityName: string, statId: number) => {
         set((state: any) => {
           const activities = state.activities.map((a: ActivityType) => 
             activityName === a.name 
               ? { 
                 ...a, 
-                stats: [...a.stats, stat]
+                stats: [...a.stats.slice(0, statId + 1), a.stats[statId], ...a.stats.slice(statId + 1)]
               } 
               : a);
           return { activities };
