@@ -1,5 +1,5 @@
-import React, { Fragment, useRef } from "react";
-import { View, Text, Platform, useWindowDimensions, FlatList } from "react-native";
+import React, { Fragment, useRef, useState } from "react";
+import { View, Text, Platform, useWindowDimensions, FlatList, LayoutChangeEvent, LayoutRectangle } from "react-native";
 import { Canvas, matchFont, RoundedRect, Text as SkiaText, vec, Line } from "@shopify/react-native-skia";
 import { SubUnit, BinSize } from "../Model/StoreTypes";
 import { renderShortFormValue } from "../Model/Unit";
@@ -79,7 +79,7 @@ const cmpMajorTicks = (unit: SubUnit, range: { min: number, max: number }, appro
   const idealStride = (range.max - range.min) / approxNTicks;
 
   const defaultStride = (targetStride: number) => {
-    const logBase = Math.pow(10, 1/3); 
+    const logBase = Math.pow(10, 1 / 3);
     const logStride = Math.round(Math.log(targetStride) / Math.log(logBase));
     let fractionalStride = 0;
     switch ((Math.round(logStride) % 3 + 3) % 3) {
@@ -132,12 +132,12 @@ const cmpMajorTicks = (unit: SubUnit, range: { min: number, max: number }, appro
       switch (unit.unit) {
         case "hours":
           if (idealStride < 24) {
-            stride = enumeratedStride(idealStride, [1/3600, 2/3600, 5/3600, 10/3600, 30/3600, 1/60, 2/60, 5/60, 10/60, 15/60, 30/60, 1, 2, 6, 12, 24]);
+            stride = enumeratedStride(idealStride, [1 / 3600, 2 / 3600, 5 / 3600, 10 / 3600, 30 / 3600, 1 / 60, 2 / 60, 5 / 60, 10 / 60, 15 / 60, 30 / 60, 1, 2, 6, 12, 24]);
           }
           break;
         case "seconds":
           if (idealStride >= 1 && idealStride < 3600 * 24) {
-            stride = enumeratedStride(idealStride, [2, 5, 10, 30, 1*60, 2*60, 5*60, 10*60, 15*60, 30*60, 1*3600, 2*3600, 6*3600, 12*3600, 24*3600]);
+            stride = enumeratedStride(idealStride, [2, 5, 10, 30, 1 * 60, 2 * 60, 5 * 60, 10 * 60, 15 * 60, 30 * 60, 1 * 3600, 2 * 3600, 6 * 3600, 12 * 3600, 24 * 3600]);
           }
           break;
       }
@@ -146,31 +146,31 @@ const cmpMajorTicks = (unit: SubUnit, range: { min: number, max: number }, appro
       switch (unit.grade) {
         case "french":
           if (idealStride < 10) {
-            stride = enumeratedStride(idealStride, [1/6, 1/3, 1, 2, 5]);
+            stride = enumeratedStride(idealStride, [1 / 6, 1 / 3, 1, 2, 5]);
           }
           break;
         case "uiaa":
           if (idealStride < 10) {
-            stride = enumeratedStride(idealStride, [1/6, 1/3, 1, 2, 5]);
+            stride = enumeratedStride(idealStride, [1 / 6, 1 / 3, 1, 2, 5]);
           }
           break;
         case "yds":
           if (idealStride < 10) {
-            stride = enumeratedStride(idealStride, [1/4, 1, 2, 5]);
+            stride = enumeratedStride(idealStride, [1 / 4, 1, 2, 5]);
           }
           break;
         case "font":
           if (idealStride < 10) {
-            stride = enumeratedStride(idealStride, [1/6, 1/3, 1, 2, 5]);
+            stride = enumeratedStride(idealStride, [1 / 6, 1 / 3, 1, 2, 5]);
           }
           break;
         case "v-scale":
           if (idealStride < 10) {
-            stride = enumeratedStride(idealStride, [1/2, 1, 2, 5]);
+            stride = enumeratedStride(idealStride, [1 / 2, 1, 2, 5]);
           }
           break;
       }
-      break;  
+      break;
   }
   return stridedTicks(stride);
 }
@@ -183,7 +183,6 @@ export type ViewDimensions = {
 
 
 type FlatListChartData = {
-  width: number,
   height: number,
   unit: SubUnit,
   gridLineColor: string,
@@ -195,7 +194,6 @@ type FlatListChartData = {
 
 const FlatListChart = (
   {
-    width,
     height,
     unit,
     gridLineColor,
@@ -206,9 +204,12 @@ const FlatListChart = (
   }:
     FlatListChartData
 ) => {
+  const [hasMeasuredLayoutSize, setHasMeasuredLayoutSize] = useState(false);
+  const [size, setSize] = useState<LayoutRectangle | null>(null);
   const rootRef = useRef<View>(null);
   const windowDimensions = useWindowDimensions();
   const font = matchFont({ fontFamily: fontFamily, fontSize: 10 * windowDimensions.fontScale });
+  const width = size?.width ?? 0;
 
   let topViewportPadding = 5;
   let xAxisHeight = 30;
@@ -223,80 +224,90 @@ const FlatListChart = (
 
   let yLabelPadding = 5;
   let yAxisWidth = maxTickLabelWidth + yLabelPadding;
-  let viewportWidth = width - yAxisWidth;
+  let viewportWidth = (size?.width ?? 0) - yAxisWidth;
 
   const yToPx = (y: number) => {
     return viewportHeight - (y - yRange.min) * viewportHeight / (yRange.max - yRange.min);
   }
   const itemViewDimensions = { width: binWidth, height: viewportHeight, yToPx: yToPx };
 
+  const onLayout = React.useCallback(
+    ({ nativeEvent: { layout } }: LayoutChangeEvent) => {
+      setHasMeasuredLayoutSize(true);
+      setSize(layout);
+    },
+    [],
+  );
+
   return (
-    <View key="root" ref={rootRef} style={{ height, flex: 1, position: 'relative', overflow: 'hidden' }}>
-      <Canvas key="grid" style={{
-        position: 'absolute',
-        width: width,
-        height: height,
-      }}>
-        {majorTicks.map((tick, index) => {
-          const tickBox = font.measureText(majorTickLabels[index]);
-          return (
-            <Fragment key={tick.toString()}>
-              <Line
-                p1={vec(yAxisWidth, yToPx(tick) + topViewportPadding)}
-                p2={vec(width, yToPx(tick) + topViewportPadding)}
-                color={gridLineColor}
-                strokeWidth={0}
-                opacity={0.5}
-              />
-              <SkiaText
-                x={yAxisWidth - tickBox.width - yLabelPadding}
-                y={yToPx(tick) + tickBox.height * 0.4 + topViewportPadding}
-                color={gridLineColor}
-                font={font}
-                text={majorTickLabels[index]}
-              />
-            </Fragment>
-          )
-        })}
-      </Canvas>
-      <View style={{
-        position: 'absolute',
-        left: yAxisWidth,
-        top: 0,
-        width: viewportWidth,
-        height: height,
-      }}>
-        <FlatList
-          key="flashlist"
-          data={items}
-          // estimatedItemSize={binWidth}
-          renderItem={({ item }) => {
-            const drawnElement = renderItem(item, itemViewDimensions);
-            const xLabelElement = (
-              <View style={{
-                position: 'absolute',
-                top: viewportHeight,
-                width: binWidth,
-                height: xAxisHeight,
-                alignItems: 'center',
-                paddingTop: 4,
-              }}>
-                <Text style={{ textAlign: 'center', fontSize: 10, color: gridLineColor }}>
-                  {itemLabel(item)}
-                </Text>
-              </View>);
+    <View key="root" ref={rootRef} style={{ height, flex: 1, position: 'relative', overflow: 'hidden' }} onLayout={onLayout}>
+      {hasMeasuredLayoutSize && <>
+        <Canvas key="grid" style={{
+          position: 'absolute',
+          width: size?.width,
+          height: size?.height,
+        }}>
+          {majorTicks.map((tick, index) => {
+            const tickBox = font.measureText(majorTickLabels[index]);
             return (
-              <View key={item.time.toString()} style={{ top: topViewportPadding, width: binWidth, height: viewportHeight }}>
-                {drawnElement}
-                {xLabelElement}
-              </View>
-            );
-          }}
-          keyExtractor={(item) => item.time.toString()}
-          inverted={true}
-          horizontal={true}
-        />
-      </View>
+              <Fragment key={tick.toString()}>
+                <Line
+                  p1={vec(yAxisWidth, yToPx(tick) + topViewportPadding)}
+                  p2={vec(width, yToPx(tick) + topViewportPadding)}
+                  color={gridLineColor}
+                  strokeWidth={0}
+                  opacity={0.5}
+                />
+                <SkiaText
+                  x={yAxisWidth - tickBox.width - yLabelPadding}
+                  y={yToPx(tick) + tickBox.height * 0.4 + topViewportPadding}
+                  color={gridLineColor}
+                  font={font}
+                  text={majorTickLabels[index]}
+                />
+              </Fragment>
+            )
+          })}
+        </Canvas>
+        <View style={{
+          position: 'absolute',
+          left: yAxisWidth,
+          top: 0,
+          width: viewportWidth,
+          height: height,
+        }}>
+          <FlatList
+            key="flashlist"
+            data={items}
+            // estimatedItemSize={binWidth}
+            renderItem={({ item }) => {
+              const drawnElement = renderItem(item, itemViewDimensions);
+              const xLabelElement = (
+                <View style={{
+                  position: 'absolute',
+                  top: viewportHeight,
+                  width: binWidth,
+                  height: xAxisHeight,
+                  alignItems: 'center',
+                  paddingTop: 4,
+                }}>
+                  <Text style={{ textAlign: 'center', fontSize: 10, color: gridLineColor }}>
+                    {itemLabel(item)}
+                  </Text>
+                </View>);
+              return (
+                <View key={item.time.toString()} style={{ top: topViewportPadding, width: binWidth, height: viewportHeight }}>
+                  {drawnElement}
+                  {xLabelElement}
+                </View>
+              );
+            }}
+            keyExtractor={(item) => item.time.toString()}
+            inverted={true}
+            horizontal={true}
+          />
+        </View>
+      </>}
     </View>
   );
 }

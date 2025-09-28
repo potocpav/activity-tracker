@@ -115,7 +115,6 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
       <View key="activityGraph" style={{ width: '100%', marginVertical: 8 }}>
         <ActivityChart
           key={`activityChart-${graph.binSize}`}
-          width={windowDimensions.width - insets.left - insets.right - 20}
           height={300}
           graph={graph}
           dataPoints={activity.dataPoints}
@@ -225,7 +224,6 @@ const xLabel = (t: number, binSize: BinSize) => {
 
 
 type ActivityChart = {
-  width: number,
   height: number,
   graph: GraphProps,
   dataPoints: DataPoint[],
@@ -236,7 +234,6 @@ type ActivityChart = {
 
 const ActivityChart = (
   {
-    width,
     height,
     graph,
     dataPoints,
@@ -325,7 +322,6 @@ const ActivityChart = (
   }
 
   return (<FlatListChart
-    width={width}
     height={height}
     unit={unit}
     gridLineColor={theme.colors.onSurfaceVariant}
