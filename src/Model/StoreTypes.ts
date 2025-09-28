@@ -118,6 +118,7 @@ export type CalendarProps = {
   subUnit: string | null;
 };
 
+//TODO: remove line-mean, or implement it
 export type GraphType = "box" | "bar-count" | "bar-daily-mean" | "bar-sum" | "line-mean";
 
 export type BinSize = "day" | "week" | "month" | "quarter" | "year";

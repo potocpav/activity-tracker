@@ -3,7 +3,7 @@ import { View, Text, Platform, useWindowDimensions, Pressable, StyleSheet, FlatL
 import { Menu, Button, Portal, Dialog, TextInput } from 'react-native-paper';
 import { Canvas, matchFont, Rect, RoundedRect, Text as SkiaText, vec, Line } from "@shopify/react-native-skia";
 import useStore from "../../Model/Store";
-import { DataPoint, dateListToTime, ActivityType, GraphType, WeekStart, DateList, SubUnit } from "../../Model/StoreTypes";
+import { DataPoint, dateListToTime, ActivityType, GraphType, WeekStart, DateList, SubUnit, GraphProps, Unit } from "../../Model/StoreTypes";
 import { binTime, binTimeSeries, BinSize, extractValue } from "../../Model/Activity";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import TagMenu from "../TagMenu";
@@ -12,6 +12,7 @@ import DropdownMenu from "../DropdownMenu";
 import { getTheme } from "../../Model/Theme";
 import { FlashList } from "@shopify/flash-list";
 import { renderShortFormValue } from "../../Model/Unit";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const fontFamily = Platform.select({ default: "sans-serif" });
 
@@ -55,6 +56,8 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
   const graph = activity.graphs[graphIndex];
   const weekStart = useStore((state: any) => state.weekStart);
   const theme = getTheme(activity.color);
+  const insets = useSafeAreaInsets();
+  const windowDimensions = useWindowDimensions();
 
   const setActivityGraph = useStore((state: any) => state.setActivityGraph);
   const cloneActivityGraph = useStore((state: any) => state.cloneActivityGraph);
@@ -134,35 +137,7 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
   };
   const binningOptions = Object.entries(binningLabels).map(([key, label]) => ({ key, label }));
 
-  const graphTypes = activity.unit.type === "none" ? ["bar-count", "bar-daily-mean"] : ["box", "bar-count", "bar-sum", "line-mean"];
-
-  const filteredValues: { date: DateList, value: number }[] = activity.dataPoints
-    .map((dp: DataPoint) => ({
-      date: dp.date,
-      value: extractValue(dp, graph.tagFilters, graph.subUnit)
-    }
-    ))
-    .filter(x => x.value !== null) as { date: DateList, value: number }[];
-
-
-  let unit: SubUnit;
-  if (graph.graphType === "bar-count") {
-    unit = { type: "count" };
-  } else if (graph.graphType === "bar-daily-mean") {
-    unit = { type: "number", symbol: "%" };
-  } else {
-    switch (activity.unit.type) {
-      case "none":
-        unit = { type: "count" };
-        break;
-      case "single":
-        unit = activity.unit.unit;
-        break;
-      case "multiple":
-        unit = activity.unit.values.find((u) => u.name === graph.subUnit)?.unit ?? { type: "number", symbol: "n/a" };
-        break;
-    }
-  }
+  const graphTypes = activity.unit.type === "none" ? ["bar-count", "bar-daily-mean"] : ["box", "bar-count", "bar-sum"];
 
   return (
     <View style={{ flex: 1, padding: 10, marginVertical: 16, backgroundColor: theme.colors.background }}>
@@ -175,14 +150,13 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
         </Button>
       </View>
       <View key="activityGraph" style={{ width: '100%', marginVertical: 8 }}>
-        <FlatListChart
+        <ActivityChart
+          width={windowDimensions.width - insets.left - insets.right - 20}
           height={300}
-          binSize={graph.binSize}
-          graphType={graph.graphType}
-          unit={unit}
-          values={filteredValues}
+          graph={graph}
+          dataPoints={activity.dataPoints}
+          activityUnit={activity.unit}
           weekStart={weekStart}
-          xKey="t"
           theme={theme}
         />
       </View>
@@ -325,23 +299,17 @@ const boundingBoxToYRange = (viewportHeight: number, box: BoundingBox): { min: n
   }
 }
 
-const barBoundingBox = (data: number[], stat: "mean"): BoundingBox => {
-  if (data.length === 0) {
+const barBoundingBox = (value: number | null): BoundingBox => {
+  if (value === null) {
     return null;
+  } else {
+    return {
+      min: Math.min(0, value),
+      max: Math.max(0, value),
+      padMin: value < 0 ? 15 : 0,
+      padMax: value > 0 ? 15 : 0,
+    };
   }
-  let cmpStat;
-  switch (stat) {
-    case "mean":
-      cmpStat = (l: number[]) => l.length > 0 ? l.reduce((a, b) => a + b, 0) / l.length : 0;
-      break;
-  }
-  let statValue = cmpStat(data);
-  return {
-    min: Math.min(0, statValue),
-    max: Math.max(0, statValue),
-    padMin: statValue < 0 ? 15 : 0,
-    padMax: statValue > 0 ? 15 : 0,
-  };
 }
 
 const cmpMajorTicks = (unit: SubUnit, range: { min: number, max: number }, approxNTicks: number): number[] => {
@@ -378,180 +346,234 @@ const cmpMajorTicks = (unit: SubUnit, range: { min: number, max: number }, appro
   }
 }
 
+type ActivityChart = {
+  width: number,
+  height: number,
+  graph: GraphProps,
+  dataPoints: DataPoint[],
+  activityUnit: Unit,
+  weekStart: WeekStart,
+  theme: any,
+}
+
+const ActivityChart = (
+  {
+    width,
+    height,
+    graph,
+    dataPoints,
+    activityUnit,
+    weekStart,
+    theme,
+  }:
+    ActivityChart
+) => {
+  const filteredValues: { date: DateList, value: number }[] = dataPoints
+    .map((dp: DataPoint) => ({
+      date: dp.date,
+      value: extractValue(dp, graph.tagFilters, graph.subUnit)
+    }
+    ))
+    .filter(x => x.value !== null) as { date: DateList, value: number }[];
+
+  const items = binTimeSeries(graph.binSize, filteredValues, weekStart).reverse();
+
+  let unit: SubUnit;
+  if (graph.graphType === "bar-count") {
+    unit = { type: "count" };
+  } else if (graph.graphType === "bar-daily-mean") {
+    unit = { type: "number", symbol: "%" };
+  } else {
+    switch (activityUnit.type) {
+      case "none":
+        unit = { type: "count" };
+        break;
+      case "single":
+        unit = activityUnit.unit;
+        break;
+      case "multiple":
+        unit = activityUnit.values.find((u) => u.name === graph.subUnit)?.unit ?? { type: "number", symbol: "n/a" };
+        break;
+    }
+  }
+
+  let renderItem;
+  let itemBoundingBox;
+  switch (graph.graphType) {
+    case "bar-count": {
+      const value = (item: any) => item.values.length > 0 ? item.values.length : null;
+      renderItem = (item: any, view: ViewDimensions) => (
+        <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} />
+      );
+      itemBoundingBox = (item: any) => barBoundingBox(value(item));
+      break;
+    }
+    case "bar-sum": {
+      const value = (item: any) => item.values.length > 0 ? item.values.reduce((a: number, b: number) => a + b, 0) : null;
+      renderItem = (item: any, view: ViewDimensions) => (
+        <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} />
+      );
+      itemBoundingBox = (item: any) => barBoundingBox(value(item));
+      break;
+    }
+    case "bar-daily-mean": {
+      const value = (item: any) => item.values.length > 0 ? item.values.reduce((a: number, b: number) => a + b, 0) / item.nDays * 100 : null;
+      renderItem = (item: any, view: ViewDimensions) => (
+        <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} />
+      );
+      itemBoundingBox = (item: any) => barBoundingBox(value(item));
+      break;
+    }
+    case "line-mean": {
+      const value = (item: any) => item.values.length > 0 ? item.values.reduce((a: number, b: number) => a + b, 0) / item.values.length : null;
+      renderItem = (item: any, view: ViewDimensions) => (value(item) !== null) && (
+        <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} />
+      );
+      itemBoundingBox = (item: any) => barBoundingBox(value(item));
+      break;
+    }
+    case "box": {
+      renderItem = (item: any, view: ViewDimensions) => (
+        <BoxChart view={view} values={item.values} unit={unit} color={theme.colors.primary} surfaceColor={theme.colors.surface} />
+      );
+      itemBoundingBox = (item: any) => item.values.length > 0 ? {
+        min: Math.min(...item.values),
+        max: Math.max(...item.values),
+        padMin: 10, // TODO: make more precise
+        padMax: 10,
+      } : null;
+      break;
+    }
+  }
+
+  return (<FlatListChart
+    width={width}
+    height={height}
+    unit={unit}
+    gridLineColor={theme.colors.onSurfaceVariant}
+    items={items}
+    renderItem={renderItem}
+    itemBoundingBox={itemBoundingBox}
+    itemLabel={(item) => xLabel(item.time, graph.binSize)}
+  />)
+}
+
+type ViewDimensions = {
+  width: number,
+  height: number,
+  yToPx: (y: number) => number,
+}
+
 
 type FlatListChartData = {
+  width: number,
   height: number,
-  binSize: BinSize,
-  graphType: GraphType,
   unit: SubUnit,
-  values: { date: DateList, value: number }[],
-  weekStart: WeekStart,
-  xKey: string,
-  theme: any,
+  gridLineColor: string,
+  items: { time: number, values: number[], nDays: number }[], // todo: swap for any[]
+  renderItem: (item: any, view: ViewDimensions) => React.ReactNode,
+  itemBoundingBox: (item: any) => BoundingBox,
+  itemLabel: (item: any) => string,
 }
 
 const FlatListChart = (
   {
+    width,
     height,
-    binSize,
-    graphType,
     unit,
-    values,
-    weekStart,
-    xKey,
-    theme,
+    gridLineColor,
+    items,
+    renderItem,
+    itemBoundingBox,
+    itemLabel,
   }:
     FlatListChartData
 ) => {
   const rootRef = useRef<View>(null);
-  const [rootWidth, setRootWidth] = useState(0);
-  const [rootHeight, setRootHeight] = useState(0);
   const windowDimensions = useWindowDimensions();
   const font = matchFont({ fontFamily: fontFamily, fontSize: 10 * windowDimensions.fontScale });
 
-  let stat: "mean" = "mean";
-
+  let topViewportPadding = 5;
   let xAxisHeight = 30;
-  let viewportHeight = rootHeight - xAxisHeight;
+  let viewportHeight = height - xAxisHeight - topViewportPadding;
 
-  const bins = binTimeSeries(binSize, values, weekStart).reverse();
-  const boundingBox = mergeBoundingBoxes(bins.map(bin => barBoundingBox(bin.values, stat)));
+  const boundingBox = mergeBoundingBoxes(items.map((item) => itemBoundingBox(item)));
   let yRange = boundingBoxToYRange(viewportHeight, boundingBox);
   let majorTicks = cmpMajorTicks(unit, yRange, 10);
   const majorTickLabels = majorTicks.map((tick) => renderShortFormValue(tick, unit));
-  const maxTickWidth = Math.max(...majorTickLabels.map((label) => font.measureText(label).width));
+  const maxTickLabelWidth = Math.max(...majorTickLabels.map((label) => font.measureText(label).width));
 
-  let yAxisPadding = 5;
-  let yAxisWidth = maxTickWidth + yAxisPadding;
-  let viewportWidth = rootWidth - yAxisWidth;
-  let binWidth = viewportWidth / 15;
-  let barWidth = binWidth * 0.5;
-
-  console.log(graphType);
-
-  // const binStats: { t: number, q0: number, q1: number, q2: number, q3: number, q4: number, count: number, sum: number, mean: number, zero: number, dailyMean: number }[]
-  //   = bins.map((bin) => {
-  //     const values = bin.values;
-  //     if (values.length === 0) {
-  //       return {
-  //         t: bin.time,
-  //         count: 0,
-  //         sum: 0,
-  //         mean: 0,
-  //         zero: 0,
-  //         dailyMean: 0,
-  //         q0: 0,
-  //         q1: 0,
-  //         q2: 0,
-  //         q3: 0,
-  //         q4: 0,
-  //       }
-  //     } else {
-  //       return {
-  //         t: bin.time,
-  //         count: values.length,
-  //         sum: values.reduce((a, b) => a + b, 0),
-  //         mean: values.reduce((a, b) => a + b, 0) / values.length,
-  //         zero: 0,
-  //         dailyMean: values.length / bin.nDays * 100,
-  //         ...quartiles(values),
-  //       };
-  //     }
-  //   });
+  let yLabelPadding = 5;
+  let yAxisWidth = maxTickLabelWidth + yLabelPadding;
+  let viewportWidth = width - yAxisWidth;
+  let binWidth = 20 * windowDimensions.fontScale;
 
   const yToPx = (y: number) => {
     return viewportHeight - (y - yRange.min) * viewportHeight / (yRange.max - yRange.min);
   }
-
-  useLayoutEffect(() => {
-    rootRef.current?.measure((x, y, width, height, pageX, pageY) => {
-      setRootWidth(width);
-      setRootHeight(height);
-    });
-  }, [windowDimensions]);
+  const itemViewDimensions = { width: binWidth, height: viewportHeight, yToPx: yToPx };
 
   return (
     <View key="root" ref={rootRef} style={{ height, flex: 1, position: 'relative', overflow: 'hidden' }}>
       <Canvas key="grid" style={{
         position: 'absolute',
-        width: rootWidth,
-        height: rootHeight,
+        width: width,
+        height: height,
       }}>
-        {majorTicks.map((tick) => {
-          const tickLabel = renderShortFormValue(tick, unit);
-          const tickBox = font.measureText(tickLabel);
+        {majorTicks.map((tick, index) => {
+          const tickBox = font.measureText(majorTickLabels[index]);
           return (
-          <Fragment key={tickLabel}>
-            <Line
-              p1={vec(yAxisWidth, yToPx(tick))}
-              p2={vec(rootWidth, yToPx(tick))}
-              color={theme.colors.onSurfaceVariant}
-              strokeWidth={0}
-              opacity={0.5}
-            />
-            <SkiaText
-              x={yAxisWidth - tickBox.width - yAxisPadding}
-              y={yToPx(tick) + tickBox.height * 0.4}
-              color={theme.colors.onSurfaceVariant}
-              font={font}
-              text={tickLabel}
-            />
-          </Fragment>
-        )})}
+            <Fragment key={tick.toString()}>
+              <Line
+                p1={vec(yAxisWidth, yToPx(tick) + topViewportPadding)}
+                p2={vec(width, yToPx(tick) + topViewportPadding)}
+                color={gridLineColor}
+                strokeWidth={0}
+                opacity={0.5}
+              />
+              <SkiaText
+                x={yAxisWidth - tickBox.width - yLabelPadding}
+                y={yToPx(tick) + tickBox.height * 0.4 + topViewportPadding}
+                color={gridLineColor}
+                font={font}
+                text={majorTickLabels[index]}
+              />
+            </Fragment>
+          )
+        })}
       </Canvas>
       <View style={{
         position: 'absolute',
         left: yAxisWidth,
         top: 0,
         width: viewportWidth,
-        height: rootHeight,
+        height: height,
       }}>
         <FlatList
           key="flashlist"
-          data={bins}
+          data={items}
           // estimatedItemSize={binWidth}
           renderItem={({ item }) => {
-            let mean = item.values.reduce((a, b) => a + b, 0) / item.values.length;
+            const drawnElement = renderItem(item, itemViewDimensions);
+            const xLabelElement = (
+              <View style={{
+                position: 'absolute',
+                top: viewportHeight,
+                width: binWidth,
+                height: xAxisHeight,
+                alignItems: 'center',
+                paddingTop: 4,
+              }}>
+                <Text style={{ textAlign: 'center', fontSize: 10, color: gridLineColor }}>
+                  {itemLabel(item)}
+                </Text>
+              </View>);
             return (
-              <View style={{ width: binWidth, height: rootHeight }}>
-                {/* Data points */}
-                {item.values.length > 0 && <View key="data view" style={{
-                  width: binWidth,
-                  height: viewportHeight,
-                }}>
-                  <View key="value text" style={{ top: yToPx(mean) - 13, alignItems: 'center' }}>
-                    <Text style={{ fontSize: 9, color: theme.colors.primary }} numberOfLines={1} adjustsFontSizeToFit>{renderShortFormValue(mean, unit)}</Text>
-                  </View>
-                  <Canvas key="bar" style={{ position: 'absolute', width: binWidth, height: viewportHeight }}>
-                    <RoundedRect
-                      rect={{
-                        rect: { x: (binWidth - barWidth) / 2, y: yToPx(0), width: barWidth, height: yToPx(mean) - yToPx(0) },
-                        topLeft: vec(barWidth / 3, barWidth / 3),
-                        topRight: vec(barWidth / 3, barWidth / 3),
-                        bottomRight: vec(0, 0),
-                        bottomLeft: vec(0, 0),
-
-                      }}
-                      color={theme.colors.primary}
-                      r={barWidth / 3}
-                    />
-                  </Canvas>
-                </View>}
-                {/* X axis labels */}
-                <View style={{
-                  position: 'absolute',
-                  top: viewportHeight,
-                  width: binWidth,
-                  height: xAxisHeight,
-                  alignItems: 'center',
-                  paddingTop: 4,
-                }}>
-                  <Text style={{ textAlign: 'center', fontSize: 10, color: theme.colors.onSurfaceVariant }}>
-                    {xLabel(item.time, binSize)}
-                  </Text>
-                </View>
+              <View key={item.time.toString()} style={{top: topViewportPadding, width: binWidth, height: viewportHeight }}>
+                {drawnElement}
+                {xLabelElement}
               </View>
-            )
+            );
           }}
           keyExtractor={(item) => item.time.toString()}
           inverted={true}
@@ -562,6 +584,102 @@ const FlatListChart = (
   );
 }
 
+const BarChart = ({
+  view,
+  value,
+  unit,
+  color
+}: {
+  view: ViewDimensions,
+  value: number | null,
+  unit: any,
+  color: string,
+}) => {
+  let barWidth = view.width * 0.6;
+  let belowZero = value !== null && value < 0;
+  let labelOffset = belowZero ? 0 : 13;
+
+  return (value !== null) && (
+    <Fragment key="data view">
+      <View key="value text" style={{ top: view.yToPx(value) - labelOffset, alignItems: 'center' }}>
+        <Text style={{ fontSize: 9, color: color }} numberOfLines={1} adjustsFontSizeToFit>{renderShortFormValue(value, unit)}</Text>
+      </View>
+      <Canvas key="bar" style={{ position: 'absolute', ...view }}>
+        <RoundedRect
+          rect={{
+            rect: { x: (view.width - barWidth) / 2, y: view.yToPx(0), width: barWidth, height: view.yToPx(value) - view.yToPx(0) },
+            topLeft: belowZero ? vec(0, 0) : vec(barWidth / 3, barWidth / 3),
+            topRight: belowZero ? vec(0, 0) : vec(barWidth / 3, barWidth / 3),
+            bottomRight: belowZero ? vec(barWidth / 3, barWidth / 3) : vec(0, 0),
+            bottomLeft: belowZero ? vec(barWidth / 3, barWidth / 3) : vec(0, 0),
+
+          }}
+          color={color}
+        />
+      </Canvas>
+    </Fragment>
+  );
+}
+
+const BoxChart = ({
+  view,
+  values,
+  unit,
+  color,
+  surfaceColor,
+}: {
+  view: ViewDimensions,
+  values: number[],
+  unit: any,
+  color: string,
+  surfaceColor: string,
+}) => {
+  let barWidth = view.width * 0.5;
+  let xmid = view.width / 2;
+
+  if (values.length === 0) {
+    return null;
+  }
+  let { q0, q1, q2, q3, q4 } = quartiles(values);
+  const w = barWidth / 2;
+  const ws = w * 0.4;
+  const wcircle = w * 0.5;
+
+  const q0px = view.yToPx(q0);
+  const q2px = view.yToPx(q2);
+  var q1px = Math.max(view.yToPx(q1), q2px + w);
+  var q3px = Math.min(view.yToPx(q3), q2px - w);
+  const q4px = view.yToPx(q4);
+
+  return (
+      <Canvas key="bar" style={{ position: 'absolute', ...view }}>
+        <RoundedRect
+          x={xmid - w}
+          y={q1px}
+          width={2 * w}
+          height={q3px - q1px}
+          color={color}
+          r={w}
+        />
+        <RoundedRect
+          x={xmid - ws}
+          y={q0px}
+          width={2 * ws}
+          height={q4px - q0px}
+          color={color}
+          r={ws}
+        />
+        <RoundedRect
+          x={xmid - wcircle}
+          y={q2px - wcircle}
+          width={2 * wcircle}
+          height={2 * wcircle}
+          color={surfaceColor}
+          r={wcircle}
+        />
+      </Canvas>
+  );
+}
 
 const getStyles = (theme: any) => StyleSheet.create({
   headerContainer: {

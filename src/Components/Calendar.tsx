@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, FlatList, useWindowDimensions
 import { 
   DataPoint, 
   dateListToTime, 
+  dateToDateList,
   normalizeDateList, 
   DateList, 
   ActivityType, 
@@ -11,7 +12,7 @@ import {
   SubUnit, 
   statValueUnit 
 } from "../Model/StoreTypes";
-import { findZeroSlice, dayCmp, extractStatValue, extractValue, binTime } from "../Model/Activity";
+import { findZeroSlice, dayCmp, cmpDateList, extractStatValue, extractValue, binTime } from "../Model/Activity";
 import useStore from "../Model/Store";
 import { getTheme } from "../Model/Theme";
 import { renderShortFormValue } from "../Model/Unit";
@@ -90,7 +91,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName, 
             </View>
             {[0, 1, 2, 3, 4, 5, 6].map((dayIdx) => {
               const day = normalizeDateList([itemWeekStart.getFullYear(), itemWeekStart.getMonth() + 1, itemWeekStart.getDate() + dayIdx]);
-              if (dateListToTime(day) > now.getTime()) {
+              if (cmpDateList(day, dateToDateList(now)) > 0) {
                 return;
               }
               const daySlice = findZeroSlice(activity.dataPoints, (dp) => dayCmp(dp, day));
