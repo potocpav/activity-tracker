@@ -1,54 +1,17 @@
-import React, { Fragment, useState } from "react";
-import { View, Text, Platform, useWindowDimensions, Pressable, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { View, Text, useWindowDimensions, Pressable, StyleSheet, FlatList } from "react-native";
 import { Menu, Button, Portal, Dialog, TextInput } from 'react-native-paper';
-import { getTransformComponents, Line, Scatter, setScale, setTranslate, useChartTransformState } from "victory-native";
-import { CartesianChart } from "victory-native";
-import { matchFont, RoundedRect, Text as SkiaText } from "@shopify/react-native-skia";
 import useStore from "../../Model/Store";
-import { DataPoint, dateListToTime, ActivityType, GraphType } from "../../Model/StoreTypes";
-import { useAnimatedReaction, useSharedValue, withTiming } from "react-native-reanimated";
+import { DataPoint, dateListToTime, ActivityType, GraphType, WeekStart, DateList, SubUnit, GraphProps, Unit } from "../../Model/StoreTypes";
 import { binTime, binTimeSeries, BinSize, extractValue } from "../../Model/Activity";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import TagMenu from "../TagMenu";
 import SubUnitMenu from "../SubUnitMenu";
 import DropdownMenu from "../DropdownMenu";
 import { getTheme } from "../../Model/Theme";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import FlatListChart, { BarChart, BoxChart, barBoundingBox, ViewDimensions } from "../FlatListChart";
 
-const fontFamily = Platform.select({ default: "sans-serif" });
-
-const approximateBinSize = (binSize: BinSize) => {
-  const day = 24 * 60 * 60 * 1000;
-  if (binSize === "day") {
-    return day;
-  } else if (binSize === "week") {
-    return 7 * day;
-  } else if (binSize === "month") {
-    return 30 * day;
-  } else if (binSize === "quarter") {
-    return 365 / 4 * day;
-  } else if (binSize === "year") {
-    return 365 * day;
-  } else {
-    console.error("Invalid bin size: " + binSize);
-    throw new Error("Invalid bin size: " + binSize);
-  }
-}
-
-const quartiles = (values: number[]) => {
-  const vs = values.filter(v => v !== null).sort((a, b) => a - b);
-  const floatIndex = (i: number) => {
-    const f = Math.max(0, Math.min(Math.floor(i), vs.length - 1));
-    const c = Math.max(0, Math.min(Math.ceil(i), vs.length - 1));
-    const a = i - f;
-    return vs[f] * (1 - a) + vs[c] * a;
-  };
-  const q0 = vs[0];
-  const q1 = floatIndex(0.25 * (vs.length - 1));
-  const q2 = floatIndex(0.5 * (vs.length - 1));
-  const q3 = floatIndex(0.75 * (vs.length - 1));
-  const q4 = vs[vs.length - 1];
-  return { q0, q1, q2, q3, q4 };
-};
 
 const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, graphIndex: number }) => {
   const activities = useStore((state: any) => state.activities);
@@ -56,12 +19,8 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
   const graph = activity.graphs[graphIndex];
   const weekStart = useStore((state: any) => state.weekStart);
   const theme = getTheme(activity.color);
+  const insets = useSafeAreaInsets();
   const windowDimensions = useWindowDimensions();
-  const font = matchFont({ fontFamily: fontFamily, fontSize: 10 * windowDimensions.fontScale });  
-
-  if (!activity) {
-    return <Text>Activity not found</Text>;
-  }
 
   const setActivityGraph = useStore((state: any) => state.setActivityGraph);
   const cloneActivityGraph = useStore((state: any) => state.cloneActivityGraph);
@@ -69,10 +28,6 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
 
   const styles = getStyles(theme);
 
-  const transformState = useChartTransformState({
-    scaleX: 1.0, // Initial X-axis scale
-    scaleY: 1.0, // Initial Y-axis scale
-  }).state;
   const subUnitNames = activity.unit.type === "multiple" ? activity.unit.values.map(u => u.name) : null;
 
   const [binMenuVisible, setBinMenuVisible] = useState(false);
@@ -84,9 +39,6 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
   const [graphDialogNameInput, setGraphDialogNameInput] = useState(graph.label);
 
   const now = new Date();
-  const graphWidth = windowDimensions.width * 0.9;
-  const barWidth = 10 * windowDimensions.fontScale;
-  const nBars = Math.floor(graphWidth / barWidth / 2);
 
   var ticks = [];
   if (activity.dataPoints.length > 0) {
@@ -98,40 +50,6 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
         break; // limit
       }
     }
-  }
-
-  const bins = binTimeSeries(graph.binSize, activity.dataPoints, weekStart);
-  const binStats: { t: number, q0: number, q1: number, q2: number, q3: number, q4: number, count: number, sum: number, mean: number, zero: number, dailyMean: number }[]
-    = bins.map((bin) => {
-      const values = bin.values.map((dp: DataPoint) => extractValue(dp, graph.tagFilters, graph.subUnit)).filter((v: number | null) => v !== null);
-      if (values.length === 0) {
-        return null
-      } else {
-        return {
-          ...quartiles(values),
-          count: values.length,
-          sum: values.reduce((a, b) => a + b, 0),
-          mean: values.reduce((a, b) => a + b, 0) / values.length,
-          zero: 0,
-          dailyMean: values.length / bin.nDays * 100,
-          t: bin.time
-        };
-      }
-    }).filter((b) => b !== null);
-
-  var yKeys: (keyof typeof binStats[number])[];
-  if (graph.graphType === "box") {
-    yKeys = ["q0", "q1", "q2", "q3", "q4"];
-  } else if (graph.graphType === "bar-count") {
-    yKeys = ["count", "zero"];
-  } else if (graph.graphType === "bar-daily-mean") {
-    yKeys = ["dailyMean", "zero"];
-  } else if (graph.graphType === "bar-sum") {
-    yKeys = ["sum", "zero"];
-  } else if (graph.graphType === "line-mean") {
-    yKeys = ["mean"];
-  } else {
-    throw new Error("Invalid graph type");
   }
 
   const graphLabel = (gType: any) => {
@@ -173,116 +91,6 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
     }
   }
 
-  const { domain, viewport }: { domain: { x: [number, number], y?: [number, number] }, viewport: { x: [number, number] } } = (() => {
-    const firstBinTime = bins.length ? bins[0].time : now.getTime();
-    const lastBinTime = bins.length ? bins[bins.length - 1].time : now.getTime();
-    const nowBin = binTime(graph.binSize, now.getTime(), 0, weekStart).getTime();
-    const t1 = Math.max(lastBinTime, nowBin) + approximateBinSize(graph.binSize) / 2;
-    const t0view = t1 - approximateBinSize(graph.binSize) * nBars;
-    const t0 = Math.min(firstBinTime - approximateBinSize(graph.binSize) / 2, t0view);
-
-    var domain: { x: [number, number], y?: [number, number] } = { x: [t0, t1] };
-    var viewport: { x: [number, number] } = { x: [t0view, t1] };
-    if (graph.graphType === "box") {
-      const [ymin, ymax] = [Math.min(...binStats.map((b) => b.q0)), Math.max(...binStats.map((b) => b.q4))];
-      domain.y = [ymin - (ymax - ymin) * 0.05, ymax + (ymax - ymin) * 0.05];
-    } else if (graph.graphType === "bar-count") {
-      const ymax = Math.max(...binStats.map((b) => b.count));
-      domain.y = [0, ymax * 1.1];
-    } else if (graph.graphType === "bar-daily-mean") {
-      const ymax = Math.max(...binStats.map((b) => b.dailyMean));
-      domain.y = [0, ymax * 1.1];
-    } else if (graph.graphType === "bar-sum") {
-      const ymax = Math.max(...binStats.map((b) => b.sum));
-      domain.y = [0, ymax * 1.1];
-    } else if (graph.graphType === "line-mean") {
-      const [ymin, ymax] = [Math.min(...binStats.map((b) => b.mean)), Math.max(...binStats.map((b) => b.mean))];
-      domain.y = [ymin - (ymax - ymin) * 0.05, ymax + (ymax - ymin) * 0.05];
-    } else {
-      throw new Error("Invalid graph type");
-    }
-    return { domain, viewport };
-  })();
-
-  const kx = useSharedValue(1);
-  const ky = useSharedValue(1);
-  const tx = useSharedValue(0);
-  const ty = useSharedValue(0);
-
-
-  const resetTransform = () => {
-    tx.value = withTiming(0);
-  }
-
-  // enforce limits when panning
-  useAnimatedReaction(
-    () => {
-      return transformState.panActive.value || transformState.zoomActive.value;
-    },
-    (cv, pv) => {
-      if (!cv && pv) {
-        const vals = getTransformComponents(transformState.matrix.value);
-        kx.value = vals.scaleX;
-        tx.value = vals.translateX;
-
-        if (tx.value < 0) {
-          tx.value = withTiming(0);
-        }
-      }
-    },
-  );
-
-
-  useAnimatedReaction(
-    () => {
-      return { kx: kx.value, ky: ky.value, tx: tx.value, ty: ty.value };
-    },
-    ({ kx, ky, tx, ty }) => {
-      const m = setTranslate(transformState.matrix.value, tx, ty);
-      transformState.matrix.value = setScale(m, kx, ky);
-    },
-  );
-
-  const barPlot = (values: any, zero: any, stat: string, unit?: string) => {
-    return (
-      <>
-        {(() => {
-          const elements = [];
-          for (let i = 0; i < values.length; i++) {
-            const label = (binStats as any)[i][stat].toFixed(0) + (unit ?? "");
-            const val = values[i];
-            const [vx, vy] = [val.x, val.y ?? NaN];
-            const w = barWidth / 2;
-
-            const labelSize = font.measureText(label);
-
-            elements.push(
-              <Fragment key={"bar" + i}>
-                <RoundedRect
-                  x={vx - w}
-                  y={vy}
-                  width={w * 2}
-                  height={zero[i].y ?? NaN}
-                  color={theme.colors.primary}
-                  r={w * 2 / 3}
-                />
-
-                <SkiaText
-                  key={"label" + i}
-                  x={vx - labelSize.width / 2}
-                  color={theme.colors.onSurface}
-                  y={vy - labelSize.height / 2}
-                  text={label}
-                  font={font}
-                ></SkiaText>
-              </Fragment>
-            );
-          }
-          return elements;
-        })()}
-      </>);
-  }
-
   const binningLabels: Record<typeof graph.binSize, string> = {
     day: "Day",
     week: "Week",
@@ -292,7 +100,7 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
   };
   const binningOptions = Object.entries(binningLabels).map(([key, label]) => ({ key, label }));
 
-  const graphTypes = activity.unit.type === "none" ? ["bar-count", "bar-daily-mean"] : ["box", "bar-count", "bar-sum", "line-mean"];
+  const graphTypes = activity.unit.type === "none" ? ["bar-count", "bar-daily-mean"] : ["box", "bar-count", "bar-sum"];
 
   return (
     <View style={{ flex: 1, padding: 10, marginVertical: 16, backgroundColor: theme.colors.background }}>
@@ -301,152 +109,19 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
           <Text style={styles.headerText}>{graph.label}</Text>
         </Pressable>
         <Button compact={true} onPress={() => cloneActivityGraph(activityName, graphIndex)}>
-          <AntDesign name="plus" size={24} color={theme.colors.onSurfaceVariant} style={{ marginLeft: 6 }} /> 
+          <AntDesign name="plus" size={24} color={theme.colors.onSurfaceVariant} style={{ marginLeft: 6 }} />
         </Button>
       </View>
-      <View key="activityGraph" style={{ height: 300, width: '100%', marginVertical: 8 }}>
-        <CartesianChart
-          data={binStats}
-          transformState={transformState}
-          transformConfig={{
-            pan: { dimensions: "x" },
-            pinch: { enabled: false }
-          }}
-          domain={domain}
-          viewport={viewport}
-          xKey="t"
-          yKeys={yKeys}
-          // frame={{
-          //   lineWidth: 0,
-          //   lineColor: theme.colors.onSurfaceVariant,
-          // }}
-          xAxis={{
-            tickValues: ticks, // binStats.map((q) => q.t),
-            font: font,
-            // enableRescaling: true,
-            lineWidth: 0,
-            lineColor: theme.colors.onSurfaceVariant,
-            labelColor: theme.colors.onSurfaceVariant,
-
-            formatXLabel: (t: number) => {
-              const d = new Date(t);
-              if (graph.binSize === "day") {
-                return "" + d.getDate();
-              } else if (graph.binSize === "week") {
-                return "" + (d.getDate());
-              } else if (graph.binSize === "month") {
-                const m = d.getMonth() + 1;
-                return m > 1 ? `${m}` : `'${d.getFullYear() % 100}`;
-              } else if (graph.binSize === "quarter") {
-                const q = d.getMonth() / 3 + 1;
-                return q > 1 ? `q${q}` : `'${d.getFullYear() % 100}`;
-              } else if (graph.binSize === "year") {
-                return "" + d.getFullYear();
-              } else {
-                throw new Error("Invalid bin size");
-              }
-            },
-            tickCount: 1000,
-          }}
-          yAxis={[
-            {
-              yKeys: yKeys,
-              font: font,
-              tickCount: 10,
-              // lineWidth: 1,
-              lineColor: theme.colors.outline,
-              labelColor: theme.colors.outline,
-            },
-          ]}
-        >
-          {({ points }) => {
-            if (graph.graphType === "box") {
-              return (
-                <>
-                  {(() => {
-                    const elements = [];
-                    for (let i = 0; i < points.q0.length; i++) {
-                      const w = barWidth / 2;
-                      const ws = w * 0.4;
-                      const wcircle = w * 0.5;
-
-                      const q0 = points.q0[i];
-                      const q1 = points.q1[i];
-                      const q2 = points.q2[i];
-                      const q3 = points.q3[i];
-                      const q4 = points.q4[i];
-                      const [q0x, q0y] = [q0.x, q0.y ?? NaN];
-                      const [q2x, q2y] = [q2.x, q2.y ?? NaN];
-                      var [q1x, q1y] = [q1.x, Math.max(q1.y ?? NaN, q2y + w)];
-                      var [q3x, q3y] = [q3.x, Math.min(q3.y ?? NaN, q2y - w)];
-                      const [q4x, q4y] = [q4.x, q4.y ?? NaN];
-
-                      elements.push(
-                        <Fragment key={"" + i}>
-                          <RoundedRect
-                            x={q1x - w}
-                            y={q1y}
-                            width={2 * w}
-                            height={q3y - q1y}
-                            color={theme.colors.primary}
-                            r={w}
-                          />
-                          <RoundedRect
-                            x={q0x - ws}
-                            y={q0y}
-                            width={2 * ws}
-                            height={q4y - q0y}
-                            color={theme.colors.primary}
-                            r={ws}
-                          />
-                          <RoundedRect
-                            x={q2x - wcircle}
-                            y={q2y - wcircle}
-                            width={2 * wcircle}
-                            height={2 * wcircle}
-                            color={theme.colors.surface}
-                            r={wcircle}
-                          />
-                        </Fragment>
-                      );
-                    }
-                    return elements;
-                  })()}
-                </>
-              );
-            } else if (graph.graphType === "bar-count") {
-              return barPlot(points.count, points.zero, "count");
-            } else if (graph.graphType === "bar-daily-mean") {
-              return barPlot(points.dailyMean, points.zero, "dailyMean", "%");
-            } else if (graph.graphType === "bar-sum") {
-              return barPlot(points.sum, points.zero, "sum");
-            } else if (graph.graphType === "line-mean") {
-              return (
-                <>
-                  <Line
-                    points={points.mean}
-                    color={theme.colors.primary}
-                    strokeWidth={4}
-                  />
-                  <Scatter
-                    points={points.mean}
-                    shape="circle"
-                    radius={7}
-                    style="fill"
-                    color={theme.colors.surface}
-                  />
-                  <Scatter
-                    points={points.mean}
-                    shape="circle"
-                    radius={5}
-                    style="fill"
-                    color={theme.colors.primary}
-                  />
-                </>
-              );
-            }
-          }}
-        </CartesianChart>
+      <View key="activityGraph" style={{ width: '100%', marginVertical: 8 }}>
+        <ActivityChart
+          width={windowDimensions.width - insets.left - insets.right - 20}
+          height={300}
+          graph={graph}
+          dataPoints={activity.dataPoints}
+          activityUnit={activity.unit}
+          weekStart={weekStart}
+          theme={theme}
+        />
       </View>
       <View key="menusRow" style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
         {/* Binning menu */}
@@ -454,7 +129,7 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
           options={binningOptions}
           selectedKey={graph.binSize}
           onSelect={(key) => {
-            resetTransform();
+            // TODO: reset viewport
             setActivityGraph(activityName, graphIndex, { ...graph, binSize: key as BinSize });
           }}
           visible={binMenuVisible}
@@ -516,15 +191,149 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
           </Dialog.Content>
           <Dialog.Actions>
             {activity.graphs.length > 1 && (
-              <Button onPress={() => {deleteActivityGraph(activityName, graphIndex); setGraphDialogVisible(false);}}><AntDesign name="delete" size={24} color={theme.colors.onSurface} /></Button>
+              <Button onPress={() => { deleteActivityGraph(activityName, graphIndex); setGraphDialogVisible(false); }}><AntDesign name="delete" size={24} color={theme.colors.onSurface} /></Button>
             )}
-            <Button onPress={() => {setActivityGraph(activityName, graphIndex, { ...graph, label: graphDialogNameInput }); setGraphDialogVisible(false);}}><AntDesign name="check" size={24} color={theme.colors.onSurface} /></Button>
+            <Button onPress={() => { setActivityGraph(activityName, graphIndex, { ...graph, label: graphDialogNameInput }); setGraphDialogVisible(false); }}><AntDesign name="check" size={24} color={theme.colors.onSurface} /></Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>
     </View>
   );
 };
+
+const xLabel = (t: number, binSize: BinSize) => {
+  const d = new Date(t);
+  if (binSize === "day") {
+    const date = d.getDate();
+    return date > 1 ? `${date}` : `${date}\n${d.toLocaleString('default', { month: 'short' })}`;
+  } else if (binSize === "week") {
+    const date = d.getDate();
+    return date > 7 ? `${date}` : `${date}\n${d.toLocaleString('default', { month: 'short' })}`;
+  } else if (binSize === "month") {
+    const m = d.getMonth() + 1;
+    return m > 1 ? `${m}` : `${m}\n${d.getFullYear()}`;
+  } else if (binSize === "quarter") {
+    const q = d.getMonth() / 3 + 1;
+    return q > 1 ? `q${q}` : `q${q}\n${d.getFullYear()}`;
+  } else if (binSize === "year") {
+    return `'${d.getFullYear() % 100}`;
+  } else {
+    throw new Error("Invalid bin size");
+  }
+};
+
+
+type ActivityChart = {
+  width: number,
+  height: number,
+  graph: GraphProps,
+  dataPoints: DataPoint[],
+  activityUnit: Unit,
+  weekStart: WeekStart,
+  theme: any,
+}
+
+const ActivityChart = (
+  {
+    width,
+    height,
+    graph,
+    dataPoints,
+    activityUnit,
+    weekStart,
+    theme,
+  }:
+    ActivityChart
+) => {
+  const filteredValues: { date: DateList, value: number }[] = dataPoints
+    .map((dp: DataPoint) => ({
+      date: dp.date,
+      value: extractValue(dp, graph.tagFilters, graph.subUnit)
+    }
+    ))
+    .filter(x => x.value !== null) as { date: DateList, value: number }[];
+
+  const items = binTimeSeries(graph.binSize, filteredValues, weekStart).reverse();
+
+  let unit: SubUnit;
+  if (graph.graphType === "bar-count") {
+    unit = { type: "count" };
+  } else if (graph.graphType === "bar-daily-mean") {
+    unit = { type: "number", symbol: "%" };
+  } else {
+    switch (activityUnit.type) {
+      case "none":
+        unit = { type: "count" };
+        break;
+      case "single":
+        unit = activityUnit.unit;
+        break;
+      case "multiple":
+        unit = activityUnit.values.find((u) => u.name === graph.subUnit)?.unit ?? { type: "number", symbol: "n/a" };
+        break;
+    }
+  }
+
+  let renderItem;
+  let itemBoundingBox;
+  switch (graph.graphType) {
+    case "bar-count": {
+      const value = (item: any) => item.values.length > 0 ? item.values.length : null;
+      renderItem = (item: any, view: ViewDimensions) => (
+        <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} />
+      );
+      itemBoundingBox = (item: any) => barBoundingBox(value(item));
+      break;
+    }
+    case "bar-sum": {
+      const value = (item: any) => item.values.length > 0 ? item.values.reduce((a: number, b: number) => a + b, 0) : null;
+      renderItem = (item: any, view: ViewDimensions) => (
+        <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} />
+      );
+      itemBoundingBox = (item: any) => barBoundingBox(value(item));
+      break;
+    }
+    case "bar-daily-mean": {
+      const value = (item: any) => item.values.length > 0 ? item.values.reduce((a: number, b: number) => a + b, 0) / item.nDays * 100 : null;
+      renderItem = (item: any, view: ViewDimensions) => (
+        <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} />
+      );
+      itemBoundingBox = (item: any) => barBoundingBox(value(item));
+      break;
+    }
+    case "line-mean": {
+      const value = (item: any) => item.values.length > 0 ? item.values.reduce((a: number, b: number) => a + b, 0) / item.values.length : null;
+      renderItem = (item: any, view: ViewDimensions) => (value(item) !== null) && (
+        <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} />
+      );
+      itemBoundingBox = (item: any) => barBoundingBox(value(item));
+      break;
+    }
+    case "box": {
+      renderItem = (item: any, view: ViewDimensions) => (
+        <BoxChart view={view} values={item.values} unit={unit} color={theme.colors.primary} surfaceColor={theme.colors.surface} />
+      );
+      itemBoundingBox = (item: any) => item.values.length > 0 ? {
+        min: Math.min(...item.values),
+        max: Math.max(...item.values),
+        padMin: 10, // TODO: make more precise
+        padMax: 10,
+      } : null;
+      break;
+    }
+  }
+
+  return (<FlatListChart
+    width={width}
+    height={height}
+    unit={unit}
+    gridLineColor={theme.colors.onSurfaceVariant}
+    items={items}
+    renderItem={renderItem}
+    itemBoundingBox={itemBoundingBox}
+    itemLabel={(item) => xLabel(item.time, graph.binSize)}
+  />)
+}
 
 const getStyles = (theme: any) => StyleSheet.create({
   headerContainer: {

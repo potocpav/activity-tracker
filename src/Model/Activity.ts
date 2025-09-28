@@ -1,6 +1,5 @@
 
 import { 
-  Tag, 
   StatPeriod, 
   DataPoint, 
   DateList, 
@@ -13,11 +12,8 @@ import {
   ActivityType, 
   WeekStart, 
   dateListToDate, 
-  Unit,
-  SubUnit
 } from "./StoreTypes";
 import { renderLongFormNumber, renderLongFormValue } from "./Unit";
-import { View, Text, StyleSheet } from "react-native";
 import { NativeModules } from "react-native";
 
 const locale = NativeModules.I18nManager.localeIdentifier;
@@ -224,7 +220,42 @@ export const binTime = (binSize: BinSize, t0: number, i: number, weekStart: Week
   }
 };
 
-export const binTimeSeries = (binSize: BinSize, dataPoints: any[], weekStart: WeekStart) => {
+export const binTimeSeriesOld = (binSize: BinSize, dataPoints: DataPoint[], weekStart: WeekStart) => {
+    if (dataPoints.length === 0) {
+      return [];
+    }
+    const t0 = dateListToTime(dataPoints[0].date);
+  
+    const nDays = (binSize: BinSize, idx: number) => {
+      const tDiff = binTime(binSize, t0, idx + 1, weekStart).getTime() - binTime(binSize, t0, idx, weekStart).getTime();
+      return Math.round(tDiff / (1000 * 60 * 60 * 24));
+    };
+  
+    var bins: { time: number, nDays: number, values: any[] }[] = [{ 
+      time: binTime(binSize, t0, 0, weekStart).getTime(), 
+      nDays: nDays(binSize, 0), 
+      values: [] 
+    }];
+    var binIx = 0;
+    for (let i = 0; i < dataPoints.length; i++) {
+      const dp = dataPoints[i];
+      while (binTime(binSize, t0, binIx + 1, weekStart).getTime() <= dateListToTime(dp.date)) {
+        binIx++;
+        bins.push({ time: binTime(binSize, t0, binIx, weekStart).getTime(), nDays: nDays(binSize, binIx), values: [] });
+      }
+      bins[bins.length - 1].values.push(dp);
+    };
+    // pad till today
+    const t1 = new Date().getTime();
+    while (binTime(binSize, t0, binIx + 1, weekStart).getTime() <= t1) {
+      binIx++;
+      bins.push({ time: binTime(binSize, t0, binIx, weekStart).getTime(), nDays: nDays(binSize, binIx), values: [] });
+    }
+  
+    return bins;
+  };
+
+export const binTimeSeries = (binSize: BinSize, dataPoints: { date: DateList, value: number }[], weekStart: WeekStart) => {
   if (dataPoints.length === 0) {
     return [];
   }
@@ -243,16 +274,19 @@ export const binTimeSeries = (binSize: BinSize, dataPoints: any[], weekStart: We
   var binIx = 0;
   for (let i = 0; i < dataPoints.length; i++) {
     const dp = dataPoints[i];
-    var newBin = false;
     while (binTime(binSize, t0, binIx + 1, weekStart).getTime() <= dateListToTime(dp.date)) {
       binIx++;
-      newBin = true;
-    }
-    if (newBin) {
       bins.push({ time: binTime(binSize, t0, binIx, weekStart).getTime(), nDays: nDays(binSize, binIx), values: [] });
     }
-    bins[bins.length - 1].values.push(dp);
+    bins[bins.length - 1].values.push(dp.value);
   };
+  // pad till today
+  const t1 = new Date().getTime();
+  while (binTime(binSize, t0, binIx + 1, weekStart).getTime() <= t1) {
+    binIx++;
+    bins.push({ time: binTime(binSize, t0, binIx, weekStart).getTime(), nDays: nDays(binSize, binIx), values: [] });
+  }
+
   return bins;
 };
 
