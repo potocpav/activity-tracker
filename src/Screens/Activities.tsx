@@ -125,19 +125,19 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
                 activity.unit.type === "none" ? (
                   todayPointIndices.length > 1 ? (
                     <View>
-                    <AntDesign name="check" size={22} color={theme.colors.onSurface} />
+                    <AntDesign name="check" size={22} color={palette[activity.color]} />
                     <View style={{position: "absolute", top: 0, left: 5, opacity: 0.5}}>
-                    <AntDesign name="check" size={22} color={theme.colors.onSurface} />
+                    <AntDesign name="check" size={22} color={palette[activity.color]} />
                     </View>
                     </View>
                   ) :
                   todayPointIndices.length === 1 ? (
-                    <AntDesign name="check" size={22} color={theme.colors.onSurface} />
+                    <AntDesign name="check" size={22} color={palette[activity.color]} />
                   ) : (
-                    <AntDesign name="close" size={22} color={theme.colors.onSurface} />
+                    <AntDesign name="close" size={22} color={palette[activity.color]} />
                   )) : 
                   (
-                  <AntDesign name="plus" size={24} color={theme.colors.onSurface} />
+                  <AntDesign name="plus" size={24} color={palette[activity.color]} />
                 )
               }
             </View>
