@@ -181,6 +181,20 @@ const Settings = () => {
         <List.Section>
           <List.Subheader>Links</List.Subheader>
           <List.Item
+            title="FAQ"
+            description="Frequently Asked Questions"
+            left={(props) => <List.Icon {...props} icon="help-circle" />}
+            right={(props) => <List.Icon {...props} icon="chevron-right" />}
+            onPress={() => Linking.openURL('https://potocpav.github.io/activity-tracker/faq')}
+          />
+          <List.Item
+            title="Privacy Policy"
+            description="How we handle your data"
+            left={(props) => <List.Icon {...props} icon="shield-lock" />}
+            right={(props) => <List.Icon {...props} icon="chevron-right" />}
+            onPress={() => Linking.openURL('https://potocpav.github.io/activity-tracker/privacy')}
+          />
+          <List.Item
             title="Visit us on Google Play"
             description="Update, rate and review the app"
             left={(props) => <List.Icon {...props} icon="google-play" />}
