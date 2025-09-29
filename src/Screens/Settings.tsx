@@ -27,6 +27,7 @@ const Settings = () => {
   const showHints = useStore((state: any) => state.showHints);
   const setShowHints = useStore((state: any) => state.setShowHints);
   const activateAllHints = useStore((state: any) => state.activateAllHints);
+  const deactivateAllHints = useStore((state: any) => state.deactivateAllHints);
 
   const openThemeSelection = () => {
     (navigation as any).navigate('ThemeSelection', { currentTheme: themeState });
@@ -171,9 +172,19 @@ const Settings = () => {
             right={(props) => (
               activeHints.length === allHints.length ? (
                 <List.Icon {...props} icon="check" />
-                // <AntDesign name="check" size={24} color={theme.colors.primary} />
               ) : null
             )}
+          />
+        </List.Section>
+
+        <List.Section>
+          <List.Subheader>Links</List.Subheader>
+          <List.Item
+            title="Visit us on Google Play"
+            description="Update, rate and review the app"
+            left={(props) => <List.Icon {...props} icon="google-play" />}
+            right={(props) => <List.Icon {...props} icon="chevron-right" />}
+            onPress={() => Linking.openURL('https://play.google.com/store/apps/details?id=com.pavelpotocek.activitytracker')}
           />
           <List.Item
             title="Visit us on GitHub"
