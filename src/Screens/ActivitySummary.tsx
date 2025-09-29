@@ -52,7 +52,7 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
         <Fragment>
           <View>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-              <View style={{}}>
+              <View style={{paddingLeft: 10}}>
                 <Text style={styles.sectionHeader}>Overview</Text>
               </View>
             </View>
