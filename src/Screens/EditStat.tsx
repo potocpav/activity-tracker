@@ -72,8 +72,8 @@ export const EditStat = (
     } : null;
 
   const handleApply = () => {
-    if (dialogStat !== null) { 
-        setActivityStat(activityName, statId, dialogStat);
+    if (dialogStat !== null) {
+      setActivityStat(activityName, statId, dialogStat);
     }
     navigation.goBack();
   };
@@ -111,13 +111,15 @@ export const EditStat = (
           >
             <AntDesign name="copy1" size={22} color={"#ffffff"} />
           </Button>
-          <Button
-            compact={true}
-            onPress={handleDelete}
-            style={{ marginLeft: 8 }}
-          >
-            <AntDesign name="delete" size={22} color={"#ffffff"} />
-          </Button>
+          {activity.stats.length > 1 && (
+            <Button
+              compact={true}
+              onPress={handleDelete}
+              style={{ marginLeft: 8 }}
+            >
+              <AntDesign name="delete" size={22} color={"#ffffff"} />
+            </Button>
+          )}
         </>
       ),
     });
