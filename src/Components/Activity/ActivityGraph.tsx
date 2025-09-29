@@ -319,9 +319,9 @@ const ActivityChart = (
     case "line-mean": {
       const value = (item: any) => item.values.length > 0 ? item.values.reduce((a: number, b: number) => a + b, 0) / item.values.length : null;
       renderItem = (item: any, view: ViewDimensions) => (value(item) !== null) && (
-        <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} />
+        <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} fontScale={windowDimensions.fontScale} />
       );
-      itemBoundingBox = (item: any) => barBoundingBox(value(item));
+      itemBoundingBox = (item: any) => barBoundingBox(value(item), windowDimensions.fontScale);
       break;
     }
     case "box": {

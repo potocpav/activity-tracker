@@ -22,18 +22,18 @@ import {
 } from "react-native-ble-plx";
  */
 import { create } from "zustand";
-import { 
-  CalendarProps, 
-  Unit, 
-  GraphProps, 
-  Stat, 
-  TagFilter, 
-  ActivityType, 
-  Tag, 
-  DataPoint, 
-  SetTag, 
-  TagName, 
-  State, 
+import {
+  CalendarProps,
+  Unit,
+  GraphProps,
+  Stat,
+  TagFilter,
+  ActivityType,
+  Tag,
+  DataPoint,
+  SetTag,
+  TagName,
+  State,
   HintType,
   allHints
 } from "./StoreTypes";
@@ -41,87 +41,7 @@ import { areUnitsEqual } from "./Unit";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { findZeroSlice, dayCmp } from "./Activity";
-
-export const version = 20;
-
-export const migrate = (persisted: any, version: number) => {
-  if (version < 6) {
-    persisted.goals.forEach((goal: any) => {
-      goal.graph.binSize = "day";
-    });
-  }
-  if (version < 8) {
-    persisted.goals.forEach((goal: any) => {
-      if (goal.stats.length > 0 && typeof goal.stats[0] === 'object') {
-        goal.stats = [goal.stats];
-      }
-    });
-  }
-  if (version < 9) {
-    persisted.weekStart = "monday";
-  }
-  if (version < 10) {
-    persisted.activities = persisted.goals;
-    delete persisted.goals;
-  }
-  if (version < 11) {
-    persisted.activities.forEach((activity: ActivityType) => {
-      activity.stats = activity.stats.flat(1);
-    });
-  }
-  if (version < 12) {
-    persisted.activities.forEach((activity: ActivityType) => {
-      activity.dataPoints = activity.dataPoints.map((dp: DataPoint) => ({
-        ...dp,
-        date: [dp.date[0], dp.date[1] + 1, dp.date[2]]
-      }));
-    });
-  }
-  if (version < 14) {
-    persisted.activities.forEach((activity: any) => {
-      activity.calendars = [activity.calendar];
-      activity.graphs = [activity.graph];
-      delete activity.calendar;
-      delete activity.graph;
-    });
-  }
-  if (version < 15) {
-    persisted.activities.forEach((activity: any) => {
-      activity.calendars.forEach((calendar: any) => {
-        calendar.label = calendar.label == "Count" ? "Calendar" : calendar.label;
-      });
-      activity.graphs.forEach((graph: any) => {
-        graph.label = graph.label || "Graph";
-      });
-    });
-  }
-  if (version < 16) {
-    persisted.activities.forEach((activity: any) => {
-      if (activity.unit === null) {
-        activity.unit = { type: "none" };
-      } else if (typeof activity.unit === 'string') {
-        activity.unit = { type: "single", unit: { type: "number", symbol: activity.unit } };
-      } else if (Array.isArray(activity.unit)) {
-        activity.unit = { type: "multiple", values: activity.unit.map((u: any) => ({ name: u.name, unit: { type: "number", symbol: u.symbol } })) };
-      } else {
-        console.error("Unknown unit type", activity.unit);
-      }
-    });
-  }
-  if (version < 17) {
-    persisted.activeHints = ["add_data_point"];
-  }
-  if (version < 18) {
-    persisted.showHints = true;
-  }
-  if (version < 19) {
-    persisted.activeHints = allHints;
-  }
-  if (version < 20) {
-    persisted.activeHints = persisted.activeHints.filter((h: HintType | "duplicate_calendar") => h !== "duplicate_calendar");
-  }
-  return persisted
-};
+import { version, migrate } from "./StoreMigrations";
 
 // Save only the state that is needed to be saved
 export const partialize = (state: State) => ({
@@ -173,15 +93,15 @@ const useStore = create<State>()(
       setState: (state: State) => {
         set(state);
       },
-      
+
       setTheme: (theme: "system" | "light" | "dark") => {
         set({ theme: theme });
       },
-      
+
       setBlackBackground: (blackBackground: boolean) => {
         set({ blackBackground: blackBackground });
       },
-      
+
       setWeekStart: (weekStart: "sunday" | "monday") => {
         set({ weekStart: weekStart });
       },
@@ -237,8 +157,10 @@ const useStore = create<State>()(
 
       cloneActivityCalendar: (activityName: string, calendarIndex: number) => {
         set((state: any) => {
-          const activities = state.activities.map((a: ActivityType) => activityName === a.name ? { ...a, calendars: 
-            [...a.calendars.slice(0, calendarIndex + 1), a.calendars[calendarIndex], ...a.calendars.slice(calendarIndex + 1)] } : a);
+          const activities = state.activities.map((a: ActivityType) => activityName === a.name ? {
+            ...a, calendars:
+              [...a.calendars.slice(0, calendarIndex + 1), a.calendars[calendarIndex], ...a.calendars.slice(calendarIndex + 1)]
+          } : a);
           return { activities };
         });
       },
@@ -259,8 +181,10 @@ const useStore = create<State>()(
 
       cloneActivityGraph: (activityName: string, graphIndex: number) => {
         set((state: any) => {
-          const activities = state.activities.map((a: ActivityType) => activityName === a.name ? { ...a, graphs: 
-            [...a.graphs.slice(0, graphIndex + 1), a.graphs[graphIndex], ...a.graphs.slice(graphIndex + 1)] } : a);
+          const activities = state.activities.map((a: ActivityType) => activityName === a.name ? {
+            ...a, graphs:
+              [...a.graphs.slice(0, graphIndex + 1), a.graphs[graphIndex], ...a.graphs.slice(graphIndex + 1)]
+          } : a);
           return { activities };
         });
       },
@@ -274,14 +198,14 @@ const useStore = create<State>()(
 
       setActivityStat: (activityName: string, statId: number, stat: Stat) => {
         set((state: any) => {
-          const activities = state.activities.map((a: ActivityType) => 
-            activityName === a.name 
-              ? { 
-                ...a, 
-                stats: a.stats.map((s: Stat, i: number) => 
+          const activities = state.activities.map((a: ActivityType) =>
+            activityName === a.name
+              ? {
+                ...a,
+                stats: a.stats.map((s: Stat, i: number) =>
                   i === statId ? stat : s
                 )
-                } 
+              }
               : a
           );
           return { activities };
@@ -290,12 +214,12 @@ const useStore = create<State>()(
 
       cloneActivityStat: (activityName: string, statId: number) => {
         set((state: any) => {
-          const activities = state.activities.map((a: ActivityType) => 
-            activityName === a.name 
-              ? { 
-                ...a, 
+          const activities = state.activities.map((a: ActivityType) =>
+            activityName === a.name
+              ? {
+                ...a,
                 stats: [...a.stats.slice(0, statId + 1), a.stats[statId], ...a.stats.slice(statId + 1)]
-              } 
+              }
               : a);
           return { activities };
         });
@@ -303,18 +227,18 @@ const useStore = create<State>()(
 
       deleteActivityStat: (activityName: string, statId: number) => {
         set((state: any) => {
-          const activities = state.activities.map((a: ActivityType) => 
-            activityName === a.name 
-              ? { 
-                ...a, 
+          const activities = state.activities.map((a: ActivityType) =>
+            activityName === a.name
+              ? {
+                ...a,
                 stats: a.stats.filter((s: Stat, i: number) => i !== statId)
-              } 
+              }
               : a);
           return { activities };
         });
       },
 
-      setUnit: (activityName: string, unit: Unit, unitMap: {oldName: string | null, newName: string}[]) => {
+      setUnit: (activityName: string, unit: Unit, unitMap: { oldName: string | null, newName: string }[]) => {
         set((state: any) => {
           const activity = state.activities.find((a: ActivityType) => a.name === activityName);
           if (!activity) {
@@ -377,7 +301,7 @@ const useStore = create<State>()(
                       unitMap
                         .filter(u => u.oldName === null)
                         .map(u => [u.newName, value])
-                      );
+                    );
                     break;
                   case "multiple":
                     // all subunits with oldName are set to the appropriate previous value
@@ -386,7 +310,7 @@ const useStore = create<State>()(
                         .filter(u => typeof u.oldName === 'string')
                         .map(u => [u.newName, (value as any)[u.oldName as string]])
                         .filter(u => u[1] !== undefined)
-                      );
+                    );
                     break;
                 }
                 break;
@@ -398,11 +322,11 @@ const useStore = create<State>()(
           // FIXME: What if the value is undefined, after converting a data point from Multiple to Single?
           const newDataPoints = activity.dataPoints
             .map((dp: DataPoint) => {
-              let {value, ...dpValueless} = dp;
+              let { value, ...dpValueless } = dp;
               const newDpValue = mapDpValue(dp.value);
               return {
-                ...dpValueless ,
-                ...(newDpValue !== undefined ? {value: newDpValue} : {}),
+                ...dpValueless,
+                ...(newDpValue !== undefined ? { value: newDpValue } : {}),
               }
             });
 
@@ -429,10 +353,10 @@ const useStore = create<State>()(
               newGraphType = "bar-count";
             } else if (unit.type !== "none" && activity.unit.type === "none") {
               newGraphType = "box";
-            } else  {
+            } else {
               newGraphType = graph.graphType;
             }
-    
+
             return {
               ...graph,
               graphType: newGraphType,
@@ -453,7 +377,7 @@ const useStore = create<State>()(
             graphs: newGraphs,
             stats: newStats
           };
-          return {activities: state.activities.map((a: ActivityType) => a.name === activityName ? newActivity : a)};
+          return { activities: state.activities.map((a: ActivityType) => a.name === activityName ? newActivity : a) };
         });
       },
 
@@ -558,11 +482,11 @@ const useStore = create<State>()(
           const updateTags = (tags: Tag[]) => {
             return tags.filter((t: Tag) => t.name !== tagName);
           }
-          const activities = state.activities.map((activity: ActivityType) => activity.name === activityName ? 
-            { 
-              ...activity, 
-              tags: updateTags(activity.tags), 
-              dataPoints: updateDataPoints(activity.dataPoints) 
+          const activities = state.activities.map((activity: ActivityType) => activity.name === activityName ?
+            {
+              ...activity,
+              tags: updateTags(activity.tags),
+              dataPoints: updateDataPoints(activity.dataPoints)
             } : activity);
           return { activities };
         });
@@ -640,112 +564,112 @@ const useStore = create<State>()(
         });
       },
 
-            /*
-      requestPermissions: requestPermissions,
-      
-      connectToDevice: async (device: Device) => {
-        try {
-          const deviceConnection = await connectToDevice(device);
-          set({ connectedDevice: deviceConnection, isConnected: true });
-          deviceConnection.onDisconnected(async () => {
-            console.error("Device is disconnected asynchronously.");
-            set({ isConnected: false });
-          });
-        } catch (e) {
-          console.error("FAILED TO CONNECT", e);
-        }
-      },
+      /*
+requestPermissions: requestPermissions,
+ 
+connectToDevice: async (device: Device) => {
+  try {
+    const deviceConnection = await connectToDevice(device);
+    set({ connectedDevice: deviceConnection, isConnected: true });
+    deviceConnection.onDisconnected(async () => {
+      console.error("Device is disconnected asynchronously.");
+      set({ isConnected: false });
+    });
+  } catch (e) {
+    console.error("FAILED TO CONNECT", e);
+  }
+},
 
-      disconnectDevice: async () => {
-        const connectedDevice: any = get().connectedDevice;
-        if (connectedDevice) {
-          await disconnectDevice(connectedDevice);
-          set({ isConnected: false });
-        }
-      },
+disconnectDevice: async () => {
+  const connectedDevice: any = get().connectedDevice;
+  if (connectedDevice) {
+    await disconnectDevice(connectedDevice);
+    set({ isConnected: false });
+  }
+},
 
-      scanForPeripherals: () => {
-        scanForPeripherals((device) => {
-          const isDuplicteDevice = (devices: Device[], nextDevice: Device) => {
-            return devices.findIndex((device) => nextDevice.id === device.id) > -1;
-          };
-          set((state: any) => {
-            if (!isDuplicteDevice(state.allDevices, device)) {
-              return { allDevices: [...state.allDevices, device] };
-            } else {
-              return {};
-            }
-          });
-        });
-      },
+scanForPeripherals: () => {
+  scanForPeripherals((device) => {
+    const isDuplicteDevice = (devices: Device[], nextDevice: Device) => {
+      return devices.findIndex((device) => nextDevice.id === device.id) > -1;
+    };
+    set((state: any) => {
+      if (!isDuplicteDevice(state.allDevices, device)) {
+        return { allDevices: [...state.allDevices, device] };
+      } else {
+        return {};
+      }
+    });
+  });
+},
 
-      onDataUpdate: (
-        error: BleError | null,
-        characteristic: Characteristic | null
-      ) => {
-        const data = extractData(error, characteristic);
-        if (data) {
-          set((state: any) => {
-            const newDataPoints = [...state.dataPoints, ...data].slice(-800);
-            return {
-              dataPoints: newDataPoints
-            };
-          });
-          console.error("Data updated", data);
-        }
-      },
+onDataUpdate: (
+  error: BleError | null,
+  characteristic: Characteristic | null
+) => {
+  const data = extractData(error, characteristic);
+  if (data) {
+    set((state: any) => {
+      const newDataPoints = [...state.dataPoints, ...data].slice(-800);
+      return {
+        dataPoints: newDataPoints
+      };
+    });
+    console.error("Data updated", data);
+  }
+},
 
-      withDevice: (callback: (device: Device) => void) => {
-        const device = get().connectedDevice;
-        if (device) {
-          callback(device);
-        } else {
-          console.error("No device connected");
-        }
-      },
+withDevice: (callback: (device: Device) => void) => {
+  const device = get().connectedDevice;
+  if (device) {
+    callback(device);
+  } else {
+    console.error("No device connected");
+  }
+},
 
-      tareScale: async () => {
-        get().withDevice(async (device: Device) => {
-          await tareScale(device);
-        });
-      },
+tareScale: async () => {
+  get().withDevice(async (device: Device) => {
+    await tareScale(device);
+  });
+},
 
-      startMeasurement: async () => {
-        get().withDevice(async (device: Device) => {
-          set({ dataPoints: [] });
-          await startMeasurementCommand(device);
-          get().startStreamingData(device);
-        });
-      },
+startMeasurement: async () => {
+  get().withDevice(async (device: Device) => {
+    set({ dataPoints: [] });
+    await startMeasurementCommand(device);
+    get().startStreamingData(device);
+  });
+},
 
-      stopMeasurement: async () => {
-        get().withDevice(async (device: Device) => {
-          await stopMeasurementCommand(device);
-          get().subscription?.remove();
-          set({ subscription: null });
-        });
-      },
+stopMeasurement: async () => {
+  get().withDevice(async (device: Device) => {
+    await stopMeasurementCommand(device);
+    get().subscription?.remove();
+    set({ subscription: null });
+  });
+},
 
-      shutdown: async () => {
-        get().withDevice(async (device: Device) => {
-          await shutdown(device);
-          await get().disconnectDevice();
-        });
-      },
+shutdown: async () => {
+  get().withDevice(async (device: Device) => {
+    await shutdown(device);
+    await get().disconnectDevice();
+  });
+},
 
-      sampleBatteryVoltage: async () => {
-        get().withDevice(async (device: Device) => {
-          console.error("Sampling battery voltage");
-          await sampleBatteryVoltage(device);
-        });
-      },
+sampleBatteryVoltage: async () => {
+  get().withDevice(async (device: Device) => {
+    console.error("Sampling battery voltage");
+    await sampleBatteryVoltage(device);
+  });
+},
 
-      startStreamingData: () => {
-        get().withDevice((device: Device) => {
-          const subscription = startStreamingData(device, get().onDataUpdate);
-          set({ subscription: subscription });
-        });
-      },
+startStreamingData: () => {
+  get().withDevice((device: Device) => {
+    const subscription = startStreamingData(device, get().onDataUpdate);
+    set({ subscription: subscription });
+  });
+},
 */
     }),
     {
