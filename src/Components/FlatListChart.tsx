@@ -62,15 +62,15 @@ const boundingBoxToYRange = (viewportHeight: number, box: BoundingBox): { min: n
   }
 }
 
-export const barBoundingBox = (value: number | null): BoundingBox => {
+export const barBoundingBox = (value: number | null, fontScale: number): BoundingBox => {
   if (value === null) {
     return null;
   } else {
     return {
       min: Math.min(0, value),
       max: Math.max(0, value),
-      padMin: value < 0 ? 15 : 0,
-      padMax: value > 0 ? 15 : 0,
+      padMin: value < 0 ? 15 * fontScale : 0,
+      padMax: value > 0 ? 15 * fontScale : 0,
     };
   }
 }
@@ -211,20 +211,22 @@ const FlatListChart = (
   const font = matchFont({ fontFamily: fontFamily, fontSize: 10 * windowDimensions.fontScale });
   const width = size?.width ?? 0;
 
-  let topViewportPadding = 5;
-  let xAxisHeight = 30;
-  let viewportHeight = height - xAxisHeight - topViewportPadding;
-  let binWidth = 20 * windowDimensions.fontScale;
-
-  const boundingBox = mergeBoundingBoxes(items.map((item) => itemBoundingBox(item, binWidth)));
-  let yRange = boundingBoxToYRange(viewportHeight, boundingBox);
-  let majorTicks = cmpMajorTicks(unit, yRange, 10);
+  const topViewportPadding = 5;
+  const xAxisHeight = 30 * windowDimensions.fontScale;
+  const viewportHeight = height - xAxisHeight - topViewportPadding;
+  const targetBinWidth = 20 * windowDimensions.fontScale;
+  
+  const boundingBox = mergeBoundingBoxes(items.map((item) => itemBoundingBox(item, targetBinWidth)));
+  const yRange = boundingBoxToYRange(viewportHeight, boundingBox);
+  const majorTicks = cmpMajorTicks(unit, yRange, 10);
   const majorTickLabels = majorTicks.map((tick) => renderShortFormValue(tick, unit));
   const maxTickLabelWidth = Math.max(...majorTickLabels.map((label) => font.measureText(label).width));
-
-  let yLabelPadding = 5;
-  let yAxisWidth = maxTickLabelWidth + yLabelPadding;
-  let viewportWidth = (size?.width ?? 0) - yAxisWidth;
+  
+  const yLabelPadding = 5;
+  const yAxisWidth = maxTickLabelWidth + yLabelPadding;
+  const viewportWidth = (size?.width ?? 0) - yAxisWidth;
+  // make viewportWidth a multiple of binWidth
+  const binWidth = viewportWidth / Math.round(viewportWidth / targetBinWidth);
 
   const yToPx = (y: number) => {
     return viewportHeight - (y - yRange.min) * viewportHeight / (yRange.max - yRange.min);
@@ -316,16 +318,18 @@ export const BarChart = ({
   view,
   value,
   unit,
-  color
+  color,
+  fontScale,
 }: {
   view: ViewDimensions,
   value: number | null,
   unit: any,
   color: string,
+  fontScale: number,
 }) => {
   let barWidth = view.width * 0.6;
   let belowZero = value !== null && value < 0;
-  let labelOffset = belowZero ? 0 : 13;
+  let labelOffset = belowZero ? 0 : 13 * fontScale;
 
   return (value !== null) && (
     <Fragment key="data view">

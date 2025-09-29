@@ -258,6 +258,8 @@ const ActivityChart = (
   }:
     ActivityChart
 ) => {
+  const windowDimensions = useWindowDimensions();
+
   const filteredValues: { date: DateList, value: number }[] = dataPoints
     .map((dp: DataPoint) => ({
       date: dp.date,
@@ -293,25 +295,25 @@ const ActivityChart = (
     case "bar-count": {
       const value = (item: any) => item.values.length > 0 ? item.values.length : null;
       renderItem = (item: any, view: ViewDimensions) => (
-        <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} />
+        <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} fontScale={windowDimensions.fontScale} />
       );
-      itemBoundingBox = (item: any) => barBoundingBox(value(item));
+      itemBoundingBox = (item: any) => barBoundingBox(value(item), windowDimensions.fontScale);
       break;
     }
     case "bar-sum": {
       const value = (item: any) => item.values.length > 0 ? item.values.reduce((a: number, b: number) => a + b, 0) : null;
       renderItem = (item: any, view: ViewDimensions) => (
-        <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} />
+        <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} fontScale={windowDimensions.fontScale} />
       );
-      itemBoundingBox = (item: any) => barBoundingBox(value(item));
+      itemBoundingBox = (item: any) => barBoundingBox(value(item), windowDimensions.fontScale);
       break;
     }
     case "bar-daily-mean": {
       const value = (item: any) => item.values.length > 0 ? item.values.reduce((a: number, b: number) => a + b, 0) / item.nDays * 100 : null;
       renderItem = (item: any, view: ViewDimensions) => (
-        <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} />
+        <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} fontScale={windowDimensions.fontScale} />
       );
-      itemBoundingBox = (item: any) => barBoundingBox(value(item));
+      itemBoundingBox = (item: any) => barBoundingBox(value(item), windowDimensions.fontScale);
       break;
     }
     case "line-mean": {
