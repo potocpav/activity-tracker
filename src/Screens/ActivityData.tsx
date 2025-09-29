@@ -144,11 +144,11 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
 
   const renderNoteAndTags = (dataPoint: DataPoint) => {
     return (
-      <View style={{gap: 4}}>
-        <View style={{}}>
+      <View style={{gap: 6, flex: 1}}>
+        <View style={styles.activityNoteTags}>
           <Text numberOfLines={1} style={{ color: theme.colors.onSurface }}>{dataPoint.note ?? ""}</Text>
         </View>
-        <View style={{}}>
+        <View style={styles.activityNoteTags}>
           {renderTags(
             activity.tags.filter((t: Tag) => (dataPoint.tags ?? []).includes(t.name)),
             theme,
@@ -167,9 +167,14 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
         android_ripple={{ color: theme.colors.outline, foreground: false }}
         style={styles.activityCard}
       >
-        <View style={{ padding: 5, height: ITEM_HEIGHT, flexDirection: 'row', alignItems: 'center' }}>
-          <View style={{ width: ITEM_HEIGHT - 10, alignItems: 'center' }}>
-            <Text numberOfLines={1} adjustsFontSizeToFit style={{ color: theme.colors.onSurface, fontSize: 70 }}>✓</Text>
+        <View style={styles.activityContent}>
+          <View style={styles.activityValues}>
+            <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+            <Text numberOfLines={1} adjustsFontSizeToFit 
+              style={{ color: theme.colors.onSurface, fontSize: 40 }}>
+                ✓
+            </Text>
+            </View>
           </View>
           {renderNoteAndTags(dataPoint)}
         </View>
@@ -184,11 +189,13 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
         android_ripple={{ color: theme.colors.outline, foreground: false }}
         style={styles.activityCard}
       >
-        <View style={{ padding: 5, height: ITEM_HEIGHT, flexDirection: 'row', gap: 10 }}>
-          <View style={{ width: ITEM_HEIGHT * 1.2, alignItems: 'center' }}>
+        <View style={styles.activityContent}>
+          <View style={styles.activityValues}>
             {renderValue(dataPoint.value ?? null, activity.unit)}
           </View>
-          {renderNoteAndTags(dataPoint)}
+          <View style={{flex: 1}}>
+            {renderNoteAndTags(dataPoint)}
+          </View>
         </View>
       </Pressable>
     );
@@ -203,14 +210,13 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
       <SectionList
         style={styles.scrollView}
         sections={sections}
-        ItemSeparatorComponent={() => (blackTheme ? <Divider /> : null)}
         keyExtractor={([_, i]) => i.toString()}
         windowSize={11}
         ListFooterComponent={() => (
           <Inset type="bottom" />
         )}
         renderSectionHeader={({ section: { date } }) => (
-          <View style={blackTheme ? styles.sectionHeaderBlackTheme : styles.sectionHeader}>
+          <View style={ styles.sectionHeader}>
             <Text style={{ color: theme.colors.onSurface }}>{formatDate(dateListToDate(date as DateList))}</Text>
           </View>
         )}
@@ -228,14 +234,6 @@ const getStyles = (theme: any) => StyleSheet.create({
   },
   sectionHeader: {
     padding: 5,
-  },
-  sectionHeaderBlackTheme: {
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 4,
-    backgroundColor: theme.colors.elevation.level2,
-    elevation: 2,
-    borderColor: theme.colors.outline,
   },
   headerMenu: {
     paddingHorizontal: 10,
@@ -256,10 +254,32 @@ const getStyles = (theme: any) => StyleSheet.create({
   },
   activityCard: {
     padding: 4,
-    backgroundColor: theme.colors.elevation.level1,
-    margin: 2,
-    borderRadius: 2,
-    elevation: 1,
+    backgroundColor: theme.colors.elevation.level2,
+    margin: 4,
+    borderRadius: 15,
+    elevation: 2,
+  },
+  activityContent: {
+    flexDirection: 'row',
+    padding: 0,
+    height: ITEM_HEIGHT,
+    alignItems: 'center',
+    gap: 6,
+  },
+  activityValues: {
+    width: ITEM_HEIGHT * 1.3, 
+    backgroundColor: theme.colors.elevation.level5,
+    borderRadius: 15,
+    elevation: 5,
+    alignItems: 'center', 
+    justifyContent: 'center'
+  },
+  activityNoteTags: {
+    flex: 1,
+    paddingVertical: 3,
+    paddingHorizontal: 6,
+    // backgroundColor: theme.colors.elevation.level5,
+    // elevation: 3,
   },
 });
 

@@ -71,10 +71,6 @@ export const EditStat = (
       tagFilters: inputTagFilters
     } : null;
 
-  if (!activity) {
-    return <Text>Activity not found</Text>;
-  }
-
   const handleApply = () => {
     if (dialogStat !== null) { 
         setActivityStat(activityName, statId, dialogStat);

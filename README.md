@@ -37,7 +37,7 @@ Track your performance metrics and their progress over time. With custom statist
 
 ## Planned features
 
-- [ ] Redesign the data list screen
+- [x] Redesign the data list screen
 - [x] Reimplement graphs to use FlatList instead of VictoryNative
   - [ ] Regression computation in graphs based on multi-touch range selection
 - [ ] Bluetooth integration with Tindeq Progressor and other scales
@@ -52,10 +52,11 @@ Track your performance metrics and their progress over time. With custom statist
 
 ## Changelog
 
-### 2.5.0
+### 3.0.0
 
-- Reimplement graphs to use FlatList instead of VictoryNative
+- Improve graph scrolling and label display
 - Remove line-mean graph type (temporarily?)
+- Redesign the data list screen
 
 ### 2.4.0
 
