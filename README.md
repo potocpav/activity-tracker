@@ -47,6 +47,7 @@ Track your performance metrics and their progress over time. With custom statist
 
 - [ ] Animations for adding and removing calendars and graphs
 - [ ] Scroll climbing grade picker to have the selected grade in the middle of the screen (not the top)
+- [ ] Replace AntIcons with Material Community icons
 
 ## Changelog
 

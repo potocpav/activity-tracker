@@ -259,6 +259,7 @@ const ActivityChart = (
     ActivityChart
 ) => {
   const windowDimensions = useWindowDimensions();
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   const filteredValues: { date: DateList, value: number }[] = dataPoints
     .map((dp: DataPoint) => ({
@@ -294,7 +295,7 @@ const ActivityChart = (
   switch (graph.graphType) {
     case "bar-count": {
       const value = (item: any) => item.values.length > 0 ? item.values.length : null;
-      renderItem = (item: any, view: ViewDimensions) => (
+      renderItem = ({item, index, view}: {item: any, index: number, view: ViewDimensions}) => (
         <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} fontScale={windowDimensions.fontScale} />
       );
       itemBoundingBox = (item: any) => barBoundingBox(value(item), windowDimensions.fontScale);
@@ -302,7 +303,7 @@ const ActivityChart = (
     }
     case "bar-sum": {
       const value = (item: any) => item.values.length > 0 ? item.values.reduce((a: number, b: number) => a + b, 0) : null;
-      renderItem = (item: any, view: ViewDimensions) => (
+      renderItem = ({item, index, view}: {item: any, index: number, view: ViewDimensions}) => (
         <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} fontScale={windowDimensions.fontScale} />
       );
       itemBoundingBox = (item: any) => barBoundingBox(value(item), windowDimensions.fontScale);
@@ -310,7 +311,7 @@ const ActivityChart = (
     }
     case "bar-daily-mean": {
       const value = (item: any) => item.values.length > 0 ? item.values.reduce((a: number, b: number) => a + b, 0) / item.nDays * 100 : null;
-      renderItem = (item: any, view: ViewDimensions) => (
+      renderItem = ({item, index, view}: {item: any, index: number, view: ViewDimensions}) => (
         <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} fontScale={windowDimensions.fontScale} />
       );
       itemBoundingBox = (item: any) => barBoundingBox(value(item), windowDimensions.fontScale);
@@ -318,15 +319,29 @@ const ActivityChart = (
     }
     case "line-mean": {
       const value = (item: any) => item.values.length > 0 ? item.values.reduce((a: number, b: number) => a + b, 0) / item.values.length : null;
-      renderItem = (item: any, view: ViewDimensions) => (value(item) !== null) && (
+      renderItem = ({item, index, view}: {item: any, index: number, view: ViewDimensions}) => (value(item) !== null) && (
         <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} fontScale={windowDimensions.fontScale} />
       );
       itemBoundingBox = (item: any) => barBoundingBox(value(item), windowDimensions.fontScale);
       break;
     }
     case "box": {
-      renderItem = (item: any, view: ViewDimensions) => (
-        <BoxChart view={view} values={item.values} unit={unit} color={theme.colors.primary} surfaceColor={theme.colors.surface} />
+      renderItem = ({item, index, view}: {item: any, index: number, view: ViewDimensions}) => (
+        <>
+          <BoxChart view={view} values={item.values} unit={unit} color={theme.colors.primary} surfaceColor={theme.colors.surface} />
+          <Pressable
+            style={{ 
+              position: 'absolute', 
+              ...view, 
+              borderRadius: 10, 
+              borderColor: theme.colors.onSurfaceVariant, 
+              borderWidth: 1,
+              opacity: selectedIndex === index ? 1 : 0,
+              backgroundColor: '#80808050',
+            }}
+            onPress={() => setSelectedIndex(selectedIndex === index ? null : index)}
+          />
+        </>
       );
       itemBoundingBox = (item: any, itemWidthPx: number) => item.values.length > 0 ? {
         min: Math.min(...item.values),

@@ -187,7 +187,7 @@ type FlatListChartData = {
   unit: SubUnit,
   gridLineColor: string,
   items: { time: number, values: number[], nDays: number }[], // todo: swap for any[]
-  renderItem: (item: any, view: ViewDimensions) => React.ReactNode,
+  renderItem: (params: {item: any, index: number, view: ViewDimensions}) => React.ReactNode,
   itemBoundingBox: (item: any, itemWidthPx: number) => BoundingBox,
   itemLabel: (item: any) => string,
 }
@@ -282,8 +282,8 @@ const FlatListChart = (
             key="flashlist"
             data={items}
             // estimatedItemSize={binWidth}
-            renderItem={({ item }) => {
-              const drawnElement = renderItem(item, itemViewDimensions);
+            renderItem={({ item, index }) => {
+              const drawnElement = renderItem({item, index, view: itemViewDimensions});
               const xLabelElement = (
                 <View style={{
                   position: 'absolute',
