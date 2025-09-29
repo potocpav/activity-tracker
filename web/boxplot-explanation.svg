@@ -2,9 +2,9 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="163.07619mm"
-   height="107.32208mm"
-   viewBox="0 0 163.07618 107.32208"
+   width="157.87944mm"
+   height="107.14289mm"
+   viewBox="0 0 157.87944 107.14289"
    version="1.1"
    id="svg1"
    inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
@@ -24,31 +24,42 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      showguides="true"
-     inkscape:zoom="0.87957019"
-     inkscape:cx="590.62939"
-     inkscape:cy="125.62954"
+     inkscape:zoom="1.4764839"
+     inkscape:cx="338.981"
+     inkscape:cy="172.36896"
      inkscape:window-width="1920"
      inkscape:window-height="1131"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
-     inkscape:current-layer="layer1">
+     inkscape:current-layer="svg1"
+     showgrid="false">
     <inkscape:page
        x="0"
        y="0"
-       width="163.07617"
-       height="107.32208"
+       width="157.87944"
+       height="107.14288"
        id="page24"
-       margin="0 2.4064782 0 3.0080979"
+       margin="0"
        bleed="0" />
   </sodipodi:namedview>
   <defs
      id="defs1" />
+  <rect
+     style="fill:#ffffff;stroke:none;stroke-width:0.499999;stroke-linecap:round;stroke-linejoin:round"
+     id="rect1"
+     width="157.87944"
+     height="107.14289"
+     x="29.964018"
+     y="75.342445"
+     rx="0"
+     ry="0"
+     transform="translate(-29.964018,-75.342446)" />
   <g
      inkscape:groupmode="layer"
      id="layer2"
      inkscape:label="Grid"
-     transform="translate(-27.096845,-75.342446)">
+     transform="translate(-29.964017,-75.342446)">
     <path
        style="opacity:1;fill:#1a1a1a;fill-opacity:1;stroke:#666666;stroke-width:0.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
        d="M 67.172196,83.175541 H 181.72339"
@@ -134,7 +145,7 @@
      inkscape:label="Data"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-27.096845,-75.342446)">
+     transform="translate(-29.964017,-75.342446)">
     <path
        id="path3"
        style="opacity:1;fill:none;fill-opacity:1;stroke:#0000ff;stroke-width:0.943757;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
@@ -188,6 +199,7 @@
   </g>
   <path
      style="opacity:1;fill:#1a1a1a;fill-opacity:1;stroke:none;stroke-width:8;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
-     d="M 40.978043,6.816904 H 157.17484"
-     id="path19" />
+     d="M 38.110871,6.816904 H 154.30767"
+     id="path19"
+     inkscape:label="path19" />
 </svg>

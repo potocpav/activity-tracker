@@ -182,28 +182,24 @@ const Settings = () => {
           <List.Subheader>Links</List.Subheader>
           <List.Item
             title="FAQ"
-            description="Frequently Asked Questions"
             left={(props) => <List.Icon {...props} icon="help-circle" />}
             right={(props) => <List.Icon {...props} icon="chevron-right" />}
             onPress={() => Linking.openURL('https://potocpav.github.io/activity-tracker/faq')}
           />
           <List.Item
             title="Privacy Policy"
-            description="How we handle your data"
             left={(props) => <List.Icon {...props} icon="shield-lock" />}
             right={(props) => <List.Icon {...props} icon="chevron-right" />}
             onPress={() => Linking.openURL('https://potocpav.github.io/activity-tracker/privacy')}
           />
           <List.Item
             title="Visit us on Google Play"
-            description="Update, rate and review the app"
             left={(props) => <List.Icon {...props} icon="google-play" />}
             right={(props) => <List.Icon {...props} icon="chevron-right" />}
             onPress={() => Linking.openURL('https://play.google.com/store/apps/details?id=com.pavelpotocek.activitytracker')}
           />
           <List.Item
             title="Visit us on GitHub"
-            description="View source code and contribute"
             left={(props) => <List.Icon {...props} icon="github" />}
             right={(props) => <List.Icon {...props} icon="chevron-right" />}
             onPress={() => Linking.openURL('https://github.com/potocpav/activity-tracker')}

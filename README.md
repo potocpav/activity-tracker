@@ -58,7 +58,7 @@ Track your performance metrics and their progress over time. With custom statist
 - Remove line-mean graph type (temporarily?)
 - Redesign the data list screen
 - Move clone buttons for stats, calendars and graphs into their modals
-- Add a link to Google Play in Settings
+- Add links to Google Play, FAQ and Privacy Policy in Settings
 - Add percentage units
 
 ### 2.4.0
