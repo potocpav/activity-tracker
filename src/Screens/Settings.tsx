@@ -193,7 +193,7 @@ const Settings = () => {
             onPress={() => Linking.openURL('https://potocpav.github.io/activity-tracker/privacy')}
           />
           <List.Item
-            title="Visit us on Google Play"
+            title="Google Play"
             left={(props) => <List.Icon {...props} icon="google-play" />}
             right={(props) => <List.Icon {...props} icon="chevron-right" />}
             onPress={() => Linking.openURL('https://play.google.com/store/apps/details?id=com.pavelpotocek.activitytracker')}
