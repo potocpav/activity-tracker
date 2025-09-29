@@ -118,7 +118,7 @@ export const renderStatValue = (stat: Stat, activity: ActivityType, weekStart: W
   } else if (["n_days", "n_points"].includes(stat.value)) {
     return renderLongFormNumber(value);
   } else if (stat.value === "daily_mean") {
-    return renderLongFormNumber(value) + " %";
+    return renderLongFormValue(value, { type: "percentage" });
   } else {
     if (activity.unit.type === "none") {
       return renderLongFormNumber(value);

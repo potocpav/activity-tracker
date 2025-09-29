@@ -17,6 +17,9 @@ export type SubUnit =
   {
     type: "count",
   } |
+  { 
+    type: "percentage",
+  } |
   {
     type: "distance",
     unit: DistanceUnit,
@@ -34,7 +37,7 @@ export type SubUnit =
     grade: ClimbingGrade,
   };
 
-export type SubUnitType = "number" | "count" | "distance" | "weight" | "time" | "climbing_grade";
+export type SubUnitType = "number" | "count" | "percentage" | "distance" | "weight" | "time" | "climbing_grade";
 
 export type DistanceUnit = "mm" | "cm" | "m" | "km" | "in" | "ft" | "yd" | "mi";
 

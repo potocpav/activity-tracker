@@ -274,7 +274,7 @@ const ActivityChart = (
   if (graph.graphType === "bar-count") {
     unit = { type: "count" };
   } else if (graph.graphType === "bar-daily-mean") {
-    unit = { type: "number", symbol: "%" };
+    unit = { type: "percentage" };
   } else {
     switch (activityUnit.type) {
       case "none":

@@ -18,6 +18,13 @@ const subUnitProps = (subUnitType: SubUnitType, allUnits: SubUnit[], setAllUnits
         description: "reps, sets, etc.",
         children: null,
       };
+    case "percentage":
+      return {
+        title: "Percentage",
+        icon: "percent",
+        description: null,
+        children: null,
+      };
     case "distance":
       return {
         title: "Distance",
@@ -141,6 +148,7 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null, onChange:
   const [allUnits, setAllUnits] = useState<SubUnit[]>((() => {
     let defaultUnits : SubUnit[] = [
       { type: "count" },
+      { type: "percentage" },
       { type: "distance", unit: "km" },
       { type: "weight", unit: "kg" },
       { type: "time", unit: "seconds" },

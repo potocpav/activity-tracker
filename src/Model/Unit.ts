@@ -6,6 +6,8 @@ export const isSummable = (unit: SubUnit): boolean => {
       return true;
     case "count":
       return true;
+    case "percentage":
+      return true;
     case "distance":
       return true;
     case "weight":
@@ -51,6 +53,12 @@ export const renderShortFormValue = (value: number, unit: SubUnit): string => {
       return renderShortFormNumber(value);
     case "count":
       return renderShortFormNumber(value);
+    case "percentage":
+      if (Math.abs(value) < 10) {
+        return renderShortFormNumber(Math.round(value * 10) / 10) + "%";
+      } else {
+        return renderShortFormNumber(Math.round(value)) + "%";
+      }
     case "distance":
       return renderShortFormNumber(value);
     case "weight":
@@ -91,6 +99,8 @@ export const renderLongFormValue = (value: number, unit: SubUnit): string => {
     }
     case "count":
       return renderLongFormNumber(value);
+    case "percentage":
+      return renderLongFormNumber(value) + " %";
     case "distance":
       return `${renderLongFormNumber(value)} ${unit.unit}`;
     case "weight":
@@ -125,6 +135,8 @@ export const renderUnit = (unit: SubUnit): string => {
       return "Number" + (unit.symbol === "" ? "" : ` (${unit.symbol})`);
     case "count":
       return "Count";
+    case "percentage":
+      return "Percentage";
     case "distance":
       return `Distance (${unit.unit})`;
     case "weight":
@@ -163,6 +175,8 @@ export const numberToString = (value: number | null, unit: SubUnit): string => {
     case "number":
       return value.toString();
     case "count":
+      return value.toString();
+    case "percentage":
       return value.toString();
     case "distance":
       return value.toString();
@@ -304,6 +318,8 @@ export const stringToNumber = (value: string, unit: SubUnit): number | null => {
       return parseFloat(value);
     case "count":
       return parseInt(value);
+    case "percentage":
+      return parseFloat(value);
     case "distance":
       return parseFloat(value);
     case "weight":
@@ -496,6 +512,8 @@ export const areSubUnitsEqual = (subUnit1: SubUnit, subUnit2: SubUnit): boolean 
       case "number":
         return subUnit1.symbol === subUnit2Copy.symbol;
       case "count":
+        return true;
+      case "percentage":
         return true;
       case "distance":
         return subUnit1.unit === subUnit2Copy.unit;
