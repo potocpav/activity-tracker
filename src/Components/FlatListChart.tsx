@@ -264,7 +264,7 @@ const FlatListChart = (
     .Tap()
     .onEnd((event) => {
       const tapIndex = getIndex(event.x);
-      if (selectedRangeShared.value?.p0 === tapIndex && selectedRangeShared.value?.p1 === tapIndex) {
+      if ((selectedRangeShared.value?.p0 !== selectedRangeShared.value?.p1) || selectedRangeShared.value?.p1 === tapIndex) {
         selectedRangeShared.value = null;
       } else {
         selectedRangeShared.value = { p0: tapIndex, p1: tapIndex };
@@ -278,7 +278,7 @@ const FlatListChart = (
     },
     (currentValue, previousValue) => {
       if (currentValue !== previousValue) {
-        if (!currentValue) {
+        if (!currentValue || items.length === 0) {
           runOnJS(selectedRange[1])(null);
         } else {
           runOnJS(selectedRange[1])({

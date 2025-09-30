@@ -141,13 +141,13 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName, 
                       opacity: hasFilteredData ? 1 : hasData ? (isWeekend ? 0.6 : 0.4) : (isWeekend ? 0.5 : 0.3),
                     }
                   }>
-                  <Text style={[styles.value, { color: theme.colors.background }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>
-                    {hasFilteredData && (value !== null ? 
+                  {hasFilteredData && <Text style={[styles.value, { color: theme.colors.background }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>
+                    {value !== null ? 
                       (activity.unit.type === "none" && value === 1 ? 
                         "✓" : 
                         renderShortFormValue(value, subUnit)) : 
-                      '-')}
-                  </Text>
+                      '-'}
+                  </Text>}
                   </View>
                 </TouchableOpacity>
               );

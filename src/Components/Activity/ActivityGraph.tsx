@@ -14,7 +14,7 @@ import FlatListChart, { BarChart, BoxChart, barBoundingBox, ViewDimensions } fro
 import Animated, { FadeInDown, FadeOutDown, useAnimatedStyle } from "react-native-reanimated";
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import { useSharedValue } from "react-native-reanimated";
-import { renderShortFormNumber, renderShortFormValue } from "../../Model/Unit";
+import { renderShortFormNumber, renderShortFormValue, renderLongFormValue } from "../../Model/Unit";
 
 
 const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, graphIndex: number }) => {
@@ -275,17 +275,20 @@ const StatBox = ({
           borderRadius: 8,
           padding: 8,
           marginBottom: 8,
-          backgroundColor: theme.colors.elevation.level1,
-          elevation: 2,
+          backgroundColor: theme.colors.surface,
+          elevation: 1,
           flexDirection: 'column',
-          zIndex: 1000,
         }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
           <View style={{ flex: 1, minWidth: 100 }}>
-            <Text style={{ color: theme.colors.onSurface }} numberOfLines={1}>Count: {Math.round(count)}</Text>
+            <Text style={{ color: theme.colors.onSurface }} numberOfLines={1}>
+              Count: {Math.round(count)}
+            </Text>
           </View>
           <View style={{ flex: 1, minWidth: 100 }}>
-            <Text style={{ color: theme.colors.onSurface }} numberOfLines={1}>Mean: {renderShortFormValue(mean, unit)}</Text>
+            <Text style={{ color: theme.colors.onSurface }} numberOfLines={1}>
+              Mean: {count > 0 ? renderLongFormValue(mean, unit) : "-"}
+            </Text>
           </View>
         </View>
       </Animated.View>
@@ -293,6 +296,41 @@ const StatBox = ({
   );
 }
 
+
+const SelectedRangeBox = ({
+  theme,
+  selectedRange,
+  index,
+  view,
+  cornerRadius,
+}: {
+  theme: any,
+  selectedRange: { min: number, max: number } | null,
+  index: number,
+  view: ViewDimensions,
+  cornerRadius: number,
+}) => {
+  return (
+    <View
+      style={{
+        position: 'absolute',
+        ...view,
+        borderTopWidth: 1,
+        borderBottomWidth: 1,
+        borderRightWidth: index === selectedRange?.min ? 1 : 0,
+        borderLeftWidth: index === selectedRange?.max ? 1 : 0,
+        borderTopRightRadius: index === selectedRange?.min ? cornerRadius : 0,
+        borderBottomLeftRadius: index === selectedRange?.max ? cornerRadius : 0,
+        borderTopLeftRadius: index === selectedRange?.max ? cornerRadius : 0,
+        borderBottomRightRadius: index === selectedRange?.min ? cornerRadius : 0,
+        borderColor: theme.colors.outline,
+        borderWidth: 1,
+        opacity: selectedRange && (selectedRange.max >= index && selectedRange.min <= index) ? 1 : 0,
+        zIndex: -1000,
+      }} 
+      />
+  );
+}
 
 
 type ActivityChart = {
@@ -354,7 +392,10 @@ const ActivityChart = (
     case "bar-count": {
       const value = (item: any) => item.values.length > 0 ? item.values.length : null;
       renderItem = ({ item, index, view }: { item: any, index: number, view: ViewDimensions }) => (
-        <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} fontScale={windowDimensions.fontScale} />
+        <>
+          <SelectedRangeBox theme={theme} selectedRange={selectedRange} index={index} view={view} cornerRadius={4} />
+          <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} fontScale={windowDimensions.fontScale} />
+        </>
       );
       itemBoundingBox = (item: any) => barBoundingBox(value(item), windowDimensions.fontScale);
       break;
@@ -362,7 +403,10 @@ const ActivityChart = (
     case "bar-sum": {
       const value = (item: any) => item.values.length > 0 ? item.values.reduce((a: number, b: number) => a + b, 0) : null;
       renderItem = ({ item, index, view }: { item: any, index: number, view: ViewDimensions }) => (
-        <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} fontScale={windowDimensions.fontScale} />
+        <>
+          <SelectedRangeBox theme={theme} selectedRange={selectedRange} index={index} view={view} cornerRadius={4} />
+          <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} fontScale={windowDimensions.fontScale} />
+        </>
       );
       itemBoundingBox = (item: any) => barBoundingBox(value(item), windowDimensions.fontScale);
       break;
@@ -370,7 +414,10 @@ const ActivityChart = (
     case "bar-daily-mean": {
       const value = (item: any) => item.values.length > 0 ? item.values.reduce((a: number, b: number) => a + b, 0) / item.nDays * 100 : null;
       renderItem = ({ item, index, view }: { item: any, index: number, view: ViewDimensions }) => (
-        <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} fontScale={windowDimensions.fontScale} />
+        <>
+          <SelectedRangeBox theme={theme} selectedRange={selectedRange} index={index} view={view} cornerRadius={4} />
+          <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} fontScale={windowDimensions.fontScale} />
+        </>
       );
       itemBoundingBox = (item: any) => barBoundingBox(value(item), windowDimensions.fontScale);
       break;
@@ -378,7 +425,10 @@ const ActivityChart = (
     case "line-mean": {
       const value = (item: any) => item.values.length > 0 ? item.values.reduce((a: number, b: number) => a + b, 0) / item.values.length : null;
       renderItem = ({ item, index, view }: { item: any, index: number, view: ViewDimensions }) => (value(item) !== null) && (
-        <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} fontScale={windowDimensions.fontScale} />
+        <>
+          <SelectedRangeBox theme={theme} selectedRange={selectedRange} index={index} view={view} cornerRadius={4} />
+          <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} fontScale={windowDimensions.fontScale} />
+        </>
       );
       itemBoundingBox = (item: any) => barBoundingBox(value(item), windowDimensions.fontScale);
       break;
@@ -386,23 +436,7 @@ const ActivityChart = (
     case "box": {
       renderItem = ({ item, index, view }: { item: any, index: number, view: ViewDimensions }) => (
         <>
-          <View
-            style={{
-              position: 'absolute',
-              ...view,
-              borderTopWidth: 1,
-              borderBottomWidth: 1,
-              borderRightWidth: index === selectedRange?.min ? 1 : 0,
-              borderLeftWidth: index === selectedRange?.max ? 1 : 0,
-              borderTopRightRadius: index === selectedRange?.min ? 10 : 0,
-              borderBottomLeftRadius: index === selectedRange?.max ? 10 : 0,
-              borderTopLeftRadius: index === selectedRange?.max ? 10 : 0,
-              borderBottomRightRadius: index === selectedRange?.min ? 10 : 0,
-              borderColor: theme.colors.outline,
-              borderWidth: 1,
-              opacity: selectedRange && (selectedRange.max >= index && selectedRange.min <= index) ? 1 : 0,
-              zIndex: -1000,
-            }} />
+          <SelectedRangeBox theme={theme} selectedRange={selectedRange} index={index} view={view} cornerRadius={10} />
           <BoxChart view={view} values={item.values} unit={unit} color={theme.colors.primary} surfaceColor={theme.colors.surface} />
         </>
       );
