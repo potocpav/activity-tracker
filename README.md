@@ -50,7 +50,7 @@ Track your performance metrics and their progress over time. With custom statist
 
 ## Changelog
 
-### 3.1.0
+### 3.1.0 (In progress)
 
 - Import data from Loop Habit Tracker [Loop Habit Tracker](https://loophabits.org/)
 
