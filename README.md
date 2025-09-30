@@ -39,17 +39,20 @@ Track your performance metrics and their progress over time. With custom statist
 
 - [ ] Regression computation in graphs based on multi-touch range selection
 - [ ] Bluetooth integration with Tindeq Progressor and other scales
-- [ ] Activity archive to hide old activities without deleting them
-- [ ] Unit conversions
-- [ ] Tag groups
-
-#### Minor improvements
-
-- [ ] Animations for adding and removing calendars and graphs
-- [ ] Scroll climbing grade picker to have the selected grade in the middle of the screen (not the top)
-- [ ] Replace AntIcons with Material Community icons
+- [x] Import data from [Loop Habit Tracker](https://github.com/iSoron/uhabits/tree/dev)
+- [ ] Handle large number of activities. This feature should work well with data imports from different apps, and from other users of Activity Tracker. Options include:
+    - Activity archive to hide old activities without deleting them
+    - Activity groups
+    - Activity tabs
+    - Search activities by name
+- [ ] Unit conversions: kg <-> lbs, etc. This could include the ability to input values in different units - useful for climbing grades.
+- [ ] Tag groups to support mutually exclusive tags. This is blocked by drag-drop not working across multiple tab rows.
 
 ## Changelog
+
+### 3.1.0
+
+- Import data from Loop Habit Tracker [Loop Habit Tracker](https://loophabits.org/)
 
 ### 3.0.0
 
@@ -133,6 +136,13 @@ eas build --platform android --profile preview --local
 ```
 
 Install the APK on your device, and use the app normally.
+
+## Dependencies
+
+- expo-sqlite: for Loop Habit Tracker import
+- victory-native-xl: for Tindeq graphs
+- ble: for Tindeq graphs
+- react-native-svg: for hint bubbles
 
 ### Data sharing
 

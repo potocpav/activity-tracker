@@ -1,5 +1,4 @@
-
-import { CalendarProps, ActivityType, GraphProps, Stat, Unit, SubUnit } from "./StoreTypes";
+import { CalendarProps, GraphProps, Stat, Unit, BinSize } from "./StoreTypes";
 
 const firstSubUnitName = (unit: Unit): string | null => {
   if (unit.type === "none" || unit.type === "single") {
@@ -9,35 +8,48 @@ const firstSubUnitName = (unit: Unit): string | null => {
 }
 
 export const defaultStats = (unit: Unit): Stat[] => {
-  return [
-    {
-      label: "Count",
-      value: "n_points",
-      subUnit: firstSubUnitName(unit),
-      period: "all_time",
-      tagFilters: [],
-    },
-    {
-      label: "Days",
-      value: "n_days",
-      subUnit: firstSubUnitName(unit),
-      period: "all_time",
-      tagFilters: [],
-    },
-    unit === null ? {
-      label: "Today",
-      value: "n_points",
-      subUnit: firstSubUnitName(unit),
-      period: "today",
-      tagFilters: [],
-    } : {
-      label: "Last",
-      value: "last",
-      subUnit: firstSubUnitName(unit),
-      period: "last_active_day",
-      tagFilters: [],
-    },
-  ];
+  if (unit.type === "none") {
+    return [
+      {
+        label: "Count",
+        value: "n_points",
+        subUnit: null,
+        period: "all_time",
+        tagFilters: [],
+      },
+      {
+        label: "Last 30 Days",
+        value: "daily_mean",
+        subUnit: null,
+        period: "all_time",
+        tagFilters: [],
+      },
+    ];
+  } else {
+    return [
+      {
+        label: "Count",
+        value: "n_points",
+        subUnit: firstSubUnitName(unit),
+        period: "all_time",
+        tagFilters: [],
+      },
+      {
+        label: "Mean",
+        value: "mean",
+        subUnit: firstSubUnitName(unit),
+        period: "all_time",
+        tagFilters: [],
+      },
+      {
+        label: "Last",
+        value: "last",
+        subUnit: firstSubUnitName(unit),
+        period: "last_active_day",
+        tagFilters: [],
+      },
+    ];
+  }
 };
 
 export const defaultCalendar = (unit: Unit): CalendarProps => {
@@ -49,14 +61,24 @@ export const defaultCalendar = (unit: Unit): CalendarProps => {
   };
 };
 
-export const defaultGraph = (unit: Unit): GraphProps => {
-  return {
-    label: "Graph",
-    subUnit: firstSubUnitName(unit),
-    tagFilters: [],
-    graphType: "box",
-    binSize: "day",
-  };
+export const defaultGraph = (unit: Unit, binSize?: BinSize): GraphProps => {
+  if (unit.type === "none") {
+    return {
+      label: "Graph",
+      subUnit: null,
+      tagFilters: [],
+      graphType: "bar-count",
+      binSize: binSize || "day",
+    };
+  } else {
+    return {
+      label: "Graph",
+      subUnit: firstSubUnitName(unit),
+      tagFilters: [],
+      graphType: "box",
+      binSize: binSize || "day",
+    };
+  }
 };
 
 

@@ -21,15 +21,29 @@ export type BinSize = "day" | "week" | "month" | "quarter" | "year";
 
 export const dayCmp = (dp: DataPoint, day: DateList) => {
   return cmpDateList(dp.date, day);
-}
+};
 
 export const cmpDateList = (d1: DateList, d2: DateList) => {
   return d1[0] - d2[0] || d1[1] - d2[1] || d1[2] - d2[2];
-}
+};
 
 export const dateBetween = (d: DateList, lo: DateList, hi: DateList) => {
   return cmpDateList(d, lo) >= 0 && cmpDateList(d, hi) <= 0;
-}
+};
+
+export const uniqueName = (exists: (name: string) => boolean, name: string) : string => {
+  if (!exists(name)) {
+    return name;
+  } else {
+    const nameRoot = name.replace(/ \(copy\s*\d*\)$/, "");
+    let newName = (i: number) => i == 1 ? `${nameRoot} (copy)` : `${nameRoot} (copy ${i})`;
+    let i = 1;
+    while (exists(newName(i))) {
+      i++;
+    }
+    return newName(i);
+  }
+};
 
 export const statPeriodCmp = (
   dp: DataPoint, 

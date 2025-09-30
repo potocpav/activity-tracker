@@ -40,7 +40,7 @@ import {
 import { areUnitsEqual } from "./Unit";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { findZeroSlice, dayCmp } from "./Activity";
+import { findZeroSlice, dayCmp, uniqueName } from "./Activity";
 import { version, migrate } from "./StoreMigrations";
 
 // Save only the state that is needed to be saved
@@ -117,13 +117,8 @@ const useStore = create<State>()(
             console.error("Activity not found");
             return {};
           }
-          const nameRoot = state.activities[activityIx].name.replace(/ \(copy(\s*\d*)\)$/, "");
-          let newName = (i: number) => i == 1 ? `${nameRoot} (copy)` : `${nameRoot} (copy ${i})`;
-          let i = 1;
-          while (state.activities.find((a: ActivityType) => a.name === newName(i))) {
-            i++;
-          }
-          const newActivity = { ...state.activities[activityIx], name: newName(i) };
+          const newName = uniqueName((n: string) => state.activities.find((a: ActivityType) => a.name == n), state.activities[activityIx].name);
+          const newActivity = { ...state.activities[activityIx], name: newName };
           const activities = [...state.activities.slice(0, activityIx + 1), newActivity, ...state.activities.slice(activityIx + 1)];
           return { activities };
         });
