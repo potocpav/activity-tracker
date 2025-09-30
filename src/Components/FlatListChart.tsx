@@ -1,8 +1,10 @@
 import React, { Fragment, useRef, useState } from "react";
-import { View, Text, Platform, useWindowDimensions, FlatList, LayoutChangeEvent, LayoutRectangle } from "react-native";
+import { View, Text, Platform, useWindowDimensions, FlatList, LayoutChangeEvent, LayoutRectangle, NativeScrollEvent, NativeSyntheticEvent } from "react-native";
 import { Canvas, matchFont, RoundedRect, Text as SkiaText, vec, Line } from "@shopify/react-native-skia";
 import { SubUnit, BinSize } from "../Model/StoreTypes";
 import { renderShortFormValue } from "../Model/Unit";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { useAnimatedReaction, useSharedValue, runOnJS } from "react-native-reanimated";
 
 const fontFamily = Platform.select({ default: "sans-serif" });
 
@@ -187,9 +189,10 @@ type FlatListChartData = {
   unit: SubUnit,
   gridLineColor: string,
   items: { time: number, values: number[], nDays: number }[], // todo: swap for any[]
-  renderItem: (params: {item: any, index: number, view: ViewDimensions}) => React.ReactNode,
+  renderItem: (params: { item: any, index: number, view: ViewDimensions }) => React.ReactNode,
   itemBoundingBox: (item: any, itemWidthPx: number) => BoundingBox,
   itemLabel: (item: any) => string,
+  selectedRange: [{ min: number, max: number } | null, (range: { min: number, max: number } | null) => void],
 }
 
 const FlatListChart = (
@@ -201,6 +204,7 @@ const FlatListChart = (
     renderItem,
     itemBoundingBox,
     itemLabel,
+    selectedRange,
   }:
     FlatListChartData
 ) => {
@@ -215,13 +219,13 @@ const FlatListChart = (
   const xAxisHeight = 30 * windowDimensions.fontScale;
   const viewportHeight = height - xAxisHeight - topViewportPadding;
   const targetBinWidth = 20 * windowDimensions.fontScale;
-  
+
   const boundingBox = mergeBoundingBoxes(items.map((item) => itemBoundingBox(item, targetBinWidth)));
   const yRange = boundingBoxToYRange(viewportHeight, boundingBox);
   const majorTicks = cmpMajorTicks(unit, yRange, 10);
   const majorTickLabels = majorTicks.map((tick) => renderShortFormValue(tick, unit));
   const maxTickLabelWidth = Math.max(...majorTickLabels.map((label) => font.measureText(label).width));
-  
+
   const yLabelPadding = 5;
   const yAxisWidth = maxTickLabelWidth + yLabelPadding;
   const viewportWidth = (size?.width ?? 0) - yAxisWidth;
@@ -239,6 +243,51 @@ const FlatListChart = (
       setSize(layout);
     },
     [],
+  );
+
+  const scrollX = useSharedValue(0);
+  const selectedRangeShared = useSharedValue<{ p0: number, p1: number } | null>(null);
+  const getIndex = (num: number) => {
+    "worklet"
+    return Math.floor((viewportWidth - num + scrollX.value) / binWidth);
+  };
+  const panGesture = Gesture
+    .Pan()
+    .activateAfterLongPress(300)
+    .onStart((event) => {
+      selectedRangeShared.value = { p0: getIndex(event.x), p1: getIndex(event.x) };
+    })
+    .onUpdate((event) => {
+      selectedRangeShared.value = { p0: selectedRangeShared.value?.p0 ?? getIndex(event.x), p1: getIndex(event.x) };
+    })
+  const tapGesture = Gesture
+    .Tap()
+    .onEnd((event) => {
+      const tapIndex = getIndex(event.x);
+      if (selectedRangeShared.value?.p0 === tapIndex && selectedRangeShared.value?.p1 === tapIndex) {
+        selectedRangeShared.value = null;
+      } else {
+        selectedRangeShared.value = { p0: tapIndex, p1: tapIndex };
+      }
+    });
+  const gesture = Gesture.Race(panGesture, tapGesture);
+
+  useAnimatedReaction(
+    () => {
+      return selectedRangeShared.value;
+    },
+    (currentValue, previousValue) => {
+      if (currentValue !== previousValue) {
+        if (!currentValue) {
+          runOnJS(selectedRange[1])(null);
+        } else {
+          runOnJS(selectedRange[1])({
+            min: Math.max(0, Math.min(items.length - 1, currentValue.p0, currentValue.p1)), 
+            max: Math.min(items.length - 1, Math.max(0, currentValue.p0, currentValue.p1))
+          });
+        }
+      }
+    }
   );
 
   return (
@@ -271,44 +320,49 @@ const FlatListChart = (
             )
           })}
         </Canvas>
-        <View style={{
-          position: 'absolute',
-          left: yAxisWidth,
-          top: 0,
-          width: viewportWidth,
-          height: height,
-        }}>
-          <FlatList
-            key="flashlist"
-            data={items}
-            // estimatedItemSize={binWidth}
-            renderItem={({ item, index }) => {
-              const drawnElement = renderItem({item, index, view: itemViewDimensions});
-              const xLabelElement = (
-                <View style={{
-                  position: 'absolute',
-                  top: viewportHeight,
-                  width: binWidth,
-                  height: xAxisHeight,
-                  alignItems: 'center',
-                  paddingTop: 4,
-                }}>
-                  <Text style={{ textAlign: 'center', fontSize: 10, color: gridLineColor }}>
-                    {itemLabel(item)}
-                  </Text>
-                </View>);
-              return (
-                <View key={item.time.toString()} style={{ top: topViewportPadding, width: binWidth, height: viewportHeight }}>
-                  {drawnElement}
-                  {xLabelElement}
-                </View>
-              );
-            }}
-            keyExtractor={(item) => item.time.toString()}
-            inverted={true}
-            horizontal={true}
-          />
-        </View>
+        <GestureDetector gesture={gesture}>
+          <View style={{
+            position: 'absolute',
+            left: yAxisWidth,
+            top: 0,
+            width: viewportWidth,
+            height: height,
+          }}>
+            <FlatList
+              key="flashlist"
+              data={items}
+              // estimatedItemSize={binWidth}
+              onScroll={(event) => {
+                scrollX.value = event.nativeEvent.contentOffset.x;
+              }}
+              renderItem={({ item, index }) => {
+                const drawnElement = renderItem({ item, index, view: itemViewDimensions });
+                const xLabelElement = (
+                  <View style={{
+                    position: 'absolute',
+                    top: viewportHeight,
+                    width: binWidth,
+                    height: xAxisHeight,
+                    alignItems: 'center',
+                    paddingTop: 4,
+                  }}>
+                    <Text style={{ textAlign: 'center', fontSize: 10, color: gridLineColor }}>
+                      {itemLabel(item)}
+                    </Text>
+                  </View>);
+                return (
+                  <View key={item.time.toString()} style={{ top: topViewportPadding, width: binWidth, height: viewportHeight }}>
+                    {drawnElement}
+                    {xLabelElement}
+                  </View>
+                );
+              }}
+              keyExtractor={(item) => item.time.toString()}
+              inverted={true}
+              horizontal={true}
+            />
+          </View>
+        </GestureDetector>
       </>}
     </View>
   );

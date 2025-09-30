@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, useWindowDimensions, Pressable, StyleSheet, FlatList, ToastAndroid } from "react-native";
+import { View, Text, useWindowDimensions, StyleSheet, FlatList, ToastAndroid, Pressable } from "react-native";
 import { Menu, Button, Portal, Dialog, TextInput } from 'react-native-paper';
 import useStore from "../../Model/Store";
 import { DataPoint, dateListToTime, ActivityType, GraphType, WeekStart, DateList, SubUnit, GraphProps, Unit } from "../../Model/StoreTypes";
@@ -11,6 +11,10 @@ import DropdownMenu from "../DropdownMenu";
 import { getTheme } from "../../Model/Theme";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import FlatListChart, { BarChart, BoxChart, barBoundingBox, ViewDimensions } from "../FlatListChart";
+import Animated, { FadeInDown, FadeOutDown, useAnimatedStyle } from "react-native-reanimated";
+import { GestureDetector, Gesture } from 'react-native-gesture-handler';
+import { useSharedValue } from "react-native-reanimated";
+import { renderShortFormNumber, renderShortFormValue } from "../../Model/Unit";
 
 
 const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, graphIndex: number }) => {
@@ -237,6 +241,59 @@ const xLabel = (t: number, binSize: BinSize) => {
   }
 };
 
+const StatBox = ({
+  theme,
+  selectedRange,
+  items,
+  unit,
+}: {
+  theme: any,
+  selectedRange: { min: number, max: number } | null,
+  items: { time: number, values: number[], nDays: number }[],
+  unit: SubUnit,
+}) => {
+  if (!selectedRange) {
+    return null;
+  }
+  const data = items.slice(selectedRange.min, selectedRange.max + 1);
+  const count = data.reduce((acc, item) => acc + item.values.length, 0);
+  const mean = data.reduce((acc, item) => acc + item.values.reduce((a, b) => a + b, 0), 0) / count;
+
+  return (
+    <View style={{ position: 'relative' }}>
+      <Animated.View
+        key="stats"
+        entering={FadeInDown}
+        exiting={FadeOutDown}
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          right: 0,
+          left: 0,
+          borderWidth: 1,
+          borderColor: theme.colors.outline,
+          borderRadius: 8,
+          padding: 8,
+          marginBottom: 8,
+          backgroundColor: theme.colors.elevation.level1,
+          elevation: 2,
+          flexDirection: 'column',
+          zIndex: 1000,
+        }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+          <View style={{ flex: 1, minWidth: 100 }}>
+            <Text style={{ color: theme.colors.onSurface }} numberOfLines={1}>Count: {Math.round(count)}</Text>
+          </View>
+          <View style={{ flex: 1, minWidth: 100 }}>
+            <Text style={{ color: theme.colors.onSurface }} numberOfLines={1}>Mean: {renderShortFormValue(mean, unit)}</Text>
+          </View>
+        </View>
+      </Animated.View>
+    </View>
+  );
+}
+
+
 
 type ActivityChart = {
   height: number,
@@ -259,7 +316,8 @@ const ActivityChart = (
     ActivityChart
 ) => {
   const windowDimensions = useWindowDimensions();
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+
+  const [selectedRange, setSelectedRange] = useState<{ min: number, max: number } | null>(null);
 
   const filteredValues: { date: DateList, value: number }[] = dataPoints
     .map((dp: DataPoint) => ({
@@ -295,7 +353,7 @@ const ActivityChart = (
   switch (graph.graphType) {
     case "bar-count": {
       const value = (item: any) => item.values.length > 0 ? item.values.length : null;
-      renderItem = ({item, index, view}: {item: any, index: number, view: ViewDimensions}) => (
+      renderItem = ({ item, index, view }: { item: any, index: number, view: ViewDimensions }) => (
         <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} fontScale={windowDimensions.fontScale} />
       );
       itemBoundingBox = (item: any) => barBoundingBox(value(item), windowDimensions.fontScale);
@@ -303,7 +361,7 @@ const ActivityChart = (
     }
     case "bar-sum": {
       const value = (item: any) => item.values.length > 0 ? item.values.reduce((a: number, b: number) => a + b, 0) : null;
-      renderItem = ({item, index, view}: {item: any, index: number, view: ViewDimensions}) => (
+      renderItem = ({ item, index, view }: { item: any, index: number, view: ViewDimensions }) => (
         <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} fontScale={windowDimensions.fontScale} />
       );
       itemBoundingBox = (item: any) => barBoundingBox(value(item), windowDimensions.fontScale);
@@ -311,7 +369,7 @@ const ActivityChart = (
     }
     case "bar-daily-mean": {
       const value = (item: any) => item.values.length > 0 ? item.values.reduce((a: number, b: number) => a + b, 0) / item.nDays * 100 : null;
-      renderItem = ({item, index, view}: {item: any, index: number, view: ViewDimensions}) => (
+      renderItem = ({ item, index, view }: { item: any, index: number, view: ViewDimensions }) => (
         <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} fontScale={windowDimensions.fontScale} />
       );
       itemBoundingBox = (item: any) => barBoundingBox(value(item), windowDimensions.fontScale);
@@ -319,28 +377,33 @@ const ActivityChart = (
     }
     case "line-mean": {
       const value = (item: any) => item.values.length > 0 ? item.values.reduce((a: number, b: number) => a + b, 0) / item.values.length : null;
-      renderItem = ({item, index, view}: {item: any, index: number, view: ViewDimensions}) => (value(item) !== null) && (
+      renderItem = ({ item, index, view }: { item: any, index: number, view: ViewDimensions }) => (value(item) !== null) && (
         <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} fontScale={windowDimensions.fontScale} />
       );
       itemBoundingBox = (item: any) => barBoundingBox(value(item), windowDimensions.fontScale);
       break;
     }
     case "box": {
-      renderItem = ({item, index, view}: {item: any, index: number, view: ViewDimensions}) => (
+      renderItem = ({ item, index, view }: { item: any, index: number, view: ViewDimensions }) => (
         <>
-          <BoxChart view={view} values={item.values} unit={unit} color={theme.colors.primary} surfaceColor={theme.colors.surface} />
-          <Pressable
-            style={{ 
-              position: 'absolute', 
-              ...view, 
-              borderRadius: 10, 
-              borderColor: theme.colors.onSurfaceVariant, 
+          <View
+            style={{
+              position: 'absolute',
+              ...view,
+              borderTopWidth: 1,
+              borderBottomWidth: 1,
+              borderRightWidth: index === selectedRange?.min ? 1 : 0,
+              borderLeftWidth: index === selectedRange?.max ? 1 : 0,
+              borderTopRightRadius: index === selectedRange?.min ? 10 : 0,
+              borderBottomLeftRadius: index === selectedRange?.max ? 10 : 0,
+              borderTopLeftRadius: index === selectedRange?.max ? 10 : 0,
+              borderBottomRightRadius: index === selectedRange?.min ? 10 : 0,
+              borderColor: theme.colors.outline,
               borderWidth: 1,
-              opacity: selectedIndex === index ? 1 : 0,
-              backgroundColor: '#80808050',
-            }}
-            onPress={() => setSelectedIndex(selectedIndex === index ? null : index)}
-          />
+              opacity: selectedRange && (selectedRange.max >= index && selectedRange.min <= index) ? 1 : 0,
+              zIndex: -1000,
+            }} />
+          <BoxChart view={view} values={item.values} unit={unit} color={theme.colors.primary} surfaceColor={theme.colors.surface} />
         </>
       );
       itemBoundingBox = (item: any, itemWidthPx: number) => item.values.length > 0 ? {
@@ -353,15 +416,26 @@ const ActivityChart = (
     }
   }
 
-  return (<FlatListChart
-    height={height}
-    unit={unit}
-    gridLineColor={theme.colors.onSurfaceVariant}
-    items={items}
-    renderItem={renderItem}
-    itemBoundingBox={itemBoundingBox}
-    itemLabel={(item) => xLabel(item.time, graph.binSize)}
-  />)
+  return (
+    <>
+      <StatBox
+        theme={theme}
+        selectedRange={selectedRange}
+        items={items}
+        unit={unit}
+      />
+      <FlatListChart
+        height={height}
+        unit={unit}
+        gridLineColor={theme.colors.onSurfaceVariant}
+        items={items}
+        renderItem={renderItem}
+        itemBoundingBox={itemBoundingBox}
+        itemLabel={(item) => xLabel(item.time, graph.binSize)}
+        selectedRange={[selectedRange, setSelectedRange]}
+      />
+    </>
+  )
 }
 
 const getStyles = (theme: any) => StyleSheet.create({
