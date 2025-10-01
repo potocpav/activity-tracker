@@ -37,9 +37,7 @@ Track your performance metrics and their progress over time. With custom statist
 
 ## Planned features
 
-- [ ] Regression computation in graphs based on multi-touch range selection
 - [ ] Bluetooth integration with Tindeq Progressor and other scales
-- [x] Import data from [Loop Habit Tracker](https://github.com/iSoron/uhabits/tree/dev)
 - [ ] Handle large number of activities. This feature should work well with data imports from different apps, and from other users of Activity Tracker. Options include:
     - Activity archive to hide old activities without deleting them
     - Activity groups
@@ -47,6 +45,8 @@ Track your performance metrics and their progress over time. With custom statist
     - Search activities by name
 - [ ] Unit conversions: kg <-> lbs, etc. This could include the ability to input values in different units - useful for climbing grades.
 - [ ] Tag groups to support mutually exclusive tags. This is blocked by drag-drop not working across multiple tab rows.
+- [x] Import data from [Loop Habit Tracker](https://github.com/iSoron/uhabits/tree/dev)
+- [x] Regression computation in graphs based on multi-touch range selection
 
 ## Changelog
 
