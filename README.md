@@ -1,11 +1,15 @@
 [![Activity Tracker Title](google-play/feature-graphic.png)](google-play/feature-graphic.png)
 
-
 <h1 align="center">Activity Tracker</h1>
 
+<!-- 
 <p align="center">
 <a href="https://play.google.com/store/apps/details?id=com.pavelpotocek.activitytracker"><img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" alt="Get it on Google Play" height="80"></a>
 </p>
+-->
+
+> This app is currently in the internal testing phase on [Google Play](https://play.google.com/store/apps/details?id=com.pavelpotocek.activitytracker). To request an invitation to  download & test it, contact me at pavel.potocek@gmail.com. Alternatively, download an APK release from the [releases page](https://github.com/potocpav/activity-tracker/releases).
+
 
 <!-- This description is formatted with HTML to be copy-pasteable into Google Play description -->
 
@@ -24,6 +28,7 @@ Track your performance metrics and their progress over time. With custom statist
 - [FAQ](https://potocpav.github.io/activity-tracker/faq)
 - [Privacy Policy](https://potocpav.github.io/activity-tracker/privacy)
 - [APK Downloads](https://github.com/potocpav/activity-tracker/releases)
+- [Google Play](https://play.google.com/store/apps/details?id=com.pavelpotocek.activitytracker)
 
 ## Screenshots
 
@@ -45,8 +50,6 @@ Track your performance metrics and their progress over time. With custom statist
     - Search activities by name
 - [ ] Unit conversions: kg <-> lbs, etc. This could include the ability to input values in different units - useful for climbing grades.
 - [ ] Tag groups to support mutually exclusive tags. This is blocked by drag-drop not working across multiple tab rows.
-- [x] Import data from [Loop Habit Tracker](https://github.com/iSoron/uhabits/tree/dev)
-- [x] Regression computation in graphs based on multi-touch range selection
 
 ## Changelog
 
