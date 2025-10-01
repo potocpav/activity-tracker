@@ -56,7 +56,7 @@ const ActivityCalendar = ({ navigation, activityName, calendarIndex }: ActivityC
   }
 
   return (
-    <View style={[styles.container, { paddingHorizontal: 4, backgroundColor: theme.colors.background }]}>
+    <View style={[styles.container, { paddingHorizontal: 4 }]}>
       <View style={styles.headerContainer}>
         <Pressable onPress={() => {
           setCalendarDialogVisible(true);

@@ -117,8 +117,6 @@ const SubApp = () => {
 
   return (
     <GestureHandlerRootView>
-      {/* <StatusBar barStyle={themeVariant == 'light' ? "dark-content" : "light-content"}
-        backgroundColor={theme.colors.surfaceVariant} /> */}
       <View style={[styles.container]}>
         <NavigationContainer theme={navigationTheme}>
           <Stack.Navigator

@@ -107,7 +107,7 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
   const graphTypes = activity.unit.type === "none" ? ["bar-count", "bar-daily-mean"] : ["box", "bar-count", "bar-sum"];
 
   return (
-    <View style={{ flex: 1, padding: 10, marginVertical: 16, backgroundColor: theme.colors.background }}>
+    <View style={{ flex: 1, padding: 10, marginVertical: 16 }}>
       <View style={styles.headerContainer}>
         <Pressable onPress={() => setGraphDialogVisible(true)} android_ripple={{ color: theme.colors.outline, foreground: false }}>
           <Text style={styles.headerText}>{graph.label}</Text>

@@ -99,7 +99,6 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
 const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
   },
   header: {
     backgroundColor: theme.colors.elevation.level1,
@@ -135,7 +134,6 @@ const getStyles = (theme: any) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    backgroundColor: theme.colors.surface,
     flexWrap: 'wrap',
   },
 });

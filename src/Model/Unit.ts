@@ -368,7 +368,17 @@ export const stringToNumber = (value: string, unit: SubUnit): number | null => {
     case "climbing_grade": {
       switch (unit.grade) {
         case "uiaa":
-          return uiaaGrades.find((g) => g.s === value)?.n ?? null;
+          let makeUiaa = (num: string, sign: string) => {
+            return parseFloat(num) + (sign === "+" ? 0.33 : sign === "-" ? -0.33 : 0);
+          }
+          let match;
+          if (match = value.match(/^([0-9]+)([+-]?)$/)) {
+            return makeUiaa(match[1], match[2]);
+          } else if (match = value.match(/^([0-9]+)([+-]?)\/([0-9]+)([+-]?)$/)) {
+            return (makeUiaa(match[1], match[2]) + makeUiaa(match[3], match[4])) / 2;
+          } else {
+            return null;
+          }
         case "french":
           if (value.match(/^[1234]$/)) {
             return parseFloat(value);
@@ -429,63 +439,63 @@ export const stringToNumber = (value: string, unit: SubUnit): number | null => {
 export const uiaaGrades = [...Array(12).keys()].map((n) => {
   let g = n + 1;
   return [
-    { "s": `${g}-`, "n": g - 0.3 },
-    { "s": `${g}-/${g}`, "n": g - 0.15 },
-    { "s": `${g}`, "n": g },
-    { "s": `${g}/${g}+`, "n": g + 0.15 },
-    { "s": `${g}+`, "n": g + 0.3 },
-    { "s": `${g}+/${g + 1}-`, "n": g + 0.5 },
+    `${g}-`,
+    `${g}-/${g}`,
+    `${g}`,
+    `${g}/${g}+`,
+    `${g}+`,
+    `${g}+/${g + 1}-`,
   ];
-}).flat(Infinity) as { s: string, n: number }[];
+}).flat(Infinity) as string[];
 
 export const frenchGrades =
   [
-    [1, 2, 3].map((n) => ([{ "s": `${n}`, "n": n }, { "s": `${n}+`, "n": n + 0.5 }])),
+    [1, 2, 3].map((n) => ([`${n}`, `${n}+`])),
     [4, 5, 6, 7, 8, 9].map((n) => ([
-      { "s": `${n}a`, "n": n },
-      { "s": `${n}a+`, "n": n + 0.17 },
-      { "s": `${n}b`, "n": n + 0.33 },
-      { "s": `${n}b+`, "n": n + 0.5 },
-      { "s": `${n}c`, "n": n + 0.67 },
-      { "s": `${n}c+`, "n": n + 0.84 },
+      `${n}a`,
+      `${n}a+`,
+      `${n}b`,
+      `${n}b+`,
+      `${n}c`,
+      `${n}c+`,
     ])),
-  ].flat(Infinity) as { s: string, n: number }[];
+  ].flat(Infinity) as string[];
 
 
 export const fontGrades =
   [
     [3, 4, 5].map((n) => ([
-      { "s": `${n}`, "n": n },
-      { "s": `${n}+`, "n": n + 0.5 }
+      `${n}`,
+      `${n}+`,
     ])),
     [6, 7, 8].map((n) => ([
-      { "s": `${n}A`, "n": n },
-      { "s": `${n}A+`, "n": n + 0.17 },
-      { "s": `${n}B`, "n": n + 0.33 },
-      { "s": `${n}B+`, "n": n + 0.5 },
-      { "s": `${n}C`, "n": n + 0.67 },
-      { "s": `${n}C+`, "n": n + 0.84 },
+      `${n}A`,
+      `${n}A+`,
+      `${n}B`,
+      `${n}B+`,
+      `${n}C`,
+      `${n}C+`,
     ])),
-    [[{ "s": "9A", "n": 9 }, { "s": "9A+", "n": 9.17 }]],
-  ].flat(Infinity) as { s: string, n: number }[];
+    [["9A", "9A+"]],
+  ].flat(Infinity) as string[];
 
 export const ydsGrades =
   [
-    [...Array(10).keys()].map((n) => ([{ "s": `5.${n}`, "n": n }])),
+    [...Array(10).keys()].map((n) => ([`5.${n}`])),
     [...Array(6).keys()].map((n) => ([
-      { "s": `5.1${n}a`, "n": n },
-      { "s": `5.1${n}b`, "n": n + 0.25 },
-      { "s": `5.1${n}c`, "n": n + 0.5 },
-      { "s": `5.1${n}d`, "n": n + 0.75 },
+      `5.1${n}a`,
+      `5.1${n}b`,
+      `5.1${n}c`,
+      `5.1${n}d`,
     ])),
-  ].flat(Infinity) as { s: string, n: number }[];
+  ].flat(Infinity) as string[];
 
 export const vScaleGrades = [...Array(17).keys()].map((g) => {
   return [
-    { "s": `V${g}`, "n": g },
-    { "s": `V${g}/V${g + 1}`, "n": g + 0.5 },
+    `V${g}`,
+    `V${g}/V${g + 1}`,
   ];
-}).flat(Infinity) as { s: string, n: number }[];
+}).flat(Infinity) as string[];
 
 export const mapStringValue = (unit: SubUnit, value: string, fn: (value: number) => number): string => {
   return numberToString(fn(stringToNumber(value, unit) ?? 0), unit);

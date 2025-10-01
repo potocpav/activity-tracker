@@ -167,7 +167,6 @@ const Hint = ({ hint, inline }: { hint: HintType, inline?: boolean }) => {
 
 const getStyles = (theme: MD3Theme, insets: EdgeInsets) => StyleSheet.create({
   hintContainer: {
-    // backgroundColor: theme.colors.primary,
     padding: 5,
     borderRadius: 10,
     margin: 10,

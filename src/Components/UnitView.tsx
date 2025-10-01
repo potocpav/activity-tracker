@@ -34,7 +34,7 @@ const subUnitProps = (subUnitType: SubUnitType, allUnits: SubUnit[], setAllUnits
           <View style={{ gap: 10 }}>
             <SegmentedButtons
               value={allUnits.find(unit => unit.type === subUnitType)?.unit ?? ""}
-              onValueChange={value => {setAllUnits(allUnits.map(unit => unit.type === subUnitType ? { ...unit, unit: value as DistanceUnit } : unit))}}
+              onValueChange={value => { setAllUnits(allUnits.map(unit => unit.type === subUnitType ? { ...unit, unit: value as DistanceUnit } : unit)) }}
               buttons={[
                 { value: "mm", label: "mm" },
                 { value: "cm", label: "cm" },
@@ -43,7 +43,7 @@ const subUnitProps = (subUnitType: SubUnitType, allUnits: SubUnit[], setAllUnits
               ]} />
             <SegmentedButtons
               value={allUnits.find(unit => unit.type === subUnitType)?.unit ?? ""}
-              onValueChange={value => {setAllUnits(allUnits.map(unit => unit.type === subUnitType ? { ...unit, unit: value as DistanceUnit } : unit))}}
+              onValueChange={value => { setAllUnits(allUnits.map(unit => unit.type === subUnitType ? { ...unit, unit: value as DistanceUnit } : unit)) }}
               buttons={[
                 { value: "in", label: "in" },
                 { value: "ft", label: "ft" },
@@ -51,7 +51,7 @@ const subUnitProps = (subUnitType: SubUnitType, allUnits: SubUnit[], setAllUnits
                 { value: "mi", label: "mi" },
               ]}
             />
-          </View> 
+          </View>
         ),
       };
     case "weight":
@@ -63,20 +63,20 @@ const subUnitProps = (subUnitType: SubUnitType, allUnits: SubUnit[], setAllUnits
           <View style={{ gap: 10 }}>
             <SegmentedButtons
               value={allUnits.find(unit => unit.type === subUnitType)?.unit ?? ""}
-              onValueChange={value => {setAllUnits(allUnits.map(unit => unit.type === subUnitType ? { ...unit, unit: value as WeightUnit } : unit))}}
+              onValueChange={value => { setAllUnits(allUnits.map(unit => unit.type === subUnitType ? { ...unit, unit: value as WeightUnit } : unit)) }}
               buttons={[
                 { value: "g", label: "g" },
                 { value: "kg", label: "kg" },
               ]} />
             <SegmentedButtons
               value={allUnits.find(unit => unit.type === subUnitType)?.unit ?? ""}
-              onValueChange={value => {setAllUnits(allUnits.map(unit => unit.type === subUnitType ? { ...unit, unit: value as WeightUnit } : unit))}}
+              onValueChange={value => { setAllUnits(allUnits.map(unit => unit.type === subUnitType ? { ...unit, unit: value as WeightUnit } : unit)) }}
               buttons={[
                 { value: "oz", label: "oz" },
                 { value: "lb", label: "lb" },
               ]}
             />
-          </View> 
+          </View>
         ),
       };
     case "time":
@@ -85,13 +85,13 @@ const subUnitProps = (subUnitType: SubUnitType, allUnits: SubUnit[], setAllUnits
         icon: "timer",
         description: null,
         children: (
-            <SegmentedButtons
-              value={allUnits.find(unit => unit.type === subUnitType)?.unit ?? ""}
-              onValueChange={value => {setAllUnits(allUnits.map(unit => unit.type === subUnitType ? { ...unit, unit: value as TimeUnit } : unit))}}
-              buttons={[
-                { value: "seconds", label: "seconds" },
-                { value: "hours", label: "hours" },
-              ]} />
+          <SegmentedButtons
+            value={allUnits.find(unit => unit.type === subUnitType)?.unit ?? ""}
+            onValueChange={value => { setAllUnits(allUnits.map(unit => unit.type === subUnitType ? { ...unit, unit: value as TimeUnit } : unit)) }}
+            buttons={[
+              { value: "seconds", label: "seconds" },
+              { value: "hours", label: "hours" },
+            ]} />
         ),
       };
     case "climbing_grade":
@@ -103,7 +103,7 @@ const subUnitProps = (subUnitType: SubUnitType, allUnits: SubUnit[], setAllUnits
           <View style={{ gap: 10 }}>
             <SegmentedButtons
               value={allUnits.find(unit => unit.type === subUnitType)?.grade ?? ""}
-              onValueChange={value => {setAllUnits(allUnits.map(unit => unit.type === subUnitType ? { ...unit, grade: value as ClimbingGrade } : unit))}}
+              onValueChange={value => { setAllUnits(allUnits.map(unit => unit.type === subUnitType ? { ...unit, grade: value as ClimbingGrade } : unit)) }}
               buttons={[
                 { value: "uiaa", label: "UIAA" },
                 { value: "french", label: "French" },
@@ -111,42 +111,42 @@ const subUnitProps = (subUnitType: SubUnitType, allUnits: SubUnit[], setAllUnits
               ]} />
             <SegmentedButtons
               value={allUnits.find(unit => unit.type === subUnitType)?.grade ?? ""}
-              onValueChange={value => {setAllUnits(allUnits.map(unit => unit.type === subUnitType ? { ...unit, grade: value as ClimbingGrade } : unit))}}
+              onValueChange={value => { setAllUnits(allUnits.map(unit => unit.type === subUnitType ? { ...unit, grade: value as ClimbingGrade } : unit)) }}
               buttons={[
                 { value: "font", label: "Font" },
                 { value: "v-scale", label: "V-Scale" },
               ]}
             />
-          </View> 
+          </View>
         ),
       };
-      case "number":
-        return {
-          title: "Other",
-          icon: "numeric",
-          description: "Numerical value",
-          children: (
-            <InputWrapper>
-              <TextInput
-                label="Unit"
-                value={allUnits.find(unit => unit.type === subUnitType)?.symbol ?? ""}
-                onChangeText={text => setAllUnits(allUnits.map(unit => unit.type === subUnitType ? { ...unit, symbol: text } : unit))}
-                mode="outlined"
-              />
-            </InputWrapper>
-          ),
-        };
+    case "number":
+      return {
+        title: "Other",
+        icon: "numeric",
+        description: "Numerical value",
+        children: (
+          <InputWrapper>
+            <TextInput
+              label="Unit"
+              value={allUnits.find(unit => unit.type === subUnitType)?.symbol ?? ""}
+              onChangeText={text => setAllUnits(allUnits.map(unit => unit.type === subUnitType ? { ...unit, symbol: text } : unit))}
+              mode="outlined"
+            />
+          </InputWrapper>
+        ),
+      };
   }
 }
 
 export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null, onChange: (unit: SubUnit | null) => void }) => {
   const [unitDialogVisible, setUnitDialogVisible] = useState(false);
   const theme = getTheme();
-  
+
   const [unitInput, setUnitInput] = useState<SubUnit | null>(unit ?? null);
   const [chosenUnitType, setChosenUnitType] = useState<SubUnitType | null>(unit?.type ?? null);
   const [allUnits, setAllUnits] = useState<SubUnit[]>((() => {
-    let defaultUnits : SubUnit[] = [
+    let defaultUnits: SubUnit[] = [
       { type: "count" },
       { type: "percentage" },
       { type: "distance", unit: "km" },
@@ -154,7 +154,7 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null, onChange:
       { type: "time", unit: "seconds" },
       { type: "climbing_grade", grade: "french" },
       { type: "number", symbol: "" },
-      ];
+    ];
     return defaultUnits.map(defaultUnit => unit?.type === defaultUnit.type ? unit : defaultUnit);
   })());
 
@@ -205,34 +205,34 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null, onChange:
           </View>
           <ScrollView>
             <View style={{ gap: 10, padding: 10 }}>
-            {allUnits.map((subUnit) => {
-              const { title, icon, description, children } = subUnitProps(subUnit.type, allUnits, setAllUnits);
-              if (children) {
-                return (
-                  <List.Accordion
-                    key={subUnit.type}
-                    title={title}
-                    left={() => <List.Icon icon={icon} />}
-                    description={description}
-                    expanded={chosenUnitType === subUnit.type}
-                    onPress={() => setChosenUnitType(chosenUnitType === subUnit.type ? null : subUnit.type)}
-                  >
-                    {children}
-                  </List.Accordion>
-                );
-              } else {
-                return (
-                  <List.Item
-                    key={subUnit.type}
-                    title={title}
-                    titleStyle={{ color: chosenUnitType === subUnit.type ? theme.colors.primary : theme.colors.onSurface }}
-                    onPress={() => setChosenUnitType(subUnit.type)}
-                    left={() => <List.Icon icon={icon} />}
-                    description={description}
-                  />
-                );
-              }
-            })}
+              {allUnits.map((subUnit) => {
+                const { title, icon, description, children } = subUnitProps(subUnit.type, allUnits, setAllUnits);
+                if (children) {
+                  return (
+                    <List.Accordion
+                      key={subUnit.type}
+                      title={title}
+                      left={() => <List.Icon icon={icon} />}
+                      description={description}
+                      expanded={chosenUnitType === subUnit.type}
+                      onPress={() => setChosenUnitType(chosenUnitType === subUnit.type ? null : subUnit.type)}
+                    >
+                      {children}
+                    </List.Accordion>
+                  );
+                } else {
+                  return (
+                    <List.Item
+                      key={subUnit.type}
+                      title={title}
+                      titleStyle={{ color: chosenUnitType === subUnit.type ? theme.colors.primary : theme.colors.onSurface }}
+                      onPress={() => setChosenUnitType(subUnit.type)}
+                      left={() => <List.Icon icon={icon} />}
+                      description={description}
+                    />
+                  );
+                }
+              })}
             </View>
           </ScrollView>
         </View>
@@ -312,14 +312,14 @@ export const ValueEditor = ({
     return numberToString((stringToNumber(val, unit) ?? 0) + ((now ?? 0) - (timerStartTime ?? 0)), unit)
   };
 
-  const flatListRef = useRef<FlatList<{ s: string, n: number }>>(null);
+  const flatListRef = useRef<FlatList<string>>(null);
 
-  const pickerDialog = (options: { s: string, n: number }[]) => {
+  const pickerDialog = (options: string[]) => {
     return (
       <>
         <Pressable onPress={() => {
           setClimbingGradeDialogVisible(true);
-          flatListRef.current?.scrollToIndex({ index: options.findIndex(o => o.s === value) });
+          flatListRef.current?.scrollToIndex({ index: options.findIndex(o => o === value) });
         }} style={({ pressed }) => [
           {
             flex: 1,
@@ -356,22 +356,24 @@ export const ValueEditor = ({
               <FlatList
                 key={`uiaa-grade-list-${numColumns}`}
                 getItemLayout={(_, index) => ({ length: itemHeight, offset: itemHeight * index, index })}
-                // initialScrollIndex={
-                //   Math.max(0, Math.floor(value === "" ?
-                //     options.length / numColumns / 2 :
-                //     options.findIndex(o => o.s === value) / numColumns) - 3)}
                 numColumns={numColumns}
-                ref={(ref) => { 
+                ref={(ref) => {
                   flatListRef.current = ref;
-                  const itemIx = options.findIndex(o => o.s === value);
+                  const itemIx = options.findIndex(o => o === value);
                   const scrollIx = itemIx === -1 ? options.length / 2 : itemIx;
-                  ref?.scrollToIndex({ index: Math.max(0, Math.floor(scrollIx / numColumns)), viewPosition: 0.0 }); 
+                  ref?.scrollToIndex({ index: Math.max(0, Math.floor(scrollIx / numColumns)), viewPosition: 0.0 });
                 }}
                 indicatorStyle="black"
                 data={options}
                 renderItem={({ item }) => (
-                  <List.Item right={value === item.s ? (props) => <List.Icon {...props} icon="check" /> : undefined} style={{ flex: 1, height: itemHeight }} key={item.s} onPress={() => { onChange(item.s); setClimbingGradeDialogVisible(false); }} title={item.s} />
-                )}
+                    <List.Item
+                      right={value === item ? (props) => <List.Icon {...props} icon="check" /> : undefined}
+                      style={{ flex: 1, height: itemHeight }}
+                      key={item}
+                      onPress={() => { onChange(item); setClimbingGradeDialogVisible(false); }}
+                      title={item}
+                    />
+                  )}
               />
             </Dialog.ScrollArea>
           </Dialog>

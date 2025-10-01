@@ -169,7 +169,7 @@ const Settings = () => {
     <Fragment>
       <SystemBars style={themeVariant == 'light' ? "dark" : "light"} />
       <ScrollView showsVerticalScrollIndicator={false}>
-        <SafeAreaView style={{ backgroundColor: theme.colors.background }} edges={["left", "right", "bottom"]}>
+        <SafeAreaView style={{ }} edges={["left", "right", "bottom"]}>
           <List.Section>
             <List.Subheader>Interface</List.Subheader>
             <List.Item

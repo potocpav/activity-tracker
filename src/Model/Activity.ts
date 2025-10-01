@@ -320,6 +320,8 @@ export const statPeriodDays = (period: StatPeriod, weekStart: WeekStart) => {
       return 7;
     case "last_30_days":
       return 30;
+    case "last_90_days":
+      return 90;
     case "last_365_days":
       return 365;
     case "last_active_day":
@@ -368,6 +370,8 @@ export const periodToLabel = (period: StatPeriod): string => {
       return "Last 7 Days";
     case "last_30_days":
       return "Last 30 Days";
+    case "last_90_days":
+      return "Last 90 Days";
     case "last_365_days":
       return "Last 365 Days";
     case "last_active_day":

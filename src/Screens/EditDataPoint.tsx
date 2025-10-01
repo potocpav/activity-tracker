@@ -41,18 +41,18 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   const weekStart = useStore((state: any) => state.weekStart);
   const dismissHint = useStore((state: any) => state.dismissHint);
 
-  const dataPoint : DataPoint = 
-    dataPointIndex !== undefined ? 
-      activity?.dataPoints[dataPointIndex] : 
+  const dataPoint: DataPoint =
+    dataPointIndex !== undefined ?
+      activity?.dataPoints[dataPointIndex] :
       {
         date: dateToDateList(newDataPointDate ? dateListToDate(newDataPointDate) : new Date()),
       };
-  
+
   if (!dataPoint) {
     console.error("Data point not found", dataPointIndex, dataPoint);
     return <Text style={{ color: theme.colors.error }}>Data point not found</Text>;
   }
-  
+
   const dateTime = dateListToDate(dataPoint.date);
   const today = dateToDateList(new Date());
   const [showErrors, setShowErrors] = useState(false);
@@ -73,23 +73,24 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
     dateError = "Date must be from this millenium";
   }
 
-  let inputValues: { subUnit: 
-    {name: string | null, unit: SubUnit}, 
+  let inputValues: {
+    subUnit:
+    { name: string | null, unit: SubUnit },
     value: [string, (text: string) => void]
   }[];
-    
+
   switch (activity.unit.type) {
     case 'none':
       inputValues = [];
       break;
     case 'single':
-      inputValues = [{ 
-        subUnit: {name: null, unit: activity.unit.unit}, 
-        value: useState<string>(numberToString((dataPoint as any).value ?? null, activity.unit.unit)) 
+      inputValues = [{
+        subUnit: { name: null, unit: activity.unit.unit },
+        value: useState<string>(numberToString((dataPoint as any).value ?? null, activity.unit.unit))
       }];
       break;
     case 'multiple':
-      inputValues = activity.unit.values.map((u) => ({ 
+      inputValues = activity.unit.values.map((u) => ({
         subUnit: u,
         value: useState<string>(
           numberToString(((dataPoint as any).value ?? {})[u.name] ?? null, u.unit))
@@ -97,8 +98,8 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
       break;
   }
 
-  let inputValueDisabled: 
-    [string | null, (disabled: string | null) => void][] = 
+  let inputValueDisabled:
+    [string | null, (disabled: string | null) => void][] =
     inputValues.map((v) => useState<string | null>(null));
   let inputValueRefs: React.RefObject<InputWrapperRef>[] = inputValues.map((v) => useRef<InputWrapperRef>(undefined));
   let inputValueErrors: (string | null)[] = inputValues.map((v, idx) => {
@@ -108,7 +109,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
       error = inputValueDisabled[idx][0];
     } else if (v.value[0] !== "" && (numValue === null || isNaN(numValue))) {
       error = "Enter a valid value";
-    } 
+    }
     return error;
   });
 
@@ -148,7 +149,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
     }
     if (inputValueErrors.find((e) => e !== null) !== undefined) {
       inputValueRefs.forEach((ref, idx) => {
-        if (inputValueErrors[idx] !== null) { 
+        if (inputValueErrors[idx] !== null) {
           ref.current?.highlightError();
         }
       });
@@ -193,7 +194,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
     const note = noteInput === "" ? {} : { "note": noteInput };
     const newIndex = updateActivityDataPoint(activityName, newDataPoint ? undefined : dataPointIndex, {
       date: inputDateList,
-      ...(newValue === undefined ? {} : {value: newValue}),
+      ...(newValue === undefined ? {} : { value: newValue }),
       ...(inputTags.length > 0 ? { tags: inputTags } : {}),
       ...note,
     });
@@ -214,22 +215,22 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
       headerTintColor: "#ffffff",
       headerRight: () => (
         <>
-          <Button compact={true} onPress={saveDataPointWrapper}>
-            <AntDesign name="check" size={24} color={"#ffffff"} />
-          </Button>
-          <Button compact={true} onPress={duplicateDataPointWrapper}>
-            <View style={{ position: 'relative' }}>
-            <AntDesign name="check" size={24} color={"#ffffff"} />
-            <View style={{ position: 'absolute', right: 0, bottom: 0 }}>
-            <AntDesign name="pluscircleo" size={12} color={"#ffffff"} />
-            </View>
-            </View>
-          </Button>
           {dataPointIndex !== undefined && (
             <Button compact={true} onPress={deleteDataPointWrapper}>
               <AntDesign name="delete" size={24} color={"#ffffff"} />
             </Button>
           )}
+          <Button compact={true} onPress={duplicateDataPointWrapper}>
+            <View style={{ position: 'relative' }}>
+              <AntDesign name="check" size={24} color={"#ffffff"} />
+              <View style={{ position: 'absolute', right: 0, bottom: 0 }}>
+                <AntDesign name="pluscircleo" size={12} color={"#ffffff"} />
+              </View>
+            </View>
+          </Button>
+          <Button compact={true} onPress={saveDataPointWrapper}>
+            <AntDesign name="check" size={24} color={"#ffffff"} />
+          </Button>
         </>
       ),
     });
@@ -242,106 +243,106 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
       <ScrollView>
         <SafeAreaView style={{ gap: 10, padding: 10 }} edges={["left", "right", "bottom"]}>
           <InputWrapper error={showErrors ? dateError : null} ref={dateInputRef}>
-          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <Pressable onPress={() => { setDatePickerVisible(true); }}
-          style={({pressed}) => [
-            {
-              flex: 1,
-              opacity: pressed ? 0.7 : 1,
-            },
-          ]}
-          // android_ripple={{ color: theme.colors.onSurface, foreground: false }}
-            >
-            <TextInput
-              mode="outlined"
-              label="Date"
-              editable={false}
-              value={inputDate ? inputDate.toLocaleDateString(locale) : "Select date"}
-            />
-          </Pressable>
-          <Button compact={true} onPress={() => { setDatePickerVisible(true); }}>
-            <View>
-              <AntDesign name="calendar" size={24} color={theme.colors.onSurface} />
+            <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <Pressable onPress={() => { setDatePickerVisible(true); }}
+                style={({ pressed }) => [
+                  {
+                    flex: 1,
+                    opacity: pressed ? 0.7 : 1,
+                  },
+                ]}
+              // android_ripple={{ color: theme.colors.onSurface, foreground: false }}
+              >
+                <TextInput
+                  mode="outlined"
+                  label="Date"
+                  editable={false}
+                  value={inputDate ? inputDate.toLocaleDateString(locale) : "Select date"}
+                />
+              </Pressable>
+              <Button compact={true} onPress={() => { setDatePickerVisible(true); }}>
+                <View>
+                  <AntDesign name="calendar" size={24} color={theme.colors.onSurface} />
+                </View>
+              </Button>
             </View>
-          </Button>
-          </View>
           </InputWrapper>
 
-        <InputWrapper>
-          <TextInput
-            label="Note (optional)"
-            value={noteInput}
-            onChangeText={setNoteInput}
-            mode="outlined"
-          />
-        </InputWrapper>
-
-
-        {activity.tags.length > 0 && (<View style={{ gap: 10 }}>
-          <Text style={styles.header}>Tags:</Text>
-          <View style={styles.tagsContainer}>
-            {activity.tags.map((tag: any, index: number) => (
-              <Chip
-                key={tag.name}
-                onPress={() => { toggleInputTag(tag.name); }}
-                mode={inputTags.includes(tag.name) ? "flat" : "outlined"}
-                style={{
-                  marginRight: 8,
-                  marginBottom: 8,
-                  backgroundColor: inputTags.includes(tag.name) ? palette[tag.color] : theme.colors.surface,
-                }}
-                textStyle={{
-                  color: inputTags.includes(tag.name) ? theme.colors.surface : palette[tag.color],
-                }}
-              >
-                {tag.name}
-              </Chip>
-            ))}
-          </View>
-        </View>)}
-
-        {activity.unit.type !== "none" && (
-          <InputWrapper error={showErrors ? emptyValueError : null} ref={valueRef}>
-          <Text style={styles.header}>{activity.unit.type === "single" ? "Value:" : "Values:"}</Text>
-
-        <View>
-          {inputValues.map((inputValue: { 
-            subUnit: {name: string | null, unit: SubUnit}, 
-            value: [string, (text: string) => void] 
-          }, index: number) => (
-            <ValueEditor 
-              key={inputValue.subUnit.name ?? "value"}
-              unit={inputValue.subUnit.unit}
-              error={showErrors ? inputValueErrors[index] : null}
-              inputWrapperRef={inputValueRefs[index]}
-              label={inputValue.subUnit.name === null ? renderUnit(inputValue.subUnit.unit) : `${inputValue.subUnit.name} - ${renderUnit(inputValue.subUnit.unit)}`} // TODO: better label
-              value={inputValue.value[0]} 
-              onChange={inputValue.value[1]} 
-              setSubmitDisabled={inputValueDisabled[index][1]}
+          <InputWrapper>
+            <TextInput
+              label="Note (optional)"
+              value={noteInput}
+              onChangeText={setNoteInput}
+              mode="outlined"
             />
-          ))}
-        </View>
-        </InputWrapper>
-        )}
+          </InputWrapper>
+
+
+          {activity.tags.length > 0 && (<View style={{ gap: 10 }}>
+            <Text style={styles.header}>Tags:</Text>
+            <View style={styles.tagsContainer}>
+              {activity.tags.map((tag: any, index: number) => (
+                <Chip
+                  key={tag.name}
+                  onPress={() => { toggleInputTag(tag.name); }}
+                  mode={inputTags.includes(tag.name) ? "flat" : "outlined"}
+                  style={{
+                    marginRight: 8,
+                    marginBottom: 8,
+                    backgroundColor: inputTags.includes(tag.name) ? palette[tag.color] : theme.colors.surface,
+                  }}
+                  textStyle={{
+                    color: inputTags.includes(tag.name) ? theme.colors.surface : palette[tag.color],
+                  }}
+                >
+                  {tag.name}
+                </Chip>
+              ))}
+            </View>
+          </View>)}
+
+          {activity.unit.type !== "none" && (
+            <InputWrapper error={showErrors ? emptyValueError : null} ref={valueRef}>
+              <Text style={styles.header}>{activity.unit.type === "single" ? "Value:" : "Values:"}</Text>
+
+              <View>
+                {inputValues.map((inputValue: {
+                  subUnit: { name: string | null, unit: SubUnit },
+                  value: [string, (text: string) => void]
+                }, index: number) => (
+                  <ValueEditor
+                    key={inputValue.subUnit.name ?? "value"}
+                    unit={inputValue.subUnit.unit}
+                    error={showErrors ? inputValueErrors[index] : null}
+                    inputWrapperRef={inputValueRefs[index]}
+                    label={inputValue.subUnit.name === null ? renderUnit(inputValue.subUnit.unit) : `${inputValue.subUnit.name} - ${renderUnit(inputValue.subUnit.unit)}`} // TODO: better label
+                    value={inputValue.value[0]}
+                    onChange={inputValue.value[1]}
+                    setSubmitDisabled={inputValueDisabled[index][1]}
+                  />
+                ))}
+              </View>
+            </InputWrapper>
+          )}
         </SafeAreaView>
       </ScrollView>
 
       <DatePickerModal
-          mode="single"
-          endYear={new Date().getFullYear()}
-          label={"Select date"}
-          locale={"en-GB"}
-          visible={datePickerVisible}
-          onDismiss={() => { setDatePickerVisible(false); }}
-          startYear={2000}
-          validRange={{
-            startDate: new Date(2000, 0, 1),
-            endDate: new Date(),
-          }}
-          date={inputDate}
-          startWeekOnMonday={weekStart === "monday"}
-          onConfirm={(d) => { setInputDate(d.date); setDatePickerVisible(false); }}
-        />
+        mode="single"
+        endYear={new Date().getFullYear()}
+        label={"Select date"}
+        locale={"en-GB"}
+        visible={datePickerVisible}
+        onDismiss={() => { setDatePickerVisible(false); }}
+        startYear={2000}
+        validRange={{
+          startDate: new Date(2000, 0, 1),
+          endDate: new Date(),
+        }}
+        date={inputDate}
+        startWeekOnMonday={weekStart === "monday"}
+        onConfirm={(d) => { setInputDate(d.date); setDatePickerVisible(false); }}
+      />
     </Fragment>
   );
 };
