@@ -327,8 +327,8 @@ const SelectedRangeBox = ({
         borderColor: theme.colors.outline,
         borderWidth: 1,
         opacity: selectedRange.max >= index && selectedRange.min <= index ? 1 : 0,
-      }} 
-      />
+      }}
+    />
   );
 }
 
@@ -337,7 +337,6 @@ type Stats = {
   mean: number,
   count: number,
 }
-
 
 const RegressionLine = ({
   theme,
@@ -359,15 +358,15 @@ const RegressionLine = ({
   const y0 = view.yToPx(regression.intercept + regression.slope * x0);
   const y1 = view.yToPx(regression.intercept + regression.slope * x1);
   return (
-   <Canvas style={{ position: 'absolute', ...view }}>
-    <Line
-      p1={vec(-view.width / 2, y0)}
-      p2={vec(view.width * 3 / 2, y1)}
-      color={theme.colors.outline}
-      strokeWidth={2}
-      strokeCap="round"
-    />
-   </Canvas>
+    <Canvas style={{ position: 'absolute', ...view }}>
+      <Line
+        p1={vec(-view.width / 2, y0)}
+        p2={vec(view.width * 3 / 2, y1)}
+        color={theme.colors.outline}
+        strokeWidth={2}
+        strokeCap="round"
+      />
+    </Canvas>
   );
 };
 
@@ -444,33 +443,33 @@ const ActivityChart = (
     const rangeItems = items.slice(selectedRange.min, selectedRange.max + 1);
     switch (graph.graphType) {
       case "bar-daily-mean":
-        rangeValues = rangeItems.map((item) => ({x: item.time, y: item.values.length * 100 / item.nDays}));
+        rangeValues = rangeItems.map((item) => ({ x: item.time, y: item.values.length * 100 / item.nDays }));
         break;
       case "bar-sum":
-        rangeValues = rangeItems.map((item) => ({x: item.time, y: item.values.reduce((a: number, b: number) => a + b, 0)}));
+        rangeValues = rangeItems.map((item) => ({ x: item.time, y: item.values.reduce((a: number, b: number) => a + b, 0) }));
         break;
       case "bar-count":
-        rangeValues = rangeItems.map((item) => ({x: item.time, y: item.values.length}));
+        rangeValues = rangeItems.map((item) => ({ x: item.time, y: item.values.length }));
         break;
       case "box":
-        rangeValues = rangeItems.map((item) => item.values.map((y) => ({x: item.time, y}))).flat();
+        rangeValues = rangeItems.map((item) => item.values.map((y) => ({ x: item.time, y }))).flat();
         break;
     }
     const { slope, intercept } = linearRegression(rangeValues);
     if (isSummable(unit) && selectedRange.max - selectedRange.min >= 1 && isFinite(slope) && isFinite(intercept)) {
       regression = { slope, intercept };
     }
-    selectionStats = { 
+    selectionStats = {
       regression: regression,
       mean: rangeValues.reduce((a, b) => a + b.y, 0) / rangeValues.length,
-      count: rangeValues.length,
+      count: rangeItems.reduce((a, b) => a + b.values.length, 0),
     };
   }
 
   let renderItem;
   let itemBoundingBox;
   switch (graph.graphType) {
-    case "bar-count": 
+    case "bar-count":
     case "bar-sum":
     case "bar-daily-mean": {
       let value: (item: any) => number | null;
