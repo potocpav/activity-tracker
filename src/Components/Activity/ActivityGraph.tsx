@@ -14,7 +14,7 @@ import FlatListChart, { BarChart, BoxChart, barBoundingBox, ViewDimensions } fro
 import Animated, { FadeInDown, FadeOutDown, useAnimatedStyle } from "react-native-reanimated";
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import { useSharedValue } from "react-native-reanimated";
-import { renderShortFormNumber, renderShortFormValue, renderLongFormValue } from "../../Model/Unit";
+import { renderShortFormNumber, renderShortFormValue, renderLongFormValue, isSummable } from "../../Model/Unit";
 import { Canvas, Line, vec } from "@shopify/react-native-skia";
 
 
@@ -244,21 +244,13 @@ const xLabel = (t: number, binSize: BinSize) => {
 
 const StatBox = ({
   theme,
-  selectedRange,
-  items,
   unit,
-  regression,
+  stats,
 }: {
   theme: any,
-  selectedRange: { min: number, max: number },
-  items: { time: number, values: number[], nDays: number }[],
   unit: SubUnit,
-  regression: { slope: number, intercept: number } | null,
+  stats: Stats,
 }) => {
-  const data = items.slice(selectedRange.min, selectedRange.max + 1);
-  const count = data.reduce((acc, item) => acc + item.values.length, 0);
-  const mean = data.reduce((acc, item) => acc + item.values.reduce((a, b) => a + b, 0), 0) / count;
-
   return (
     <View style={{ position: 'relative' }}>
       <Animated.View
@@ -282,25 +274,20 @@ const StatBox = ({
         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
           <View style={{ flex: 1, minWidth: 100 }}>
             <Text style={{ color: theme.colors.onSurface }} numberOfLines={1}>
-              Count: {Math.round(count)}
+              Count: {Math.round(stats.count)}
             </Text>
           </View>
           <View style={{ flex: 1, minWidth: 100 }}>
             <Text style={{ color: theme.colors.onSurface }} numberOfLines={1}>
-              Mean: {count > 0 ? renderLongFormValue(mean, unit) : "-"}
+              Mean: {isFinite(stats.mean) ? renderLongFormValue(stats.mean, unit) : "-"}
             </Text>
           </View>
         </View>
-        {regression && (
+        {stats.regression && (
           <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
             <View style={{ flex: 1, minWidth: 100 }}>
               <Text style={{ color: theme.colors.onSurface }} numberOfLines={1}>
-                {`${renderLongFormValue(regression.slope * 1e3 * 3600 * 24 * 30, unit)} per month`}
-              </Text>
-            </View>
-            <View style={{ flex: 1, minWidth: 100 }}>
-              <Text style={{ color: theme.colors.onSurface }} numberOfLines={1}>
-                -
+                {`${stats.regression.slope >= 0 ? "+" : ""}${renderLongFormValue(stats.regression.slope * 1e3 * 3600 * 24 * 30, unit)} per month`}
               </Text>
             </View>
           </View>
@@ -343,6 +330,12 @@ const SelectedRangeBox = ({
       }} 
       />
   );
+}
+
+type Stats = {
+  regression: { slope: number, intercept: number } | null,
+  mean: number,
+  count: number,
 }
 
 
@@ -444,10 +437,11 @@ const ActivityChart = (
     }
   }
 
-  let regression = null;
-  if (selectedRange && selectedRange.max - selectedRange.min >= 1) {
+  let selectionStats: Stats | null = null;
+  if (selectedRange) {
+    let rangeValues: { x: number, y: number }[] = [];
+    let regression: { slope: number, intercept: number } | null = null;
     const rangeItems = items.slice(selectedRange.min, selectedRange.max + 1);
-    let rangeValues;
     switch (graph.graphType) {
       case "bar-daily-mean":
         rangeValues = rangeItems.map((item) => ({x: item.time, y: item.values.length * 100 / item.nDays}));
@@ -463,9 +457,14 @@ const ActivityChart = (
         break;
     }
     const { slope, intercept } = linearRegression(rangeValues);
-    if (isFinite(slope) && isFinite(intercept)) {
+    if (isSummable(unit) && selectedRange.max - selectedRange.min >= 1 && isFinite(slope) && isFinite(intercept)) {
       regression = { slope, intercept };
     }
+    selectionStats = { 
+      regression: regression,
+      mean: rangeValues.reduce((a, b) => a + b.y, 0) / rangeValues.length,
+      count: rangeValues.length,
+    };
   }
 
   let renderItem;
@@ -489,7 +488,7 @@ const ActivityChart = (
       renderItem = ({ item, index, view }: { item: any, index: number, view: ViewDimensions }) => (
         <>
           {selectedRange && <SelectedRangeBox theme={theme} selectedRange={selectedRange} index={index} view={view} cornerRadius={4} />}
-          {regression && <RegressionLine theme={theme} regression={regression} time={item.time} weekStart={weekStart} binSize={graph.binSize} view={view} />}
+          {selectionStats?.regression && <RegressionLine theme={theme} regression={selectionStats.regression} time={item.time} weekStart={weekStart} binSize={graph.binSize} view={view} />}
           <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} fontScale={windowDimensions.fontScale} />
         </>
       );
@@ -500,7 +499,7 @@ const ActivityChart = (
       renderItem = ({ item, index, view }: { item: any, index: number, view: ViewDimensions }) => (
         <>
           {selectedRange && <SelectedRangeBox theme={theme} selectedRange={selectedRange} index={index} view={view} cornerRadius={10} />}
-          {regression && <RegressionLine theme={theme} regression={regression} time={item.time} view={view} weekStart={weekStart} binSize={graph.binSize} />}
+          {selectionStats?.regression && <RegressionLine theme={theme} regression={selectionStats.regression} time={item.time} view={view} weekStart={weekStart} binSize={graph.binSize} />}
           <BoxChart view={view} values={item.values} unit={unit} color={theme.colors.primary} surfaceColor={theme.colors.surface} />
         </>
       );
@@ -516,12 +515,10 @@ const ActivityChart = (
 
   return (
     <>
-      {selectedRange && <StatBox
+      {selectionStats && <StatBox
         theme={theme}
-        selectedRange={selectedRange}
-        items={items}
         unit={unit}
-        regression={regression}
+        stats={selectionStats}
       />}
       <FlatListChart
         height={height}
