@@ -108,17 +108,17 @@ export const renderLongFormValue = (value: number, unit: SubUnit): string => {
     case "time":
       switch (unit.unit) {
         case "hours":
-          if (value > 24) {
+          if (Math.abs(value) > 24) {
             return renderShortFormNumber(value) + " h";
-          } else if (value >= 1) {
+          } else if (Math.abs(value) >= 1) {
             return numberToString(Math.round(value * 60) / 60, unit);
           } else {
             return numberToString(value, unit);
           }
         case "seconds":
-          if (value > 10 * 3600) {
+          if (Math.abs(value) > 10 * 3600) {
             return renderShortFormNumber(value / 3600) + " h";
-          } else if (value > 3600) {
+          } else if (Math.abs(value) > 3600) {
             return numberToString(Math.round(value), unit);
           } else {
             return numberToString(value, unit);
@@ -185,27 +185,29 @@ export const numberToString = (value: number | null, unit: SubUnit): string => {
     case "time":
       switch (unit.unit) {
         case "hours": {
-          const v = value + 0.5 / 3600; // add 0.5 seconds to avoid rounding errors
+          const v = Math.abs(value) + 0.5 / 3600; // add 0.5 seconds to avoid rounding errors
+          const sign = value < 0 ? "-" : "";
           const hours = Math.floor(v);
           const minutes = Math.floor((v - hours) * 60);
           const seconds = Math.floor(((v - hours) * 60 - minutes) * 60);
           if (seconds == 0) {
-            return `${hours}:${minutes.toString().padStart(2, '0')}`;
+            return `${sign}${hours}:${minutes.toString().padStart(2, '0')}`;
           } else {
-            return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            return `${sign}${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
           }
         }
         case "seconds": {
-          const v = value + 0.5; // add 0.5 seconds to avoid rounding errors
+          const v = Math.abs(value) + 0.5; // add 0.5 seconds to avoid rounding errors
+          const sign = value < 0 ? "-" : "";
           const hours = Math.floor(v / 3600);
           const minutes = Math.floor((v - hours * 3600) / 60);
           const seconds = Math.floor(v - hours * 3600 - minutes * 60);
 
           const fractionalPart = Math.abs(value % 1) < 0.005 ? "" : `.${(value % 1).toFixed(2).split('.')[1]}`;
           if (hours == 0) {
-            return `${minutes.toString()}:${seconds.toString().padStart(2, '0')}${fractionalPart}`;
+            return `${sign}${minutes.toString()}:${seconds.toString().padStart(2, '0')}${fractionalPart}`;
           } else {
-            return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}${fractionalPart}`;
+            return `${sign}${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}${fractionalPart}`;
           }
         }
       }
