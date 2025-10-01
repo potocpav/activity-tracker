@@ -15,6 +15,7 @@ import Animated, { FadeInDown, FadeOutDown, useAnimatedStyle } from "react-nativ
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import { useSharedValue } from "react-native-reanimated";
 import { renderShortFormNumber, renderShortFormValue, renderLongFormValue } from "../../Model/Unit";
+import { Canvas, Line, vec } from "@shopify/react-native-skia";
 
 
 const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, graphIndex: number }) => {
@@ -246,16 +247,14 @@ const StatBox = ({
   selectedRange,
   items,
   unit,
+  regression,
 }: {
   theme: any,
-  selectedRange: { min: number, max: number } | null,
+  selectedRange: { min: number, max: number },
   items: { time: number, values: number[], nDays: number }[],
   unit: SubUnit,
+  regression: { slope: number, intercept: number } | null,
 }) => {
-  if (!selectedRange) {
-    selectedRange = { min: 0, max: items.length - 1 };
-    return <></>;
-  }
   const data = items.slice(selectedRange.min, selectedRange.max + 1);
   const count = data.reduce((acc, item) => acc + item.values.length, 0);
   const mean = data.reduce((acc, item) => acc + item.values.reduce((a, b) => a + b, 0), 0) / count;
@@ -292,6 +291,20 @@ const StatBox = ({
             </Text>
           </View>
         </View>
+        {regression && (
+          <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+            <View style={{ flex: 1, minWidth: 100 }}>
+              <Text style={{ color: theme.colors.onSurface }} numberOfLines={1}>
+                {`${renderLongFormValue(regression.slope * 1e3 * 3600 * 24 * 30, unit)} per month`}
+              </Text>
+            </View>
+            <View style={{ flex: 1, minWidth: 100 }}>
+              <Text style={{ color: theme.colors.onSurface }} numberOfLines={1}>
+                -
+              </Text>
+            </View>
+          </View>
+        )}
       </Animated.View>
     </View>
   );
@@ -306,7 +319,7 @@ const SelectedRangeBox = ({
   cornerRadius,
 }: {
   theme: any,
-  selectedRange: { min: number, max: number } | null,
+  selectedRange: { min: number, max: number },
   index: number,
   view: ViewDimensions,
   cornerRadius: number,
@@ -318,20 +331,52 @@ const SelectedRangeBox = ({
         ...view,
         borderTopWidth: 1,
         borderBottomWidth: 1,
-        borderRightWidth: index === selectedRange?.min ? 1 : 0,
-        borderLeftWidth: index === selectedRange?.max ? 1 : 0,
-        borderTopRightRadius: index === selectedRange?.min ? cornerRadius : 0,
-        borderBottomLeftRadius: index === selectedRange?.max ? cornerRadius : 0,
-        borderTopLeftRadius: index === selectedRange?.max ? cornerRadius : 0,
-        borderBottomRightRadius: index === selectedRange?.min ? cornerRadius : 0,
+        borderRightWidth: index === selectedRange.min ? 1 : 0,
+        borderLeftWidth: index === selectedRange.max ? 1 : 0,
+        borderTopRightRadius: index === selectedRange.min ? cornerRadius : 0,
+        borderBottomLeftRadius: index === selectedRange.max ? cornerRadius : 0,
+        borderTopLeftRadius: index === selectedRange.max ? cornerRadius : 0,
+        borderBottomRightRadius: index === selectedRange.min ? cornerRadius : 0,
         borderColor: theme.colors.outline,
         borderWidth: 1,
-        opacity: selectedRange && (selectedRange.max >= index && selectedRange.min <= index) ? 1 : 0,
+        opacity: selectedRange.max >= index && selectedRange.min <= index ? 1 : 0,
       }} 
       />
   );
 }
 
+
+const RegressionLine = ({
+  theme,
+  regression,
+  time,
+  view,
+  weekStart,
+  binSize,
+}: {
+  theme: any,
+  regression: { slope: number, intercept: number },
+  time: number,
+  view: ViewDimensions,
+  weekStart: WeekStart,
+  binSize: BinSize,
+}) => {
+  const x0 = binTime(binSize, time, -1, weekStart).getTime();
+  const x1 = binTime(binSize, time, 1, weekStart).getTime();
+  const y0 = view.yToPx(regression.intercept + regression.slope * x0);
+  const y1 = view.yToPx(regression.intercept + regression.slope * x1);
+  return (
+   <Canvas style={{ position: 'absolute', ...view }}>
+    <Line
+      p1={vec(-view.width / 2, y0)}
+      p2={vec(view.width * 3 / 2, y1)}
+      color={theme.colors.outline}
+      strokeWidth={2}
+      strokeCap="round"
+    />
+   </Canvas>
+  );
+};
 
 type ActivityChart = {
   height: number,
@@ -340,6 +385,19 @@ type ActivityChart = {
   activityUnit: Unit,
   weekStart: WeekStart,
   theme: any,
+}
+
+const linearRegression = (values: { x: number, y: number }[]) => {
+  const sum = (v: number[]) => v.reduce((acc, v) => acc + v, 0);
+  const sx = sum(values.map((v) => v.x));
+  const sy = sum(values.map((v) => v.y));
+  const sxx = sum(values.map((v) => v.x * v.x));
+  const syy = sum(values.map((v) => v.y * v.y));
+  const sxy = sum(values.map((v) => v.x * v.y));
+  const n = values.length;
+  const slope = (n * sxy - sx * sy) / (n * sxx - sx * sx);
+  const intercept = (sy - slope * sx) / n;
+  return { slope, intercept };
 }
 
 const ActivityChart = (
@@ -386,47 +444,52 @@ const ActivityChart = (
     }
   }
 
+  let regression = null;
+  if (selectedRange && selectedRange.max - selectedRange.min >= 1) {
+    const rangeItems = items.slice(selectedRange.min, selectedRange.max + 1);
+    let rangeValues;
+    switch (graph.graphType) {
+      case "bar-daily-mean":
+        rangeValues = rangeItems.map((item) => ({x: item.time, y: item.values.length * 100 / item.nDays}));
+        break;
+      case "bar-sum":
+        rangeValues = rangeItems.map((item) => ({x: item.time, y: item.values.reduce((a: number, b: number) => a + b, 0)}));
+        break;
+      case "bar-count":
+        rangeValues = rangeItems.map((item) => ({x: item.time, y: item.values.length}));
+        break;
+      case "box":
+        rangeValues = rangeItems.map((item) => item.values.map((y) => ({x: item.time, y}))).flat();
+        break;
+    }
+    const { slope, intercept } = linearRegression(rangeValues);
+    if (isFinite(slope) && isFinite(intercept)) {
+      regression = { slope, intercept };
+    }
+  }
+
   let renderItem;
   let itemBoundingBox;
   switch (graph.graphType) {
-    case "bar-count": {
-      const value = (item: any) => item.values.length > 0 ? item.values.length : null;
-      renderItem = ({ item, index, view }: { item: any, index: number, view: ViewDimensions }) => (
-        <>
-          <SelectedRangeBox theme={theme} selectedRange={selectedRange} index={index} view={view} cornerRadius={4} />
-          <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} fontScale={windowDimensions.fontScale} />
-        </>
-      );
-      itemBoundingBox = (item: any) => barBoundingBox(value(item), windowDimensions.fontScale);
-      break;
-    }
-    case "bar-sum": {
-      const value = (item: any) => item.values.length > 0 ? item.values.reduce((a: number, b: number) => a + b, 0) : null;
-      renderItem = ({ item, index, view }: { item: any, index: number, view: ViewDimensions }) => (
-        <>
-          <SelectedRangeBox theme={theme} selectedRange={selectedRange} index={index} view={view} cornerRadius={4} />
-          <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} fontScale={windowDimensions.fontScale} />
-        </>
-      );
-      itemBoundingBox = (item: any) => barBoundingBox(value(item), windowDimensions.fontScale);
-      break;
-    }
+    case "bar-count": 
+    case "bar-sum":
     case "bar-daily-mean": {
-      const value = (item: any) => item.values.length > 0 ? item.values.reduce((a: number, b: number) => a + b, 0) / item.nDays * 100 : null;
+      let value: (item: any) => number | null;
+      switch (graph.graphType) {
+        case "bar-count":
+          value = (item: any) => item.values.length > 0 ? item.values.length : null;
+          break;
+        case "bar-sum":
+          value = (item: any) => item.values.length > 0 ? item.values.reduce((a: number, b: number) => a + b, 0) : null;
+          break;
+        case "bar-daily-mean":
+          value = (item: any) => item.values.reduce((a: number, b: number) => a + b, 0) / item.nDays * 100;
+          break;
+      }
       renderItem = ({ item, index, view }: { item: any, index: number, view: ViewDimensions }) => (
         <>
-          <SelectedRangeBox theme={theme} selectedRange={selectedRange} index={index} view={view} cornerRadius={4} />
-          <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} fontScale={windowDimensions.fontScale} />
-        </>
-      );
-      itemBoundingBox = (item: any) => barBoundingBox(value(item), windowDimensions.fontScale);
-      break;
-    }
-    case "line-mean": {
-      const value = (item: any) => item.values.length > 0 ? item.values.reduce((a: number, b: number) => a + b, 0) / item.values.length : null;
-      renderItem = ({ item, index, view }: { item: any, index: number, view: ViewDimensions }) => (value(item) !== null) && (
-        <>
-          <SelectedRangeBox theme={theme} selectedRange={selectedRange} index={index} view={view} cornerRadius={4} />
+          {selectedRange && <SelectedRangeBox theme={theme} selectedRange={selectedRange} index={index} view={view} cornerRadius={4} />}
+          {regression && <RegressionLine theme={theme} regression={regression} time={item.time} weekStart={weekStart} binSize={graph.binSize} view={view} />}
           <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} fontScale={windowDimensions.fontScale} />
         </>
       );
@@ -436,7 +499,8 @@ const ActivityChart = (
     case "box": {
       renderItem = ({ item, index, view }: { item: any, index: number, view: ViewDimensions }) => (
         <>
-          <SelectedRangeBox theme={theme} selectedRange={selectedRange} index={index} view={view} cornerRadius={10} />
+          {selectedRange && <SelectedRangeBox theme={theme} selectedRange={selectedRange} index={index} view={view} cornerRadius={10} />}
+          {regression && <RegressionLine theme={theme} regression={regression} time={item.time} view={view} weekStart={weekStart} binSize={graph.binSize} />}
           <BoxChart view={view} values={item.values} unit={unit} color={theme.colors.primary} surfaceColor={theme.colors.surface} />
         </>
       );
@@ -452,12 +516,13 @@ const ActivityChart = (
 
   return (
     <>
-      <StatBox
+      {selectedRange && <StatBox
         theme={theme}
         selectedRange={selectedRange}
         items={items}
         unit={unit}
-      />
+        regression={regression}
+      />}
       <FlatListChart
         height={height}
         unit={unit}
