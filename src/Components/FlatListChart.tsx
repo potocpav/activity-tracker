@@ -192,7 +192,7 @@ type FlatListChartData = {
   renderItem: (params: { item: any, index: number, view: ViewDimensions }) => React.ReactNode,
   itemBoundingBox: (item: any, itemWidthPx: number) => BoundingBox,
   itemLabel: (item: any) => string,
-  selectedRange: [{ min: number, max: number } | null, (range: { min: number, max: number } | null) => void],
+  setSelectedRange?: (range: { min: number, max: number } | null) => void,
 }
 
 const FlatListChart = (
@@ -204,7 +204,7 @@ const FlatListChart = (
     renderItem,
     itemBoundingBox,
     itemLabel,
-    selectedRange,
+    setSelectedRange,
   }:
     FlatListChartData
 ) => {
@@ -249,7 +249,7 @@ const FlatListChart = (
   const selectedRangeShared = useSharedValue<{ p0: number, p1: number } | null>(null);
   const getIndex = (num: number) => {
     "worklet"
-    return Math.floor((viewportWidth - num + scrollX.value) / binWidth);
+    return Math.min(items.length - 1, Math.max(0, Math.floor((viewportWidth - num + scrollX.value) / binWidth)));
   };
   const panGesture = Gesture
     .Pan()
@@ -277,14 +277,16 @@ const FlatListChart = (
       return selectedRangeShared.value;
     },
     (currentValue, previousValue) => {
-      if (currentValue !== previousValue) {
-        if (!currentValue || items.length === 0) {
-          runOnJS(selectedRange[1])(null);
-        } else {
-          runOnJS(selectedRange[1])({
-            min: Math.max(0, Math.min(items.length - 1, currentValue.p0, currentValue.p1)), 
-            max: Math.min(items.length - 1, Math.max(0, currentValue.p0, currentValue.p1))
-          });
+      if (setSelectedRange) {
+        if (currentValue?.p0 !== previousValue?.p0 || currentValue?.p1 !== previousValue?.p1) {
+          if (!currentValue || items.length === 0) {
+            runOnJS(setSelectedRange)(null);
+          } else {
+            runOnJS(setSelectedRange)({
+              min: Math.min(currentValue.p0, currentValue.p1), 
+              max: Math.max(currentValue.p0, currentValue.p1)
+            });
+          }
         }
       }
     }

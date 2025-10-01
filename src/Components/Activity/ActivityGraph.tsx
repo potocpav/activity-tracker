@@ -253,7 +253,8 @@ const StatBox = ({
   unit: SubUnit,
 }) => {
   if (!selectedRange) {
-    return null;
+    selectedRange = { min: 0, max: items.length - 1 };
+    return <></>;
   }
   const data = items.slice(selectedRange.min, selectedRange.max + 1);
   const count = data.reduce((acc, item) => acc + item.values.length, 0);
@@ -326,7 +327,6 @@ const SelectedRangeBox = ({
         borderColor: theme.colors.outline,
         borderWidth: 1,
         opacity: selectedRange && (selectedRange.max >= index && selectedRange.min <= index) ? 1 : 0,
-        zIndex: -1000,
       }} 
       />
   );
@@ -466,7 +466,7 @@ const ActivityChart = (
         renderItem={renderItem}
         itemBoundingBox={itemBoundingBox}
         itemLabel={(item) => xLabel(item.time, graph.binSize)}
-        selectedRange={[selectedRange, setSelectedRange]}
+        setSelectedRange={setSelectedRange}
       />
     </>
   )
