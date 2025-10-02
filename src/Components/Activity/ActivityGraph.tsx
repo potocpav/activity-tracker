@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, useWindowDimensions, StyleSheet, FlatList, ToastAndroid, Pressable } from "react-native";
+import { View, Text, useWindowDimensions, StyleSheet, ToastAndroid, Pressable } from "react-native";
 import { Menu, Button, Portal, Dialog, TextInput } from 'react-native-paper';
 import useStore from "../../Model/Store";
 import { DataPoint, dateListToTime, ActivityType, GraphType, WeekStart, DateList, SubUnit, GraphProps, Unit } from "../../Model/StoreTypes";
@@ -11,10 +11,8 @@ import DropdownMenu from "../DropdownMenu";
 import { getTheme } from "../../Model/Theme";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import FlatListChart, { BarChart, BoxChart, barBoundingBox, ViewDimensions } from "../FlatListChart";
-import Animated, { FadeInDown, FadeOutDown, useAnimatedStyle } from "react-native-reanimated";
-import { GestureDetector, Gesture } from 'react-native-gesture-handler';
-import { useSharedValue } from "react-native-reanimated";
-import { renderShortFormNumber, renderShortFormValue, renderLongFormValue, isSummable } from "../../Model/Unit";
+import Animated, { FadeInUp, FadeOutUp } from "react-native-reanimated";
+import { renderLongFormValue, isSummable } from "../../Model/Unit";
 import { Canvas, Line, vec } from "@shopify/react-native-skia";
 
 
@@ -255,21 +253,23 @@ const StatBox = ({
     <View style={{ position: 'relative' }}>
       <Animated.View
         key="stats"
-        entering={FadeInDown}
-        exiting={FadeOutDown}
+        entering={FadeInUp}
+        exiting={FadeOutUp}
         style={{
           position: 'absolute',
-          bottom: 0,
+          top: 0,
           right: 0,
           left: 0,
+          minHeight: 60,
           borderWidth: 1,
           borderColor: theme.colors.outline,
           borderRadius: 8,
           padding: 8,
-          marginBottom: 8,
+          marginTop: 8,
           backgroundColor: theme.colors.surface,
           elevation: 1,
           flexDirection: 'column',
+          zIndex: 1,
         }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
           <View style={{ flex: 1, minWidth: 100 }}>
@@ -514,11 +514,6 @@ const ActivityChart = (
 
   return (
     <>
-      {selectionStats && <StatBox
-        theme={theme}
-        unit={unit}
-        stats={selectionStats}
-      />}
       <FlatListChart
         height={height}
         unit={unit}
@@ -529,6 +524,11 @@ const ActivityChart = (
         itemLabel={(item) => xLabel(item.time, graph.binSize)}
         setSelectedRange={setSelectedRange}
       />
+      {selectionStats && <StatBox
+        theme={theme}
+        unit={unit}
+        stats={selectionStats}
+      />}
     </>
   )
 }
