@@ -315,7 +315,8 @@ const useStore = create<State>()(
             return newValue;
           }
 
-          // update data points
+        
+          // update points
           // FIXME: What if the value is undefined, after converting a data point from Multiple to Single?
           const newDataPoints = activity.dataPoints
             .map((dp: DataPoint) => {
@@ -568,7 +569,7 @@ const useStore = create<State>()(
           const deviceConnection = await connectToDevice(device);
           set({ connectedDevice: deviceConnection, isConnected: true });
           deviceConnection.onDisconnected(async () => {
-            console.error("Device is disconnected asynchronously.");
+            console.warn("Device is disconnected asynchronously.");
             set({ isConnected: false });
           });
         } catch (e) {
@@ -611,7 +612,6 @@ const useStore = create<State>()(
               dataPoints: newDataPoints
             };
           });
-          console.error("Data updated", data);
         }
       },
 

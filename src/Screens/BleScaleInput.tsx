@@ -6,12 +6,15 @@ import {
   View,
   Platform,
 } from "react-native";
-import StatusBar from "../Components/BleStatusBar";
 import useStore from "../Model/Store";
 import { CartesianChart, Line } from "victory-native";
 import { matchFont } from "@shopify/react-native-skia";
-import { getTheme } from "../Model/Theme";
+import { getTheme, getThemeVariant } from "../Model/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { ActivityType } from "../Model/StoreTypes";
+import { Button } from "react-native-paper";
+import AntDesign from '@expo/vector-icons/AntDesign';
+import { disconnectDevice, requestPermissions, scanForPeripherals } from "../Model/Ble";
 
 const fontFamily = Platform.select({ default: "sans-serif" });
 const font = matchFont({ fontFamily: fontFamily });
@@ -21,24 +24,89 @@ type BleScaleInputProps = {
   route: any;
 };
 
-const BleScaleInput: React.FC<BleScaleInputProps> = ({ navigation }) => {
-  const theme = getTheme();
+
+
+// return (
+//   <View style={[styles.statusBar, { backgroundColor: theme.colors.surface, borderBottomColor: theme.colors.outline }]}>
+//     <View style={styles.statusInfo}>
+//       <View style={[styles.statusIndicator, { backgroundColor: isConnected ? theme.colors.primary : theme.colors.error }]} />
+//       <Text style={[styles.statusText, { color: theme.colors.onSurface }]}>
+//         {isConnected ? `Connected: ${connectedDevice.name}` : 'Disconnected'}
+//       </Text>
+//     </View>
+//     <TouchableOpacity
+//       onPress={isConnected ? disconnectDevice : openModal}
+//       style={
+//         [styles.statusButton,
+//         { backgroundColor: isConnected ? theme.colors.error : theme.colors.primary }
+//         ]}
+//     >
+//       <Text style={[styles.statusButtonText, { color: isConnected ? theme.colors.onError : theme.colors.onPrimary }]}>
+//         {isConnected ? 'Disconnect' : 'Connect'}
+//       </Text>
+//     </TouchableOpacity>
+//   </View>
+// );
+
+
+const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
+  const { activityName } = route.params;
+  const activities = useStore((state: any) => state.activities);
+  const activity = activities.find((a: ActivityType) => a.name === activityName);
+  const theme = getTheme(activity.color);
+  const themeVariant = getThemeVariant();
+
   const isConnected = useStore((state: any) => state.isConnected);
   const dataPoints: { w: number, t: number }[] = useStore((state: any) => state.dataPoints);
   const startMeasurement = useStore((state: any) => state.startMeasurement);
   const stopMeasurement = useStore((state: any) => state.stopMeasurement);
   const tareScale = useStore((state: any) => state.tareScale);
 
+  const connectedDevice = useStore((state: any) => state.connectedDevice);
+  const requestPermissions = useStore((state: any) => state.requestPermissions);
+  const scanForPeripherals = useStore((state: any) => state.scanForPeripherals);
+  const disconnectDevice = useStore((state: any) => state.disconnectDevice);
+
   const weight = dataPoints[dataPoints.length - 1]?.w;
   const time = dataPoints[dataPoints.length - 1]?.t;
   const maxWeight = Math.max(...dataPoints.map((point) => point.w));
 
+  const openConnectionModal = async () => {
+    scanForDevices();
+    navigation.navigate("BleConnectionModal");
+  };
+
+  const scanForDevices = async () => {
+    const isPermissionsEnabled = await requestPermissions();
+    if (isPermissionsEnabled) {
+      scanForPeripherals();
+    }
+  };
+
+  React.useEffect(() => {
+    navigation.setOptions({
+      headerStyle: themeVariant == 'light' ? { backgroundColor: theme.colors.primary } : undefined,
+      headerTintColor: "#ffffff",
+      headerRight: () => (
+        <>
+          <Button
+            compact={true}
+            onPress={isConnected ? disconnectDevice : openConnectionModal}
+            style={{ marginLeft: 8 }}
+            mode="contained"
+            dark={themeVariant == 'light'}
+            labelStyle={{ paddingHorizontal: 8 }}
+          >
+              <Text>{isConnected ? 'Disconnect' : 'Connect'}</Text>
+          </Button>
+          </>
+      ),
+    });
+  }, [activityName, navigation, theme, activity, isConnected]);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surfaceVariant }]}  edges={["left", "right", "bottom"]}>
-      <StatusBar navigation={navigation} />
-
-      {isConnected ? (
+    <SafeAreaView style={[styles.container]}  edges={["left", "right", "bottom"]}>
+      {isConnected || true ? (
         <>
           {/* Control Buttons Section */}
           <View style={styles.controlSection}>
@@ -94,15 +162,20 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ navigation }) => {
                 yKeys={["w"]}
                 frame={{
                   lineWidth: 1,
+                  lineColor: theme.colors.outline,
                 }}
                 xAxis={{
                   font: font,
+                  labelColor: theme.colors.outline,
+                  lineColor: theme.colors.outline,
                 }}
                 yAxis={[
                   {
                     yKeys: ["w"],
                     font: font,
                     tickCount: 10,
+                    labelColor: theme.colors.outline,
+                    lineColor: theme.colors.outline,
                   },
                   // {
                   //   yKeys: ["w"],
@@ -118,7 +191,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ navigation }) => {
                   <>
                     <Line
                       points={points.w}
-                      color={theme.colors.onSurface}
+                      color={theme.colors.primary}
                       strokeWidth={2}
                     />
                   </>
