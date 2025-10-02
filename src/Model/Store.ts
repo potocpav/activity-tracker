@@ -1,6 +1,3 @@
-/* eslint-disable no-bitwise */
-
-/*
 import {
   requestPermissions,
   connectToDevice,
@@ -20,7 +17,6 @@ import {
   Characteristic,
   Device,
 } from "react-native-ble-plx";
- */
 import { create } from "zustand";
 import {
   CalendarProps,
@@ -565,113 +561,112 @@ const useStore = create<State>()(
         });
       },
 
-      /*
-requestPermissions: requestPermissions,
- 
-connectToDevice: async (device: Device) => {
-  try {
-    const deviceConnection = await connectToDevice(device);
-    set({ connectedDevice: deviceConnection, isConnected: true });
-    deviceConnection.onDisconnected(async () => {
-      console.error("Device is disconnected asynchronously.");
-      set({ isConnected: false });
-    });
-  } catch (e) {
-    console.error("FAILED TO CONNECT", e);
-  }
-},
+      requestPermissions: requestPermissions,
 
-disconnectDevice: async () => {
-  const connectedDevice: any = get().connectedDevice;
-  if (connectedDevice) {
-    await disconnectDevice(connectedDevice);
-    set({ isConnected: false });
-  }
-},
+      connectToDevice: async (device: Device) => {
+        try {
+          const deviceConnection = await connectToDevice(device);
+          set({ connectedDevice: deviceConnection, isConnected: true });
+          deviceConnection.onDisconnected(async () => {
+            console.error("Device is disconnected asynchronously.");
+            set({ isConnected: false });
+          });
+        } catch (e) {
+          console.error("FAILED TO CONNECT", e);
+        }
+      },
 
-scanForPeripherals: () => {
-  scanForPeripherals((device) => {
-    const isDuplicteDevice = (devices: Device[], nextDevice: Device) => {
-      return devices.findIndex((device) => nextDevice.id === device.id) > -1;
-    };
-    set((state: any) => {
-      if (!isDuplicteDevice(state.allDevices, device)) {
-        return { allDevices: [...state.allDevices, device] };
-      } else {
-        return {};
-      }
-    });
-  });
-},
+      disconnectDevice: async () => {
+        const connectedDevice: any = get().connectedDevice;
+        if (connectedDevice) {
+          await disconnectDevice(connectedDevice);
+          set({ isConnected: false });
+        }
+      },
 
-onDataUpdate: (
-  error: BleError | null,
-  characteristic: Characteristic | null
-) => {
-  const data = extractData(error, characteristic);
-  if (data) {
-    set((state: any) => {
-      const newDataPoints = [...state.dataPoints, ...data].slice(-800);
-      return {
-        dataPoints: newDataPoints
-      };
-    });
-    console.error("Data updated", data);
-  }
-},
+      scanForPeripherals: () => {
+        scanForPeripherals((device) => {
+          const isDuplicteDevice = (devices: Device[], nextDevice: Device) => {
+            return devices.findIndex((device) => nextDevice.id === device.id) > -1;
+          };
+          set((state: any) => {
+            if (!isDuplicteDevice(state.allDevices, device)) {
+              return { allDevices: [...state.allDevices, device] };
+            } else {
+              return {};
+            }
+          });
+        });
+      },
 
-withDevice: (callback: (device: Device) => void) => {
-  const device = get().connectedDevice;
-  if (device) {
-    callback(device);
-  } else {
-    console.error("No device connected");
-  }
-},
+      onDataUpdate: (
+        error: BleError | null,
+        characteristic: Characteristic | null
+      ) => {
+        const data = extractData(error, characteristic);
+        if (data) {
+          set((state: any) => {
+            const newDataPoints = [...state.dataPoints, ...data].slice(-800);
+            return {
+              dataPoints: newDataPoints
+            };
+          });
+          console.error("Data updated", data);
+        }
+      },
 
-tareScale: async () => {
-  get().withDevice(async (device: Device) => {
-    await tareScale(device);
-  });
-},
+      withDevice: (callback: (device: Device) => void) => {
+        const device = get().connectedDevice;
+        if (device) {
+          callback(device);
+        } else {
+          console.error("No device connected");
+        }
+      },
 
-startMeasurement: async () => {
-  get().withDevice(async (device: Device) => {
-    set({ dataPoints: [] });
-    await startMeasurementCommand(device);
-    get().startStreamingData(device);
-  });
-},
+      tareScale: async () => {
+        get().withDevice(async (device: Device) => {
+          await tareScale(device);
+        });
+      },
 
-stopMeasurement: async () => {
-  get().withDevice(async (device: Device) => {
-    await stopMeasurementCommand(device);
-    get().subscription?.remove();
-    set({ subscription: null });
-  });
-},
+      startMeasurement: async () => {
+        get().withDevice(async (device: Device) => {
+          set({ dataPoints: [] });
+          await startMeasurementCommand(device);
+          get().startStreamingData(device);
+        });
+      },
 
-shutdown: async () => {
-  get().withDevice(async (device: Device) => {
-    await shutdown(device);
-    await get().disconnectDevice();
-  });
-},
+      stopMeasurement: async () => {
+        get().withDevice(async (device: Device) => {
+          await stopMeasurementCommand(device);
+          get().subscription?.remove();
+          set({ subscription: null });
+        });
+      },
 
-sampleBatteryVoltage: async () => {
-  get().withDevice(async (device: Device) => {
-    console.error("Sampling battery voltage");
-    await sampleBatteryVoltage(device);
-  });
-},
+      shutdown: async () => {
+        get().withDevice(async (device: Device) => {
+          await shutdown(device);
+          await get().disconnectDevice();
+        });
+      },
 
-startStreamingData: () => {
-  get().withDevice((device: Device) => {
-    const subscription = startStreamingData(device, get().onDataUpdate);
-    set({ subscription: subscription });
-  });
-},
-*/
+      sampleBatteryVoltage: async () => {
+        get().withDevice(async (device: Device) => {
+          console.error("Sampling battery voltage");
+          await sampleBatteryVoltage(device);
+        });
+      },
+
+      startStreamingData: () => {
+        get().withDevice((device: Device) => {
+          const subscription = startStreamingData(device, get().onDataUpdate);
+          set({ subscription: subscription });
+        });
+      },
+
     }),
     {
       name: "store",

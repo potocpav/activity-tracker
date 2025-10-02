@@ -29,7 +29,7 @@ const BleStatusBar: React.FC<BleStatusBarProps> = ({ navigation }) => {
 
   const openModal = async () => {
     scanForDevices();
-    navigation.navigate('ConnectDevice');
+    navigation.navigate("BleConnectionModal");
   };
 
   return (

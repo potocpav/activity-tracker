@@ -1,7 +1,7 @@
-// import {
-//     Device,
-//     Subscription,
-//   } from "react-native-ble-plx";
+import {
+    Device,
+    Subscription,
+  } from "react-native-ble-plx";
 
 
 export type Unit = 
@@ -148,13 +148,10 @@ export type ActivityType = {
   stats: Stat[];
   calendars: CalendarProps[];
   graphs: GraphProps[];
+  special: SpecialActivity | null;
 };
 
 export type SpecialActivity = "ble_scale";
-
-export const specialActivities : SpecialActivity[] = [
-  "ble_scale"
-];
 
 export type WeekStart = "sunday" | "monday";
 
@@ -181,10 +178,11 @@ export const hintDependencyChains : HintType[][] = [
 export const allHints : HintType[] = [...new Set(hintDependencyChains.flat(Infinity))] as HintType[];
 
 export type State = {
-  // allDevices: Device[];
-  // isConnected: boolean;
-  // connectedDevice: Device | null;
-  // subscription: Subscription | null;
+  // Device related state
+  allDevices: Device[];
+  isConnected: boolean;
+  connectedDevice: Device | null;
+  subscription: Subscription | null;
 
   dataPoints: { w: number, t: number }[];
 
@@ -197,7 +195,8 @@ export type State = {
   showHints: boolean;
 
   experimentalFeatures: boolean;
-/*
+
+  // Bluetooth device related state
   requestPermissions: any;
   connectToDevice: any;
   disconnectDevice: any;
@@ -211,7 +210,6 @@ export type State = {
   sampleBatteryVoltage: any;
   startStreamingData: any;
   updateActivityDataPoint: any;
-  */
 };
 
 

@@ -11,6 +11,7 @@ import { useTheme } from 'react-native-paper';
 import { Device } from "react-native-ble-plx";
 import useStore from "../Model/Store";
 import { getTheme } from "../Model/Theme";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 
 type BleDeviceModalProps = {
@@ -36,7 +37,7 @@ const BleDeviceModal: FC<BleDeviceModalProps> = ({ navigation }) => {
   );
 
   return (
-    <View style={[modalStyle.modalContent, { backgroundColor: theme.colors.surface }]}>
+    <SafeAreaView style={[modalStyle.modalContent, { backgroundColor: theme.colors.surface }]} edges={["left", "right", "bottom"]}>
       <Text style={[modalStyle.modalTitleText, { color: theme.colors.onSurface }]}>
         Tap on a device to connect
       </Text>
@@ -52,7 +53,7 @@ const BleDeviceModal: FC<BleDeviceModalProps> = ({ navigation }) => {
       <TouchableOpacity onPress={navigation.goBack} style={[modalStyle.closeButton, { backgroundColor: theme.colors.secondary }]}>
         <Text style={[modalStyle.closeButtonText, { color: theme.colors.onSecondary }]}>Cancel</Text>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 };
 

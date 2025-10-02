@@ -25,6 +25,7 @@ import { getTheme, getThemeVariant } from "./Model/Theme";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import EditStat from "./Screens/EditStat";
 import { enGB, registerTranslation } from 'react-native-paper-dates'
+import BleConnectionModal from "./Components/BleConnectionModal";
 
 const { LightTheme, DarkTheme: PaperDarkTheme } = adaptNavigationTheme({
   reactNavigationLight: DefaultTheme,
@@ -160,7 +161,12 @@ const SubApp = () => {
               <Stack.Screen
                 name="BleScaleInput"
                 component={BleScaleInput}
-                options={{ title: "Weight Measurement" }}
+                options={{ title: "Progressor" }}
+              />
+              <Stack.Screen
+                name="BleConnectionModal"
+                component={BleConnectionModal}
+                options={{ title: "Connect Device" }}
               />
               <Stack.Screen
                 name="EditActivity"

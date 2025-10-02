@@ -98,7 +98,7 @@ const disconnectDevice = async (device: Device) => {
   if (isConnected) {
     console.error("Device is still connected.");
   } else {
-    console.error("Device is disconnected.");
+    console.warn("Device is disconnected.");
   }
 };
 

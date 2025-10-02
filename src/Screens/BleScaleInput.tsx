@@ -11,6 +11,7 @@ import useStore from "../Model/Store";
 import { CartesianChart, Line } from "victory-native";
 import { matchFont } from "@shopify/react-native-skia";
 import { getTheme } from "../Model/Theme";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const fontFamily = Platform.select({ default: "sans-serif" });
 const font = matchFont({ fontFamily: fontFamily });
@@ -34,7 +35,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ navigation }) => {
 
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.surfaceVariant }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surfaceVariant }]}  edges={["left", "right", "bottom"]}>
       <StatusBar navigation={navigation} />
 
       {isConnected ? (
@@ -133,7 +134,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ navigation }) => {
           </Text>
         </View>
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 
