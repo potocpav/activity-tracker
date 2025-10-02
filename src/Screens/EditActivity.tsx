@@ -6,11 +6,12 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
-import { Dialog, Portal, SegmentedButtons, MD3Theme } from 'react-native-paper';
-import { ActivityType, SetTag, Tag, SubUnit, Unit } from "../Model/StoreTypes";
+import { Dialog, Portal, SegmentedButtons, MD3Theme, Menu } from 'react-native-paper';
+import { ActivityType, SetTag, Tag, SubUnit, Unit, SpecialActivity } from "../Model/StoreTypes";
 import { TextInput, Button, Chip } from "react-native-paper";
 import useStore from "../Model/Store";
 import AntDesign from '@expo/vector-icons/AntDesign';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import ColorPicker from '../Components/ColorPicker';
 import { getTheme, getThemePalette, getThemeVariant } from "../Model/Theme";
@@ -42,6 +43,25 @@ const ColorButton = ({ color, onPress }: { color: number, onPress: () => void })
       <View style={{ width: 35, height: 35, borderRadius: 12, backgroundColor: theme.colors.primary, borderWidth: 1, borderColor: theme.colors.onBackground }} />
     </Button>
   );
+};
+
+const LockFrame = ({ children, locked }: { children: React.ReactNode, locked: boolean }) => {
+  const theme = getTheme();
+  if (locked) {
+    return (
+      <View style={{ position: 'relative' }}>
+        <View style={{ position: 'absolute', top: -13, right: 20, paddingHorizontal: 8, backgroundColor: theme.colors.background, zIndex: 1 }}>
+          <MaterialCommunityIcons name="lock" size={24} color={theme.colors.outline} />
+        </View>
+        <View style={{ borderWidth: 1, borderColor: theme.colors.onSurfaceVariant, borderRadius: 8, paddingHorizontal: 8, paddingTop: 10, padding: 10, gap: 10 }}>
+          {children}
+        </View>
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: theme.colors.background, opacity: 0.5, borderRadius: 8, padding: 3 }} />
+      </View>
+    )
+  } else {
+    return children;
+  }
 };
 
 const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
@@ -170,6 +190,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
     setMultiUnitInputInternal(computeMultiUnitInputErrors(vals));
   };
 
+  const experimentalFeatures = useStore((state: any) => state.experimentalFeatures);
   const [tagDialogVisible, setTagDialogVisible] = useState(false);
   const [tagState, setTagState] = useState<SetTag[]>(activity?.tags.map((t: Tag) => ({ oldTagName: t.name, ...t })) ?? []);
   const [tagDialogName, setTagDialogName] = useState("");
@@ -185,6 +206,16 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   const [tagColorDialogVisible, setTagColorDialogVisible] = useState(false);
 
   const [colorDialogVisible, setColorDialogVisible] = useState(false);
+
+  const [special, setSpecial] = useState<SpecialActivity | null>(activity?.special ?? null);
+  const [specialMenuVisible, setSpecialMenuVisible] = useState(false);
+
+  const specialIcon = (special: SpecialActivity) => {
+    switch (special) {
+      case "ble_scale":
+        return "bluetooth";
+    }
+  };
 
   const saveActivity = () => {
     let newUnit: Unit;
@@ -225,6 +256,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
         stats: defaultStats(defaultUnit),
         calendars: [defaultCalendar(defaultUnit)],
         graphs: [defaultGraph(defaultUnit)],
+        special: special,
       };
     } else {
       updatedActivity = {
@@ -232,6 +264,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
         name: activityNameInput,
         description: activityDescriptionInput,
         color: selectedColor,
+        special: special,
         // don't update unit, it will be updated in the setUnit call
         // don't update tags, they will be updated in the setTags call
       };
@@ -334,11 +367,16 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       headerTintColor: "#ffffff",
       headerRight: () => (
         <>
+          {experimentalFeatures && (
+            <Button compact={true} onPress={() => setSpecialMenuVisible(true)}>
+              <MaterialCommunityIcons name={special ? specialIcon(special) as any : "star-outline"} size={24} color={"#ffffff"} />
+            </Button>
+          )}
           <Button compact={true} onPress={saveActivityWrapper}><AntDesign name="check" size={24} color={"#ffffff"} /></Button>
         </>
       ),
     });
-  }, [activityName, navigation, theme, activity, activityNameInput, activityDescriptionInput, singleUnitInput, selectedColor, tagState, multiUnitInput, unitMode]);
+  }, [activityName, navigation, theme, activity, activityNameInput, activityDescriptionInput, singleUnitInput, selectedColor, tagState, multiUnitInput, unitMode, special]);
 
   const onUpdateTag = (action: "delete" | "update") => {
     let hasError = false;
@@ -379,13 +417,23 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
     setTagColorDialogVisible(false);
   };
 
+  const setSpecialActivity = (special: SpecialActivity | null) => {
+    setSpecial(special);
+    setUnitMode('multiple');
+    // TODO: allow pounds
+    setMultiUnitInput([
+      { name: "Weight", unit: { type: "weight", unit: "kg" }, unitRef: null, nameRef: null },
+      { name: "Time", unit: { type: "time", unit: "seconds" }, unitRef: null, nameRef: null }
+    ]);
+  }
+
   const editNoValue = () => (
     <>
       <Text style={{ color: theme.colors.onSurfaceVariant }}>Value-less activities are useful to mark that an activity was done, without tracking any performance data.</Text>
     </>
   );
 
-  
+
   const editSingleValue = () => (
     <InputWrapper error={showErrors ? singleUnitInputError : null} ref={singleUnitInputRef}>
       <UnitEditor unit={singleUnitInput} onChange={(unit: SubUnit | null) => {
@@ -393,7 +441,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       }} />
     </InputWrapper>
   );
-  
+
 
   const editMultipleValues = () => (
     <>
@@ -451,6 +499,23 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   return (
     <View style={{ flex: 1 }}>
       <SystemBars style={"light"} />
+      <View style={{ position: 'absolute', top: 10, right: 0 }}>
+        <Menu
+          visible={specialMenuVisible}
+          onDismiss={() => setSpecialMenuVisible(false)}
+          anchor={
+            <View style={{ width: 1, height: 1 }} />
+          }
+        >
+          <Menu.Item
+            onPress={() => { setSpecialActivity(null), setSpecialMenuVisible(false) }}
+            title="Normal" />
+          <Menu.Item
+            onPress={() => { setSpecialActivity("ble_scale"), setSpecialMenuVisible(false) }}
+            title={"BLE Scale"}
+            trailingIcon={specialIcon("ble_scale") as any} />
+        </Menu>
+      </View>
       <Hint hint="edit_activity_introduction" />
       <ScrollView>
         <SafeAreaView edges={["left", "right", "bottom"]}>
@@ -531,7 +596,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
               </View>
             </View>
 
-            <View>
+            <LockFrame locked={special === "ble_scale"}>
               <Text style={styles.header}>Measurement:</Text>
               <InputWrapper error={showErrors ? unitModeError : null} ref={unitModeInputRef}>
                 <SegmentedButtons
@@ -556,10 +621,10 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
                   ]}
                 />
               </InputWrapper>
-            </View>
-            <View>
-              {unitMode === null ? null : unitMode === 'no_value' ? editNoValue() : unitMode === 'single' ? editSingleValue() : editMultipleValues()}
-            </View>
+              <View>
+                {unitMode === null ? null : unitMode === 'no_value' ? editNoValue() : unitMode === 'single' ? editSingleValue() : editMultipleValues()}
+              </View>
+            </LockFrame>
             <Hint hint="activity_value_help" inline />
           </View>
         </SafeAreaView>

@@ -3,7 +3,7 @@ import { StyleSheet, ScrollView, ToastAndroid, Alert, View, Linking } from 'reac
 import { List, Divider, Switch } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import useStore, { partialize } from '../Model/Store';
-import { version, migrate } from '../Model/StoreMigrations';
+import { version, migrate } from '../Model/Migrations';
 import { File, Paths } from 'expo-file-system/next';
 import * as DocumentPicker from 'expo-document-picker';
 import * as Sharing from 'expo-sharing';
@@ -25,6 +25,8 @@ const Settings = () => {
   const weekStart = useStore((state: any) => state.weekStart);
   const setWeekStart = useStore((state: any) => state.setWeekStart);
   const state = useStore((state: any) => state);
+  const experimentalFeatures = useStore((state: any) => state.experimentalFeatures);
+  const setExperimentalFeatures = useStore((state: any) => state.setExperimentalFeatures);
   const setState = useStore((state: any) => state.setState);
   const setActivities = useStore((state: any) => state.setActivities);
   const activeHints = useStore((state: any) => state.activeHints);
@@ -152,6 +154,7 @@ const Settings = () => {
             stats: defaultStats(unit),
             calendars: [defaultCalendar(unit)],
             graphs: [defaultGraph(unit, "week")],
+            special: null,
           };
           activities.push(activity);
         }
@@ -196,6 +199,18 @@ const Settings = () => {
               description={weekStart == 'sunday' ? 'Sunday' : 'Monday'}
               onPress={() => setWeekStart(weekStart == 'sunday' ? 'monday' : 'sunday')}
               left={(props) => <List.Icon {...props} icon="calendar" />}
+            />
+            <List.Item
+              title="Bluetooth scale support"
+              description="This feature is experimental and may not work as expected."
+              onPress={() => setExperimentalFeatures(!experimentalFeatures)}
+              right={() => (
+                <Switch
+                  value={experimentalFeatures}
+                  onValueChange={() => setExperimentalFeatures(!experimentalFeatures)}
+                />
+              )}
+              left={(props) => <List.Icon {...props} icon="bluetooth" />}
             />
           </List.Section>
 

@@ -12,9 +12,11 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@hangtime/grip-connect-react-native": "^0.9.0",
     "@react-native-async-storage/async-storage": "2.1.2",
     "@react-navigation/native": "^7.1.14",
     "@react-navigation/native-stack": "^7.3.21",
+    "@shopify/flash-list": "1.7.6",
     "@shopify/react-native-skia": "v2.0.0-next.4",
     "expo": "^53.0.22",
     "expo-dev-client": "~5.2.4",
@@ -23,6 +25,7 @@
     "expo-file-system": "~18.1.11",
     "expo-localization": "~16.1.6",
     "expo-sharing": "~13.1.5",
+    "expo-sqlite": "~15.2.14",
     "react": "19.0.0",
     "react-native": "0.79.5",
     "react-native-draggable-flatlist": "^4.0.3",
@@ -34,11 +37,9 @@
     "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
-    "victory-native": "^41.17.4",
-    "zustand": "^5.0.6",
     "react-native-svg": "15.11.2",
-    "@shopify/flash-list": "1.7.6",
-    "expo-sqlite": "~15.2.14"
+    "victory-native": "^41.17.4",
+    "zustand": "^5.0.6"
   },
   "devDependencies": {
     "@babel/core": "^7.27.7",

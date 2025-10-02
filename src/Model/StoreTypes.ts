@@ -150,6 +150,12 @@ export type ActivityType = {
   graphs: GraphProps[];
 };
 
+export type SpecialActivity = "ble_scale";
+
+export const specialActivities : SpecialActivity[] = [
+  "ble_scale"
+];
+
 export type WeekStart = "sunday" | "monday";
 
 export type HintType = 
@@ -189,6 +195,8 @@ export type State = {
 
   activeHints: HintType[];
   showHints: boolean;
+
+  experimentalFeatures: boolean;
 /*
   requestPermissions: any;
   connectToDevice: any;

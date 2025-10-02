@@ -5,13 +5,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import useStore from "./Store";
-import { getTheme } from "./Theme";
-type StatusBarProps = {
+import useStore from "../Model/Store";
+import { getTheme } from "../Model/Theme";
+type BleStatusBarProps = {
   navigation: any;
 };
 
-const StatusBar: React.FC<StatusBarProps> = ({ navigation }) => {
+const BleStatusBar: React.FC<BleStatusBarProps> = ({ navigation }) => {
   const theme = getTheme();
   const connectedDevice = useStore((state: any) => state.connectedDevice);
   const isConnected = useStore((state: any) => state.isConnected);
@@ -92,4 +92,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default StatusBar; 
+export default BleStatusBar; 

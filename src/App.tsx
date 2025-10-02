@@ -10,6 +10,7 @@ import useStore from "./Model/Store";
 import Activity from "./Screens/Activity";
 import Settings from "./Screens/Settings";
 import EditDataPoint from "./Screens/EditDataPoint";
+import BleScaleInput from "./Screens/BleScaleInput";
 import EditActivity from "./Screens/EditActivity";
 import ThemeSelectionDialog from "./Screens/ThemeSelectionDialog";
 import {
@@ -155,6 +156,11 @@ const SubApp = () => {
                 name="EditDataPoint"
                 component={EditDataPoint}
                 options={{ title: "Edit Data Point" }}
+              />
+              <Stack.Screen
+                name="BleScaleInput"
+                component={BleScaleInput}
+                options={{ title: "Weight Measurement" }}
               />
               <Stack.Screen
                 name="EditActivity"

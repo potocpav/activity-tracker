@@ -7,7 +7,7 @@ import {
   allHints
 } from "./StoreTypes";
 
-export const version = 21;
+export const version = 23;
 
 export const migrate = (persisted: any, version: number) => {
   if (version < 6) {
@@ -88,6 +88,14 @@ export const migrate = (persisted: any, version: number) => {
   if (version < 21) {
     persisted.activities.forEach((activity: ActivityType) => {
       activity.graphs = activity.graphs.map((graph: GraphProps) => ({ ...graph, graphType: graph.graphType as any === "line-mean" ? "box" : graph.graphType }));
+    });
+  }
+  if (version < 22) {
+    persisted.experimentalFeatures = false;
+  }
+  if (version < 23) {
+    persisted.activities.forEach((activity: ActivityType) => {
+      activity.special = null;
     });
   }
   return persisted

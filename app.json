@@ -23,7 +23,12 @@
         "foregroundImage": "./assets/icon-fg.png",
         "backgroundColor": "#7166ff"
       },
-      "package": "com.pavelpotocek.activitytracker"
+      "package": "com.pavelpotocek.activitytracker",
+      "permissions": [
+        "android.permission.BLUETOOTH",
+        "android.permission.BLUETOOTH_ADMIN",
+        "android.permission.BLUETOOTH_CONNECT"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -38,6 +43,14 @@
         "./WithAbiFilters",
         {
           "abiFilters": ["arm64-v8a", "armeabi-v7a"]
+        }
+      ],
+      [
+        "react-native-ble-plx",
+        {
+          "isBackgroundEnabled": true,
+          "modes": ["peripheral","central"],
+          "bluetoothAlwaysPermission": "Allow $(PRODUCT_NAME) to connect to bluetooth devices"
         }
       ]
     ]

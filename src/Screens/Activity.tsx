@@ -161,7 +161,13 @@ const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ 
           <Button compact={true}
             onPress={() => {
               dismissHint("add_data_point");
-              navigation.navigate("EditDataPoint", { activityName, newDataPoint: true });
+              switch (activity.special) {
+                case "ble_scale":
+                  navigation.navigate("BleScaleInput", { activityName });
+                  break;
+                default:
+                  navigation.navigate("EditDataPoint", { activityName, newDataPoint: true });
+              }
             }}>
             <AntDesign name="plus" size={24} color={"#ffffff"} />
           </Button>
@@ -174,7 +180,7 @@ const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ 
         </View>
       ),
     });
-  }, [navigation, theme, menuVisible]);
+  }, [navigation, theme, menuVisible, activity]);
 
   return (
     <View style={{flex: 1}}>

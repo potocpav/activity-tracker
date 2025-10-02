@@ -41,7 +41,7 @@ import { areUnitsEqual } from "./Unit";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { findZeroSlice, dayCmp, uniqueName } from "./Activity";
-import { version, migrate } from "./StoreMigrations";
+import { version, migrate } from "./Migrations";
 
 // Save only the state that is needed to be saved
 export const partialize = (state: State) => ({
@@ -51,12 +51,14 @@ export const partialize = (state: State) => ({
   weekStart: state.weekStart,
   activeHints: state.activeHints,
   showHints: state.showHints,
+  experimentalFeatures: state.experimentalFeatures,
 });
 
 const useStore = create<State>()(
   persist(
     (set, get) => ({
       // Bluetooth device related state
+      experimentalFeatures: false,
       allDevices: [],
       isConnected: false,
       connectedDevice: null,
@@ -72,6 +74,10 @@ const useStore = create<State>()(
       weekStart: "monday",
       activeHints: allHints,
       showHints: true,
+
+      setExperimentalFeatures: (experimentalFeatures: boolean) => {
+        set({ experimentalFeatures: experimentalFeatures });
+      },
 
       dismissHint: (hint: HintType) => {
         set((state: any) => {

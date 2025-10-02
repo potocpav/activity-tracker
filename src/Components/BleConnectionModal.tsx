@@ -9,15 +9,15 @@ import {
 } from "react-native";
 import { useTheme } from 'react-native-paper';
 import { Device } from "react-native-ble-plx";
-import useStore from "./Store";
-import { getTheme } from "./Theme";
+import useStore from "../Model/Store";
+import { getTheme } from "../Model/Theme";
 
 
-type DeviceModalProps = {
+type BleDeviceModalProps = {
   navigation: any;
 };
 
-const DeviceModal: FC<DeviceModalProps> = ({ navigation }) => {
+const BleDeviceModal: FC<BleDeviceModalProps> = ({ navigation }) => {
   const theme = getTheme();
   const allDevices = useStore((state: any) => state.allDevices);
   const connectToDevice = useStore((state: any) => state.connectToDevice);
@@ -131,4 +131,4 @@ const modalStyle = StyleSheet.create({
   },
 });
 
-export default DeviceModal;
+export default BleDeviceModal;
