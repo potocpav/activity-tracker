@@ -11,9 +11,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { getTheme, getThemePalette, getThemeVariant } from "../Model/Theme";
 import { ActivityType, DataPoint, dateToDateList, timeToDateList } from "../Model/StoreTypes";
 import { Button } from "react-native-paper";
-import { CartesianChart, Line } from "victory-native";
+import { CartesianChart, getTransformComponents, Line, setScale, setTranslate, useChartTransformState } from "victory-native";
 import { matchFont, Points, vec } from "@shopify/react-native-skia";
-import { useSharedValue } from "react-native-reanimated";
+import { useAnimatedReaction, useSharedValue, withTiming } from "react-native-reanimated";
 import { renderLongFormValue, renderShortFormValue } from "../Model/Unit";
 import TagSelector from "../Components/TagSelector";
 
@@ -62,6 +62,11 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   const weightUnit = activity.unit.values.find((u: any) => u.name === "Weight")?.unit;
   const timeUnit = activity.unit.values.find((u: any) => u.name === "Time")?.unit;
 
+  const transformState = useChartTransformState({
+    scaleX: 1.0, // Initial X-axis scale
+    scaleY: 1.0, // Initial Y-axis scale
+  }).state;
+
   const [scaleInput, setScaleInput] = useState<ScaleInput>({
     dataPoints: [],
     currentPull: { t0: 0, wSum: 0, wCount: 0, wMax: 0, wMin: 0, active: false },
@@ -77,8 +82,10 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
 
 
   const minChartRange = 1;
-  const minPullWeight = 0.5;
-  const minPullDuration = 0.2;
+  const minPullWeight = 10;
+  const minPullDuration = 3.0;
+  const showAfterPullWeight = 0.5;
+  const showAfterDuration = 0.1;
   const thresholdWeight = 0.6;
 
   const chartRange = Math.max(minChartRange, scaleInput.dataPoints.reduce((max, dp) => Math.max(max, dp.w), 0));
@@ -87,7 +94,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
     if (scaleInput.currentPull.active) {
       const w = scaleInput.currentPull.wSum / scaleInput.currentPull.wCount;
       const t = scaleInput.dataPoints[scaleInput.dataPoints.length - 1].t - scaleInput.currentPull.t0;
-      if (w > minPullWeight && t > minPullDuration) {
+      if (w > showAfterPullWeight && t > showAfterDuration) {
         return { pullWeight: w, pullT0: scaleInput.currentPull.t0, pullTime: t };
       } else {
         return { pullWeight: 0, pullT0: 0, pullTime: 0 };
@@ -193,6 +200,40 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
     });
   };
 
+  const kx = useSharedValue(1);
+  const ky = useSharedValue(1);
+  const tx = useSharedValue(0);
+  const ty = useSharedValue(0);
+
+  // enforce limits when panning
+  useAnimatedReaction(
+    () => {
+      return transformState.panActive.value || transformState.zoomActive.value;
+    },
+    (cv, pv) => {
+      if (!cv && pv) {
+        const vals = getTransformComponents(transformState.matrix.value);
+        kx.value = vals.scaleX;
+        tx.value = vals.translateX;
+
+        if (tx.value < 0) {
+          tx.value = withTiming(0);
+        }
+      }
+    },
+  );
+
+
+  useAnimatedReaction(
+    () => {
+      return { kx: kx.value, ky: ky.value, tx: tx.value, ty: ty.value };
+    },
+    ({ kx, ky, tx, ty }) => {
+      const m = setTranslate(transformState.matrix.value, tx, ty);
+      transformState.matrix.value = setScale(m, kx, ky);
+    },
+  );
+
   React.useEffect(() => {
     navigation.setOptions({
       headerStyle: themeVariant == 'light' ? { backgroundColor: theme.colors.primary } : undefined,
@@ -291,6 +332,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                 data={scaleInput.dataPoints}
                 xKey="t"
                 yKeys={["w"]}
+                transformState={transformState}
                 frame={{
                   lineWidth: 1,
                   lineColor: theme.colors.outline,
