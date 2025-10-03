@@ -1,20 +1,19 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   Text,
-  TouchableOpacity,
-  View,
   Platform,
+  View,
+  TouchableOpacity,
 } from "react-native";
 import useStore from "../Model/Store";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { getTheme, getThemeVariant } from "../Model/Theme";
+import { ActivityType, DataPoint, dateToDateList, timeToDateList } from "../Model/StoreTypes";
+import { Button } from "react-native-paper";
 import { CartesianChart, Line } from "victory-native";
 import { matchFont, Points, vec } from "@shopify/react-native-skia";
-import { getTheme, getThemeVariant } from "../Model/Theme";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { ActivityType, ScaleInput } from "../Model/StoreTypes";
-import { Button } from "react-native-paper";
-import AntDesign from '@expo/vector-icons/AntDesign';
-import { disconnectDevice, requestPermissions, scanForPeripherals } from "../Model/Ble";
+import { useSharedValue } from "react-native-reanimated";
 
 const fontFamily = Platform.select({ default: "sans-serif" });
 const font = matchFont({ fontFamily: fontFamily });
@@ -25,40 +24,29 @@ type BleScaleInputProps = {
 };
 
 
+type ScaleInput = {
+  dataPoints: { w: number, t: number }[],
+  currentPull: CurrentPull,
+  pastPulls: PastPull[],
+};
 
-// return (
-//   <View style={[styles.statusBar, { backgroundColor: theme.colors.surface, borderBottomColor: theme.colors.outline }]}>
-//     <View style={styles.statusInfo}>
-//       <View style={[styles.statusIndicator, { backgroundColor: isConnected ? theme.colors.primary : theme.colors.error }]} />
-//       <Text style={[styles.statusText, { color: theme.colors.onSurface }]}>
-//         {isConnected ? `Connected: ${connectedDevice.name}` : 'Disconnected'}
-//       </Text>
-//     </View>
-//     <TouchableOpacity
-//       onPress={isConnected ? disconnectDevice : openModal}
-//       style={
-//         [styles.statusButton,
-//         { backgroundColor: isConnected ? theme.colors.error : theme.colors.primary }
-//         ]}
-//     >
-//       <Text style={[styles.statusButtonText, { color: isConnected ? theme.colors.onError : theme.colors.onPrimary }]}>
-//         {isConnected ? 'Disconnect' : 'Connect'}
-//       </Text>
-//     </TouchableOpacity>
-//   </View>
-// );
+type ScaleDataPoint = { w: number, t: number };
+
+type CurrentPull = { t0: number, wSum: number, wCount: number, wMax: number, wMin: number, active: boolean };
+
+type PastPull = { t0: number, t1: number, wAvg: number };
 
 
 const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   const { activityName } = route.params;
   const activities = useStore((state: any) => state.activities);
   const activity = activities.find((a: ActivityType) => a.name === activityName);
+  const appendActivityDataPoint = useStore((state: any) => state.appendActivityDataPoint);
   const theme = getTheme(activity.color);
   const themeVariant = getThemeVariant();
+  const today = dateToDateList(new Date());
 
   const isConnected = useStore((state: any) => state.isConnected);
-  const scaleInput: ScaleInput = useStore((state: any) => state.scaleInput);
-  const pushDataPoints = useStore((state: any) => state.pushDataPoints);
   const startMeasurement = useStore((state: any) => state.startMeasurement);
   const stopMeasurement = useStore((state: any) => state.stopMeasurement);
   const tareScale = useStore((state: any) => state.tareScale);
@@ -68,8 +56,15 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   const scanForPeripherals = useStore((state: any) => state.scanForPeripherals);
   const disconnectDevice = useStore((state: any) => state.disconnectDevice);
 
-  const weight = scaleInput.dataPoints[scaleInput.dataPoints.length - 1]?.w;
-  const time = scaleInput.dataPoints[scaleInput.dataPoints.length - 1]?.t;
+  const [scaleInput, setScaleInput] = useState<ScaleInput>({
+    dataPoints: [],
+    currentPull: { t0: 0, wSum: 0, wCount: 0, wMax: 0, wMin: 0, active: false },
+    pastPulls: [],
+  });
+  const [newDataPoint, setNewDataPoint] = useState<DataPoint | null>(null);
+
+  const weight = NaN; // scaleInput.dataPoints[scaleInput.dataPoints.length - 1]?.w;
+  const time = NaN; // scaleInput.dataPoints[scaleInput.dataPoints.length - 1]?.t;
 
   const openConnectionModal = async () => {
     scanForDevices();
@@ -83,8 +78,89 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
     }
   };
 
-  const onDataUpdate: (data: { w: number, t: number }[]) => void = (data: { w: number, t: number }[]) => {
+  const onDataUpdate: (data: ScaleDataPoint[]) => void = (data: ScaleDataPoint[]) => {
     pushDataPoints(data);
+  };
+
+  useEffect(() => {
+    if (newDataPoint) {
+      appendActivityDataPoint(activityName, newDataPoint);
+      setNewDataPoint(null);
+    }
+  }, [newDataPoint]);
+
+
+  const minPullWeight = 0.2;
+  const minPullDuration = 0.2;
+  const thresholdWeight = 0.6;
+
+  const pushDataPoints = (dataPoints: ScaleDataPoint[]) => {
+    setScaleInput((state) => {
+      let pulls = [...state.pastPulls];
+      let pull: CurrentPull = state.currentPull;
+      
+      const wSum = dataPoints.reduce((sum, dp) => sum + dp.w, 0);
+      const wCount = dataPoints.length;
+      const wMin = Math.min(...dataPoints.map((dp) => dp.w));
+      const wMax = Math.max(...dataPoints.map((dp) => dp.w));
+
+      if (wMax * thresholdWeight > pull.wMin) {
+        // pull forward t0
+        pull.wCount = wCount;
+        pull.wSum = wSum;
+        pull.wMin = wMin;
+        pull.wMax = wMax;
+        for (let i = state.dataPoints.length - 1; i >= 0 && state.dataPoints[i].t > pull.t0; i--) {
+          pull.wCount++;
+          pull.wSum += state.dataPoints[i].w;
+          pull.wMin = Math.min(pull.wMin, state.dataPoints[i].w);
+          pull.wMax = Math.max(pull.wMax, state.dataPoints[i].w);
+          if (state.dataPoints[i].w < wMax * thresholdWeight) {
+            pull.t0 = state.dataPoints[i].t;
+            pull.active = true;
+            break;
+          }
+        }
+      } else if (pull.wCount > 0 && pull.active && wMin < pull.wMax * thresholdWeight) {
+        // end the pull
+        let t1 = NaN;
+        for (let i = 0; i < dataPoints.length; i++) {
+          if (dataPoints[i].w < pull.wMax * thresholdWeight) {
+            t1 = dataPoints[i].t;
+            break;
+          }
+        }
+        const newPull = {
+          t0: pull.t0,
+          t1: t1,
+          wAvg: pull.wSum / pull.wCount,
+        };
+        if (newPull.wAvg > minPullWeight && newPull.t1 - newPull.t0 > minPullDuration) {
+          // publish the pull
+          pulls.push(newPull);
+          setNewDataPoint({
+            date: today,
+            value: { 
+              Weight: Math.round(newPull.wAvg * 100) / 100, 
+              Time: Math.round((newPull.t1 - newPull.t0) * 100) / 100 
+            },
+          });
+        }
+        pull = { t0: dataPoints[0].t, wSum: 0, wCount: 0, wMax: 0, wMin: 0, active: false };
+      }
+
+      pull.wSum += wSum;
+      pull.wCount += wCount;
+      pull.wMax = Math.max(pull.wMax, wMax);
+      pull.wMin = Math.min(pull.wMin, wMin);
+
+      // TODO: fix how cutting off data points messes up the current pull
+      return { 
+        currentPull: pull, 
+        pastPulls: pulls, 
+        dataPoints: [...state.dataPoints, ...dataPoints].slice(-800),
+      };
+    });
   };
 
   React.useEffect(() => {
@@ -115,7 +191,14 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
           {/* Control Buttons Section */}
           <View style={styles.controlSection}>
             <View style={styles.buttonRow}>
-              <TouchableOpacity onPress={() => startMeasurement(onDataUpdate)} style={[styles.controlButton, { backgroundColor: theme.colors.primary }]}>
+              <TouchableOpacity onPress={() => {
+                setScaleInput({
+                  dataPoints: [],
+                  currentPull: { t0: 0, wSum: 0, wCount: 0, wMin: 0, wMax: 0, active: false },
+                  pastPulls: [],
+                });
+                startMeasurement(onDataUpdate);
+              }} style={[styles.controlButton, { backgroundColor: theme.colors.primary }]}>
                 <Text style={[styles.controlButtonText, { color: theme.colors.onPrimary }]}>Start</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={stopMeasurement} style={[styles.controlButton, { backgroundColor: theme.colors.secondary }]}>
