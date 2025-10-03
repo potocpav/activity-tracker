@@ -8,10 +8,10 @@ import {
 } from "react-native";
 import useStore from "../Model/Store";
 import { CartesianChart, Line } from "victory-native";
-import { matchFont } from "@shopify/react-native-skia";
+import { matchFont, Points, vec } from "@shopify/react-native-skia";
 import { getTheme, getThemeVariant } from "../Model/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ActivityType } from "../Model/StoreTypes";
+import { ActivityType, ScaleInput } from "../Model/StoreTypes";
 import { Button } from "react-native-paper";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { disconnectDevice, requestPermissions, scanForPeripherals } from "../Model/Ble";
@@ -57,7 +57,8 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   const themeVariant = getThemeVariant();
 
   const isConnected = useStore((state: any) => state.isConnected);
-  const dataPoints: { w: number, t: number }[] = useStore((state: any) => state.dataPoints);
+  const scaleInput: ScaleInput = useStore((state: any) => state.scaleInput);
+  const pushDataPoints = useStore((state: any) => state.pushDataPoints);
   const startMeasurement = useStore((state: any) => state.startMeasurement);
   const stopMeasurement = useStore((state: any) => state.stopMeasurement);
   const tareScale = useStore((state: any) => state.tareScale);
@@ -67,9 +68,8 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   const scanForPeripherals = useStore((state: any) => state.scanForPeripherals);
   const disconnectDevice = useStore((state: any) => state.disconnectDevice);
 
-  const weight = dataPoints[dataPoints.length - 1]?.w;
-  const time = dataPoints[dataPoints.length - 1]?.t;
-  const maxWeight = Math.max(...dataPoints.map((point) => point.w));
+  const weight = scaleInput.dataPoints[scaleInput.dataPoints.length - 1]?.w;
+  const time = scaleInput.dataPoints[scaleInput.dataPoints.length - 1]?.t;
 
   const openConnectionModal = async () => {
     scanForDevices();
@@ -81,6 +81,10 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
     if (isPermissionsEnabled) {
       scanForPeripherals();
     }
+  };
+
+  const onDataUpdate: (data: { w: number, t: number }[]) => void = (data: { w: number, t: number }[]) => {
+    pushDataPoints(data);
   };
 
   React.useEffect(() => {
@@ -97,21 +101,21 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
             dark={themeVariant == 'light'}
             labelStyle={{ paddingHorizontal: 8 }}
           >
-              <Text>{isConnected ? 'Disconnect' : 'Connect'}</Text>
+            <Text>{isConnected ? 'Disconnect' : 'Connect'}</Text>
           </Button>
-          </>
+        </>
       ),
     });
   }, [activityName, navigation, theme, activity, isConnected]);
 
   return (
-    <SafeAreaView style={[styles.container]}  edges={["left", "right", "bottom"]}>
+    <SafeAreaView style={[styles.container]} edges={["left", "right", "bottom"]}>
       {isConnected || true ? (
         <>
           {/* Control Buttons Section */}
           <View style={styles.controlSection}>
             <View style={styles.buttonRow}>
-              <TouchableOpacity onPress={startMeasurement} style={[styles.controlButton, { backgroundColor: theme.colors.primary }]}>
+              <TouchableOpacity onPress={() => startMeasurement(onDataUpdate)} style={[styles.controlButton, { backgroundColor: theme.colors.primary }]}>
                 <Text style={[styles.controlButtonText, { color: theme.colors.onPrimary }]}>Start</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={stopMeasurement} style={[styles.controlButton, { backgroundColor: theme.colors.secondary }]}>
@@ -147,17 +151,21 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                 </Text>
               </View>
             </View>
-            <View style={styles.measurementRow}>
+
+            {/* <View style={styles.measurementRow}>
               <View style={styles.measurementColumn}>
                 <Text style={[styles.measurementLabel, { color: theme.colors.onSurface }]}>Max Weight:</Text>
                 <Text style={[styles.measurementValue, { color: theme.colors.onSurface }]}>{maxWeight ? maxWeight.toFixed(1) : '-'}</Text>
-              </View>
+              </View>              
               <View style={styles.measurementColumn}>
+                <Text style={[styles.measurementLabel, { color: theme.colors.onSurface }]}>Pull Start:</Text>
+                <Text style={[styles.measurementValue, { color: theme.colors.onSurface }]}>{pullStart ? pullStart.toFixed(1) : '-'}</Text>
               </View>
-            </View>
+            </View> */}
+
             <View style={{ width: '100%', flex: 1 }}>
               <CartesianChart
-                data={dataPoints}
+                data={scaleInput.dataPoints}
                 xKey="t"
                 yKeys={["w"]}
                 frame={{
@@ -186,17 +194,47 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                   // }
                 ]}
               >
-                {({ points }) => (
-                  //👇 pass a PointsArray to the Line component, as well as options.
-                  <>
-                    <Line
-                      points={points.w}
-                      color={theme.colors.primary}
-                      strokeWidth={2}
-                    />
-                  </>
-                )}
+                {({ points, xScale, yScale }) => {
+                  const currentPull = scaleInput.currentPull.active ? [
+                    vec(scaleInput.currentPull.t0, 0),
+                    vec(scaleInput.currentPull.t0, scaleInput.currentPull.wSum / scaleInput.currentPull.wCount),
+                    vec(scaleInput.dataPoints[scaleInput.dataPoints.length - 1].t, scaleInput.currentPull.wSum / scaleInput.currentPull.wCount),
+                  ] : [];
+                  const pastPulls = scaleInput.pastPulls.map((pull) => [
+                    vec(pull.t0, 0),
+                    vec(pull.t0, pull.wAvg),
+                    vec(pull.t1, pull.wAvg),
+                    vec(pull.t1, 0),
+                  ]);
+                  return (
+                    <>
+                      <Line
+                        points={points.w}
+                        color={theme.colors.primary}
+                        strokeWidth={2}
+                      />
+                      {pastPulls.map((pull) => (
+                        <Points
+                          key={pull[0].x}
+                          points={pull.map((point) => vec(xScale(point.x), yScale(point.y)))}
+                          mode="polygon"
+                          color={ theme.colors.secondary }
+                          style="stroke"
+                          strokeWidth={4}
+                        />
+                      ))}
+                      <Points
+                        points={currentPull.map((point) => vec(xScale(point.x), yScale(point.y)))}
+                        mode="polygon"
+                        color={ theme.colors.secondary }
+                        style="stroke"
+                        strokeWidth={4}
+                      />
+                    </>
+                  );
+                }}
               </CartesianChart>
+
             </View>
           </View>
         </>

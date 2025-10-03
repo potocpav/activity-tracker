@@ -177,14 +177,25 @@ export const hintDependencyChains : HintType[][] = [
 
 export const allHints : HintType[] = [...new Set(hintDependencyChains.flat(Infinity))] as HintType[];
 
+export type ScaleInput = {
+  dataPoints: { w: number, t: number }[],
+  currentPull: CurrentPull,
+  pastPulls: PastPull[],
+};
+
+export type ScaleDataPoint = { w: number, t: number };
+
+export type CurrentPull = { t0: number, wSum: number, wCount: number, wMax: number, active: boolean };
+
+export type PastPull = { t0: number, t1: number, wAvg: number };
+
 export type State = {
   // Device related state
   allDevices: Device[];
   isConnected: boolean;
   connectedDevice: Device | null;
   subscription: Subscription | null;
-
-  dataPoints: { w: number, t: number }[];
+  scaleInput: ScaleInput,
 
   activities: ActivityType[];
   theme: "system" | "light" | "dark";
@@ -201,7 +212,6 @@ export type State = {
   connectToDevice: any;
   disconnectDevice: any;
   scanForPeripherals: any;
-  onDataUpdate: any;
   withDevice: any;
   tareScale: any;
   startMeasurement: any;

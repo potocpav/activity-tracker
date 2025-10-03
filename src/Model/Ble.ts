@@ -180,17 +180,18 @@ const sampleBatteryVoltage = async (device: Device) => {
   await sendCommand(device, 0x6f);
 };
 
-const startStreamingData =
-  (device: Device, onDataUpdate:
-    (error: BleError | null,
-      characteristic: Characteristic | null) => void) => {
-    const subscription = device.monitorCharacteristicForService(
-      DATA_SERVICE_UUID,
-      DATA_CHARACTERISTIC_UUID,
-      onDataUpdate
-    );
-    return subscription;
-  };
+const startStreamingData = (
+  device: Device,
+  onDataUpdate: (
+    error: BleError | null,
+    characteristic: Characteristic | null) => void) => {
+  const subscription = device.monitorCharacteristicForService(
+    DATA_SERVICE_UUID,
+    DATA_CHARACTERISTIC_UUID,
+    onDataUpdate
+  );
+  return subscription;
+};
 
 export {
   requestAndroid31Permissions,

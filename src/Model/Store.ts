@@ -31,7 +31,8 @@ import {
   TagName,
   State,
   HintType,
-  allHints
+  allHints,
+  CurrentPull
 } from "./StoreTypes";
 import { areUnitsEqual } from "./Unit";
 import { persist, createJSONStorage } from "zustand/middleware";
@@ -61,7 +62,11 @@ const useStore = create<State>()(
       subscription: null,
 
       // Measurement related state
-      dataPoints: [],
+      scaleInput: {
+        dataPoints: [],
+        currentPull: { t0: 0, wSum: 0, wCount: 0, wMax: 0, active: false },
+        pastPulls: [],
+      },
 
       // Activities related state
       activities: [],
@@ -70,6 +75,65 @@ const useStore = create<State>()(
       weekStart: "monday",
       activeHints: allHints,
       showHints: true,
+
+      pushDataPoints: (dataPoints: { w: number, t: number }[]) => {
+        set((state: any) => {
+          
+          let pulls = [...state.scaleInput.pastPulls];
+          let pull: CurrentPull = state.scaleInput.currentPull;
+          
+          const wSum = dataPoints.reduce((sum, dp) => sum + dp.w, 0);
+          const wCount = dataPoints.length;
+          const wAvg = wSum / wCount;
+          const wMin = Math.min(...dataPoints.map((dp) => dp.w));
+
+          if (wAvg > pull.wMax) {
+            // pull forward t0
+            const t0 = pull.t0;
+            pull.wCount = wCount;
+            pull.wSum = wSum;
+            for (let i = state.scaleInput.dataPoints.length - 1; i >= 0 && state.scaleInput.dataPoints[i].t > pull.t0; i--) {
+              pull.wCount++;
+              pull.wSum += state.scaleInput.dataPoints[i].w;
+              if (state.scaleInput.dataPoints[i].w < wAvg * 0.5) {
+                pull.t0 = state.scaleInput.dataPoints[i].t;
+                pull.active = true;
+                break;
+              }
+            }
+          } else if (pull.wCount > 0 && pull.active && wMin < pull.wMax * 0.5) {
+            // publish the pull
+            let t1 = NaN;
+            // console.log(dataPoints[0].t, dataPoints[dataPoints.length - 1].t);
+            for (let i = 0; i < dataPoints.length; i++) {
+              if (dataPoints[i].w < pull.wMax * 0.5) {
+                t1 = dataPoints[i].t;
+                break;
+              }
+            }
+            const newPull = {
+              t0: pull.t0,
+              t1: t1,
+              wAvg: pull.wSum / pull.wCount,
+            };
+            console.log("Pull", newPull);
+            pulls.push(newPull);
+            pull = { t0: dataPoints[0].t, wSum: 0, wCount: 0, wMax: 0, active: false };
+          }
+
+          pull.wSum += wSum;
+          pull.wCount += wCount;
+          pull.wMax = Math.max(pull.wMax, wAvg);
+
+          // TODO: fix how cutting off data points messes up wSum and wCount computations
+          const newDataPoints = [...state.scaleInput.dataPoints, ...dataPoints].slice(-800);
+          return { scaleInput: { 
+            currentPull: pull, 
+            pastPulls: pulls, 
+            dataPoints: newDataPoints 
+          } };
+        });
+      },
 
       setExperimentalFeatures: (experimentalFeatures: boolean) => {
         set({ experimentalFeatures: experimentalFeatures });
@@ -600,21 +664,6 @@ const useStore = create<State>()(
         });
       },
 
-      onDataUpdate: (
-        error: BleError | null,
-        characteristic: Characteristic | null
-      ) => {
-        const data = extractData(error, characteristic);
-        if (data) {
-          set((state: any) => {
-            const newDataPoints = [...state.dataPoints, ...data].slice(-800);
-            return {
-              dataPoints: newDataPoints
-            };
-          });
-        }
-      },
-
       withDevice: (callback: (device: Device) => void) => {
         const device = get().connectedDevice;
         if (device) {
@@ -630,11 +679,11 @@ const useStore = create<State>()(
         });
       },
 
-      startMeasurement: async () => {
+      startMeasurement: async (onDataUpdate: (data: { w: number, t: number }[]) => void) => {
         get().withDevice(async (device: Device) => {
-          set({ dataPoints: [] });
+          set({ scaleInput: { currentPull: { t0: 0, wSum: 0, wCount: 0, wMax: 0, active: false }, pastPulls: [], dataPoints: [] } });
           await startMeasurementCommand(device);
-          get().startStreamingData(device);
+          get().startStreamingData(onDataUpdate);
         });
       },
 
@@ -660,9 +709,14 @@ const useStore = create<State>()(
         });
       },
 
-      startStreamingData: () => {
+      startStreamingData: (onDataUpdate: (data: { w: number, t: number }[]) => void) => {
         get().withDevice((device: Device) => {
-          const subscription = startStreamingData(device, get().onDataUpdate);
+          const subscription = startStreamingData(device, (error, characteristic) => {
+            const data = extractData(error, characteristic);
+            if (data) {
+              onDataUpdate(data);
+            }
+          });
           set({ subscription: subscription });
         });
       },

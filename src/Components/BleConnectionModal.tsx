@@ -50,9 +50,6 @@ const BleDeviceModal: FC<BleDeviceModalProps> = ({ navigation }) => {
         renderItem={renderDeviceModalListItem}
         showsVerticalScrollIndicator={false}
       />
-      <TouchableOpacity onPress={navigation.goBack} style={[modalStyle.closeButton, { backgroundColor: theme.colors.secondary }]}>
-        <Text style={[modalStyle.closeButtonText, { color: theme.colors.onSecondary }]}>Cancel</Text>
-      </TouchableOpacity>
     </SafeAreaView>
   );
 };

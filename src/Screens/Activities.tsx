@@ -106,7 +106,13 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
           <Pressable
             onPress={() => {
               dismissHint("quickly_add_point");
-              navigation.navigate('EditDataPoint', { activityName: activity.name, dataPointName: null, newDataPoint: true });
+              switch (activity.special) {
+                case "ble_scale":
+                  navigation.navigate("BleScaleInput", { activityName: activity.name });
+                  break;
+                default:
+                  navigation.navigate('EditDataPoint', { activityName: activity.name, dataPointName: null, newDataPoint: true });
+              }
             }}
             onLongPress={() => {
               if (activity.unit.type === "none") {
