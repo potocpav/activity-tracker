@@ -8,12 +8,14 @@ import {
 } from "react-native";
 import useStore from "../Model/Store";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { getTheme, getThemeVariant } from "../Model/Theme";
+import { getTheme, getThemePalette, getThemeVariant } from "../Model/Theme";
 import { ActivityType, DataPoint, dateToDateList, timeToDateList } from "../Model/StoreTypes";
 import { Button } from "react-native-paper";
 import { CartesianChart, Line } from "victory-native";
 import { matchFont, Points, vec } from "@shopify/react-native-skia";
 import { useSharedValue } from "react-native-reanimated";
+import { renderLongFormValue, renderShortFormValue } from "../Model/Unit";
+import TagSelector from "../Components/TagSelector";
 
 const fontFamily = Platform.select({ default: "sans-serif" });
 const font = matchFont({ fontFamily: fontFamily });
@@ -44,6 +46,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   const appendActivityDataPoint = useStore((state: any) => state.appendActivityDataPoint);
   const theme = getTheme(activity.color);
   const themeVariant = getThemeVariant();
+  const palette = getThemePalette();
   const today = dateToDateList(new Date());
 
   const isConnected = useStore((state: any) => state.isConnected);
@@ -56,6 +59,9 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   const scanForPeripherals = useStore((state: any) => state.scanForPeripherals);
   const disconnectDevice = useStore((state: any) => state.disconnectDevice);
 
+  const weightUnit = activity.unit.values.find((u: any) => u.name === "Weight")?.unit;
+  const timeUnit = activity.unit.values.find((u: any) => u.name === "Time")?.unit;
+
   const [scaleInput, setScaleInput] = useState<ScaleInput>({
     dataPoints: [],
     currentPull: { t0: 0, wSum: 0, wCount: 0, wMax: 0, wMin: 0, active: false },
@@ -63,8 +69,33 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   });
   const [newDataPoint, setNewDataPoint] = useState<DataPoint | null>(null);
 
-  const weight = NaN; // scaleInput.dataPoints[scaleInput.dataPoints.length - 1]?.w;
-  const time = NaN; // scaleInput.dataPoints[scaleInput.dataPoints.length - 1]?.t;
+  const [inputTags, setInputTags] = useState<string[]>([]);
+
+  const toggleInputTag = (tag: string) => {
+    setInputTags(inputTags.includes(tag) ? inputTags.filter((t: string) => t !== tag) : [...inputTags, tag]);
+  }
+
+
+  const minChartRange = 1;
+  const minPullWeight = 0.5;
+  const minPullDuration = 0.2;
+  const thresholdWeight = 0.6;
+
+  const chartRange = Math.max(minChartRange, scaleInput.dataPoints.reduce((max, dp) => Math.max(max, dp.w), 0));
+
+  const {pullWeight, pullT0, pullTime} = (() => {
+    if (scaleInput.currentPull.active) {
+      const w = scaleInput.currentPull.wSum / scaleInput.currentPull.wCount;
+      const t = scaleInput.dataPoints[scaleInput.dataPoints.length - 1].t - scaleInput.currentPull.t0;
+      if (w > minPullWeight && t > minPullDuration) {
+        return { pullWeight: w, pullT0: scaleInput.currentPull.t0, pullTime: t };
+      } else {
+        return { pullWeight: 0, pullT0: 0, pullTime: 0 };
+      }
+    } else {
+      return { pullWeight: 0, pullT0: 0, pullTime: 0 };
+    }
+  })();
 
   const openConnectionModal = async () => {
     scanForDevices();
@@ -83,16 +114,15 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   };
 
   useEffect(() => {
+    // indirection is necessary, because we can't set Zustand state in `setScaleInput` directly
     if (newDataPoint) {
-      appendActivityDataPoint(activityName, newDataPoint);
+      appendActivityDataPoint(activityName, {
+        ...newDataPoint, 
+        ...(inputTags.length > 0 ? { tags: inputTags } : {})
+      });
       setNewDataPoint(null);
     }
   }, [newDataPoint]);
-
-
-  const minPullWeight = 0.2;
-  const minPullDuration = 0.2;
-  const thresholdWeight = 0.6;
 
   const pushDataPoints = (dataPoints: ScaleDataPoint[]) => {
     setScaleInput((state) => {
@@ -210,6 +240,16 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
             </View>
           </View>
 
+          <View style={{paddingHorizontal: 10 }}>
+          <TagSelector
+            activity={activity}
+            inputTags={inputTags}
+            toggleInputTag={toggleInputTag}
+            palette={palette}
+            theme={theme}
+          />
+          </View>
+
           {/* Weight and Time Display Section */}
           <View style={[styles.weightSection, { backgroundColor: theme.colors.surface }]}>
             <View style={styles.measurementRow}>
@@ -220,7 +260,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                   numberOfLines={1}
                   adjustsFontSizeToFit
                 >
-                  {weight ? weight.toFixed(1) : '-'}
+                  {isFinite(pullWeight) ? renderLongFormValue(pullWeight, weightUnit) : '-'}
                 </Text>
               </View>
               <View style={styles.measurementColumn}>
@@ -230,7 +270,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                   numberOfLines={1}
                   adjustsFontSizeToFit
                 >
-                  {time ? time.toFixed(1) : '-'}
+                  {isFinite(pullTime) ? renderShortFormValue(pullTime, timeUnit) : '-'}
                 </Text>
               </View>
             </View>
@@ -267,20 +307,14 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                     tickCount: 10,
                     labelColor: theme.colors.outline,
                     lineColor: theme.colors.outline,
+                    domain: [0, chartRange],
                   },
-                  // {
-                  //   yKeys: ["w"],
-                  //   tickValues: [0, Math.round(maxWeight * 10) / 10],
-                  //   axisSide: "right",
-                  //   font: font,
-                  //   tickCount: 10,
-                  // }
                 ]}
               >
                 {({ points, xScale, yScale }) => {
-                  const currentPull = scaleInput.currentPull.active ? [
-                    vec(scaleInput.currentPull.t0, 0),
-                    vec(scaleInput.currentPull.t0, scaleInput.currentPull.wSum / scaleInput.currentPull.wCount),
+                  const currentPull = pullWeight > 0 ? [
+                    vec(pullT0, 0),
+                    vec(pullT0, pullWeight),
                     vec(scaleInput.dataPoints[scaleInput.dataPoints.length - 1].t, scaleInput.currentPull.wSum / scaleInput.currentPull.wCount),
                   ] : [];
                   const pastPulls = scaleInput.pastPulls.map((pull) => [
@@ -292,9 +326,10 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                   return (
                     <>
                       <Line
+                        key="data"
                         points={points.w}
                         color={theme.colors.primary}
-                        strokeWidth={2}
+                        strokeWidth={1}
                       />
                       {pastPulls.map((pull) => (
                         <Points
@@ -303,15 +338,16 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                           mode="polygon"
                           color={ theme.colors.secondary }
                           style="stroke"
-                          strokeWidth={4}
+                          strokeWidth={2}
                         />
                       ))}
                       <Points
+                        key="currentPull"
                         points={currentPull.map((point) => vec(xScale(point.x), yScale(point.y)))}
                         mode="polygon"
                         color={ theme.colors.secondary }
                         style="stroke"
-                        strokeWidth={4}
+                        strokeWidth={2}
                       />
                     </>
                   );
@@ -337,7 +373,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   controlSection: {
-    marginHorizontal: 20,
     marginTop: 10,
     padding: 0,
   },

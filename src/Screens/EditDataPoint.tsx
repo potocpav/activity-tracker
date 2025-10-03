@@ -22,6 +22,7 @@ import { numberToString, stringToNumber, renderUnit } from "../Model/Unit";
 import { ValueEditor } from "../Components/UnitView";
 import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
 import Hint from "../Components/Hint";
+import TagSelector from "../Components/TagSelector";
 
 type EditDataPointProps = {
   navigation: any;
@@ -277,29 +278,13 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
             />
           </InputWrapper>
 
-
-          {activity.tags.length > 0 && (<View style={{ gap: 10 }}>
-            <Text style={styles.header}>Tags:</Text>
-            <View style={styles.tagsContainer}>
-              {activity.tags.map((tag: any, index: number) => (
-                <Chip
-                  key={tag.name}
-                  onPress={() => { toggleInputTag(tag.name); }}
-                  mode={inputTags.includes(tag.name) ? "flat" : "outlined"}
-                  style={{
-                    marginRight: 8,
-                    marginBottom: 8,
-                    backgroundColor: inputTags.includes(tag.name) ? palette[tag.color] : theme.colors.surface,
-                  }}
-                  textStyle={{
-                    color: inputTags.includes(tag.name) ? theme.colors.surface : palette[tag.color],
-                  }}
-                >
-                  {tag.name}
-                </Chip>
-              ))}
-            </View>
-          </View>)}
+          <TagSelector
+            activity={activity}
+            inputTags={inputTags}
+            toggleInputTag={toggleInputTag}
+            palette={palette}
+            theme={theme}
+          />
 
           {activity.unit.type !== "none" && (
             <InputWrapper error={showErrors ? emptyValueError : null} ref={valueRef}>

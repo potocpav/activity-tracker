@@ -32,6 +32,7 @@ import {
   State,
   HintType,
   allHints,
+  DateList,
 } from "./StoreTypes";
 import { areUnitsEqual } from "./Unit";
 import { persist, createJSONStorage } from "zustand/middleware";
@@ -563,6 +564,19 @@ const useStore = create<State>()(
             if (activity.name === activityName) {
               const updatedDataPoints = [...activity.dataPoints];
               updatedDataPoints.splice(dataPointIndex, 1);
+              return { ...activity, dataPoints: updatedDataPoints };
+            }
+            return activity;
+          });
+          return { activities };
+        });
+      },
+
+      deleteActivityDataPoints: (activityName: string, dpIndices: number[]) => {
+        set((state: any) => {
+          const activities = state.activities.map((activity: ActivityType) => {
+            if (activity.name === activityName) {
+              const updatedDataPoints = activity.dataPoints.filter((_, index) => !dpIndices.includes(index));
               return { ...activity, dataPoints: updatedDataPoints };
             }
             return activity;

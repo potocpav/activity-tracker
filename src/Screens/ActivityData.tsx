@@ -5,6 +5,7 @@ import {
   View,
   SectionList,
   Pressable,
+  Alert,
 } from "react-native";
 import { Button, Divider } from 'react-native-paper';
 import useStore from "../Model/Store";
@@ -34,6 +35,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
   const { activityName, day } = route.params;
   const activities = useStore((state: any) => state.activities);
   const activity = activities.find((a: ActivityType) => a.name === activityName);
+  const deleteActivityDataPoints = useStore((state: any) => state.deleteActivityDataPoints);
   const theme = getTheme(activity.color);
   const themeVariant = getThemeVariant();
   const blackBackground = useStore((state: any) => state.blackBackground);
@@ -91,6 +93,23 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
       headerTintColor: "#ffffff",
       headerRight: () => (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          {filteredDataPoints.length > 0 && day && <Button compact={true} onPress={() => {
+              Alert.alert("Delete all listed data?", "This action cannot be undone.", [
+                {
+                  text: "Cancel",
+                  style: "cancel"
+                },
+                {
+                  text: "Delete",
+                  style: "destructive",
+                  onPress: () => {
+                    deleteActivityDataPoints(activityName, filteredDataPoints.map(([_, i]) => i));
+                  }
+                }
+              ])
+            }}>
+            <AntDesign name="delete" size={24} color={"#ffffff"} />
+          </Button>}
           {activity.tags.length > 0 && (
               <TagMenu
                 activity={activity}

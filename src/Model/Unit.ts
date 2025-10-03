@@ -118,7 +118,7 @@ export const renderLongFormValue = (value: number, unit: SubUnit): string => {
         case "seconds":
           if (Math.abs(value) > 10 * 3600) {
             return renderShortFormNumber(value / 3600) + " h";
-          } else if (Math.abs(value) > 3600) {
+          } else if (Math.abs(value) > 60) {
             return numberToString(Math.round(value), unit);
           } else {
             return numberToString(value, unit);
