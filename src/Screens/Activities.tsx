@@ -19,6 +19,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import EmptyPagePlaceholder from "../Components/EmptyPagePlaceholder";
 import Hint from "../Components/Hint";
 import Inset from "../Components/SafeAreaInset";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 type ActivitiesProps = {
   navigation: any;
@@ -138,25 +139,31 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
           }]}
         >
           <View style={{ width: 40, height: 35, alignItems: 'center', justifyContent: 'center' }}>
-            {
-              activity.unit.type === "none" ? (
-                todayPointIndices.length > 1 ? (
-                  <View>
-                    <AntDesign name="check" size={22} color={palette[activity.color]} />
-                    <View style={{ position: "absolute", top: 0, left: 5, opacity: 0.5 }}>
+            {(() => {
+              if (activity.unit.type === "none") {
+                if (todayPointIndices.length > 1) {
+                  return (
+                    <View>
                       <AntDesign name="check" size={22} color={palette[activity.color]} />
+                      <View style={{ position: "absolute", top: 0, left: 5, opacity: 0.5 }}>
+                        <AntDesign name="check" size={22} color={palette[activity.color]} />
+                      </View>
                     </View>
-                  </View>
-                ) :
-                  todayPointIndices.length === 1 ? (
-                    <AntDesign name="check" size={22} color={palette[activity.color]} />
-                  ) : (
-                    <AntDesign name="close" size={22} color={palette[activity.color]} />
-                  )) :
-                (
-                  <AntDesign name="plus" size={24} color={palette[activity.color]} />
-                )
-            }
+                  );
+                } else if (todayPointIndices.length === 1) {
+                  return <AntDesign name="check" size={22} color={palette[activity.color]} />;
+                } else {
+                  return <AntDesign name="close" size={22} color={palette[activity.color]} />;
+                }
+              } else {
+                switch (activity.special) {
+                  case "ble_scale":
+                    return <MaterialCommunityIcons name="bluetooth" size={22} color={palette[activity.color]} />;
+                  default:
+                    return <AntDesign name="plus" size={24} color={palette[activity.color]} />;
+                }
+              }
+            })()}
           </View>
         </Pressable>
       </View>
