@@ -4,8 +4,8 @@ import {
   Text,
   View,
   TouchableOpacity,
-  Pressable,
   useWindowDimensions,
+  Pressable,
 } from "react-native";
 import { Button } from 'react-native-paper';
 import useStore from "../Model/Store";
@@ -82,17 +82,17 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
     }
 
     return (
-      <Pressable
-        onPress={() => navigation.navigate('Activity', { activityName: activity.name })}
-        onLongPress={drag}
-        style={({ pressed }) => [
-          styles.activityCard,
+      <View style={styles.activityCard}>
+        <Pressable
+          onPress={() => navigation.navigate('Activity', { activityName: activity.name })}
+          onLongPress={drag}
+          android_ripple={{ foreground: true }}
+          style={({ pressed }) => [styles.activityRow,
           {
             opacity: pressed ? 0.5 : 1,
           },
-        ]}
-      >
-        <View style={styles.activityRow}>
+          ]}
+        >
           <View style={styles.activityTitleContainer}>
             <Text numberOfLines={1} style={[styles.activityTitle, { color: palette[activity.color] }]}>{activity.name}</Text>
           </View>
@@ -103,53 +103,63 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
               </Text>
             </View>
           ))}
-          <Pressable
-            onPress={() => {
-              dismissHint("quickly_add_point");
+        </Pressable>
+        <Pressable
+          onPress={() => {
+            dismissHint("quickly_add_point");
+            if (activity.unit.type === "none") {
+              if (todayPointIndices.length > 0) {
+                navigation.navigate('EditDataPoint', { activityName: activity.name, dataPointIndex: todayPointIndices[todayPointIndices.length - 1] });
+              } else {
+                navigation.navigate('EditDataPoint', { activityName: activity.name, newDataPoint: true });
+              }
+            } else {
               switch (activity.special) {
                 case "ble_scale":
                   navigation.navigate("BleScaleInput", { activityName: activity.name });
                   break;
                 default:
-                  navigation.navigate('EditDataPoint', { activityName: activity.name, dataPointName: null, newDataPoint: true });
+                  navigation.navigate('EditDataPoint', { activityName: activity.name, newDataPoint: true });
               }
-            }}
-            onLongPress={() => {
-              if (activity.unit.type === "none") {
-                if (todayPointIndices.length > 0) {
-                  deleteActivityDataPoint(activity.name, todayPointIndices[0]);
-                } else {
-                  updateActivityDataPoint(activity.name, undefined, { date: today });
-                }
+            }
+          }}
+          onLongPress={() => {
+            if (activity.unit.type === "none") {
+              if (todayPointIndices.length > 0) {
+                deleteActivityDataPoint(activity.name, todayPointIndices[0]);
+              } else {
+                updateActivityDataPoint(activity.name, undefined, { date: today });
               }
-            }}
-            android_ripple={{ color: theme.colors.outline, foreground: false }}
-            style={styles.addDataPointButton}
-          >
-            <View style={{ width: 40, height: 35, alignItems: 'center', justifyContent: 'center' }}>
-              {
-                activity.unit.type === "none" ? (
-                  todayPointIndices.length > 1 ? (
-                    <View>
+            }
+          }}
+          android_ripple={{ foreground: true }}
+          style={({ pressed }) => [styles.addDataPointButton, {
+            opacity: pressed ? 0.5 : 1,
+          }]}
+        >
+          <View style={{ width: 40, height: 35, alignItems: 'center', justifyContent: 'center' }}>
+            {
+              activity.unit.type === "none" ? (
+                todayPointIndices.length > 1 ? (
+                  <View>
                     <AntDesign name="check" size={22} color={palette[activity.color]} />
-                    <View style={{position: "absolute", top: 0, left: 5, opacity: 0.5}}>
-                    <AntDesign name="check" size={22} color={palette[activity.color]} />
+                    <View style={{ position: "absolute", top: 0, left: 5, opacity: 0.5 }}>
+                      <AntDesign name="check" size={22} color={palette[activity.color]} />
                     </View>
-                    </View>
-                  ) :
+                  </View>
+                ) :
                   todayPointIndices.length === 1 ? (
                     <AntDesign name="check" size={22} color={palette[activity.color]} />
                   ) : (
                     <AntDesign name="close" size={22} color={palette[activity.color]} />
-                  )) : 
-                  (
+                  )) :
+                (
                   <AntDesign name="plus" size={24} color={palette[activity.color]} />
                 )
-              }
-            </View>
-          </Pressable>
-        </View>
-      </Pressable>
+            }
+          </View>
+        </Pressable>
+      </View>
     );
   };
 
@@ -197,19 +207,22 @@ const getStyles = (theme: any, wideDisplay: boolean, dimensions: any) => StyleSh
     padding: 2,
   },
   activityCard: {
-    padding: 4 * dimensions.fontScale,
     backgroundColor: theme.colors.elevation.level1,
     elevation: 1,
     margin: 2,
     borderRadius: 2,
+    flexDirection: 'row',
   },
   activityRow: {
+    paddingHorizontal: 8 * dimensions.fontScale,
+    paddingVertical: 8 * dimensions.fontScale,
+    flex: 1,
     flexDirection: 'row',
     gap: 4,
   },
   activityTitleContainer: {
     flex: 1,
-    paddingLeft: 4,
+
     justifyContent: 'center',
   },
   activityValueContainer: {
@@ -218,7 +231,7 @@ const getStyles = (theme: any, wideDisplay: boolean, dimensions: any) => StyleSh
     justifyContent: 'center',
   },
   addDataPointButton: {
-    width: 40,
+    width: 45,
   },
   activityTitle: {
     fontSize: 16,
