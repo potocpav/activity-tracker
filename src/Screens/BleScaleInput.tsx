@@ -13,7 +13,7 @@ import { ActivityType, DataPoint, dateToDateList, timeToDateList } from "../Mode
 import { Button } from "react-native-paper";
 import { CartesianChart, getTransformComponents, Line, setScale, setTranslate, useChartTransformState } from "victory-native";
 import { matchFont, Points, vec } from "@shopify/react-native-skia";
-import { useAnimatedReaction, useSharedValue, withTiming } from "react-native-reanimated";
+import { useAnimatedReaction, useSharedValue, withTiming, useFrameCallback } from "react-native-reanimated";
 import { renderLongFormValue, renderShortFormValue } from "../Model/Unit";
 import TagSelector from "../Components/TagSelector";
 
@@ -205,34 +205,44 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   const tx = useSharedValue(0);
   const ty = useSharedValue(0);
 
-  // enforce limits when panning
-  useAnimatedReaction(
-    () => {
-      return transformState.panActive.value || transformState.zoomActive.value;
-    },
-    (cv, pv) => {
-      if (!cv && pv) {
-        const vals = getTransformComponents(transformState.matrix.value);
-        kx.value = vals.scaleX;
-        tx.value = vals.translateX;
+  const chartWidth = useSharedValue<number>(NaN);
 
-        if (tx.value < 0) {
-          tx.value = withTiming(0);
-        }
-      }
-    },
-  );
+  useFrameCallback((frameInfo) => {
+
+    tx.value = -frameInfo.timeSinceFirstFrame / 1000 * chartWidth.value / 10;
+
+    const m = setTranslate(transformState.matrix.value, tx.value, ty.value);
+    transformState.matrix.value = setScale(m, kx.value, ky.value);
+  });
+
+  // // enforce limits when panning
+  // useAnimatedReaction(
+  //   () => {
+  //     return transformState.panActive.value || transformState.zoomActive.value;
+  //   },
+  //   (currentValue, previousValue) => {
+  //     if (!currentValue && previousValue) {
+  //       const vals = getTransformComponents(transformState.matrix.value);
+  //       kx.value = vals.scaleX;
+  //       tx.value = vals.translateX;
+
+  //       if (tx.value < 0) {
+  //         tx.value = withTiming(0);
+  //       }
+  //     }
+  //   },
+  // );
 
 
-  useAnimatedReaction(
-    () => {
-      return { kx: kx.value, ky: ky.value, tx: tx.value, ty: ty.value };
-    },
-    ({ kx, ky, tx, ty }) => {
-      const m = setTranslate(transformState.matrix.value, tx, ty);
-      transformState.matrix.value = setScale(m, kx, ky);
-    },
-  );
+  // useAnimatedReaction(
+  //   () => {
+  //     return { kx: kx.value, ky: ky.value, tx: tx.value, ty: ty.value };
+  //   },
+  //   ({ kx, ky, tx, ty }) => {
+  //     const m = setTranslate(transformState.matrix.value, tx, ty);
+  //     transformState.matrix.value = setScale(m, kx, ky);
+  //   },
+  // );
 
   React.useEffect(() => {
     navigation.setOptions({
@@ -329,18 +339,31 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
 
             <View style={{ width: '100%', flex: 1 }}>
               <CartesianChart
-                data={scaleInput.dataPoints}
+                data={[{t: 0, w: 0}]}
                 xKey="t"
                 yKeys={["w"]}
                 transformState={transformState}
-                frame={{
-                  lineWidth: 1,
-                  lineColor: theme.colors.outline,
+                onScaleChange={(xscale, yscale) => {
+                  // console.log("scale", xscale.domain(), yscale.domain());
                 }}
+                onChartBoundsChange={(bounds) => {
+                  chartWidth.value = bounds.right - bounds.left;
+                }}
+                transformConfig={{
+                  pan: {enabled: false},
+                  pinch: {enabled: false},
+                }}
+                domain={{ x: [0, 10], y: [0, 10] }}
+                viewport={{ x: [0, 10], y: [0, 10] }}
+                // frame={{
+                //   lineWidth: 1,
+                //   lineColor: theme.colors.outline,
+                // }}
                 xAxis={{
                   font: font,
                   labelColor: theme.colors.outline,
                   lineColor: theme.colors.outline,
+                  enableRescaling: true,
                 }}
                 yAxis={[
                   {

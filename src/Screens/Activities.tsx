@@ -133,7 +133,6 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
               }
             }
           }}
-          android_ripple={{ foreground: true }}
           style={({ pressed }) => [styles.addDataPointButton, {
             opacity: pressed ? 0.5 : 1,
           }]}
