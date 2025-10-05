@@ -77,17 +77,31 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   const [showErrors, setShowErrors] = useState(false);
   const [showTagDialogErrors, setShowTagDialogErrors] = useState(false);
 
-  const [unitMode, setUnitMode] = useState<'no_value' | 'single' | 'multiple' | null>((() => {
+  const [measurableMode, setMeasurableMode] = useState<'single' | 'multiple'>((() => {
+    if (!activity) {
+      return 'single';
+    } else {
+      switch (activity.unit.type) {
+        case 'none':
+          return 'single';
+        case 'single':
+          return 'single';
+        case 'multiple':
+          return 'multiple';
+      }
+    }
+  })());
+  const [unitMode, setUnitMode] = useState<'yes_no' | 'measurable' | null>((() => {
     if (!activity) {
       return null;
     } else {
       switch (activity.unit.type) {
         case 'none':
-          return 'no_value';
+          return 'yes_no';
         case 'single':
-          return 'single';
+          return 'measurable';
         case 'multiple':
-          return 'multiple';
+          return 'measurable';
       }
     }
   })());
@@ -123,7 +137,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   })());
   const singleUnitInputRef = useRef<InputWrapperRef>(undefined);
   let singleUnitInputError: string | null = null;
-  if (unitMode === 'single' && singleUnitInput === null) {
+  if (unitMode === 'measurable' && measurableMode === 'single' && singleUnitInput === null) {
     singleUnitInputError = "Select a unit";
   }
 
@@ -220,23 +234,27 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   const saveActivity = () => {
     let newUnit: Unit;
     switch (unitMode) {
-      case 'no_value':
+      case 'yes_no':
         newUnit = { type: "none" };
         break;
-      case 'single':
-        if (singleUnitInput === null) {
-          console.error("Error", "Single unit cannot be null");
-          return;
+      case 'measurable':
+        switch (measurableMode) {
+          case 'single':
+            if (singleUnitInput === null) {
+              console.error("Error", "Single unit cannot be null");
+              return;
+            }
+            newUnit = { type: "single", unit: singleUnitInput };
+            break;
+          case 'multiple':
+            if (multiUnitInput.findIndex((u) => u.unit === null) !== -1) {
+              console.error("Error", "All value units must be non-empty");
+              return;
+            }
+            // no nulls at this point
+            newUnit = { type: "multiple", values: multiUnitInput as { name: string, unit: SubUnit }[] };
+            break;
         }
-        newUnit = { type: "single", unit: singleUnitInput };
-        break;
-      case 'multiple':
-        if (multiUnitInput.findIndex((u) => u.unit === null) !== -1) {
-          console.error("Error", "All value units must be non-empty");
-          return;
-        }
-        // no nulls at this point
-        newUnit = { type: "multiple", values: multiUnitInput as { name: string, unit: SubUnit }[] };
         break;
       case null:
         console.error("Error", "Unit mode cannot be null");
@@ -302,11 +320,11 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       unitModeInputRef?.current?.highlightError();
       hasError = true;
     }
-    if (unitMode === 'single' && singleUnitInputError !== null) {
+    if (unitMode === 'measurable' && measurableMode === 'single' && singleUnitInputError !== null) {
       singleUnitInputRef?.current?.highlightError();
       hasError = true;
     }
-    if (unitMode === 'multiple' && multiUnitInput.find((e) => e.nameError !== null || e.unitError !== null) !== undefined) {
+    if (unitMode === 'measurable' && measurableMode === 'multiple' && multiUnitInput.find((e) => e.nameError !== null || e.unitError !== null) !== undefined) {
       multiUnitInput.forEach((e, idx) => {
         if (e.nameError !== null) {
           multiUnitInput[idx].nameRef?.highlightError();
@@ -335,17 +353,17 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
     };
     // data loss?
     if (activity !== null && activity.dataPoints.length > 0) {
-      if (unitMode === 'no_value' && activity.unit.type !== 'none') {
+      if (unitMode === 'yes_no' && activity.unit.type !== 'none') {
         dataLossAlert(saveActivity);
-      } else if (unitMode === 'single' && activity.unit.type === 'multiple') {
+      } else if (unitMode === 'measurable' && measurableMode === 'single' && activity.unit.type === 'multiple') {
         dataLossAlert(saveActivity);
-      } else if (unitMode === 'multiple' && activity.unit.type === 'single') {
+      } else if (unitMode === 'measurable' && measurableMode === 'multiple' && activity.unit.type === 'single') {
         if (oldUnitMap.findIndex((u) => u.oldName === null) === -1) {
           dataLossAlert(saveActivity);
         } else {
           saveActivity();
         }
-      } else if (unitMode === 'multiple' && activity.unit.type === 'multiple') {
+      } else if (unitMode === 'measurable' && measurableMode === 'multiple' && activity.unit.type === 'multiple') {
         let oldNames: any[] = oldUnitMap.map((u) => u.oldName)
         if (isSupersetOf(new Set(oldNames), new Set(activity.unit.values.map((u: { name: string, unit: SubUnit }) => u.name)))) {
           saveActivity();
@@ -419,7 +437,8 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
 
   const setSpecialActivity = (special: SpecialActivity | null) => {
     setSpecial(special);
-    setUnitMode('multiple');
+    setUnitMode('measurable');
+    setMeasurableMode('multiple');
     // TODO: allow pounds
     setMultiUnitInput([
       { name: "Weight", unit: { type: "weight", unit: "kg" }, unitRef: null, nameRef: null },
@@ -429,71 +448,90 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
 
   const editNoValue = () => (
     <>
-      <Text style={{ color: theme.colors.onSurfaceVariant }}>Value-less activities are useful to mark that an activity was done, without tracking any performance data.</Text>
+      <Text style={{ color: theme.colors.onSurfaceVariant, paddingBottom: 10 }}>e.g. Did you excercise? Did you play chess?</Text>
     </>
   );
 
 
   const editSingleValue = () => (
-    <InputWrapper error={showErrors ? singleUnitInputError : null} ref={singleUnitInputRef}>
-      <UnitEditor unit={singleUnitInput} onChange={(unit: SubUnit | null) => {
-        setSingleUnitInput(unit);
-      }} />
-    </InputWrapper>
+    <View style={{ gap: 10 }}>
+      <Text style={{ color: theme.colors.onSurfaceVariant }}>e.g. How many kilometers did you run? How many pull-ups did you do?</Text>
+      <InputWrapper error={showErrors ? singleUnitInputError : null} ref={singleUnitInputRef}>
+        <UnitEditor unit={singleUnitInput} onChange={(unit: SubUnit | null) => {
+          setSingleUnitInput(unit);
+        }} />
+      </InputWrapper>
+      <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center' }}>
+        <Button compact={true} onPress={() => setMeasurableMode('multiple')} icon="plus">
+          Add Unit
+        </Button>
+      </View>
+    </View>
   );
 
 
   const editMultipleValues = () => (
-    <>
-      {multiUnitInput.map((val, idx) => (
-        <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <InputWrapper error={showErrors ? multiUnitInput[idx].nameError : null} ref={el => multiUnitInput[idx].nameRef = el}>
-            <TextInput
-              label="Name"
-              value={val.name}
-              onChangeText={text => {
-                // Update sub-unit name
+    <View style={{ gap: 10 }}>
+      <Text style={{ color: theme.colors.onSurfaceVariant }}>e.g. How many kilometers did you run? How many pull-ups did you do?</Text>
+      <View style={{ gap: 4 }}>
+        {multiUnitInput.map((val, idx) => (
+          <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <InputWrapper error={showErrors ? multiUnitInput[idx].nameError : null} ref={el => multiUnitInput[idx].nameRef = el}>
+              <TextInput
+                label="Name"
+                value={val.name}
+                onChangeText={text => {
+                  // Update sub-unit name
+                  const newVals = [...multiUnitInput];
+                  newVals[idx].name = text;
+                  setMultiUnitInput(newVals);
+                }}
+                mode="outlined"
+              />
+            </InputWrapper>
+            <InputWrapper error={showErrors ? multiUnitInput[idx].unitError : null} ref={el => multiUnitInput[idx].unitRef = el}>
+              <UnitEditor unit={val.unit} onChange={(unit: SubUnit | null) => {
+                // Update unit
                 const newVals = [...multiUnitInput];
-                newVals[idx].name = text;
+                newVals[idx].unit = unit;
                 setMultiUnitInput(newVals);
-              }}
-              mode="outlined"
-            />
-          </InputWrapper>
-          <InputWrapper error={showErrors ? multiUnitInput[idx].unitError : null} ref={el => multiUnitInput[idx].unitRef = el}>
-            <UnitEditor unit={val.unit} onChange={(unit: SubUnit | null) => {
-              // Update unit
-              const newVals = [...multiUnitInput];
-              newVals[idx].unit = unit;
-              setMultiUnitInput(newVals);
-            }} />
-          </InputWrapper>
-          <View>
-            {multiUnitInput.length > 2 && (
+              }} />
+            </InputWrapper>
+            <View>
               <Button compact={true} onPress={() => {
-                // Delete unit
-                const newVals = [...multiUnitInput];
-                newVals.splice(idx, 1);
-                setMultiUnitInput(newVals);
+                if (multiUnitInput.length >= 3) {
+                  // Delete unit
+                  const newVals = [...multiUnitInput];
+                  newVals.splice(idx, 1);
+                  setMultiUnitInput(newVals);
 
-                const newOldUnitMap = oldUnitMap
-                  .filter((u) => u.newIndex !== idx)
-                  .map((u) => u.newIndex > idx ? { ...u, newIndex: u.newIndex - 1 } : u);
-                setOldUnitMap(newOldUnitMap);
+                  const newOldUnitMap = oldUnitMap
+                    .filter((u) => u.newIndex !== idx)
+                    .map((u) => u.newIndex > idx ? { ...u, newIndex: u.newIndex - 1 } : u);
+                  setOldUnitMap(newOldUnitMap);
+                } else {
+                  setMeasurableMode('single');
+                  setSingleUnitInput(multiUnitInput[1 - idx].unit);
+                }
               }}><AntDesign name="delete" size={20} color={theme.colors.onSurface} /></Button>
-            )}
+            </View>
           </View>
-        </View>
-      ))}
-      {multiUnitInput.length < 4 && (
-        <Button compact={true} onPress={() => {
-          // Add unit to the end
-          setMultiUnitInput([...multiUnitInput, emptyMultiUnit]);
-        }}>
-          <AntDesign name="plus" size={20} color={theme.colors.onSurface} />
-        </Button>
-      )}
-    </>
+        ))}
+        {multiUnitInput.length < 4 && (
+          // <Button compact={true} onPress={() => {
+          //   // Add unit to the end
+          //   setMultiUnitInput([...multiUnitInput, emptyMultiUnit]);
+          // }}>
+          //   <AntDesign name="plus" size={20} color={theme.colors.onSurface} />
+          // </Button>
+      <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center' }}>
+      <Button compact={true} onPress={() => setMultiUnitInput([...multiUnitInput, emptyMultiUnit])} icon="plus">
+        Add Unit
+      </Button>
+    </View>
+        )}
+      </View>
+    </View>
   );
 
   return (
@@ -597,35 +635,29 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
             </View>
 
             <LockFrame locked={special === "ble_scale"}>
-              <Text style={styles.header}>Measurement:</Text>
+              <Text style={styles.header}>Activity type:</Text>
               <InputWrapper error={showErrors ? unitModeError : null} ref={unitModeInputRef}>
                 <SegmentedButtons
                   value={unitMode ?? ""}
-                  onValueChange={(value) => setUnitMode(value as "no_value" | "single" | "multiple" | null)}   // TODO: fix this
+                  onValueChange={(value) => setUnitMode(value as "yes_no" | "measurable" | null)}   // TODO: fix this
                   buttons={[
                     {
-                      value: 'no_value',
-                      label: 'None',
+                      value: 'yes_no',
+                      label: 'Yes or No',
                       icon: 'checkbox-marked-outline',
                     },
                     {
-                      value: 'single',
-                      label: 'Single',
+                      value: 'measurable',
+                      label: 'Measurable',
                       icon: 'numeric',
-                    },
-                    {
-                      value: 'multiple',
-                      label: 'Multiple',
-                      icon: 'counter',
                     },
                   ]}
                 />
               </InputWrapper>
               <View>
-                {unitMode === null ? null : unitMode === 'no_value' ? editNoValue() : unitMode === 'single' ? editSingleValue() : editMultipleValues()}
+                {unitMode === null ? null : unitMode === 'yes_no' ? editNoValue() : unitMode === 'measurable' ? measurableMode === 'single' ? editSingleValue() : editMultipleValues() : null}
               </View>
             </LockFrame>
-            <Hint hint="activity_value_help" inline />
           </View>
         </SafeAreaView>
       </ScrollView>

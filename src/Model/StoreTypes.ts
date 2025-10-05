@@ -158,7 +158,7 @@ export type WeekStart = "sunday" | "monday";
 export type HintType = 
   "hello" | "quickly_add_point" | "reorder_activities" | 
   "add_data_point" | "overview_edit_hint" | "rename_calendar" | "calendar_introduction" | "quick_check_daily_activity" |
-  "edit_activity_introduction" | "activity_value_help" |
+  "edit_activity_introduction" |
   "save_data_point"
 
 // hint sequencing. Must contain all hints.
@@ -168,7 +168,7 @@ export const hintDependencyChains : HintType[][] = [
   // Activity screen
   ["add_data_point", "calendar_introduction", "overview_edit_hint", "quick_check_daily_activity", "rename_calendar"],
   // Edit activity screen
-  ["edit_activity_introduction", "activity_value_help"],
+  ["edit_activity_introduction"],
   // Edit data point screen
   ["save_data_point"],
   // Data list screen

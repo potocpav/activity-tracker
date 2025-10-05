@@ -75,16 +75,6 @@ const hintInfo = (hint: HintType) => {
         ],
         arrowPos: 0.2,
       };
-    case "activity_value_help":
-      return {
-        text: [
-          "There are three types of measurements:",
-          "1. None - no numbers are recorded, just the date. Examples: flossing, went exercising, etc.",
-          "2. Single - one number is recorded. Examples: body weight, number of pull-ups, etc.",
-          "3. Multiple - performance is measured by multiple numbers. For example, for running - time and distance.",
-        ],
-        arrowPos: 0.5,
-      };
     case "save_data_point":
       return {
         text: [
