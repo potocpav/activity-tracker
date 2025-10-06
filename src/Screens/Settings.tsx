@@ -115,8 +115,8 @@ const Settings = () => {
         const asset = result.assets[0];
         const file = new File(asset.uri);
         const db = SQLite.openDatabaseSync(file.uri);
-        const habits = db.getAllSync('SELECT * FROM Habits');
-        const repetitions = db.getAllSync('SELECT * FROM Repetitions');
+        const habits = db.getAllSync('SELECT * FROM Habits ORDER BY position ASC');
+        const repetitions = db.getAllSync('SELECT * FROM Repetitions ORDER BY timestamp ASC');
 
         let activities: ActivityType[] = [];
 
