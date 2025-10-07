@@ -12,7 +12,7 @@ import { getTheme, getThemePalette, getThemeVariant } from "../Model/Theme";
 import { ActivityType, DataPoint, dateToDateList, timeToDateList } from "../Model/StoreTypes";
 import { Button } from "react-native-paper";
 import { CartesianChart, getTransformComponents, Line, setScale, setTranslate, useChartTransformState } from "victory-native";
-import { matchFont, Points, vec } from "@shopify/react-native-skia";
+import { matchFont, Path, Points, Rect, Skia, Text as SkiaText, vec } from "@shopify/react-native-skia";
 import { useAnimatedReaction, useSharedValue, withTiming, useFrameCallback } from "react-native-reanimated";
 import { renderLongFormValue, renderShortFormValue } from "../Model/Unit";
 import TagSelector from "../Components/TagSelector";
@@ -62,6 +62,8 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   const weightUnit = activity.unit.values.find((u: any) => u.name === "Weight")?.unit;
   const timeUnit = activity.unit.values.find((u: any) => u.name === "Time")?.unit;
 
+  const [startTime, setStartTime] = useState<number | null>(null);
+
   const transformState = useChartTransformState({
     scaleX: 1.0, // Initial X-axis scale
     scaleY: 1.0, // Initial Y-axis scale
@@ -90,7 +92,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
 
   const chartRange = Math.max(minChartRange, scaleInput.dataPoints.reduce((max, dp) => Math.max(max, dp.w), 0));
 
-  const {pullWeight, pullT0, pullTime} = (() => {
+  const { pullWeight, pullT0, pullTime } = (() => {
     if (scaleInput.currentPull.active) {
       const w = scaleInput.currentPull.wSum / scaleInput.currentPull.wCount;
       const t = scaleInput.dataPoints[scaleInput.dataPoints.length - 1].t - scaleInput.currentPull.t0;
@@ -124,7 +126,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
     // indirection is necessary, because we can't set Zustand state in `setScaleInput` directly
     if (newDataPoint) {
       appendActivityDataPoint(activityName, {
-        ...newDataPoint, 
+        ...newDataPoint,
         ...(inputTags.length > 0 ? { tags: inputTags } : {})
       });
       setNewDataPoint(null);
@@ -135,7 +137,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
     setScaleInput((state) => {
       let pulls = [...state.pastPulls];
       let pull: CurrentPull = state.currentPull;
-      
+
       const wSum = dataPoints.reduce((sum, dp) => sum + dp.w, 0);
       const wCount = dataPoints.length;
       const wMin = Math.min(...dataPoints.map((dp) => dp.w));
@@ -177,9 +179,9 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
           pulls.push(newPull);
           setNewDataPoint({
             date: today,
-            value: { 
-              Weight: Math.round(newPull.wAvg * 100) / 100, 
-              Time: Math.round((newPull.t1 - newPull.t0) * 100) / 100 
+            value: {
+              Weight: Math.round(newPull.wAvg * 100) / 100,
+              Time: Math.round((newPull.t1 - newPull.t0) * 100) / 100
             },
           });
         }
@@ -192,14 +194,15 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
       pull.wMin = Math.min(pull.wMin, wMin);
 
       // TODO: fix how cutting off data points messes up the current pull
-      return { 
-        currentPull: pull, 
-        pastPulls: pulls, 
+      return {
+        currentPull: pull,
+        pastPulls: pulls,
         dataPoints: [...state.dataPoints, ...dataPoints].slice(-800),
       };
     });
   };
 
+  const t = useSharedValue<number | null>(null);
   const kx = useSharedValue(1);
   const ky = useSharedValue(1);
   const tx = useSharedValue(0);
@@ -208,11 +211,13 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   const chartWidth = useSharedValue<number>(NaN);
 
   useFrameCallback((frameInfo) => {
+    t.value = frameInfo.timestamp;
+    if (startTime !== null) {
+      tx.value = (startTime - frameInfo.timestamp) / 1000 * chartWidth.value / 10;
 
-    tx.value = -frameInfo.timeSinceFirstFrame / 1000 * chartWidth.value / 10;
-
-    const m = setTranslate(transformState.matrix.value, tx.value, ty.value);
-    transformState.matrix.value = setScale(m, kx.value, ky.value);
+      const m = setTranslate(transformState.matrix.value, tx.value, ty.value);
+      transformState.matrix.value = setScale(m, kx.value, ky.value);
+    }
   });
 
   // // enforce limits when panning
@@ -245,6 +250,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   // );
 
   React.useEffect(() => {
+    console.log("boop");
     navigation.setOptions({
       headerStyle: themeVariant == 'light' ? { backgroundColor: theme.colors.primary } : undefined,
       headerTintColor: "#ffffff",
@@ -263,7 +269,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
         </>
       ),
     });
-  }, [activityName, navigation, theme, activity, isConnected]);
+  }, [activityName, navigation, isConnected]);
 
   return (
     <SafeAreaView style={[styles.container]} edges={["left", "right", "bottom"]}>
@@ -273,16 +279,32 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
           <View style={styles.controlSection}>
             <View style={styles.buttonRow}>
               <TouchableOpacity onPress={() => {
+                setStartTime(t.value);
+              }} style={[styles.controlButton, { backgroundColor: theme.colors.primary }]}>
+                <Text style={[styles.controlButtonText, { color: theme.colors.onPrimary }]}>Start</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => {
+                setStartTime(null);
+              }} style={[styles.controlButton, { backgroundColor: theme.colors.secondary }]}>
+                <Text style={[styles.controlButtonText, { color: theme.colors.onSecondary }]}>Stop</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.buttonRow}>
+              <TouchableOpacity onPress={() => {
                 setScaleInput({
                   dataPoints: [],
                   currentPull: { t0: 0, wSum: 0, wCount: 0, wMin: 0, wMax: 0, active: false },
                   pastPulls: [],
                 });
                 startMeasurement(onDataUpdate);
+                setStartTime((t.value ?? 0) + 10.5 * 1000);
               }} style={[styles.controlButton, { backgroundColor: theme.colors.primary }]}>
                 <Text style={[styles.controlButtonText, { color: theme.colors.onPrimary }]}>Start</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={stopMeasurement} style={[styles.controlButton, { backgroundColor: theme.colors.secondary }]}>
+              <TouchableOpacity onPress={() => {
+                stopMeasurement();
+                setStartTime(null);
+              }} style={[styles.controlButton, { backgroundColor: theme.colors.secondary }]}>
                 <Text style={[styles.controlButtonText, { color: theme.colors.onSecondary }]}>Stop</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={tareScale} style={[styles.controlButton, { backgroundColor: theme.colors.tertiary }]}>
@@ -291,14 +313,14 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
             </View>
           </View>
 
-          <View style={{paddingHorizontal: 10 }}>
-          <TagSelector
-            activity={activity}
-            inputTags={inputTags}
-            toggleInputTag={toggleInputTag}
-            palette={palette}
-            theme={theme}
-          />
+          <View style={{ paddingHorizontal: 10 }}>
+            <TagSelector
+              activity={activity}
+              inputTags={inputTags}
+              toggleInputTag={toggleInputTag}
+              palette={palette}
+              theme={theme}
+            />
           </View>
 
           {/* Weight and Time Display Section */}
@@ -339,31 +361,40 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
 
             <View style={{ width: '100%', flex: 1 }}>
               <CartesianChart
-                data={[{t: 0, w: 0}]}
+                data={scaleInput.dataPoints.length > 0 ? scaleInput.dataPoints : [{ t: 0, w: 0 }]}
                 xKey="t"
                 yKeys={["w"]}
                 transformState={transformState}
-                onScaleChange={(xscale, yscale) => {
-                  // console.log("scale", xscale.domain(), yscale.domain());
-                }}
                 onChartBoundsChange={(bounds) => {
                   chartWidth.value = bounds.right - bounds.left;
                 }}
                 transformConfig={{
-                  pan: {enabled: false},
-                  pinch: {enabled: false},
+                  pan: { enabled: false },
+                  pinch: { enabled: false },
                 }}
                 domain={{ x: [0, 10], y: [0, 10] }}
                 viewport={{ x: [0, 10], y: [0, 10] }}
-                // frame={{
-                //   lineWidth: 1,
-                //   lineColor: theme.colors.outline,
-                // }}
+                renderOutside={({ chartBounds, xScale }) => {
+                  const framePath = Skia.Path.Make();
+                  const w = 1;
+                  framePath.moveTo(chartBounds.left + w / 2, chartBounds.top + w / 2);
+                  framePath.lineTo(chartBounds.right - w / 2, chartBounds.top + w / 2);
+                  framePath.lineTo(chartBounds.right - w / 2, chartBounds.bottom - w / 2);
+                  framePath.lineTo(chartBounds.left + w / 2, chartBounds.bottom - w / 2);
+                  framePath.close();
+
+                  return (
+                    <>
+                      <Path key="frame" style="stroke" strokeJoin="round" strokeWidth={w} path={framePath} color={theme.colors.outline} />
+                    </>
+                  );
+                }}
                 xAxis={{
                   font: font,
                   labelColor: theme.colors.outline,
                   lineColor: theme.colors.outline,
                   enableRescaling: true,
+                  lineWidth: 0,
                 }}
                 yAxis={[
                   {
@@ -377,6 +408,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                 ]}
               >
                 {({ points, xScale, yScale }) => {
+                  console.log(xScale(0));
                   const currentPull = pullWeight > 0 ? [
                     vec(pullT0, 0),
                     vec(pullT0, pullWeight),
@@ -388,6 +420,12 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                     vec(pull.t1, pull.wAvg),
                     vec(pull.t1, 0),
                   ]);
+                  const gridPath = Skia.Path.Make();
+                  for (let i = 0; i <= 10; i += 2) {
+                    gridPath.moveTo(xScale(i), yScale(0));
+                    gridPath.lineTo(xScale(i), yScale(10));
+                  }
+
                   return (
                     <>
                       <Line
@@ -401,7 +439,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                           key={pull[0].x}
                           points={pull.map((point) => vec(xScale(point.x), yScale(point.y)))}
                           mode="polygon"
-                          color={ theme.colors.secondary }
+                          color={theme.colors.secondary}
                           style="stroke"
                           strokeWidth={2}
                         />
@@ -410,9 +448,16 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                         key="currentPull"
                         points={currentPull.map((point) => vec(xScale(point.x), yScale(point.y)))}
                         mode="polygon"
-                        color={ theme.colors.secondary }
+                        color={theme.colors.secondary}
                         style="stroke"
                         strokeWidth={2}
+                      />
+                      <Path
+                        key="gridline"
+                        path={gridPath}
+                        color={theme.colors.outline}
+                        style="stroke"
+                        strokeWidth={0}
                       />
                     </>
                   );
@@ -440,6 +485,7 @@ const styles = StyleSheet.create({
   controlSection: {
     marginTop: 10,
     padding: 0,
+    gap: 10,
   },
   buttonRow: {
     flexDirection: 'row',
