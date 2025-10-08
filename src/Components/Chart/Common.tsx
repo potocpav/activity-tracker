@@ -29,6 +29,7 @@ export const boundingBoxToRange = (viewportHeight: number, box: BoundingBox): { 
 }
 
 export const cmpMajorTicks = (unit: SubUnit, range: { min: number, max: number }, approxNTicks: number): number[] => {
+  'worklet'
   const idealStride = (range.max - range.min) / approxNTicks;
 
   const defaultStride = (targetStride: number) => {

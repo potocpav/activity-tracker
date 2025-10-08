@@ -19,155 +19,12 @@ export const isSummable = (unit: SubUnit): boolean => {
   }
 }
 
-export const renderLongFormNumber = (value: number): string => {
-  let a = Math.abs(value);
-  let e = Math.max(0, Math.floor(Math.log10(a) / 3 + 1e-10));
-  let ab = a / Math.pow(1000, e);
-
-  if (e <= 3) {
-    let prefix = value < 0 ? "-" : "";
-    let suffix = ["", "k", "M", "G"][e];
-    if (ab < 10) {
-      return `${prefix}${Math.round(ab * 100) / 100}${suffix}`;
-    } else if (ab < 100) {
-      return `${prefix}${Math.round(ab * 10) / 10}${suffix}`;
-    } else if (ab < 1000) {
-      return `${prefix}${Math.round(ab)}${suffix}`;
-    } else {
-      return "n/a";
-    }
-  } else {
-    return value.toPrecision(3);
-  }
-}
-
-export const renderShortFormNumber = (value: number): string => {
-  return renderLongFormNumber(value);
-}
-
-// Render a short form value. It should be at most ~5 characters long, and should not contain the unit.
-// It is used in the calendar view, and in the graph view.
-export const renderShortFormValue = (value: number, unit: SubUnit): string => {
-  switch (unit.type) {
-    case "number":
-      return renderShortFormNumber(value);
-    case "count":
-      return renderShortFormNumber(value);
-    case "percentage":
-      if (Math.abs(value) < 10) {
-        return renderShortFormNumber(Math.round(value * 10) / 10) + "%";
-      } else {
-        return renderShortFormNumber(Math.round(value)) + "%";
-      }
-    case "distance":
-      return renderShortFormNumber(value);
-    case "weight":
-      return renderShortFormNumber(value);
-    case "time":
-      switch (unit.unit) {
-        case "hours":
-          if (value > 24) {
-            return renderShortFormNumber(value);
-          } else if (value >= 1) {
-            return numberToString(Math.round(value * 60) / 60, unit);
-          } else {
-            return numberToString(Math.round(value * 60) / 60, unit);
-          }
-        case "seconds":
-          if (value > 10 * 3600) {
-            return renderShortFormNumber(value / 3600) + " h";
-          } else if (value > 3600) {
-            return numberToString(Math.round(value), unit);
-          } else if (value >= 60) {
-            return numberToString(value, unit);
-          } else {
-            return renderShortFormNumber(value);
-          }
-      }
-    case "climbing_grade":
-      return numberToString(value, unit);
-  }
-}
-
-// Render a long form value. It should contain the unit.
-// It is used in the summary views, and in the data view.
-export const renderLongFormValue = (value: number, unit: SubUnit): string => {
-  switch (unit.type) {
-    case "number": {
-      let suffix = unit.symbol === "" ? "" : " " + unit.symbol;
-      return renderLongFormNumber(value) + suffix;
-    }
-    case "count":
-      return renderLongFormNumber(value);
-    case "percentage":
-      return renderLongFormNumber(value) + " %";
-    case "distance":
-      return `${renderLongFormNumber(value)} ${unit.unit}`;
-    case "weight":
-      return `${renderLongFormNumber(value)} ${unit.unit}`;
-    case "time":
-      switch (unit.unit) {
-        case "hours":
-          if (Math.abs(value) > 24) {
-            return renderShortFormNumber(value) + " h";
-          } else if (Math.abs(value) >= 1) {
-            return numberToString(Math.round(value * 60) / 60, unit);
-          } else {
-            return numberToString(value, unit);
-          }
-        case "seconds":
-          if (Math.abs(value) > 10 * 3600) {
-            return renderShortFormNumber(value / 3600) + " h";
-          } else if (Math.abs(value) > 60) {
-            return numberToString(Math.round(value), unit);
-          } else {
-            return numberToString(value, unit);
-          }
-      }
-    case "climbing_grade":
-      return renderShortFormValue(value, unit);
-  }
-}
-
-export const renderUnit = (unit: SubUnit): string => {
-  switch (unit.type) {
-    case "number":
-      return "Number" + (unit.symbol === "" ? "" : ` (${unit.symbol})`);
-    case "count":
-      return "Count";
-    case "percentage":
-      return "Percentage";
-    case "distance":
-      return `Distance (${unit.unit})`;
-    case "weight":
-      return `Weight (${unit.unit})`;
-    case "time":
-      switch (unit.unit) {
-        case "seconds":
-          return "Time (seconds)";
-        case "hours":
-          return "Time (hours)";
-      }
-    case "climbing_grade":
-      switch (unit.grade) {
-        case "uiaa":
-          return "Climbing Grade (UIAA)";
-        case "french":
-          return "Climbing Grade (French)";
-        case "font":
-          return "Climbing Grade (Font)";
-        case "v-scale":
-          return "Climbing Grade (V-Scale)";
-        case "yds":
-          return "Climbing Grade (YDS)";
-      }
-  }
-}
 
 // Convert a numerical value to an editable value.
 // Function `reencode` must be idempotent over n, where:
 //   reencode(n, u) = stringToNumber(numberToString(n, u), u)
 export const numberToString = (value: number | null, unit: SubUnit): string => {
+  'worklet'
   if (value === null) {
     return "";
   }
@@ -435,6 +292,155 @@ export const stringToNumber = (value: string, unit: SubUnit): number | null => {
           }
       }
     }
+  }
+}
+
+export const renderLongFormNumber = (value: number): string => {
+  'worklet'
+  let a = Math.abs(value);
+  let e = Math.max(0, Math.floor(Math.log10(a) / 3 + 1e-10));
+  let ab = a / Math.pow(1000, e);
+
+  if (e <= 3) {
+    let prefix = value < 0 ? "-" : "";
+    let suffix = ["", "k", "M", "G"][e];
+    if (ab < 10) {
+      return `${prefix}${Math.round(ab * 100) / 100}${suffix}`;
+    } else if (ab < 100) {
+      return `${prefix}${Math.round(ab * 10) / 10}${suffix}`;
+    } else if (ab < 1000) {
+      return `${prefix}${Math.round(ab)}${suffix}`;
+    } else {
+      return "n/a";
+    }
+  } else {
+    return value.toPrecision(3);
+  }
+}
+
+export const renderShortFormNumber = (value: number): string => {
+  'worklet'
+  return renderLongFormNumber(value);
+}
+
+// Render a short form value. It should be at most ~5 characters long, and should not contain the unit.
+// It is used in the calendar view, and in the graph view.
+export const renderShortFormValue = (value: number, unit: SubUnit): string => {
+  'worklet'
+  switch (unit.type) {
+    case "number":
+      return renderShortFormNumber(value);
+    case "count":
+      return renderShortFormNumber(value);
+    case "percentage":
+      if (Math.abs(value) < 10) {
+        return renderShortFormNumber(Math.round(value * 10) / 10) + "%";
+      } else {
+        return renderShortFormNumber(Math.round(value)) + "%";
+      }
+    case "distance":
+      return renderShortFormNumber(value);
+    case "weight":
+      return renderShortFormNumber(value);
+    case "time":
+      switch (unit.unit) {
+        case "hours":
+          if (value > 24) {
+            return renderShortFormNumber(value);
+          } else if (value >= 1) {
+            return numberToString(Math.round(value * 60) / 60, unit);
+          } else {
+            return numberToString(Math.round(value * 60) / 60, unit);
+          }
+        case "seconds":
+          if (value > 10 * 3600) {
+            return renderShortFormNumber(value / 3600) + " h";
+          } else if (value > 3600) {
+            return numberToString(Math.round(value), unit);
+          } else if (value >= 60) {
+            return numberToString(value, unit);
+          } else {
+            return renderShortFormNumber(value);
+          }
+      }
+    case "climbing_grade":
+      return numberToString(value, unit);
+  }
+}
+
+// Render a long form value. It should contain the unit.
+// It is used in the summary views, and in the data view.
+export const renderLongFormValue = (value: number, unit: SubUnit): string => {
+  'worklet'
+  switch (unit.type) {
+    case "number": {
+      let suffix = unit.symbol === "" ? "" : " " + unit.symbol;
+      return renderLongFormNumber(value) + suffix;
+    }
+    case "count":
+      return renderLongFormNumber(value);
+    case "percentage":
+      return renderLongFormNumber(value) + " %";
+    case "distance":
+      return `${renderLongFormNumber(value)} ${unit.unit}`;
+    case "weight":
+      return `${renderLongFormNumber(value)} ${unit.unit}`;
+    case "time":
+      switch (unit.unit) {
+        case "hours":
+          if (Math.abs(value) > 24) {
+            return renderShortFormNumber(value) + " h";
+          } else if (Math.abs(value) >= 1) {
+            return numberToString(Math.round(value * 60) / 60, unit);
+          } else {
+            return numberToString(value, unit);
+          }
+        case "seconds":
+          if (Math.abs(value) > 10 * 3600) {
+            return renderShortFormNumber(value / 3600) + " h";
+          } else if (Math.abs(value) > 60) {
+            return numberToString(Math.round(value), unit);
+          } else {
+            return numberToString(value, unit);
+          }
+      }
+    case "climbing_grade":
+      return renderShortFormValue(value, unit);
+  }
+}
+
+export const renderUnit = (unit: SubUnit): string => {
+  switch (unit.type) {
+    case "number":
+      return "Number" + (unit.symbol === "" ? "" : ` (${unit.symbol})`);
+    case "count":
+      return "Count";
+    case "percentage":
+      return "Percentage";
+    case "distance":
+      return `Distance (${unit.unit})`;
+    case "weight":
+      return `Weight (${unit.unit})`;
+    case "time":
+      switch (unit.unit) {
+        case "seconds":
+          return "Time (seconds)";
+        case "hours":
+          return "Time (hours)";
+      }
+    case "climbing_grade":
+      switch (unit.grade) {
+        case "uiaa":
+          return "Climbing Grade (UIAA)";
+        case "french":
+          return "Climbing Grade (French)";
+        case "font":
+          return "Climbing Grade (Font)";
+        case "v-scale":
+          return "Climbing Grade (V-Scale)";
+        case "yds":
+          return "Climbing Grade (YDS)";
+      }
   }
 }
 

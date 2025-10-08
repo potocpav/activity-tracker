@@ -5,6 +5,7 @@ import {
   Platform,
   View,
   TouchableOpacity,
+  Animated,
 } from "react-native";
 import useStore from "../Model/Store";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -12,14 +13,16 @@ import { getTheme, getThemePalette, getThemeVariant } from "../Model/Theme";
 import { ActivityType, DataPoint, dateToDateList, timeToDateList } from "../Model/StoreTypes";
 import { Button } from "react-native-paper";
 import { CartesianChart, getTransformComponents, setScale, setTranslate, useChartTransformState } from "victory-native";
-import { matchFont, Path, Points, Rect, Skia, Text as SkiaText, vec, Line } from "@shopify/react-native-skia";
-import { useAnimatedReaction, useSharedValue, withTiming, useFrameCallback, useDerivedValue, runOnJS } from "react-native-reanimated";
-import { renderLongFormValue, renderShortFormValue } from "../Model/Unit";
+import { matchFont, Path, Points, Rect, Skia, Text as SkiaText, vec, Line, Canvas } from "@shopify/react-native-skia";
+import { useAnimatedReaction, useSharedValue, withTiming, useFrameCallback, useDerivedValue, runOnJS, withSpring } from "react-native-reanimated";
+import { numberToString, renderLongFormValue, renderShortFormValue } from "../Model/Unit";
 import TagSelector from "../Components/TagSelector";
-import SkiaChart, { Rect as ChartRect, xToViewport, yToViewport } from "../Components/Chart/SkiaChart";
+import SkiaChart, { Rect as ChartRect, xToCanvas, yToCanvas, Viewport } from "../Components/Chart/SkiaChart";
 
 const fontFamily = Platform.select({ default: "sans-serif" });
 const font = matchFont({ fontFamily: fontFamily });
+
+const largeFont = matchFont({ fontFamily: fontFamily, fontSize: 24 });
 
 type BleScaleInputProps = {
   navigation: any;
@@ -28,9 +31,10 @@ type BleScaleInputProps = {
 
 
 type ScaleInput = {
+  t0: number | null,
+  max: number,
   dataPoints: { w: number, t: number }[],
   currentPull: CurrentPull,
-  pastPulls: PastPull[],
 };
 
 type ScaleDataPoint = { w: number, t: number };
@@ -63,12 +67,16 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   const weightUnit = activity.unit.values.find((u: any) => u.name === "Weight")?.unit;
   const timeUnit = activity.unit.values.find((u: any) => u.name === "Time")?.unit;
 
-  const [startTime, setStartTime] = useState<number | null>(null);
+  const [workoutState, setWorkoutState] = useState<"paused" | "playing">("paused");
+  const [recordingState, setRecordingState] = useState<"recording" | "stopped">("stopped");
 
-  const [scaleInput, setScaleInput] = useState<ScaleInput>({
+  const [pastPulls, setPastPulls] = useState<PastPull[]>([]);
+
+  const scaleInput = useSharedValue<ScaleInput>({
+    t0: null,
+    max: 0,
     dataPoints: [],
     currentPull: { t0: 0, wSum: 0, wCount: 0, wMax: 0, wMin: 0, active: false },
-    pastPulls: [],
   });
   const [newDataPoint, setNewDataPoint] = useState<DataPoint | null>(null);
 
@@ -78,29 +86,31 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
     setInputTags(inputTags.includes(tag) ? inputTags.filter((t: string) => t !== tag) : [...inputTags, tag]);
   }
 
+  const largeFontBox = largeFont.measureText("00.00 kg");
 
   const minChartRange = 1;
-  const minPullWeight = 10;
+  const minPullWeight = 2;
   const minPullDuration = 3.0;
   const showAfterPullWeight = 0.5;
   const showAfterDuration = 0.1;
   const thresholdWeight = 0.6;
 
-  const chartRange = Math.max(minChartRange, scaleInput.dataPoints.reduce((max, dp) => Math.max(max, dp.w), 0));
+  // const chartRange = Math.max(minChartRange, scaleInput.dataPoints.reduce((max, dp) => Math.max(max, dp.w), 0));
 
-  const { pullWeight, pullT0, pullTime } = (() => {
-    if (scaleInput.currentPull.active) {
-      const w = scaleInput.currentPull.wSum / scaleInput.currentPull.wCount;
-      const t = scaleInput.dataPoints[scaleInput.dataPoints.length - 1].t - scaleInput.currentPull.t0;
+  const pullIndicators = useDerivedValue(() => {
+    const state = scaleInput.get();
+    if (state.currentPull.active) {
+      const w = state.currentPull.wSum / state.currentPull.wCount;
+      const t = state.dataPoints[state.dataPoints.length - 1].t - state.currentPull.t0;
       if (w > showAfterPullWeight && t > showAfterDuration) {
-        return { pullWeight: w, pullT0: scaleInput.currentPull.t0, pullTime: t };
+        return { pullWeight: w, pullT0: state.currentPull.t0 + (state.t0 ?? 0), pullTime: t };
       } else {
         return { pullWeight: 0, pullT0: 0, pullTime: 0 };
       }
     } else {
       return { pullWeight: 0, pullT0: 0, pullTime: 0 };
     }
-  })();
+  });
 
   const openConnectionModal = async () => {
     scanForDevices();
@@ -130,14 +140,15 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   }, [newDataPoint]);
 
   const pushDataPoints = (dataPoints: ScaleDataPoint[]) => {
-    setScaleInput((state) => {
-      let pulls = [...state.pastPulls];
+    scaleInput.set((state) => {
+      const dp = dataPoints;
+
       let pull: CurrentPull = state.currentPull;
 
-      const wSum = dataPoints.reduce((sum, dp) => sum + dp.w, 0);
-      const wCount = dataPoints.length;
-      const wMin = Math.min(...dataPoints.map((dp) => dp.w));
-      const wMax = Math.max(...dataPoints.map((dp) => dp.w));
+      const wSum = dp.reduce((sum, dp) => sum + dp.w, 0);
+      const wCount = dp.length;
+      const wMin = Math.min(...dp.map((dp) => dp.w));
+      const wMax = Math.max(...dp.map((dp) => dp.w));
 
       if (wMax * thresholdWeight > pull.wMin) {
         // pull forward t0
@@ -159,29 +170,30 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
       } else if (pull.wCount > 0 && pull.active && wMin < pull.wMax * thresholdWeight) {
         // end the pull
         let t1 = NaN;
-        for (let i = 0; i < dataPoints.length; i++) {
-          if (dataPoints[i].w < pull.wMax * thresholdWeight) {
-            t1 = dataPoints[i].t;
+        for (let i = 0; i < dp.length; i++) {
+          if (dp[i].w < pull.wMax * thresholdWeight) {
+            t1 = dp[i].t;
             break;
           }
         }
+        const duration = t1 - pull.t0;
         const newPull = {
-          t0: pull.t0,
-          t1: t1,
+          t0: pull.t0 + (state.t0 ?? 0),
+          t1: t1 + (state.t0 ?? 0),
           wAvg: pull.wSum / pull.wCount,
         };
-        if (newPull.wAvg > minPullWeight && newPull.t1 - newPull.t0 > minPullDuration) {
+        if (newPull.wAvg > minPullWeight && duration > minPullDuration) {
           // publish the pull
-          pulls.push(newPull);
+          setPastPulls((pastPulls) => [...pastPulls, newPull]);
           setNewDataPoint({
             date: today,
             value: {
               Weight: Math.round(newPull.wAvg * 100) / 100,
-              Time: Math.round((newPull.t1 - newPull.t0) * 100) / 100
+              Time: Math.round((duration) * 100) / 100
             },
           });
         }
-        pull = { t0: dataPoints[0].t, wSum: 0, wCount: 0, wMax: 0, wMin: 0, active: false };
+        pull = { t0: dp[0].t, wSum: 0, wCount: 0, wMax: 0, wMin: 0, active: false };
       }
 
       pull.wSum += wSum;
@@ -189,61 +201,71 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
       pull.wMax = Math.max(pull.wMax, wMax);
       pull.wMin = Math.min(pull.wMin, wMin);
 
+      const newDataPoints = [...state.dataPoints, ...dp].slice(-800);
+      const max = newDataPoints.reduce((max, dp) => Math.max(max, dp.w), 0);
+
       // TODO: fix how cutting off data points messes up the current pull
       return {
+        t0: state.t0 ?? tx.value,
+        max: max,
         currentPull: pull,
-        pastPulls: pulls,
-        dataPoints: [...state.dataPoints, ...dataPoints].slice(-800),
+        dataPoints: newDataPoints,
       };
     });
   };
 
-  const t = useSharedValue<number | null>(null);
   const tx = useSharedValue(0);
-  const view = useSharedValue<ChartRect>({ x: { min: 0, max: 0 }, y: { min: 0, max: 0 } });
+  const viewport = useSharedValue<Viewport>({ left: 0, right: 0, top: 0, bottom: 0 });
 
   useFrameCallback((frameInfo) => {
-    t.value = frameInfo.timestamp;
-    if (startTime !== null) {
-      tx.value = (startTime - frameInfo.timestamp) / 1000;
-      view.value = { x: { min: -tx.value - 10, max: -tx.value }, y: { min: 0, max: 10 } };
+    if (workoutState === "playing") {
+      tx.set((t) => t + (frameInfo.timeSincePreviousFrame ?? 0) / 1000);
     }
   });
 
-  const [domain, setDomain] = useState<ChartRect>({ x: { min: 10, max: 0 }, y: { min: 0, max: 10 } });
+  const isPulling = useDerivedValue(() => {
+    return pullIndicators.value.pullWeight > showAfterPullWeight && pullIndicators.value.pullTime > showAfterDuration;
+  });
 
-  // update domain
-  useAnimatedReaction(
-    () => {
-      return { 
-        t: Math.floor((t.value ?? 0) / 1000) ,
-        view: view.value 
-      };
-    },
-    (currentValue, previousValue) => {
-      if (previousValue?.t !== currentValue.t) {
-        runOnJS(setDomain)({ 
-          x: { min: currentValue.view.x.min, max: currentValue.view.x.max + 2 }, 
-          y: { min: currentValue.view.y.min, max: currentValue.view.y.max + 2 } 
-        });
-      }
-    },
+  const view = useDerivedValue(() => {
+    return { x: { min: tx.value - 10, max: tx.value }, y: { min: 0, max: Math.max(1, scaleInput.value.max * 1.1) } };
+  });
+
+  const linePoints = useDerivedValue(() =>
+    scaleInput.value.dataPoints.map((dp) => vec(xToCanvas(view.value, viewport.value, dp.t + (scaleInput.value.t0 ?? 0)), yToCanvas(view.value, viewport.value, dp.w)))
   );
 
+  const pullWeight = useDerivedValue(() =>
+    renderLongFormValue(pullIndicators.value.pullWeight, weightUnit)
+  );
 
-  // useAnimatedReaction(
-  //   () => {
-  //     return { kx: kx.value, ky: ky.value, tx: tx.value, ty: ty.value };
-  //   },
-  //   ({ kx, ky, tx, ty }) => {
-  //     const m = setTranslate(transformState.matrix.value, tx, ty);
-  //     transformState.matrix.value = setScale(m, kx, ky);
-  //   },
-  // );
+  const totalTime = useDerivedValue(() =>
+    renderLongFormValue(Math.floor(tx.value), timeUnit)
+  );
 
-  // const linePoints = useDerivedValue(() => {
-  //   return scaleInput.dataPoints.map((dp) => vec(xToViewport(view.value, dp.t), yToViewport(view.value, dp.w)));
-  // });
+  const timeSinceLastPull = useDerivedValue(() =>
+    isPulling.value ?
+      renderLongFormValue(Math.floor(pullIndicators.value.pullTime), timeUnit) :
+      renderLongFormValue(Math.floor(tx.value - (pastPulls[pastPulls.length - 1]?.t1 ?? 0)), timeUnit)
+  );
+
+  const currentPullPoints = useDerivedValue(() => {
+    const ret = pullIndicators.value.pullWeight > 0 ? [
+      vec(xToCanvas(view.value, viewport.value, pullIndicators.value.pullT0), yToCanvas(view.value, viewport.value, 0)),
+      vec(xToCanvas(view.value, viewport.value, pullIndicators.value.pullT0), yToCanvas(view.value, viewport.value, pullIndicators.value.pullWeight)),
+      vec(xToCanvas(view.value, viewport.value, tx.value), yToCanvas(view.value, viewport.value, scaleInput.value.currentPull.wSum / scaleInput.value.currentPull.wCount)),
+    ] : [];
+    return ret;
+  });
+
+  const pastPullsPoints = useDerivedValue(() => {
+    return pastPulls.map((pull) => [
+      vec(xToCanvas(view.value, viewport.value, pull.t0), yToCanvas(view.value, viewport.value, 0)),
+      vec(xToCanvas(view.value, viewport.value, pull.t0), yToCanvas(view.value, viewport.value, pull.wAvg)),
+      vec(xToCanvas(view.value, viewport.value, pull.t1), yToCanvas(view.value, viewport.value, pull.wAvg)),
+      vec(xToCanvas(view.value, viewport.value, pull.t1), yToCanvas(view.value, viewport.value, 0)),
+    ]).flat();
+  });
 
   React.useEffect(() => {
     navigation.setOptions({
@@ -270,44 +292,6 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
     <SafeAreaView style={[styles.container]} edges={["left", "right", "bottom"]}>
       {isConnected || true ? (
         <>
-          {/* Control Buttons Section */}
-          <View style={styles.controlSection}>
-            <View style={styles.buttonRow}>
-              <TouchableOpacity onPress={() => {
-                setStartTime(t.value);
-              }} style={[styles.controlButton, { backgroundColor: theme.colors.primary }]}>
-                <Text style={[styles.controlButtonText, { color: theme.colors.onPrimary }]}>Start</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => {
-                setStartTime(null);
-              }} style={[styles.controlButton, { backgroundColor: theme.colors.secondary }]}>
-                <Text style={[styles.controlButtonText, { color: theme.colors.onSecondary }]}>Stop</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.buttonRow}>
-              <TouchableOpacity onPress={() => {
-                setScaleInput({
-                  dataPoints: [],
-                  currentPull: { t0: 0, wSum: 0, wCount: 0, wMin: 0, wMax: 0, active: false },
-                  pastPulls: [],
-                });
-                startMeasurement(onDataUpdate);
-                setStartTime((t.value ?? 0) + 10.5 * 1000);
-              }} style={[styles.controlButton, { backgroundColor: theme.colors.primary }]}>
-                <Text style={[styles.controlButtonText, { color: theme.colors.onPrimary }]}>Start</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => {
-                stopMeasurement();
-                setStartTime(null);
-              }} style={[styles.controlButton, { backgroundColor: theme.colors.secondary }]}>
-                <Text style={[styles.controlButtonText, { color: theme.colors.onSecondary }]}>Stop</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={tareScale} style={[styles.controlButton, { backgroundColor: theme.colors.tertiary }]}>
-                <Text style={[styles.controlButtonText, { color: theme.colors.onTertiary }]}>Tare</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
           <View style={{ paddingHorizontal: 10 }}>
             <TagSelector
               activity={activity}
@@ -318,159 +302,169 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
             />
           </View>
 
+          {/* Control Buttons Section */}
+          <View style={styles.controlSection}>
+            <View style={styles.buttonRow}>
+              <Button
+                style={{ flex: 1 }}
+                mode="outlined"
+                icon="play"
+                onPress={() => {
+                  setWorkoutState("playing");
+                }}>
+                <Text>Start</Text>
+              </Button>
+              <Button
+                style={{ flex: 1 }}
+                mode="outlined"
+                icon="pause"
+                onPress={() => {
+                  setWorkoutState("paused");
+                }}>
+                <Text>Pause</Text>
+              </Button>
+              <Button
+                style={{ flex: 1 }}
+                mode="outlined"
+                icon="refresh"
+                onPress={() => {
+                  tx.value = 0;
+                  setWorkoutState("paused");
+                }}>
+                <Text>Reset</Text>
+              </Button>
+            </View>
+            <View style={styles.buttonRow}>
+              <Button
+                style={{ flex: 1 }}
+                mode="outlined"
+                icon="record"
+                onPress={() => {
+
+                  scaleInput.value = {
+                    t0: null,
+                    max: 0,
+                    dataPoints: [],
+                    currentPull: { t0: 0, wSum: 0, wCount: 0, wMin: 0, wMax: 0, active: false },
+                  };
+                  setWorkoutState("playing");
+                  setRecordingState("recording");
+                  startMeasurement(onDataUpdate);
+                }}>
+                <Text>Record</Text>
+              </Button>
+              <Button
+                style={{ flex: 1 }}
+                mode="outlined"
+                icon="stop"
+                onPress={() => {
+                  stopMeasurement();
+                  setRecordingState("stopped");
+                }}>
+                <Text>Stop</Text>
+              </Button>
+              <Button
+                style={{ flex: 1 }}
+                mode="outlined"
+                icon="scale-balance"
+                onPress={() => {
+                  tareScale();
+                }}>
+                <Text>Tare</Text>
+              </Button>
+            </View>
+          </View>
+
           {/* Weight and Time Display Section */}
           <View style={[styles.weightSection, { backgroundColor: theme.colors.surface }]}>
             <View style={styles.measurementRow}>
               <View style={styles.measurementColumn}>
-                <Text style={[styles.measurementLabel, { color: theme.colors.onSurface }]}>Weight:</Text>
-                <Text
-                  style={[styles.measurementValue, { color: theme.colors.onSurface }]}
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
+                <Text style={[styles.measurementLabel, { color: theme.colors.onSurface, width: largeFontBox.width }]}>Weight</Text>
+                <Canvas
+                  style={{ width: largeFontBox.width, height: largeFontBox.height }}
                 >
-                  {isFinite(pullWeight) ? renderLongFormValue(pullWeight, weightUnit) : '-'}
-                </Text>
+                  <SkiaText
+                    text={pullWeight}
+                    font={largeFont}
+                    color={theme.colors.onSurface}
+                    x={0}
+                    y={-largeFontBox.y}
+                  />
+                </Canvas>
               </View>
               <View style={styles.measurementColumn}>
-                <Text style={[styles.measurementLabel, { color: theme.colors.onSurface }]}>Time:</Text>
-                <Text
-                  style={[styles.measurementValue, { color: theme.colors.onSurface }]}
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
+                <Text style={[styles.measurementLabel, { color: theme.colors.onSurface, width: largeFontBox.width }]}>Time</Text>
+                <Canvas
+                  style={{ width: largeFontBox.width, height: largeFontBox.height }}
                 >
-                  {isFinite(pullTime) ? renderShortFormValue(pullTime, timeUnit) : '-'}
-                </Text>
+                  <SkiaText
+                    text={totalTime}
+                    font={largeFont}
+                    color={theme.colors.onSurface}
+                    x={0}
+                    y={-largeFontBox.y}
+                  />
+                </Canvas>
+              </View>
+              <View style={styles.measurementColumn}>
+                <Text style={[styles.measurementLabel, { color: theme.colors.onSurface, width: largeFontBox.width }]}>Rest/Pull</Text>
+                <Canvas
+                  style={{ width: largeFontBox.width, height: largeFontBox.height }}
+                >
+                  <SkiaText
+                    text={timeSinceLastPull}
+                    font={largeFont}
+                    color={theme.colors.onSurface}
+                    x={0}
+                    y={-largeFontBox.y}
+                  />
+                </Canvas>
               </View>
             </View>
-
-            {/* <View style={styles.measurementRow}>
+            <View style={styles.measurementRow}>
               <View style={styles.measurementColumn}>
-                <Text style={[styles.measurementLabel, { color: theme.colors.onSurface }]}>Max Weight:</Text>
-                <Text style={[styles.measurementValue, { color: theme.colors.onSurface }]}>{maxWeight ? maxWeight.toFixed(1) : '-'}</Text>
-              </View>              
-              <View style={styles.measurementColumn}>
-                <Text style={[styles.measurementLabel, { color: theme.colors.onSurface }]}>Pull Start:</Text>
-                <Text style={[styles.measurementValue, { color: theme.colors.onSurface }]}>{pullStart ? pullStart.toFixed(1) : '-'}</Text>
+                <Text style={[styles.measurementLabel, { color: theme.colors.onSurface, width: largeFontBox.width }]}>Reps</Text>
+                <Canvas
+                  style={{ width: largeFontBox.width, height: largeFontBox.height }}
+                >
+                  <SkiaText
+                    text={pastPulls.length.toString()}
+                    font={largeFont}
+                    color={theme.colors.onSurface}
+                    x={0}
+                    y={-largeFontBox.y}
+                  />
+                </Canvas>
               </View>
-            </View> */}
+            </View>
 
             <View style={{ width: '100%', flex: 1 }}>
               <SkiaChart
                 gridLineColor={theme.colors.outline}
                 view={view}
-                domain={domain}
+                viewportShared={viewport}
               >
-                    {/* <Points
-                      points={linePoints}
-                      color={theme.colors.primary}
-                      strokeWidth={1}
-                    /> */}
-                </SkiaChart>
-              {/* <CartesianChart
-                data={scaleInput.dataPoints.length > 0 ? scaleInput.dataPoints : [{ t: 0, w: 0 }]}
-                xKey="t"
-                yKeys={["w"]}
-                transformState={transformState}
-                onChartBoundsChange={(bounds) => {
-                  chartWidth.value = bounds.right - bounds.left;
-                }}
-                transformConfig={{
-                  pan: { enabled: false },
-                  pinch: { enabled: false },
-                }}
-                domain={{ x: [0, 10], y: [0, 10] }}
-                viewport={{ x: [0, 10], y: [0, 10] }}
-                renderOutside={({ chartBounds, xScale }) => {
-                  const framePath = Skia.Path.Make();
-                  const w = 1;
-                  framePath.moveTo(chartBounds.left + w / 2, chartBounds.top + w / 2);
-                  framePath.lineTo(chartBounds.right - w / 2, chartBounds.top + w / 2);
-                  framePath.lineTo(chartBounds.right - w / 2, chartBounds.bottom - w / 2);
-                  framePath.lineTo(chartBounds.left + w / 2, chartBounds.bottom - w / 2);
-                  framePath.close();
-
-                  return (
-                    <>
-                      <Path key="frame" style="stroke" strokeJoin="round" strokeWidth={w} path={framePath} color={theme.colors.outline} />
-                    </>
-                  );
-                }}
-                xAxis={{
-                  font: font,
-                  labelColor: theme.colors.outline,
-                  lineColor: theme.colors.outline,
-                  enableRescaling: true,
-                  lineWidth: 0,
-                }}
-                yAxis={[
-                  {
-                    yKeys: ["w"],
-                    font: font,
-                    tickCount: 10,
-                    labelColor: theme.colors.outline,
-                    lineColor: theme.colors.outline,
-                    domain: [0, chartRange],
-                  },
-                ]}
-              >
-                {({ points, xScale, yScale }) => {
-                  console.log(xScale(0));
-                  const currentPull = pullWeight > 0 ? [
-                    vec(pullT0, 0),
-                    vec(pullT0, pullWeight),
-                    vec(scaleInput.dataPoints[scaleInput.dataPoints.length - 1].t, scaleInput.currentPull.wSum / scaleInput.currentPull.wCount),
-                  ] : [];
-                  const pastPulls = scaleInput.pastPulls.map((pull) => [
-                    vec(pull.t0, 0),
-                    vec(pull.t0, pull.wAvg),
-                    vec(pull.t1, pull.wAvg),
-                    vec(pull.t1, 0),
-                  ]);
-                  const gridPath = Skia.Path.Make();
-                  for (let i = 0; i <= 10; i += 2) {
-                    gridPath.moveTo(xScale(i), yScale(0));
-                    gridPath.lineTo(xScale(i), yScale(10));
-                  }
-
-                  return (
-                    <>
-                      <Line
-                        key="data"
-                        points={points.w}
-                        color={theme.colors.primary}
-                        strokeWidth={1}
-                      />
-                      {pastPulls.map((pull) => (
-                        <Points
-                          key={pull[0].x}
-                          points={pull.map((point) => vec(xScale(point.x), yScale(point.y)))}
-                          mode="polygon"
-                          color={theme.colors.secondary}
-                          style="stroke"
-                          strokeWidth={2}
-                        />
-                      ))}
-                      <Points
-                        key="currentPull"
-                        points={currentPull.map((point) => vec(xScale(point.x), yScale(point.y)))}
-                        mode="polygon"
-                        color={theme.colors.secondary}
-                        style="stroke"
-                        strokeWidth={2}
-                      />
-                      <Path
-                        key="gridline"
-                        path={gridPath}
-                        color={theme.colors.outline}
-                        style="stroke"
-                        strokeWidth={0}
-                      />
-                    </>
-                  );
-                }}
-              </CartesianChart> */}
-
+                <Points
+                  mode="polygon"
+                  points={linePoints}
+                  color={theme.colors.primary}
+                  strokeWidth={1}
+                />
+                <Points
+                  mode="polygon"
+                  points={currentPullPoints}
+                  color={theme.colors.secondary}
+                  strokeWidth={2}
+                />
+                <Points
+                  mode="polygon"
+                  points={pastPullsPoints}
+                  color={theme.colors.secondary}
+                  strokeWidth={2}
+                />
+              </SkiaChart>
             </View>
+            <View style={{ height: 50 }} />
           </View>
         </>
       ) : (
@@ -495,19 +489,7 @@ const styles = StyleSheet.create({
   },
   buttonRow: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
-  },
-  controlButton: {
-    justifyContent: "center",
-    alignItems: "center",
-    height: 50,
-    width: '30%',
-    borderRadius: 8,
-  },
-  controlButtonText: {
-    fontSize: 16,
-    fontWeight: "bold",
+    gap: 10,
   },
   weightSection: {
     flex: 1,
@@ -529,14 +511,13 @@ const styles = StyleSheet.create({
   },
   measurementColumn: {
     alignItems: 'center',
+    justifyContent: 'center',
     flex: 1,
+    padding: 5,
+    gap: 10,
   },
   measurementLabel: {
-    fontSize: 24,
-    fontWeight: "bold",
-  },
-  measurementValue: {
-    fontSize: 30,
+    fontSize: 16,
     fontWeight: "bold",
   },
   disconnectedSection: {

@@ -1,4 +1,4 @@
-import React, { Fragment, useRef, useState } from "react";
+import React, { Fragment, useRef, useState, useEffect } from "react";
 import { View, Text, Platform, useWindowDimensions, FlatList, LayoutChangeEvent, LayoutRectangle } from "react-native";
 import { Canvas, matchFont, Text as SkiaText, vec, Line, Skia, Path, rect, Group } from "@shopify/react-native-skia";
 import { SubUnit } from "../../Model/StoreTypes";
@@ -14,45 +14,36 @@ export type Rect = {
   y: { min: number, max: number },
 }
 
-type Viewport = {
+export type Viewport = {
   left: number,
   right: number,
   top: number,
   bottom: number,
 }
 
-type SkiaChartData = {
-  gridLineColor: string,
-  view: SharedValue<Rect>,
-  domain: Rect,
-  children?: React.ReactNode,
-}
-
-export const xToViewport = (view: Rect, x: number) => {
-  'worklet'
-  return (x - view.x.min) * (view.x.max - view.x.min) / (view.x.max - view.x.min);
-}
-
-export const yToViewport = (view: Rect, y: number) => {
-  'worklet'
-  return (y - view.y.min) * (view.y.max - view.y.min) / (view.y.max - view.y.min);
-}
-
-const xToCanvas = (view: Rect, viewport: Viewport, x: number) => {
+export const xToCanvas = (view: Rect, viewport: Viewport, x: number) => {
   "worklet"
   return (x - view.x.min) * (viewport.right - viewport.left) / (view.x.max - view.x.min) + viewport.left;
 }
 
-const yToCanvas = (view: Rect, viewport: Viewport, y: number) => {
+export const yToCanvas = (view: Rect, viewport: Viewport, y: number) => {
   "worklet"
   return viewport.bottom - (y - view.y.min) * (viewport.bottom - viewport.top) / (view.y.max - view.y.min);
+}
+
+
+type SkiaChartData = {
+  gridLineColor: string,
+  view: SharedValue<Rect>,
+  viewportShared: SharedValue<Viewport>,
+  children?: React.ReactNode,
 }
 
 const SkiaChart = (
   {
     gridLineColor,
     view,
-    domain,
+    viewportShared,
     children,
   }:
     SkiaChartData
@@ -67,11 +58,6 @@ const SkiaChart = (
   const yLabelPadding = 5;
   const xNumTicks = 10;
   const yNumTicks = 10;
-
-  const unitX: SubUnit = { type: "time", unit: "seconds" };
-  const xTicks = cmpMajorTicks(unitX, domain.x, xNumTicks);
-  const xTickLabels = xTicks.map((tick) => renderShortFormValue(tick, unitX));
-  const xTickLabelBoxes = xTickLabels.map((label) => font.measureText(label));
 
   const viewport: Viewport = (() => {
     const topViewportPadding = 5;
@@ -90,43 +76,79 @@ const SkiaChart = (
     }
   })();
 
+  useEffect(() => {
+    viewportShared.value = viewport;
+  }, [viewport]);
+
   const viewportClip = rect(viewport.left, viewport.top, viewport.right - viewport.left, viewport.bottom - viewport.top);
 
-  // const xTickLine = [...Array(xNumTicks * 2).keys()].map((i) => ({
-  //   p1: useDerivedValue(() =>
-  //     vec(xToCanvas(view.value, viewport, xTicks[i]), viewport.top)),
-  //   p2: useDerivedValue(() =>
-  //     vec(xToCanvas(view.value, viewport, xTicks[i]), viewport.bottom)),
-  //   labelX: useDerivedValue(() =>
-  //     xToCanvas(view.value, viewport, xTicks[i]) - xTickLabelBoxes[i]?.width / 2),
-  //   labelY: useDerivedValue(() =>
-  //     viewport.bottom + xLabelPadding - xTickLabelBoxes[i]?.y),
-  //   label: xTickLabels[i]
-  // }));
-
-  const xTickLine = xTicks.map((tick, i) => ({
-    p1: makeMutable(vec(NaN, NaN)),
-    p2: makeMutable(vec(NaN, NaN)),
-    labelX: makeMutable(NaN),
-    labelY: makeMutable(NaN),
-    label: xTickLabels[i]
+  const xTickLine = [...Array(xNumTicks * 2).keys()].map((i) => ({
+    x: useSharedValue(NaN),
+    p1: useSharedValue(vec(NaN, NaN)),
+    p2: useSharedValue(vec(NaN, NaN)),
+    labelX: useSharedValue(NaN),
+    labelY: useSharedValue(NaN),
+    label: useSharedValue("")
   }));
-
-  const unitY: SubUnit = { type: "weight", unit: "kg" };
-  const yTicks = cmpMajorTicks(unitY, domain.y, 10);
-  const yTickLabels = yTicks.map((tick) => renderShortFormValue(tick, unitY));
-  const yTickLabelBoxes = yTickLabels.map((label) => font.measureText(label));
 
   const yTickLine = [...Array(yNumTicks * 2).keys()].map((i) => ({
-    p1: useDerivedValue(() =>
-      vec(viewport.left, yToCanvas(view.value, viewport, yTicks[i]))),
-    p2: useDerivedValue(() =>
-      vec(viewport.right, yToCanvas(view.value, viewport, yTicks[i]))),
-    labelX: useDerivedValue(() =>
-      viewport.left - yTickLabelBoxes[i]?.width - yLabelPadding),
-    labelY: useDerivedValue(() =>
-      yToCanvas(view.value, viewport, yTicks[i]) + yTickLabelBoxes[i]?.height * 0.4)
+    y: useSharedValue(NaN),
+    p1: useSharedValue(vec(NaN, NaN)),
+    p2: useSharedValue(vec(NaN, NaN)),
+    labelX: useSharedValue(NaN),
+    labelY: useSharedValue(NaN),
+    label: useSharedValue("")
   }));
+
+  useAnimatedReaction(
+    () => {
+      return {
+        view: view.value,
+      };
+    },
+    (value, oldValue) => {
+      if (Math.floor(value.view.x.max) !== Math.floor((oldValue?.view.x.max ?? 0))) {
+        const unitX: SubUnit = { type: "time", unit: "seconds" };
+        const xTicks = cmpMajorTicks(unitX, value.view.x, xNumTicks);
+        const xTickLabels = xTicks.map((tick) => renderShortFormValue(tick, unitX));
+        const xTickLabelBoxes = xTickLabels.map((label) => font.measureText(label));
+
+        xTickLine.forEach((state, index) => {
+          state.x.value = xTicks[index];
+          state.p1.value = vec(xToCanvas(value.view, viewport, xTicks[index]), viewport.top);
+          state.p2.value = vec(xToCanvas(value.view, viewport, xTicks[index]), viewport.bottom);
+          state.labelX.value = xToCanvas(value.view, viewport, xTicks[index]) - xTickLabelBoxes[index]?.width / 2;
+          state.labelY.value = viewport.bottom + xLabelPadding - xTickLabelBoxes[index]?.y;
+          state.label.value = xTickLabels[index] ?? "";
+        });
+      }
+    }
+  );
+
+  useAnimatedReaction(
+    () => {
+      return {
+        view: view.value,
+      };
+    },
+    (value, oldValue) => {
+      if (Math.floor(value.view.y.max) !== Math.floor(oldValue?.view.y.max ?? 0)) {
+        const unitY: SubUnit = { type: "weight", unit: "kg" };
+        const yTicks = cmpMajorTicks(unitY, { min: value.view.y.min, max: value.view.y.max + 2 }, yNumTicks);
+        const yTickLabels = yTicks.map((tick) => renderShortFormValue(tick, unitY));
+        const yTickLabelBoxes = yTickLabels.map((label) => font.measureText(label));
+
+        yTickLine.forEach((state, index) => {
+          state.y.value = yTicks[index];
+          state.p1.value = vec(viewport.left, yToCanvas(value.view, viewport, yTicks[index]));
+          state.p2.value = vec(viewport.right, yToCanvas(value.view, viewport, yTicks[index]));
+          state.labelX.value = viewport.left - yTickLabelBoxes[index]?.width - yLabelPadding;
+          state.labelY.value = yToCanvas(value.view, viewport, yTicks[index]) + yTickLabelBoxes[index]?.height * 0.4;
+          state.label.value = yTickLabels[index] ?? "";
+        });
+      }
+    },
+  );
 
   const onLayout = React.useCallback(
     ({ nativeEvent: { layout } }: LayoutChangeEvent) => {
@@ -150,10 +172,17 @@ const SkiaChart = (
     },
     (view, _) => {
       for (let i = 0; i < xTickLine.length; i++) {
-        xTickLine[i].p1.value = vec(xToCanvas(view, viewport, xTicks[i]), viewport.top);
-        xTickLine[i].p2.value = vec(xToCanvas(view, viewport, xTicks[i]), viewport.bottom);
-        xTickLine[i].labelX.value = xToCanvas(view, viewport, xTicks[i]) - xTickLabelBoxes[i]?.width / 2;
-        xTickLine[i].labelY.value = viewport.bottom + xLabelPadding - xTickLabelBoxes[i]?.y;
+        xTickLine[i].p1.value = vec(xToCanvas(view, viewport, xTickLine[i].x.value), viewport.top);
+        xTickLine[i].p2.value = vec(xToCanvas(view, viewport, xTickLine[i].x.value), viewport.bottom);
+        xTickLine[i].labelX.value = xToCanvas(view, viewport, xTickLine[i].x.value) - 5;
+        xTickLine[i].labelY.value = viewport.bottom + xLabelPadding + 7;
+      }
+
+      for (let i = 0; i < yTickLine.length; i++) {
+        yTickLine[i].p1.value = vec(viewport.left, yToCanvas(view, viewport, yTickLine[i].y.value));
+        yTickLine[i].p2.value = vec(viewport.right, yToCanvas(view, viewport, yTickLine[i].y.value));
+        yTickLine[i].labelX.value = viewport.left - 15 - yLabelPadding;
+        yTickLine[i].labelY.value = yToCanvas(view, viewport, yTickLine[i].y.value) + 3;
       }
     },
   );
@@ -167,55 +196,64 @@ const SkiaChart = (
           height: size?.height,
         }}>
           <Path key="frame" style="stroke" strokeJoin="round" strokeWidth={w} path={framePath} color={gridLineColor} />
-          {xTickLine.slice(0, 5).map((tick, index) => {
 
-            return (
-              <Fragment key={`x-${tick.label}`}>
-                <Group key={`x-${tick.label}-group`} clip={viewportClip}>
-                  <Line
-                    clip={viewportClip}
-                    p1={tick.p1}
-                    p2={tick.p2}
-                    color={gridLineColor}
-                    strokeWidth={0}
-                    opacity={0.5}
-                  />
-                </Group>
-                <SkiaText
-                  key={`x-${tick.label}-text`}
-                  x={tick.labelX}
-                  y={tick.labelY}
-                  color={gridLineColor}
-                  font={font}
-                  text={tick.label}
-                />
-              </Fragment>
+          <Group clip={viewportClip}>
+            {xTickLine.map((tick, index) =>
+            (
+              <Line
+                key={`x-${index}`}
+                clip={viewportClip}
+                p1={tick.p1}
+                p2={tick.p2}
+                color={gridLineColor}
+                strokeWidth={0}
+                opacity={0.5}
+              />
             )
-          })}
-          {yTicks.map((tick, index) => {
-            return (
-              <Fragment key={`y-${yTickLabels[index]}`}>
-                <Group clip={viewportClip}>
-                  <Line
-                    clip={viewportClip}
-                    p1={yTickLine[index].p1}
-                    p2={yTickLine[index].p2}
-                    color={gridLineColor}
-                    strokeWidth={0}
-                    opacity={0.5}
-                  />
-                </Group>
-                <SkiaText
-                  x={yTickLine[index].labelX}
-                  y={yTickLine[index].labelY}
-                  color={gridLineColor}
-                  font={font}
-                  text={yTickLabels[index]}
-                />
-              </Fragment>
+            )}
+            {yTickLine.map((tick, index) =>
+            (
+              <Line
+                key={`y-${index}`}
+                clip={viewportClip}
+                p1={tick.p1}
+                p2={tick.p2}
+                color={gridLineColor}
+                strokeWidth={0}
+                opacity={0.5}
+              />
             )
-          })}
-          {children}
+            )}
+          </Group>
+          <Fragment>
+            {xTickLine.map((tick, index) =>
+            (
+              <SkiaText
+                key={`x-${index}-text`}
+                x={tick.labelX}
+                y={tick.labelY}
+                color={gridLineColor}
+                font={font}
+                text={tick.label}
+              />
+            )
+            )}
+            {yTickLine.map((tick, index) =>
+            (
+              <SkiaText
+                key={`y-${index}-text`}
+                x={tick.labelX}
+                y={tick.labelY}
+                color={gridLineColor}
+                font={font}
+                text={tick.label}
+              />
+            )
+            )}
+          </Fragment>
+          <Group clip={viewportClip}>
+            {children}
+          </Group>
         </Canvas>
         <View style={{
           position: 'absolute',
@@ -224,7 +262,7 @@ const SkiaChart = (
           width: viewport.right - viewport.left,
           height: viewport.bottom - viewport.top,
         }}>
-          
+
         </View>
       </>}
     </View>
