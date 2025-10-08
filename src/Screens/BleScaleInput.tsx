@@ -11,11 +11,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { getTheme, getThemePalette, getThemeVariant } from "../Model/Theme";
 import { ActivityType, DataPoint, dateToDateList, timeToDateList } from "../Model/StoreTypes";
 import { Button } from "react-native-paper";
-import { CartesianChart, getTransformComponents, Line, setScale, setTranslate, useChartTransformState } from "victory-native";
-import { matchFont, Path, Points, Rect, Skia, Text as SkiaText, vec } from "@shopify/react-native-skia";
-import { useAnimatedReaction, useSharedValue, withTiming, useFrameCallback } from "react-native-reanimated";
+import { CartesianChart, getTransformComponents, setScale, setTranslate, useChartTransformState } from "victory-native";
+import { matchFont, Path, Points, Rect, Skia, Text as SkiaText, vec, Line } from "@shopify/react-native-skia";
+import { useAnimatedReaction, useSharedValue, withTiming, useFrameCallback, useDerivedValue, runOnJS } from "react-native-reanimated";
 import { renderLongFormValue, renderShortFormValue } from "../Model/Unit";
 import TagSelector from "../Components/TagSelector";
+import SkiaChart, { Rect as ChartRect, xToViewport, yToViewport } from "../Components/Chart/SkiaChart";
 
 const fontFamily = Platform.select({ default: "sans-serif" });
 const font = matchFont({ fontFamily: fontFamily });
@@ -63,11 +64,6 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   const timeUnit = activity.unit.values.find((u: any) => u.name === "Time")?.unit;
 
   const [startTime, setStartTime] = useState<number | null>(null);
-
-  const transformState = useChartTransformState({
-    scaleX: 1.0, // Initial X-axis scale
-    scaleY: 1.0, // Initial Y-axis scale
-  }).state;
 
   const [scaleInput, setScaleInput] = useState<ScaleInput>({
     dataPoints: [],
@@ -203,40 +199,36 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   };
 
   const t = useSharedValue<number | null>(null);
-  const kx = useSharedValue(1);
-  const ky = useSharedValue(1);
   const tx = useSharedValue(0);
-  const ty = useSharedValue(0);
-
-  const chartWidth = useSharedValue<number>(NaN);
+  const view = useSharedValue<ChartRect>({ x: { min: 0, max: 0 }, y: { min: 0, max: 0 } });
 
   useFrameCallback((frameInfo) => {
     t.value = frameInfo.timestamp;
     if (startTime !== null) {
-      tx.value = (startTime - frameInfo.timestamp) / 1000 * chartWidth.value / 10;
-
-      const m = setTranslate(transformState.matrix.value, tx.value, ty.value);
-      transformState.matrix.value = setScale(m, kx.value, ky.value);
+      tx.value = (startTime - frameInfo.timestamp) / 1000;
+      view.value = { x: { min: -tx.value - 10, max: -tx.value }, y: { min: 0, max: 10 } };
     }
   });
 
-  // // enforce limits when panning
-  // useAnimatedReaction(
-  //   () => {
-  //     return transformState.panActive.value || transformState.zoomActive.value;
-  //   },
-  //   (currentValue, previousValue) => {
-  //     if (!currentValue && previousValue) {
-  //       const vals = getTransformComponents(transformState.matrix.value);
-  //       kx.value = vals.scaleX;
-  //       tx.value = vals.translateX;
+  const [domain, setDomain] = useState<ChartRect>({ x: { min: 10, max: 0 }, y: { min: 0, max: 10 } });
 
-  //       if (tx.value < 0) {
-  //         tx.value = withTiming(0);
-  //       }
-  //     }
-  //   },
-  // );
+  // update domain
+  useAnimatedReaction(
+    () => {
+      return { 
+        t: Math.floor((t.value ?? 0) / 1000) ,
+        view: view.value 
+      };
+    },
+    (currentValue, previousValue) => {
+      if (previousValue?.t !== currentValue.t) {
+        runOnJS(setDomain)({ 
+          x: { min: currentValue.view.x.min, max: currentValue.view.x.max + 2 }, 
+          y: { min: currentValue.view.y.min, max: currentValue.view.y.max + 2 } 
+        });
+      }
+    },
+  );
 
 
   // useAnimatedReaction(
@@ -249,8 +241,11 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   //   },
   // );
 
+  // const linePoints = useDerivedValue(() => {
+  //   return scaleInput.dataPoints.map((dp) => vec(xToViewport(view.value, dp.t), yToViewport(view.value, dp.w)));
+  // });
+
   React.useEffect(() => {
-    console.log("boop");
     navigation.setOptions({
       headerStyle: themeVariant == 'light' ? { backgroundColor: theme.colors.primary } : undefined,
       headerTintColor: "#ffffff",
@@ -360,7 +355,18 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
             </View> */}
 
             <View style={{ width: '100%', flex: 1 }}>
-              <CartesianChart
+              <SkiaChart
+                gridLineColor={theme.colors.outline}
+                view={view}
+                domain={domain}
+              >
+                    {/* <Points
+                      points={linePoints}
+                      color={theme.colors.primary}
+                      strokeWidth={1}
+                    /> */}
+                </SkiaChart>
+              {/* <CartesianChart
                 data={scaleInput.dataPoints.length > 0 ? scaleInput.dataPoints : [{ t: 0, w: 0 }]}
                 xKey="t"
                 yKeys={["w"]}
@@ -462,7 +468,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                     </>
                   );
                 }}
-              </CartesianChart>
+              </CartesianChart> */}
 
             </View>
           </View>

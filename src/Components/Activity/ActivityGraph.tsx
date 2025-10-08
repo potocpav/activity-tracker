@@ -10,7 +10,7 @@ import SubUnitMenu from "../SubUnitMenu";
 import DropdownMenu from "../DropdownMenu";
 import { getTheme } from "../../Model/Theme";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import FlatListChart, { BarChart, BoxChart, barBoundingBox, ViewDimensions } from "../FlatListChart";
+import FlatListChart, { BarChart, BoxChart, barBoundingBox, ViewDimensions } from "../Chart/FlatListChart";
 import Animated, { FadeInUp, FadeOutUp } from "react-native-reanimated";
 import { renderLongFormValue, isSummable } from "../../Model/Unit";
 import { Canvas, Line, vec } from "@shopify/react-native-skia";
