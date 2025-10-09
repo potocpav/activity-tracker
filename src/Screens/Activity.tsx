@@ -5,16 +5,16 @@ import {
   View,
   Alert,
 } from "react-native";
-import { Menu, Button } from 'react-native-paper';
+import { Menu } from 'react-native-paper';
 import useStore from "../Model/Store";
 import { DataPoint, ActivityType, Tag, dateListToDate } from "../Model/StoreTypes";
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import ActivitySummary from "./ActivitySummary";
 import { File, Paths } from "expo-file-system/next";
 import * as Sharing from 'expo-sharing';
 import { getTheme, getThemeVariant } from "../Model/Theme";
 import { SystemBars } from "react-native-edge-to-edge";
 import Hint from "../Components/Hint";
+import { ButtonRow, DotsIconButton, EditIconButton, PlusIconButton } from "../Components/Element";
 
 type ActivityProps = {
   navigation: any;
@@ -156,9 +156,8 @@ const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ 
       headerStyle: themeVariant == 'light' ? { backgroundColor: theme.colors.primary } : undefined,
       headerTintColor: "#ffffff",
       headerRight: () => (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Button compact={true}
-            onPress={() => {
+        <ButtonRow>
+          <PlusIconButton onPress={() => {
               dismissHint("add_data_point");
               switch (activity.special) {
                 case "ble_scale":
@@ -167,22 +166,10 @@ const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ 
                 default:
                   navigation.navigate("EditDataPoint", { activityName, newDataPoint: true });
               }
-            }}>
-            <View>
-              <MaterialCommunityIcons name="plus" size={26} color={"#ffffff"} />
-            </View>
-          </Button>
-          <Button compact={true} onPress={() => navigation.navigate("EditActivity", { activityName })}>
-            <View>
-              <MaterialCommunityIcons name="pencil" size={24} color={"#ffffff"} />
-            </View>
-          </Button>
-          <Button compact={true} onPress={() => setMenuVisible(!menuVisible)}>
-            <View>
-              <MaterialCommunityIcons name="dots-vertical" size={24} color={"#ffffff"} />
-            </View>
-          </Button>
-        </View>
+            }} color="white" />
+          <EditIconButton onPress={() => navigation.navigate("EditActivity", { activityName })} color="white" />
+          <DotsIconButton onPress={() => setMenuVisible(!menuVisible)} color="white" />
+        </ButtonRow>
       ),
     });
   }, [navigation, theme, menuVisible, activity]);

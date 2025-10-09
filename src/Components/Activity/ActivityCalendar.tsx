@@ -14,9 +14,9 @@ import Calendar from "../Calendar";
 import ValueMenu from "../ValueMenu";
 import SubUnitMenu from "../SubUnitMenu";
 import { getTheme } from "../../Model/Theme";
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Dialog, Portal, TextInput, Button } from "react-native-paper";
+import { Dialog, Portal, TextInput } from "react-native-paper";
 import Hint from "../Hint";
+import { CheckButton, CopyButton, DeleteButton, ButtonRow } from "../Element";
 
 const locale = NativeModules.I18nManager.localeIdentifier;
 
@@ -112,31 +112,24 @@ const ActivityCalendar = ({ navigation, activityName, calendarIndex }: ActivityC
             </View>
           </Dialog.Content>
           <Dialog.Actions>
+            <ButtonRow>
             {activity.calendars.length > 1 && (
-              <Button onPress={() => {
+              <DeleteButton onPress={() => {
                 deleteActivityCalendar(activityName, calendarIndex); 
                 setCalendarDialogVisible(false);
                 ToastAndroid.show('Calendar deleted', ToastAndroid.SHORT);
-                }}>
-              <View>
-                <MaterialCommunityIcons name="delete" size={22} color={theme.colors.onSurface} />
-              </View>
-              </Button>
+                }} color={theme.colors.onSurface} />
             )}
-            <Button onPress={() => {
+            <CopyButton onPress={() => {
               cloneActivityCalendar(activityName, calendarIndex); 
               setCalendarDialogVisible(false);
               ToastAndroid.show('Calendar cloned', ToastAndroid.SHORT);
-              }}>
-              <View>
-              <MaterialCommunityIcons name="content-copy" size={20} color={theme.colors.onSurface} />
-              </View>
-            </Button>
-            <Button onPress={() => {setActivityCalendar(activityName, calendarIndex, { ...calendar, label: calendarDialogNameInput }); setCalendarDialogVisible(false);}}>
-              <View>
-              <MaterialCommunityIcons name="check" size={22} color={theme.colors.onSurface} />
-              </View>
-            </Button>
+              }} color={theme.colors.onSurface} />
+            <CheckButton onPress={() => {
+              setActivityCalendar(activityName, calendarIndex, { ...calendar, label: calendarDialogNameInput }); 
+              setCalendarDialogVisible(false);
+              }} color={theme.colors.onSurface} />
+            </ButtonRow>
           </Dialog.Actions>
         </Dialog>
       </Portal>

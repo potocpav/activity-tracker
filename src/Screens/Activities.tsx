@@ -18,6 +18,7 @@ import EmptyPagePlaceholder from "../Components/EmptyPagePlaceholder";
 import Hint from "../Components/Hint";
 import Inset from "../Components/SafeAreaInset";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { ButtonRow, CheckIcon, CloseIcon, DoubleCheckIcon, PlusIcon, PlusIconButton } from "../Components/Element";
 
 type ActivitiesProps = {
   navigation: any;
@@ -43,20 +44,20 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
     navigation.setOptions({
       // title: activity.name,
       headerRight: () => (
-        <View style={styles.headerRightContainer}>
-          <Button compact={true} onPress={() => {
+        <ButtonRow>
+          <PlusIconButton onPress={() => {
             dismissHint("hello");
             navigation.navigate('EditActivity', { activityName: null });
-          }}>
-            <MaterialCommunityIcons name="plus" size={26} color={theme.colors.onSurface} />
-          </Button>
+          }} color={theme.colors.onSurface} />
           <Button compact={true} onPress={() => {
             dismissHint("hello");
             navigation.navigate('Settings');
           }}>
-            <MaterialCommunityIcons name="cog" size={24} color={theme.colors.onSurface} />
+            <View>
+              <MaterialCommunityIcons name="cog" size={24} color={theme.colors.onSurface} />
+            </View>
           </Button>
-        </View>
+        </ButtonRow>
       ),
     });
   }, [navigation, theme]);
@@ -135,29 +136,22 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
             opacity: pressed ? 0.5 : 1,
           }]}
         >
-          <View style={{ width: 40, height: 35, alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
             {(() => {
               if (activity.unit.type === "none") {
                 if (todayPointIndices.length > 1) {
-                  return (
-                    <View>
-                      <MaterialCommunityIcons name="check" size={23} color={palette[activity.color]} />
-                      <View style={{ position: "absolute", top: 0, left: 5, opacity: 0.5 }}>
-                        <MaterialCommunityIcons name="check" size={23} color={palette[activity.color]} />
-                      </View>
-                    </View>
-                  );
+                  return <DoubleCheckIcon color={palette[activity.color]} />;
                 } else if (todayPointIndices.length === 1) {
-                  return <MaterialCommunityIcons name="check" size={23} color={palette[activity.color]} />;
+                  return <CheckIcon color={palette[activity.color]} />;
                 } else {
-                  return <MaterialCommunityIcons name="close" size={23} color={palette[activity.color]} />;
+                  return <CloseIcon color={palette[activity.color]} />;
                 }
               } else {
                 switch (activity.special) {
                   case "ble_scale":
                     return <MaterialCommunityIcons name="bluetooth" size={22} color={palette[activity.color]} />;
                   default:
-                    return <MaterialCommunityIcons name="plus" size={26} color={palette[activity.color]} />;
+                    return <PlusIcon color={palette[activity.color]} />;
                 }
               }
             })()}
@@ -218,8 +212,8 @@ const getStyles = (theme: any, wideDisplay: boolean, dimensions: any) => StyleSh
     flexDirection: 'row',
   },
   activityRow: {
-    paddingHorizontal: 8 * dimensions.fontScale,
-    paddingVertical: 8 * dimensions.fontScale,
+    paddingHorizontal: 10 * dimensions.fontScale,
+    paddingVertical: 10 * dimensions.fontScale,
     flex: 1,
     flexDirection: 'row',
     gap: 4,
@@ -243,10 +237,6 @@ const getStyles = (theme: any, wideDisplay: boolean, dimensions: any) => StyleSh
   },
   activityValue: {
     fontSize: 16,
-  },
-  headerRightContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
   },
   menuAnchor: {
     width: 1,

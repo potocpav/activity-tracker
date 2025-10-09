@@ -7,7 +7,7 @@ import { getTheme, useWideDisplay } from "../Model/Theme";
 import { renderUnit, mapStringValue, uiaaGrades, vScaleGrades, numberToString, stringToNumber, ydsGrades, frenchGrades, fontGrades } from "../Model/Unit";
 import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { MinusIcon, PlusIcon } from "./Element";
+import { CheckButton, CloseButton, MinusIcon, PlusIcon } from "./Element";
 
 
 const subUnitProps = (subUnitType: SubUnitType, allUnits: SubUnit[], setAllUnits: (units: SubUnit[]) => void): { title: string, icon: string, description: string | null, children: React.ReactNode | null } => {
@@ -189,21 +189,19 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null, onChange:
         onDismiss={() => setUnitDialogVisible(false)}
       >
         <SafeAreaView style={{ flex: 1 }}>
-          <View style={{ backgroundColor: theme.colors.elevation.level1, elevation: 2, flexDirection: 'row', paddingVertical: 10, alignItems: 'center' }}>
+          <View style={{ backgroundColor: theme.colors.elevation.level1, elevation: 2, flexDirection: 'row', paddingVertical: 10, paddingRight: 10, alignItems: 'center' }}>
             <Button onPress={() => setUnitDialogVisible(false)}>
               <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onSurface} />
             </Button>
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: 20, color: theme.colors.onSurface }}>Select Unit</Text>
             </View>
-            <Button onPress={() => {
+            <CheckButton onPress={() => {
               setUnitDialogVisible(false);
               const newUnitInput = allUnits.find(unit => unit.type === chosenUnitType) ?? null;
               setUnitInput(newUnitInput);
               onChange(newUnitInput);
-            }}>
-              <MaterialCommunityIcons name="check" size={24} color={theme.colors.onSurface} />
-            </Button>
+            }} color={theme.colors.onSurface} />
           </View>
           <ScrollView>
             <View style={{ gap: 10, padding: 10 }}>
@@ -341,20 +339,13 @@ export const ValueEditor = ({
           <Dialog visible={climbingGradeDialogVisible} onDismiss={() => setClimbingGradeDialogVisible(false)}>
             <Dialog.Title>
               <View style={{ flex: 1, alignItems: 'flex-end', width: '100%' }}>
-                <Button onPress={() => {
+                <CloseButton onPress={() => {
                   setClimbingGradeDialogVisible(false);
                   onChange("");
-                }} compact={true}>
-                  <MaterialCommunityIcons name="close" size={24} color={theme.colors.onSurface} />
-                </Button>
+                }} color={theme.colors.onSurface} />
               </View>
             </Dialog.Title>
             <Dialog.ScrollArea>
-              <View style={{ flex: 1, alignItems: 'flex-end', justifyContent: 'flex-end' }}>
-                <Button onPress={() => { setClimbingGradeDialogVisible(false) }}>
-                  <MaterialCommunityIcons name="close" size={24} color={theme.colors.onSurface} />
-                </Button>
-              </View>
               <FlatList
                 key={`uiaa-grade-list-${numColumns}`}
                 getItemLayout={(_, index) => ({ length: itemHeight, offset: itemHeight * index, index })}

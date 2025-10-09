@@ -4,6 +4,7 @@ import { Menu, Button } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Tag, ActivityType } from "../Model/StoreTypes";
 import { getTheme, getThemePalette } from "../Model/Theme";
+import { ChevronDownIcon } from "./Element";
 
 interface TagMenuProps {
   activity: ActivityType;
@@ -33,15 +34,18 @@ const TagMenu: React.FC<TagMenuProps> = ({
         onDismiss={() => setMenuVisible(false)}
         anchor={
           button ? button(() => setMenuVisible(true)) :
-          <Button compact={true} onPress={() => setMenuVisible(true)} style={{ 
-            padding: 5,
+            <Button compact={true} onPress={() => setMenuVisible(true)} style={{
+              padding: 5,
             }}>
-              {tags.length === 0 ? 
-              <MaterialCommunityIcons name="tag-outline" size={18} color={theme.colors.onSurfaceVariant} /> :
-              <MaterialCommunityIcons name="tag" size={18} color={theme.colors.primary} />
-        }
-              <MaterialCommunityIcons name="chevron-down" size={23} color={theme.colors.onSurfaceVariant} />
-          </Button>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+              {tags.length === 0 ?
+                <MaterialCommunityIcons name="tag-outline" size={18} color={theme.colors.onSurfaceVariant} /> :
+                <MaterialCommunityIcons name="tag" size={18} color={theme.colors.primary} />
+              }
+              <ChevronDownIcon color={theme.colors.onSurfaceVariant} />
+              </View>
+
+            </Button>
         }
       >
         {activityTags.map((tag: Tag) => {
@@ -50,7 +54,7 @@ const TagMenu: React.FC<TagMenuProps> = ({
           let title = tag.name;
           if (state === 'yes') icon = 'check';
           else if (state === 'no') icon = 'close';
-          const newState : "yes" | "no" | "maybe" = state === 'maybe' ? 'yes' : state === 'yes' ? 'no' : 'maybe';
+          const newState: "yes" | "no" | "maybe" = state === 'maybe' ? 'yes' : state === 'yes' ? 'no' : 'maybe';
           let newTags;
           if (newState === 'maybe') {
             newTags = tags.filter((t) => t.name !== tag.name);

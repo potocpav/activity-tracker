@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text } from "react-native";
 import { Menu, Button } from 'react-native-paper';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { ChevronDownIcon } from "./Element";
 
 
 interface SubUnitMenuProps {
@@ -30,7 +30,7 @@ const SubUnitMenu: React.FC<SubUnitMenuProps> = ({
         <Button compact={true} onPress={() => setMenuVisible(true)} style={{ marginRight: 8 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Text style={{ marginRight: 10, color: themeColors.onSurfaceVariant }}>{subUnitName}</Text>
-            <MaterialCommunityIcons name="chevron-down" size={23} color={themeColors.onSurfaceVariant} />
+            <ChevronDownIcon color={themeColors.onSurfaceVariant} />
           </View>
         </Button>
       }

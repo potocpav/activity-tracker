@@ -14,6 +14,7 @@ import FlatListChart, { BarChart, BoxChart, barBoundingBox, ViewDimensions } fro
 import Animated, { FadeInUp, FadeOutUp } from "react-native-reanimated";
 import { renderLongFormValue, isSummable } from "../../Model/Unit";
 import { Canvas, Line, vec } from "@shopify/react-native-skia";
+import { ChevronDownIcon, DeleteButton, ButtonRow, CopyButton, CheckButton } from "../Element";
 
 
 const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, graphIndex: number }) => {
@@ -160,9 +161,9 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
           onDismiss={() => setGraphTypeMenuVisible(false)}
           anchor={
             <Button compact={true} onPress={() => setGraphTypeMenuVisible(true)}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                 {graphLabel(graph.graphType)}
-                <MaterialCommunityIcons name="chevron-down" size={23} color={theme.colors.onSurfaceVariant} style={{ marginLeft: 6 }} />
+                <ChevronDownIcon color={theme.colors.onSurfaceVariant} />
               </View>
             </Button>
           }
@@ -190,34 +191,24 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
             </View>
           </Dialog.Content>
           <Dialog.Actions>
+            <ButtonRow>
             {activity.graphs.length > 1 && (
-              <Button onPress={() => {
+              <DeleteButton onPress={() => {
                 deleteActivityGraph(activityName, graphIndex);
                 setGraphDialogVisible(false);
                 ToastAndroid.show('Graph deleted', ToastAndroid.SHORT);
-              }}>
-              <View>
-                <MaterialCommunityIcons name="delete" size={22} color={theme.colors.onSurface} />
-              </View>
-              </Button>
+              }} color={theme.colors.onSurface} />
             )}
-            <Button onPress={() => {
+            <CopyButton onPress={() => {
               cloneActivityGraph(activityName, graphIndex);
               setGraphDialogVisible(false);
               ToastAndroid.show('Graph cloned', ToastAndroid.SHORT);
-            }}>
-              <View>
-              <MaterialCommunityIcons name="content-copy" size={20} color={theme.colors.onSurface} />
-              </View>
-            </Button>
-            <Button onPress={() => {
+            }} color={theme.colors.onSurface} />
+            <CheckButton onPress={() => {
               setActivityGraph(activityName, graphIndex, { ...graph, label: graphDialogNameInput });
               setGraphDialogVisible(false);
-            }}>
-              <View>
-              <MaterialCommunityIcons name="check" size={22} color={theme.colors.onSurface} />
-              </View>
-            </Button>
+            }} color={theme.colors.onSurface} />
+            </ButtonRow>
           </Dialog.Actions>
         </Dialog>
       </Portal>

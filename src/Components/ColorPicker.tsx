@@ -1,7 +1,7 @@
 import React from 'react';
 import { View } from 'react-native';
 import { Dialog, Button } from 'react-native-paper';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { CheckIcon } from './Element';
 
 interface ColorPickerProps {
   visible: boolean;
@@ -37,9 +37,9 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ visible, palette, selectedCol
                   alignItems: 'center',
                   elevation: 2,
                 }}
-                contentStyle={{ width: 40, height: 40 }}
+                contentStyle={{ width: 40, height: 45 }}
               >
-                {selectedColor === row * 4 + idx ? <MaterialCommunityIcons name="check" size={23} color={theme.colors.surface} /> : null}
+                {selectedColor === row * 4 + idx ? <CheckIcon color={theme.colors.surface} /> : null}
               </Button>
             ))}
           </View>

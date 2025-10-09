@@ -21,6 +21,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
 import EmptyPagePlaceholder from "../Components/EmptyPagePlaceholder";
 import Inset from "../Components/SafeAreaInset";
+import { ButtonRow, DeleteIcon } from "../Components/Element";
 
 
 type ActivityDataProps = {
@@ -91,7 +92,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
       headerStyle: themeVariant == 'light' ? { backgroundColor: theme.colors.primary } : undefined,
       headerTintColor: "#ffffff",
       headerRight: () => (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <ButtonRow>
           {filteredDataPoints.length > 0 && day && <Button compact={true} onPress={() => {
               Alert.alert("Delete all listed data?", "This action cannot be undone.", [
                 {
@@ -107,8 +108,8 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
                 }
               ])
             }}>
-            <MaterialCommunityIcons name="delete" size={24} color={"#ffffff"} />
-          </Button>}
+              <DeleteIcon color={theme.colors.onSurface} />
+            </Button>}
           {activity.tags.length > 0 && (
               <TagMenu
                 activity={activity}
@@ -119,16 +120,20 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
                 activityTags={activity.tags}
                 button= {(setMenuVisible) => 
                 <Button compact={true} onPress={() => setMenuVisible()}>
-                  <MaterialCommunityIcons name="filter" size={24} color={"#ffffff"} />
+                  <View>
+                    <MaterialCommunityIcons name="filter" size={24} color="white" />
+                  </View>
                 </Button>
                 }
               />
           )}
           <Button compact={true}
             onPress={() => navigation.navigate("EditDataPoint", { activityName: activity.name, newDataPoint: true, newDataPointDate: day, tags: requiredTags })}>
-            <MaterialCommunityIcons name="plus" size={26} color={"#ffffff"} />
+              <View>
+              <MaterialCommunityIcons name="plus" size={26} color={"#ffffff"} />
+              </View>
           </Button>
-        </View>
+        </ButtonRow>
       ),
     });
   }, [navigation, theme, tagsMenuVisible, tags, activity]);

@@ -13,7 +13,7 @@ import { ActivityType, dateToDateList, DataPoint, dateListToDate, SubUnit, DateL
 import useStore from "../Model/Store";
 import { DatePickerModal } from "react-native-paper-dates";
 import { CalendarDate } from "react-native-paper-dates/lib/typescript/Date/Calendar";
-import { CheckButton, CheckPlusButton, DeleteButton } from "../Components/Element";
+import { CheckButton, CheckPlusButton, DeleteButton, ButtonRow } from "../Components/Element";
 import { cmpDateList, formatDate } from "../Model/Activity";
 import { getTheme, getThemePalette, getThemeVariant } from "../Model/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -216,13 +216,13 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
       headerStyle: themeVariant == 'light' ? { backgroundColor: theme.colors.primary } : undefined,
       headerTintColor: "#ffffff",
       headerRight: () => (
-        <>
+        <ButtonRow>
           {dataPointIndex !== undefined && (
             <DeleteButton onPress={deleteDataPointWrapper} color="white" />
           )}
           <CheckPlusButton onPress={duplicateDataPointWrapper} color="white" />
           <CheckButton onPress={saveDataPointWrapper} color="white" />
-        </>
+        </ButtonRow>
       ),
     });
   }, [navigation, theme, activity, inputDate, ...inputValues.map((inputValue: any) => inputValue.value[0]), inputTags, noteInput]);

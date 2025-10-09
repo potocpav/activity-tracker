@@ -44,6 +44,30 @@ export const CopyButton = ({ onPress, color }: { onPress: () => void, color: str
   </Button>
 );
 
+export const EditIconButton = ({ onPress, color }: { onPress: () => void, color: string }) => (
+  <Button compact={true} onPress={onPress}>
+    <EditIcon color={color} />
+  </Button>
+);
+
+export const DotsIconButton = ({ onPress, color }: { onPress: () => void, color: string }) => (
+  <Button compact={true} onPress={onPress}>
+    <DotsIcon color={color} />
+  </Button>
+);
+
+export const ChevronDownIcon = ({ color }: { color: string }) => (
+  <View>
+    <MaterialCommunityIcons name="chevron-down" size={23} color={color} />
+  </View>
+);
+
+export const DotsIcon = ({ color }: { color: string }) => (
+  <View>
+    <MaterialCommunityIcons name="dots-vertical" size={24} color={color} />
+  </View>
+);
+
 export const CopyIcon = ({ color }: { color: string }) => (
   <View>
     <MaterialCommunityIcons name="content-copy" size={20} color={color} />
@@ -77,9 +101,24 @@ export const CheckPlusIcon = ({ color }: { color: string }) => (
   </View>
 );
 
+export const DoubleCheckIcon = ({ color }: { color: string }) => (
+  <View>
+    <MaterialCommunityIcons name="check" size={23} color={color} />
+    <View style={{ position: "absolute", top: 0, left: 5, opacity: 0.5 }}>
+      <MaterialCommunityIcons name="check" size={23} color={color} />
+    </View>
+  </View>
+);
+
 export const PlusIcon = ({ color }: { color: string }) => (
   <View>
     <MaterialCommunityIcons name="plus" size={26} color={color} />
+  </View>
+);
+
+export const EditIcon = ({ color }: { color: string }) => (
+  <View>
+    <MaterialCommunityIcons name="pencil" size={24} color={color} />
   </View>
 );
 

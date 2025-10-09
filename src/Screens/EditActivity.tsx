@@ -20,7 +20,7 @@ import { SystemBars } from "react-native-edge-to-edge";
 import { UnitEditor } from "../Components/UnitView";
 import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
 import Hint from "../Components/Hint";
-import { CheckButton, DeleteButton } from "../Components/Element";
+import { CheckButton, DeleteButton, ButtonRow } from "../Components/Element";
 
 type EditActivityProps = {
   navigation: any;
@@ -384,14 +384,14 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       headerStyle: themeVariant == 'light' ? { backgroundColor: theme.colors.primary } : undefined,
       headerTintColor: "#ffffff",
       headerRight: () => (
-        <>
+        <ButtonRow>
           {experimentalFeatures && (
             <Button compact={true} onPress={() => setSpecialMenuVisible(true)}>
               <MaterialCommunityIcons name={special ? specialIcon(special) as any : "star-outline"} size={24} color={"#ffffff"} />
             </Button>
           )}
           <CheckButton onPress={saveActivityWrapper} color={"white"} />
-        </>
+        </ButtonRow>
       ),
     });
   }, [activityName, navigation, theme, activity, activityNameInput, activityDescriptionInput, singleUnitInput, selectedColor, tagState, multiUnitInput, unitMode, special]);

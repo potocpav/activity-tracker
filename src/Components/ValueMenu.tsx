@@ -4,6 +4,7 @@ import { Menu, Button } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons'; 
 import { numericStatValues, StatValue } from "../Model/StoreTypes";
 import { valueToLabel } from "../Model/Activity";
+import { ChevronDownIcon } from "./Element";
 
 interface ValueMenuProps {
   menuVisible: boolean
@@ -32,7 +33,7 @@ const ValueMenu: React.FC<ValueMenuProps> = ({
             <Text style={{ marginRight: 10, color: themeColors.onSurfaceVariant }}>
               {valueToLabel(value)}
             </Text>
-            <MaterialCommunityIcons name="chevron-down" size={23} color={themeColors.onSurfaceVariant} />
+            <ChevronDownIcon color={themeColors.onSurfaceVariant} />
           </View>
         </Button>
       }
