@@ -270,7 +270,8 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
             compact={true}
             onPress={isConnected ? disconnectDevice : openConnectionModal}
             style={{ marginLeft: 8 }}
-            mode="contained"
+            mode="outlined"
+            icon={isConnected ? 'bluetooth-off' : 'bluetooth'}
             dark={themeVariant == 'light'}
             labelStyle={{ paddingHorizontal: 8 }}
           >
@@ -279,7 +280,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
         </>
       ),
     });
-  }, [activityName, navigation, isConnected]);
+  }, [theme, activityName, navigation, isConnected]);
 
   return (
     <SafeAreaView style={[styles.container]} edges={["left", "right", "bottom"]}>
@@ -483,6 +484,7 @@ const styles = StyleSheet.create({
   buttonRow: {
     flexDirection: 'row',
     gap: 10,
+    marginHorizontal: 10,
   },
   weightSection: {
     flex: 1,
