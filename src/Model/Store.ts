@@ -57,7 +57,7 @@ const useStore = create<State>()(
       // Bluetooth device related state
       experimentalFeatures: false,
       allDevices: [],
-      isConnected: false,
+      connecting: false,
       connectedDevice: null,
       subscription: null,
 
@@ -587,16 +587,28 @@ const useStore = create<State>()(
 
       requestPermissions: requestPermissions,
 
+      connectionStatus: () : "connected" | "disconnected" | "connecting" => {
+        if (get().connecting) {
+          return "connecting";
+        } else if (get().connectedDevice !== null) {
+          return "connected";
+        } else {
+          return "disconnected";
+        }
+      },
+
       connectToDevice: async (device: Device) => {
         try {
+          set({ connecting: true });
           const deviceConnection = await connectToDevice(device);
-          set({ connectedDevice: deviceConnection, isConnected: true });
+          set({ connectedDevice: deviceConnection, connecting: false });
           deviceConnection.onDisconnected(async () => {
             console.warn("Device is disconnected asynchronously.");
-            set({ isConnected: false });
+            set({ connectedDevice: null, connecting: false });
           });
         } catch (e) {
-          console.error("FAILED TO CONNECT", e);
+          console.warn("FAILED TO CONNECT", e);
+          set({ connecting: false, connectedDevice: null });
         }
       },
 
@@ -604,8 +616,8 @@ const useStore = create<State>()(
         const connectedDevice: any = get().connectedDevice;
         if (connectedDevice) {
           await disconnectDevice(connectedDevice);
-          set({ isConnected: false });
         }
+        set({ connectedDevice: null, connecting: false });
       },
 
       scanForPeripherals: () => {
@@ -634,6 +646,7 @@ const useStore = create<State>()(
 
       tareScale: async () => {
         get().withDevice(async (device: Device) => {
+          // console.log("abc", get().subscription);
           await tareScale(device);
         });
       },

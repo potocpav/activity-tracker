@@ -17,7 +17,7 @@ import TagSelector from "../Components/TagSelector";
 import SkiaChart, { xToCanvas, yToCanvas, Viewport } from "../Components/Chart/SkiaChart";
 import { SystemBars } from "react-native-edge-to-edge";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import {Button} from "../Components/Element";
+import { Button } from "../Components/Element";
 
 const fontFamily = Platform.select({ default: "sans-serif" });
 const largeFont = matchFont({ fontFamily: fontFamily, fontSize: 24 });
@@ -52,12 +52,13 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   const palette = getThemePalette();
   const today = dateToDateList(new Date());
 
-  const isConnected = useStore((state: any) => state.isConnected);
+  const connectedDevice = useStore((state: any) => state.connectedDevice);
+  const connecting = useStore((state: any) => state.connecting);
+  const connectionStatus = useStore((state: any) => state.connectionStatus);
   const startMeasurement = useStore((state: any) => state.startMeasurement);
   const stopMeasurement = useStore((state: any) => state.stopMeasurement);
   const tareScale = useStore((state: any) => state.tareScale);
 
-  const connectedDevice = useStore((state: any) => state.connectedDevice);
   const requestPermissions = useStore((state: any) => state.requestPermissions);
   const scanForPeripherals = useStore((state: any) => state.scanForPeripherals);
   const disconnectDevice = useStore((state: any) => state.disconnectDevice);
@@ -267,37 +268,52 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
     navigation.setOptions({
       headerStyle: themeVariant == 'light' ? { backgroundColor: theme.colors.primary } : undefined,
       headerTintColor: "#ffffff",
-      headerRight: () => (
-        <>
-          <Button
-            onPress={isConnected ? disconnectDevice : openConnectionModal}
-          >
-            <Text style={{ color: "white" }}>{isConnected ? 'Disconnect' : 'Connect'}</Text>
-            <MaterialCommunityIcons name={isConnected ? 'bluetooth-off' : 'bluetooth'} size={24} color={"white"} />
-          </Button>
-        </>
-      ),
-    });
-  }, [theme, activityName, navigation, isConnected]);
+      headerRight: () => {
+        switch (connectionStatus()) {
+          case "connected":
+            return (
+              <Button onPress={disconnectDevice} >
+                <Text style={{ color: "white" }}>Disconnect</Text>
+                <MaterialCommunityIcons name="bluetooth-off" size={24} color={"white"} />
+              </Button>
+            );
+          case "disconnected":
+            return (
+              <Button onPress={openConnectionModal} >
+                <Text style={{ color: "white" }}>Connect</Text>
+                <MaterialCommunityIcons name="bluetooth" size={24} color={"white"} />
+              </Button>
+            );
+          case "connecting":
+            return (
+              <Button onPress={() => { disconnectDevice() }} >
+                <Text style={{ color: "white" }}>Connecting...</Text>
+                <MaterialCommunityIcons name="bluetooth" size={24} color={"white"} />
+              </Button>
+            );
+        }
+      }
+    })
+  }, [theme, activityName, navigation, connecting, connectedDevice]);
 
   return (
     <SafeAreaView style={[styles.container]} edges={["left", "right", "bottom"]}>
-      <SystemBars style={{statusBar: "light", navigationBar: themeVariant == 'light' ? "dark" : "light"}} />
-      {isConnected || true ? (
-        <>
-          <View style={{ paddingHorizontal: 10 }}>
-            <TagSelector
-              activity={activity}
-              inputTags={inputTags}
-              toggleInputTag={toggleInputTag}
-              palette={palette}
-              theme={theme}
-            />
-          </View>
+      <SystemBars style={{ statusBar: "light", navigationBar: themeVariant == 'light' ? "dark" : "light" }} />
+      <>
+        <View style={{ paddingHorizontal: 10 }}>
+          <TagSelector
+            activity={activity}
+            inputTags={inputTags}
+            toggleInputTag={toggleInputTag}
+            palette={palette}
+            theme={theme}
+          />
+        </View>
 
-          {/* Control Buttons Section */}
-          <View style={styles.controlSection}>
-            <View style={styles.buttonRow}>
+        {/* Control Buttons Section */}
+        <View style={styles.controlSection}>
+          <View style={styles.buttonRow}>
+            {workoutState === "paused" ? (
               <PaperButton
                 style={{ flex: 1 }}
                 mode="outlined"
@@ -307,15 +323,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                 }}>
                 <Text>Start</Text>
               </PaperButton>
-              <PaperButton
-                style={{ flex: 1 }}
-                mode="outlined"
-                icon="pause"
-                onPress={() => {
-                  setWorkoutState("paused");
-                }}>
-                <Text>Pause</Text>
-              </PaperButton>
+            ) : (
               <PaperButton
                 style={{ flex: 1 }}
                 mode="outlined"
@@ -323,17 +331,27 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                 onPress={() => {
                   tx.value = 0;
                   setWorkoutState("paused");
+                  scaleInput.value = {
+                    t0: null,
+                    max: 0,
+                    dataPoints: [],
+                    currentPull: { t0: 0, wSum: 0, wCount: 0, wMin: 0, wMax: 0, active: false },
+                  };
+                  if (recordingState === "recording") {
+                    stopMeasurement();
+                    setRecordingState("stopped");
+                  }
                 }}>
                 <Text>Reset</Text>
               </PaperButton>
-            </View>
-            <View style={styles.buttonRow}>
+            )}
+            {recordingState === "stopped" ? (
               <PaperButton
                 style={{ flex: 1 }}
                 mode="outlined"
                 icon="record"
+                disabled={connectionStatus() !== "connected"}
                 onPress={() => {
-
                   scaleInput.value = {
                     t0: null,
                     max: 0,
@@ -346,127 +364,125 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                 }}>
                 <Text>Record</Text>
               </PaperButton>
+            ) : (
               <PaperButton
                 style={{ flex: 1 }}
                 mode="outlined"
-                icon="stop"
+                icon="pause"
+                disabled={connectionStatus() !== "connected"}
                 onPress={() => {
                   stopMeasurement();
                   setRecordingState("stopped");
                 }}>
-                <Text>Stop</Text>
+                <Text>Pause</Text>
               </PaperButton>
-              <PaperButton
-                style={{ flex: 1 }}
-                mode="outlined"
-                icon="scale-balance"
-                onPress={() => {
-                  tareScale();
-                }}>
-                <Text>Tare</Text>
-              </PaperButton>
-            </View>
-          </View>
+            )}
 
-          {/* Weight and Time Display Section */}
-          <View style={styles.weightSection}>
-            <View style={styles.measurementRow}>
-              <View style={styles.measurementColumn}>
-                <Text style={[styles.measurementLabel, { color: theme.colors.onSurface, width: largeFontBox.width }]}>Weight</Text>
-                <Canvas
-                  style={{ width: largeFontBox.width, height: largeFontBox.height }}
-                >
-                  <SkiaText
-                    text={pullWeight}
-                    font={largeFont}
-                    color={theme.colors.onSurface}
-                    x={0}
-                    y={-largeFontBox.y}
-                  />
-                </Canvas>
-              </View>
-              <View style={styles.measurementColumn}>
-                <Text style={[styles.measurementLabel, { color: theme.colors.onSurface, width: largeFontBox.width }]}>Time</Text>
-                <Canvas
-                  style={{ width: largeFontBox.width, height: largeFontBox.height }}
-                >
-                  <SkiaText
-                    text={totalTime}
-                    font={largeFont}
-                    color={theme.colors.onSurface}
-                    x={0}
-                    y={-largeFontBox.y}
-                  />
-                </Canvas>
-              </View>
-              <View style={styles.measurementColumn}>
-                <Text style={[styles.measurementLabel, { color: theme.colors.onSurface, width: largeFontBox.width }]}>Rest/Pull</Text>
-                <Canvas
-                  style={{ width: largeFontBox.width, height: largeFontBox.height }}
-                >
-                  <SkiaText
-                    text={timeSinceLastPull}
-                    font={largeFont}
-                    color={theme.colors.onSurface}
-                    x={0}
-                    y={-largeFontBox.y}
-                  />
-                </Canvas>
-              </View>
-            </View>
-            <View style={styles.measurementRow}>
-              <View style={styles.measurementColumn}>
-                <Text style={[styles.measurementLabel, { color: theme.colors.onSurface, width: largeFontBox.width }]}>Reps</Text>
-                <Canvas
-                  style={{ width: largeFontBox.width, height: largeFontBox.height }}
-                >
-                  <SkiaText
-                    text={pastPulls.length.toString()}
-                    font={largeFont}
-                    color={theme.colors.onSurface}
-                    x={0}
-                    y={-largeFontBox.y}
-                  />
-                </Canvas>
-              </View>
-            </View>
-
-            <View style={{ width: '100%', flex: 1 }}>
-              <SkiaChart
-                gridLineColor={theme.colors.outline}
-                view={view}
-                viewportShared={viewport}
-              >
-                <Points
-                  mode="polygon"
-                  points={linePoints}
-                  color={theme.colors.primary}
-                  strokeWidth={1}
-                />
-                <Points
-                  mode="polygon"
-                  points={currentPullPoints}
-                  color={theme.colors.secondary}
-                  strokeWidth={2}
-                />
-                <Points
-                  mode="polygon"
-                  points={pastPullsPoints}
-                  color={theme.colors.secondary}
-                  strokeWidth={2}
-                />
-              </SkiaChart>
-            </View>
-            <View style={{ height: 50 }} />
+            <PaperButton
+              style={{ flex: 1 }}
+              mode="outlined"
+              icon="scale-balance"
+              disabled={connectionStatus() !== "connected" || recordingState === "recording"}
+              onPress={() => {
+                tareScale();
+              }}>
+              <Text>Tare</Text>
+            </PaperButton>
           </View>
-        </>
-      ) : (
-        <View style={[styles.disconnectedSection, { backgroundColor: theme.colors.surface }]}>
-          <Text style={[styles.disconnectedText, { color: theme.colors.error }]}>
-            Please connect the Tindeq Progressor
-          </Text>
         </View>
-      )}
+
+        {/* Weight and Time Display Section */}
+        <View style={styles.weightSection}>
+          <View style={styles.measurementRow}>
+            <View style={styles.measurementColumn}>
+              <Text style={[styles.measurementLabel, { color: theme.colors.onSurface, width: largeFontBox.width }]}>Weight</Text>
+              <Canvas
+                style={{ width: largeFontBox.width, height: largeFontBox.height }}
+              >
+                <SkiaText
+                  text={pullWeight}
+                  font={largeFont}
+                  color={theme.colors.onSurface}
+                  x={0}
+                  y={-largeFontBox.y}
+                />
+              </Canvas>
+            </View>
+            <View style={styles.measurementColumn}>
+              <Text style={[styles.measurementLabel, { color: theme.colors.onSurface, width: largeFontBox.width }]}>Time</Text>
+              <Canvas
+                style={{ width: largeFontBox.width, height: largeFontBox.height }}
+              >
+                <SkiaText
+                  text={totalTime}
+                  font={largeFont}
+                  color={theme.colors.onSurface}
+                  x={0}
+                  y={-largeFontBox.y}
+                />
+              </Canvas>
+            </View>
+            <View style={styles.measurementColumn}>
+              <Text style={[styles.measurementLabel, { color: theme.colors.onSurface, width: largeFontBox.width }]}>Rest/Pull</Text>
+              <Canvas
+                style={{ width: largeFontBox.width, height: largeFontBox.height }}
+              >
+                <SkiaText
+                  text={timeSinceLastPull}
+                  font={largeFont}
+                  color={theme.colors.onSurface}
+                  x={0}
+                  y={-largeFontBox.y}
+                />
+              </Canvas>
+            </View>
+          </View>
+          <View style={styles.measurementRow}>
+            <View style={styles.measurementColumn}>
+              <Text style={[styles.measurementLabel, { color: theme.colors.onSurface, width: largeFontBox.width }]}>Reps</Text>
+              <Canvas
+                style={{ width: largeFontBox.width, height: largeFontBox.height }}
+              >
+                <SkiaText
+                  text={pastPulls.length.toString()}
+                  font={largeFont}
+                  color={theme.colors.onSurface}
+                  x={0}
+                  y={-largeFontBox.y}
+                />
+              </Canvas>
+            </View>
+          </View>
+
+          <View style={{ width: '100%', flex: 1 }}>
+            <SkiaChart
+              gridLineColor={theme.colors.outline}
+              view={view}
+              viewportShared={viewport}
+            >
+              <Points
+                mode="polygon"
+                points={linePoints}
+                color={theme.colors.primary}
+                strokeWidth={1}
+              />
+              <Points
+                mode="polygon"
+                points={currentPullPoints}
+                color={theme.colors.secondary}
+                strokeWidth={2}
+              />
+              <Points
+                mode="polygon"
+                points={pastPullsPoints}
+                color={theme.colors.secondary}
+                strokeWidth={2}
+              />
+            </SkiaChart>
+          </View>
+          <View style={{ height: 50 }} />
+        </View>
+      </>
     </SafeAreaView>
   );
 };

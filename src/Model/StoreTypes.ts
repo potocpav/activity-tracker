@@ -180,7 +180,7 @@ export const allHints : HintType[] = [...new Set(hintDependencyChains.flat(Infin
 export type State = {
   // Device related state
   allDevices: Device[];
-  isConnected: boolean;
+  connecting: boolean;
   connectedDevice: Device | null;
   subscription: Subscription | null;
 
