@@ -4,24 +4,19 @@ import {
   Text,
   Platform,
   View,
-  TouchableOpacity,
-  Animated,
 } from "react-native";
 import useStore from "../Model/Store";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getTheme, getThemePalette, getThemeVariant } from "../Model/Theme";
-import { ActivityType, DataPoint, dateToDateList, timeToDateList } from "../Model/StoreTypes";
+import { ActivityType, DataPoint, dateToDateList } from "../Model/StoreTypes";
 import { Button } from "react-native-paper";
-import { CartesianChart, getTransformComponents, setScale, setTranslate, useChartTransformState } from "victory-native";
-import { matchFont, Path, Points, Rect, Skia, Text as SkiaText, vec, Line, Canvas } from "@shopify/react-native-skia";
-import { useAnimatedReaction, useSharedValue, withTiming, useFrameCallback, useDerivedValue, runOnJS, withSpring } from "react-native-reanimated";
-import { numberToString, renderLongFormValue, renderShortFormValue } from "../Model/Unit";
+import { matchFont, Points, Text as SkiaText, vec, Canvas } from "@shopify/react-native-skia";
+import { useSharedValue, useFrameCallback, useDerivedValue } from "react-native-reanimated";
+import { renderLongFormValue } from "../Model/Unit";
 import TagSelector from "../Components/TagSelector";
-import SkiaChart, { Rect as ChartRect, xToCanvas, yToCanvas, Viewport } from "../Components/Chart/SkiaChart";
+import SkiaChart, { xToCanvas, yToCanvas, Viewport } from "../Components/Chart/SkiaChart";
 
 const fontFamily = Platform.select({ default: "sans-serif" });
-const font = matchFont({ fontFamily: fontFamily });
-
 const largeFont = matchFont({ fontFamily: fontFamily, fontSize: 24 });
 
 type BleScaleInputProps = {
@@ -94,8 +89,6 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   const showAfterPullWeight = 0.5;
   const showAfterDuration = 0.1;
   const thresholdWeight = 0.6;
-
-  // const chartRange = Math.max(minChartRange, scaleInput.dataPoints.reduce((max, dp) => Math.max(max, dp.w), 0));
 
   const pullIndicators = useDerivedValue(() => {
     const state = scaleInput.get();
