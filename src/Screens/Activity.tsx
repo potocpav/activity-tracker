@@ -177,7 +177,7 @@ const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ 
 
   return (
     <View style={{flex: 1}}>
-      <SystemBars style={"light"} />
+      <SystemBars style={{statusBar: "light", navigationBar: themeVariant == 'light' ? "dark" : "light"}} />
       <View style={{ position: 'absolute', top: 10, right: 0 }}>
         <Menu
           key={menuVisible ? "open" : "closed"}

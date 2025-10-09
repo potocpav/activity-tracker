@@ -230,7 +230,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   return (
     <Fragment>
       <Hint hint="save_data_point" />
-      <SystemBars style={"light"} />
+      <SystemBars style={{statusBar: "light", navigationBar: themeVariant == 'light' ? "dark" : "light"}} />
       <ScrollView>
         <SafeAreaView style={{ gap: 10, padding: 10 }} edges={["left", "right", "bottom"]}>
           <InputWrapper error={showErrors ? dateError : null} ref={dateInputRef}>

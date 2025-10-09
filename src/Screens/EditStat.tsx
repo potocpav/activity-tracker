@@ -116,7 +116,7 @@ export const EditStat = (
 
   return (
     <Fragment>
-      <SystemBars style={"light"} />
+      <SystemBars style={{statusBar: "light", navigationBar: themeVariant == 'light' ? "dark" : "light"}} />
       <ScrollView>
         <SafeAreaView edges={["left", "right", "bottom"]}>
           <View style={{ flexDirection: 'row', justifyContent: 'center', elevation: 2, backgroundColor: theme.colors.elevation.level1, marginBottom: 10, marginHorizontal: 4 }}>

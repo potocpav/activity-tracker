@@ -9,12 +9,15 @@ import useStore from "../Model/Store";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getTheme, getThemePalette, getThemeVariant } from "../Model/Theme";
 import { ActivityType, DataPoint, dateToDateList } from "../Model/StoreTypes";
-import { Button } from "react-native-paper";
+import { Button as PaperButton } from "react-native-paper";
 import { matchFont, Points, Text as SkiaText, vec, Canvas } from "@shopify/react-native-skia";
 import { useSharedValue, useFrameCallback, useDerivedValue } from "react-native-reanimated";
 import { renderLongFormValue } from "../Model/Unit";
 import TagSelector from "../Components/TagSelector";
 import SkiaChart, { xToCanvas, yToCanvas, Viewport } from "../Components/Chart/SkiaChart";
+import { SystemBars } from "react-native-edge-to-edge";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import {Button} from "../Components/Element";
 
 const fontFamily = Platform.select({ default: "sans-serif" });
 const largeFont = matchFont({ fontFamily: fontFamily, fontSize: 24 });
@@ -267,15 +270,10 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
       headerRight: () => (
         <>
           <Button
-            compact={true}
             onPress={isConnected ? disconnectDevice : openConnectionModal}
-            style={{ marginLeft: 8 }}
-            mode="outlined"
-            icon={isConnected ? 'bluetooth-off' : 'bluetooth'}
-            dark={themeVariant == 'light'}
-            labelStyle={{ paddingHorizontal: 8 }}
           >
-            <Text>{isConnected ? 'Disconnect' : 'Connect'}</Text>
+            <Text style={{ color: "white" }}>{isConnected ? 'Disconnect' : 'Connect'}</Text>
+            <MaterialCommunityIcons name={isConnected ? 'bluetooth-off' : 'bluetooth'} size={24} color={"white"} />
           </Button>
         </>
       ),
@@ -284,6 +282,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
 
   return (
     <SafeAreaView style={[styles.container]} edges={["left", "right", "bottom"]}>
+      <SystemBars style={{statusBar: "light", navigationBar: themeVariant == 'light' ? "dark" : "light"}} />
       {isConnected || true ? (
         <>
           <View style={{ paddingHorizontal: 10 }}>
@@ -299,7 +298,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
           {/* Control Buttons Section */}
           <View style={styles.controlSection}>
             <View style={styles.buttonRow}>
-              <Button
+              <PaperButton
                 style={{ flex: 1 }}
                 mode="outlined"
                 icon="play"
@@ -307,8 +306,8 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                   setWorkoutState("playing");
                 }}>
                 <Text>Start</Text>
-              </Button>
-              <Button
+              </PaperButton>
+              <PaperButton
                 style={{ flex: 1 }}
                 mode="outlined"
                 icon="pause"
@@ -316,8 +315,8 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                   setWorkoutState("paused");
                 }}>
                 <Text>Pause</Text>
-              </Button>
-              <Button
+              </PaperButton>
+              <PaperButton
                 style={{ flex: 1 }}
                 mode="outlined"
                 icon="refresh"
@@ -326,10 +325,10 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                   setWorkoutState("paused");
                 }}>
                 <Text>Reset</Text>
-              </Button>
+              </PaperButton>
             </View>
             <View style={styles.buttonRow}>
-              <Button
+              <PaperButton
                 style={{ flex: 1 }}
                 mode="outlined"
                 icon="record"
@@ -346,8 +345,8 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                   startMeasurement(onDataUpdate);
                 }}>
                 <Text>Record</Text>
-              </Button>
-              <Button
+              </PaperButton>
+              <PaperButton
                 style={{ flex: 1 }}
                 mode="outlined"
                 icon="stop"
@@ -356,8 +355,8 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                   setRecordingState("stopped");
                 }}>
                 <Text>Stop</Text>
-              </Button>
-              <Button
+              </PaperButton>
+              <PaperButton
                 style={{ flex: 1 }}
                 mode="outlined"
                 icon="scale-balance"
@@ -365,12 +364,12 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                   tareScale();
                 }}>
                 <Text>Tare</Text>
-              </Button>
+              </PaperButton>
             </View>
           </View>
 
           {/* Weight and Time Display Section */}
-          <View style={[styles.weightSection, { backgroundColor: theme.colors.surface }]}>
+          <View style={styles.weightSection}>
             <View style={styles.measurementRow}>
               <View style={styles.measurementColumn}>
                 <Text style={[styles.measurementLabel, { color: theme.colors.onSurface, width: largeFontBox.width }]}>Weight</Text>
@@ -492,11 +491,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 10,
     padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
   measurementRow: {
     flexDirection: 'row',

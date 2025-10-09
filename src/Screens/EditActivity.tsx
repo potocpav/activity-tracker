@@ -508,7 +508,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
 
   return (
     <View style={{ flex: 1 }}>
-      <SystemBars style={"light"} />
+      <SystemBars style={{statusBar: "light", navigationBar: themeVariant == 'light' ? "dark" : "light"}} />
       <View style={{ position: 'absolute', top: 10, right: 0 }}>
         <Menu
           key={specialMenuVisible ? "open" : "closed"}

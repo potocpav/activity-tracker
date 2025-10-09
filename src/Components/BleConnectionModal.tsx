@@ -7,11 +7,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useTheme } from 'react-native-paper';
 import { Device } from "react-native-ble-plx";
 import useStore from "../Model/Store";
-import { getTheme } from "../Model/Theme";
+import { getTheme, getThemeVariant } from "../Model/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { SystemBars } from "react-native-edge-to-edge";
 
 
 type BleDeviceModalProps = {
@@ -20,6 +20,7 @@ type BleDeviceModalProps = {
 
 const BleDeviceModal: FC<BleDeviceModalProps> = ({ navigation }) => {
   const theme = getTheme();
+  const themeVariant = getThemeVariant();
   const allDevices = useStore((state: any) => state.allDevices);
   const connectToDevice = useStore((state: any) => state.connectToDevice);
 
@@ -38,6 +39,7 @@ const BleDeviceModal: FC<BleDeviceModalProps> = ({ navigation }) => {
 
   return (
     <SafeAreaView style={[modalStyle.modalContent, { backgroundColor: theme.colors.surface }]} edges={["left", "right", "bottom"]}>
+      <SystemBars style={themeVariant == 'light' ? "dark" : "light"} />
       <Text style={[modalStyle.modalTitleText, { color: theme.colors.onSurface }]}>
         Tap on a device to connect
       </Text>
