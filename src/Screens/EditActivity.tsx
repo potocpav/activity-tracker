@@ -553,7 +553,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       <Hint hint="edit_activity_introduction" />
       <ScrollView>
         <SafeAreaView edges={["left", "right", "bottom"]}>
-          <View style={{ padding: 10, gap: 10 }}>
+          <View style={{ padding: 10, gap: 12 }}>
             <View>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                 <InputWrapper error={showErrors ? activityNameError : null} ref={activityNameInputRef}>
@@ -610,7 +610,6 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
                   setTagState(data.data);
                 }}
                 contentContainerStyle={{ flexDirection: 'row' }}
-                style={{ marginTop: 8 }}
               />
               <View style={{ flexDirection: 'row' }}>
                 <Chip onPress={() => {

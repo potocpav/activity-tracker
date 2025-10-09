@@ -266,6 +266,9 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
             />
           </InputWrapper>
 
+
+          {activity.tags.length > 0 && <View style={{ gap: 5 }}>
+          <Text style={{ color: theme.colors.onSurfaceVariant, fontSize: 16 }}>Tags:</Text>
           <TagSelector
             activity={activity}
             inputTags={inputTags}
@@ -273,6 +276,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
             palette={palette}
             theme={theme}
           />
+          </View>}
 
           {activity.unit.type !== "none" && (
             <InputWrapper error={showErrors ? emptyValueError : null} ref={valueRef}>

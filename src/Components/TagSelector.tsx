@@ -14,8 +14,7 @@ export const TagSelector = ({ activity, inputTags, toggleInputTag, palette, them
     palette: string[],
     theme: MD3Theme,
   }) => {
-  return (activity.tags.length > 0 && (<View style={{ gap: 10 }}>
-    <Text style={{ color: theme.colors.onSurfaceVariant, fontSize: 16 }}>Tags:</Text>
+  return (activity.tags.length > 0 && (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
       {activity.tags.map((tag: any, index: number) => (
         <Chip
@@ -34,8 +33,7 @@ export const TagSelector = ({ activity, inputTags, toggleInputTag, palette, them
           {tag.name}
         </Chip>
       ))}
-    </View>
-  </View>)
+    </View>)
   );
 }
 
