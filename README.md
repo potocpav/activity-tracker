@@ -42,7 +42,8 @@ Track your performance metrics and their progress over time. With custom statist
 
 ## Planned features
 
-- [ ] Bluetooth integration with Tindeq Progressor and other scales
+- [x] Bluetooth integration with Tindeq Progressor and other scales
+- [ ] 
 - [ ] Handle large number of activities. This feature should work well with data imports from different apps, and from other users of Activity Tracker. Options include:
     - Activity archive to hide old activities without deleting them
     - Activity groups
@@ -53,10 +54,14 @@ Track your performance metrics and their progress over time. With custom statist
 
 ## Changelog
 
-### 3.1.0 (In progress)
+### 4.0.0 (In progress)
 
-- Import data from Loop Habit Tracker [Loop Habit Tracker](https://loophabits.org/)
-- Add statistics and regression line to selected ranges in graphs
+- [x] Import data from Loop Habit Tracker [Loop Habit Tracker](https://loophabits.org/)
+- [x] Add statistics and regression line to selected ranges in graphs
+- [x] Add Bluetooth integration with Tindeq Progressor and other scales
+  - [ ] Add data log
+  - [ ] Add nice animations
+- [ ] Bulk editing of data points
 
 ### 3.0.0
 
