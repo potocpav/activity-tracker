@@ -180,6 +180,7 @@ const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ 
       <SystemBars style={"light"} />
       <View style={{ position: 'absolute', top: 10, right: 0 }}>
         <Menu
+          key={menuVisible ? "open" : "closed"}
           visible={menuVisible}
           onDismiss={() => setMenuVisible(false)}
           anchor={<View style={{ width: 1, height: 1 }} />}

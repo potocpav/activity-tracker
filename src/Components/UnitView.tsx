@@ -1,13 +1,13 @@
 import { Text, View, ScrollView, Pressable, Modal, FlatList, useWindowDimensions } from "react-native";
-import { TextInput, Button, RadioButton, Dialog, Portal, List, SegmentedButtons } from "react-native-paper";
+import { TextInput, Dialog, Portal, List, SegmentedButtons } from "react-native-paper";
 import { ClimbingGrade, DistanceUnit, SubUnit, SubUnitType, TimeUnit, WeightUnit } from "../Model/StoreTypes";
 import { useRef, useState } from "react";
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { getTheme, useWideDisplay } from "../Model/Theme";
 import { renderUnit, mapStringValue, uiaaGrades, vScaleGrades, numberToString, stringToNumber, ydsGrades, frenchGrades, fontGrades } from "../Model/Unit";
 import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { CheckButton, CloseButton, MinusIcon, PlusIcon } from "./Element";
+import { CheckButton, CloseButton, MinusIcon, PlusIcon, Button } from "./Element";
 
 
 const subUnitProps = (subUnitType: SubUnitType, allUnits: SubUnit[], setAllUnits: (units: SubUnit[]) => void): { title: string, icon: string, description: string | null, children: React.ReactNode | null } => {
@@ -391,15 +391,11 @@ export const ValueEditor = ({
                     onChangeText={text => onChange(text)}
                     mode="outlined"
                   />
-                  <Button onPress={() => resetTimer()} compact={true} style={{ marginTop: 4 }} mode="outlined">
-                    <View>
-                      <MaterialCommunityIcons name="reload" size={22} color={theme.colors.onSurface} />
-                    </View>
+                  <Button onPress={() => resetTimer()}>
+                    <MaterialCommunityIcons name="reload" size={22} color={theme.colors.onSurface} />
                   </Button>
-                  <Button onPress={() => toggleTimer(unit.unit)} compact={true} style={{ marginTop: 4 }} mode="outlined">
-                    <View>
+                  <Button onPress={() => toggleTimer(unit.unit)}>
                       <MaterialCommunityIcons name={timerActive ? "pause" : "play"} size={22} color={theme.colors.onSurface} />
-                    </View>
                   </Button>
                 </>
               );
@@ -414,10 +410,10 @@ export const ValueEditor = ({
                     keyboardType="numeric"
                     mode="outlined"
                   />
-                  <Button onPress={() => onChange(mapStringValue(unit, value, v => v - 1))} compact={true} mode="outlined" style={{ marginTop: 4 }}>
+                  <Button onPress={() => onChange(mapStringValue(unit, value, v => v - 1))}>
                     <MinusIcon color={theme.colors.onSurface} />
                   </Button>
-                  <Button onPress={() => onChange(mapStringValue(unit, value, v => v + 1))} compact={true} mode="outlined" style={{ marginTop: 4 }}>
+                  <Button onPress={() => onChange(mapStringValue(unit, value, v => v + 1))}>
                     <PlusIcon color={theme.colors.onSurface} />
                   </Button>
                 </>

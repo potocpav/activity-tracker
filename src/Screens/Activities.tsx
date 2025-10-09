@@ -6,7 +6,6 @@ import {
   useWindowDimensions,
   Pressable,
 } from "react-native";
-import { Button } from 'react-native-paper';
 import useStore from "../Model/Store";
 import { ActivityType, DataPoint, dateToDateList, Stat } from "../Model/StoreTypes";
 import DraggableFlatList from 'react-native-draggable-flatlist'
@@ -18,7 +17,7 @@ import EmptyPagePlaceholder from "../Components/EmptyPagePlaceholder";
 import Hint from "../Components/Hint";
 import Inset from "../Components/SafeAreaInset";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { ButtonRow, CheckIcon, CloseIcon, DoubleCheckIcon, PlusIcon, PlusIconButton } from "../Components/Element";
+import { ButtonRow, CheckIcon, CloseIcon, DoubleCheckIcon, PlusIcon, PlusIconButton, Button } from "../Components/Element";
 
 type ActivitiesProps = {
   navigation: any;
@@ -49,13 +48,11 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
             dismissHint("hello");
             navigation.navigate('EditActivity', { activityName: null });
           }} color={theme.colors.onSurface} />
-          <Button compact={true} onPress={() => {
+          <Button onPress={() => {
             dismissHint("hello");
             navigation.navigate('Settings');
           }}>
-            <View>
               <MaterialCommunityIcons name="cog" size={24} color={theme.colors.onSurface} />
-            </View>
           </Button>
         </ButtonRow>
       ),

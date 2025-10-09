@@ -16,7 +16,7 @@ import SubUnitMenu from "../SubUnitMenu";
 import { getTheme } from "../../Model/Theme";
 import { Dialog, Portal, TextInput } from "react-native-paper";
 import Hint from "../Hint";
-import { CheckButton, CopyButton, DeleteButton, ButtonRow } from "../Element";
+import { CheckButton, CopyButton, Button, DeleteIcon, ButtonRow } from "../Element";
 
 const locale = NativeModules.I18nManager.localeIdentifier;
 
@@ -114,11 +114,13 @@ const ActivityCalendar = ({ navigation, activityName, calendarIndex }: ActivityC
           <Dialog.Actions>
             <ButtonRow>
             {activity.calendars.length > 1 && (
-              <DeleteButton onPress={() => {
+              <Button onPress={() => {
                 deleteActivityCalendar(activityName, calendarIndex); 
                 setCalendarDialogVisible(false);
                 ToastAndroid.show('Calendar deleted', ToastAndroid.SHORT);
-                }} color={theme.colors.onSurface} />
+                }}>
+                <DeleteIcon color={theme.colors.onSurface} />
+              </Button>
             )}
             <CopyButton onPress={() => {
               cloneActivityCalendar(activityName, calendarIndex); 

@@ -8,12 +8,12 @@ import {
   ToastAndroid,
   Pressable,
 } from "react-native";
-import { Chip, TextInput, Button, MD3Theme } from 'react-native-paper';
+import { TextInput, MD3Theme } from 'react-native-paper';
 import { ActivityType, dateToDateList, DataPoint, dateListToDate, SubUnit, DateList } from "../Model/StoreTypes";
 import useStore from "../Model/Store";
 import { DatePickerModal } from "react-native-paper-dates";
 import { CalendarDate } from "react-native-paper-dates/lib/typescript/Date/Calendar";
-import { CheckButton, CheckPlusButton, DeleteButton, ButtonRow } from "../Components/Element";
+import { CheckButton, CheckPlusButton, DeleteButton, ButtonRow, Button } from "../Components/Element";
 import { cmpDateList, formatDate } from "../Model/Activity";
 import { getTheme, getThemePalette, getThemeVariant } from "../Model/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -23,7 +23,7 @@ import { ValueEditor } from "../Components/UnitView";
 import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
 import Hint from "../Components/Hint";
 import TagSelector from "../Components/TagSelector";
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 type EditDataPointProps = {
   navigation: any;
@@ -251,10 +251,8 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
                   value={inputDate ? inputDate.toLocaleDateString(locale) : "Select date"}
                 />
               </Pressable>
-              <Button compact={true} onPress={() => { setDatePickerVisible(true); }}>
-                <View>
+              <Button onPress={() => { setDatePickerVisible(true); }}>
                   <MaterialCommunityIcons name="calendar" size={24} color={theme.colors.onSurface} />
-                </View>
               </Button>
             </View>
           </InputWrapper>

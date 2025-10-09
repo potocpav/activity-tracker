@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { View, Text, useWindowDimensions, StyleSheet, ToastAndroid, Pressable } from "react-native";
-import { Menu, Button, Portal, Dialog, TextInput } from 'react-native-paper';
+import { Menu, Portal, Dialog, TextInput } from 'react-native-paper';
 import useStore from "../../Model/Store";
 import { DataPoint, dateListToTime, ActivityType, GraphType, WeekStart, DateList, SubUnit, GraphProps, Unit } from "../../Model/StoreTypes";
 import { binTime, binTimeSeries, BinSize, extractValue } from "../../Model/Activity";
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import TagMenu from "../TagMenu";
 import SubUnitMenu from "../SubUnitMenu";
 import DropdownMenu from "../DropdownMenu";
@@ -14,7 +14,7 @@ import FlatListChart, { BarChart, BoxChart, barBoundingBox, ViewDimensions } fro
 import Animated, { FadeInUp, FadeOutUp } from "react-native-reanimated";
 import { renderLongFormValue, isSummable } from "../../Model/Unit";
 import { Canvas, Line, vec } from "@shopify/react-native-skia";
-import { ChevronDownIcon, DeleteButton, ButtonRow, CopyButton, CheckButton } from "../Element";
+import { ChevronDownIcon, DeleteButton, ButtonRow, CopyButton, CheckButton, Button } from "../Element";
 
 
 const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, graphIndex: number }) => {
@@ -60,36 +60,36 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
     if (gType === "box") {
       return (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <MaterialCommunityIcons name="chart-waterfall" size={24} color={theme.colors.onSurfaceVariant} />
-          <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Box</Text>
+          <MaterialCommunityIcons name="chart-waterfall" size={24} color={theme.colors.onSurface} />
+          <Text style={{ marginLeft: 6, color: theme.colors.onSurface }}>Box</Text>
         </View>
       );
     } else if (gType === "bar-count") {
       return (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <MaterialCommunityIcons name="chart-bar" size={24} color={theme.colors.onSurfaceVariant} />
-          <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Count</Text>
+          <MaterialCommunityIcons name="chart-bar" size={24} color={theme.colors.onSurface} />
+          <Text style={{ marginLeft: 6, color: theme.colors.onSurface }}>Count</Text>
         </View>
       );
     } else if (gType === "bar-daily-mean") {
       return (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <MaterialCommunityIcons name="chart-bar" size={24} color={theme.colors.onSurfaceVariant} />
-          <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Daily Mean</Text>
+          <MaterialCommunityIcons name="chart-bar" size={24} color={theme.colors.onSurface} />
+          <Text style={{ marginLeft: 6, color: theme.colors.onSurface }}>Daily Mean</Text>
         </View>
       );
     } else if (gType === "bar-sum") {
       return (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <MaterialCommunityIcons name="chart-bar" size={24} color={theme.colors.onSurfaceVariant} />
-          <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Sum</Text>
+          <MaterialCommunityIcons name="chart-bar" size={24} color={theme.colors.onSurface} />
+          <Text style={{ marginLeft: 6, color: theme.colors.onSurface }}>Sum</Text>
         </View>
       );
     } else if (gType === "line-mean") {
       return (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <MaterialCommunityIcons name="chart-line" size={24} color={theme.colors.onSurfaceVariant} />
-          <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Mean</Text>
+          <MaterialCommunityIcons name="chart-line" size={24} color={theme.colors.onSurface} />
+          <Text style={{ marginLeft: 6, color: theme.colors.onSurface }}>Mean</Text>
         </View>
       );
     }
@@ -157,10 +157,11 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
         />
         {/* Graph type menu */}
         <Menu
+          key={graphTypeMenuVisible ? "open" : "closed"}
           visible={graphTypeMenuVisible}
           onDismiss={() => setGraphTypeMenuVisible(false)}
           anchor={
-            <Button compact={true} onPress={() => setGraphTypeMenuVisible(true)}>
+            <Button onPress={() => setGraphTypeMenuVisible(true)}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                 {graphLabel(graph.graphType)}
                 <ChevronDownIcon color={theme.colors.onSurfaceVariant} />

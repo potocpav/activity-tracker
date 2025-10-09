@@ -1,12 +1,13 @@
 import { Text, StyleSheet, View } from "react-native";
 import { useState } from "react";
 import { getTheme } from "../Model/Theme";
-import { MD3Theme, Button } from "react-native-paper";
+import { MD3Theme } from "react-native-paper";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { Svg, Path } from "react-native-svg";
 import { HintType, hintDependencyChains } from "../Model/StoreTypes";
 import useStore from "../Model/Store";
 import { useSafeAreaInsets, EdgeInsets } from "react-native-safe-area-context";
+import { Button } from "./Element";
 
 const hintInfo = (hint: HintType) => {
   switch (hint) {
@@ -147,7 +148,9 @@ const Hint = ({ hint, inline }: { hint: HintType, inline?: boolean }) => {
             ))}
           </View>
           <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-            <Button mode="text" textColor={theme.colors.surface} onPress={() => { dismissHint(hint) }}>Dismiss</Button>
+            <Button onPress={() => { dismissHint(hint) }}>
+              <Text style={{ color: theme.colors.surface }}>Dismiss</Text>
+            </Button>
           </View>
         </Animated.View>
       </View>

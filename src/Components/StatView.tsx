@@ -18,7 +18,6 @@ const StatView = ({ stat, activity, onPress, sharedTransitionTag }: { stat: Stat
         style={styles.container}
         entering={FadeIn}
         exiting={FadeOut}
-        sharedTransitionTag={sharedTransitionTag}
         >
         <Pressable 
           onPress={onPress}

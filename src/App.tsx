@@ -26,6 +26,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import EditStat from "./Screens/EditStat";
 import { enGB, registerTranslation } from 'react-native-paper-dates'
 import BleConnectionModal from "./Components/BleConnectionModal";
+import "expo-font";
 
 const { LightTheme, DarkTheme: PaperDarkTheme } = adaptNavigationTheme({
   reactNavigationLight: DefaultTheme,

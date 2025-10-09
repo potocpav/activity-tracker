@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { Dialog, Portal, SegmentedButtons, MD3Theme, Menu } from 'react-native-paper';
 import { ActivityType, SetTag, Tag, SubUnit, Unit, SpecialActivity } from "../Model/StoreTypes";
-import { TextInput, Button, Chip } from "react-native-paper";
+import { TextInput, Chip } from "react-native-paper";
 import useStore from "../Model/Store";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import DraggableFlatList from 'react-native-draggable-flatlist';
@@ -20,7 +20,7 @@ import { SystemBars } from "react-native-edge-to-edge";
 import { UnitEditor } from "../Components/UnitView";
 import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
 import Hint from "../Components/Hint";
-import { CheckButton, DeleteButton, ButtonRow } from "../Components/Element";
+import { CheckButton, DeleteButton, ButtonRow, Button, PlusIcon } from "../Components/Element";
 
 type EditActivityProps = {
   navigation: any;
@@ -39,7 +39,7 @@ const isSupersetOf = (set1: Set<string>, set2: Set<string>) => {
 const ColorButton = ({ color, onPress }: { color: number, onPress: () => void }) => {
   const theme = getTheme(color);
   return (
-    <Button compact={true} onPress={onPress} style={{ marginBottom: 10 }}>
+    <Button onPress={onPress}>
       <View style={{ width: 35, height: 35, borderRadius: 12, backgroundColor: theme.colors.primary, borderWidth: 1, borderColor: theme.colors.onBackground }} />
     </Button>
   );
@@ -364,7 +364,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       headerRight: () => (
         <ButtonRow>
           {experimentalFeatures && (
-            <Button compact={true} onPress={() => setSpecialMenuVisible(true)}>
+            <Button onPress={() => setSpecialMenuVisible(true)}>
               <MaterialCommunityIcons name={special ? specialIcon(special) as any : "star-outline"} size={24} color={"#ffffff"} />
             </Button>
           )}
@@ -440,8 +440,9 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
         }} />
       </InputWrapper>
       <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center' }}>
-        <Button compact={true} onPress={() => setMultiUnitInput([...multiUnitInput, emptyMultiUnit])} icon="plus">
-          Add Unit
+        <Button onPress={() => setMultiUnitInput([...multiUnitInput, emptyMultiUnit])}>
+          <PlusIcon color={theme.colors.onSurface} />
+          <Text>Add Unit</Text>
         </Button>
       </View>
     </View>
@@ -495,8 +496,9 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
         ))}
         {multiUnitInput.length < 4 && (
           <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center' }}>
-            <Button compact={true} onPress={() => setMultiUnitInput([...multiUnitInput, emptyMultiUnit])} icon="plus">
-              Add Unit
+            <Button onPress={() => setMultiUnitInput([...multiUnitInput, emptyMultiUnit])}>
+              <PlusIcon color={theme.colors.onSurface} />
+              <Text>Add Unit</Text>
             </Button>
           </View>
         )}
@@ -509,6 +511,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       <SystemBars style={"light"} />
       <View style={{ position: 'absolute', top: 10, right: 0 }}>
         <Menu
+          key={specialMenuVisible ? "open" : "closed"}
           visible={specialMenuVisible}
           onDismiss={() => setSpecialMenuVisible(false)}
           anchor={
@@ -643,8 +646,10 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
             </View>
           </Dialog.Content>
           <Dialog.Actions>
-            <DeleteButton onPress={() => onUpdateTag("delete")} color={theme.colors.onSurface} />
-            <CheckButton onPress={() => onUpdateTag("update")} color={theme.colors.onSurface} />
+            <ButtonRow>
+              <DeleteButton onPress={() => onUpdateTag("delete")} color={theme.colors.onSurface} />
+              <CheckButton onPress={() => onUpdateTag("update")} color={theme.colors.onSurface} />
+            </ButtonRow>
           </Dialog.Actions>
         </Dialog>
         {/* Color picker dialog */}

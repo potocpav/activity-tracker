@@ -1,10 +1,10 @@
 import React from "react";
 import { View, Text } from "react-native";
-import { Menu, Button } from 'react-native-paper';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Menu } from 'react-native-paper';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Tag, ActivityType } from "../Model/StoreTypes";
 import { getTheme, getThemePalette } from "../Model/Theme";
-import { ChevronDownIcon } from "./Element";
+import { ChevronDownIcon, Button } from "./Element";
 
 interface TagMenuProps {
   activity: ActivityType;
@@ -30,21 +30,17 @@ const TagMenu: React.FC<TagMenuProps> = ({
   return (
     activityTags.length > 0 && (
       <Menu
+        key={menuVisible ? "open" : "closed"}
         visible={menuVisible}
         onDismiss={() => setMenuVisible(false)}
         anchor={
           button ? button(() => setMenuVisible(true)) :
-            <Button compact={true} onPress={() => setMenuVisible(true)} style={{
-              padding: 5,
-            }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+            <Button onPress={() => setMenuVisible(true)}>
               {tags.length === 0 ?
                 <MaterialCommunityIcons name="tag-outline" size={18} color={theme.colors.onSurfaceVariant} /> :
                 <MaterialCommunityIcons name="tag" size={18} color={theme.colors.primary} />
               }
               <ChevronDownIcon color={theme.colors.onSurfaceVariant} />
-              </View>
-
             </Button>
         }
       >

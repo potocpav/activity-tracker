@@ -1,13 +1,12 @@
 import React, { Fragment } from "react";
-import { ScrollView, Text, ToastAndroid, View } from "react-native";
-import { Button, TextInput } from 'react-native-paper';
+import { ScrollView, ToastAndroid, View } from "react-native";
+import {  TextInput } from 'react-native-paper';
 import useStore from "../Model/Store";
 import { ActivityType, Stat, StatPeriod, StatValue, TagFilter, allStatPeriods, unaryStatValues, numericStatValues } from "../Model/StoreTypes";
 import { valueToLabel, periodToLabel } from "../Model/Activity";
 import TagMenu from "../Components/TagMenu";
 import SubUnitMenu from "../Components/SubUnitMenu";
 import DropdownMenu from "../Components/DropdownMenu";
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import StatView from "../Components/StatView";
 import { getTheme, getThemeVariant } from "../Model/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";

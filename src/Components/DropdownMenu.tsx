@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text } from "react-native";
-import { Menu, Button } from 'react-native-paper';
-import { ChevronDownIcon } from "./Element";
+import { Menu } from 'react-native-paper';
+import { ChevronDownIcon, Button } from "./Element";
 
 
 export interface DropdownMenuOption {
@@ -31,18 +31,13 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
   const selectedLabel = options.find(o => o.key === selectedKey)?.label || label || "(select)";
   return (
     <Menu
+      key={visible ? "open" : "closed"}
       visible={visible}
       onDismiss={() => setVisible(false)}
       anchor={
-        <Button compact={true} onPress={() => setVisible(true)} style={{ 
-          backgroundColor: themeColors.surface,
-          padding: 5,
-          borderColor: themeColors.outline,
-        }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={{ marginRight: 10, color: themeColors.onSurfaceVariant }}>{selectedLabel}</Text>
-            <ChevronDownIcon color={themeColors.onSurfaceVariant} />
-          </View>
+        <Button onPress={() => setVisible(true)}>
+            <Text style={{ color: themeColors.onSurface }}>{selectedLabel}</Text>
+            <ChevronDownIcon color={themeColors.onSurface} />
         </Button>
       }
     >

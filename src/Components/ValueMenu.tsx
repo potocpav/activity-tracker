@@ -1,10 +1,9 @@
 import React from "react";
 import { View, Text } from "react-native";
-import { Menu, Button } from 'react-native-paper';
-import { MaterialCommunityIcons } from '@expo/vector-icons'; 
+import { Menu } from 'react-native-paper';
 import { numericStatValues, StatValue } from "../Model/StoreTypes";
 import { valueToLabel } from "../Model/Activity";
-import { ChevronDownIcon } from "./Element";
+import { ChevronDownIcon, Button } from "./Element";
 
 interface ValueMenuProps {
   menuVisible: boolean
@@ -25,15 +24,16 @@ const ValueMenu: React.FC<ValueMenuProps> = ({
 }) => {
   return (
     <Menu
+      key={menuVisible ? "open" : "closed"}
       visible={menuVisible}
       onDismiss={() => setMenuVisible(false)}
       anchor={
-        <Button compact={true} onPress={() => setMenuVisible(true)} style={{ marginRight: 8 }}>
+        <Button onPress={() => setMenuVisible(true)}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={{ marginRight: 10, color: themeColors.onSurfaceVariant }}>
+            <Text style={{ marginRight: 10, color: themeColors.onSurface }}>
               {valueToLabel(value)}
             </Text>
-            <ChevronDownIcon color={themeColors.onSurfaceVariant} />
+            <ChevronDownIcon color={themeColors.onSurface} />
           </View>
         </Button>
       }

@@ -7,21 +7,20 @@ import {
   Pressable,
   Alert,
 } from "react-native";
-import { Button, Divider } from 'react-native-paper';
 import useStore from "../Model/Store";
 import { DataPoint, ActivityType, Tag, DateList, dateListToDate, Unit } from "../Model/StoreTypes";
 import { cmpDateList, dayCmp, findZeroSlice, formatDate } from "../Model/Activity";
 import { renderTags } from "../Components/Tags";
 import TagMenu from "../Components/TagMenu";
 import { renderLongFormValue } from "../Model/Unit";
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { getThemePalette, getThemeVariant } from "../Model/Theme";
 import { getTheme } from "../Model/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
 import EmptyPagePlaceholder from "../Components/EmptyPagePlaceholder";
 import Inset from "../Components/SafeAreaInset";
-import { ButtonRow, DeleteIcon } from "../Components/Element";
+import { ButtonRow, DeleteIcon, Button } from "../Components/Element";
 
 
 type ActivityDataProps = {
@@ -93,7 +92,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
       headerTintColor: "#ffffff",
       headerRight: () => (
         <ButtonRow>
-          {filteredDataPoints.length > 0 && day && <Button compact={true} onPress={() => {
+          {filteredDataPoints.length > 0 && day && <Button onPress={() => {
               Alert.alert("Delete all listed data?", "This action cannot be undone.", [
                 {
                   text: "Cancel",
@@ -108,7 +107,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
                 }
               ])
             }}>
-              <DeleteIcon color={theme.colors.onSurface} />
+              <DeleteIcon color="white" />
             </Button>}
           {activity.tags.length > 0 && (
               <TagMenu
@@ -119,19 +118,15 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
                 setMenuVisible={setTagsMenuVisible}
                 activityTags={activity.tags}
                 button= {(setMenuVisible) => 
-                <Button compact={true} onPress={() => setMenuVisible()}>
-                  <View>
+                <Button onPress={() => setMenuVisible()}>
                     <MaterialCommunityIcons name="filter" size={24} color="white" />
-                  </View>
                 </Button>
                 }
               />
           )}
-          <Button compact={true}
+          <Button
             onPress={() => navigation.navigate("EditDataPoint", { activityName: activity.name, newDataPoint: true, newDataPointDate: day, tags: requiredTags })}>
-              <View>
               <MaterialCommunityIcons name="plus" size={26} color={"#ffffff"} />
-              </View>
           </Button>
         </ButtonRow>
       ),

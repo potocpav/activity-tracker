@@ -4,7 +4,7 @@ import {
   Text,
   View,
 } from "react-native";
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { getTheme } from "../Model/Theme";
 
 const ITEM_HEIGHT = 60;
