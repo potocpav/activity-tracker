@@ -151,7 +151,7 @@ export type ActivityType = {
   special: SpecialActivity | null;
 };
 
-export type SpecialActivity = "ble_scale";
+export type SpecialActivity = { type: "ble_scale", minWeight: number };
 
 export type WeekStart = "sunday" | "monday";
 

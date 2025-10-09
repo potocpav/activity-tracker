@@ -10,8 +10,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { getTheme, getThemePalette, getThemeVariant } from "../Model/Theme";
 import { ActivityType, DataPoint, dateToDateList } from "../Model/StoreTypes";
 import { Button as PaperButton } from "react-native-paper";
-import { matchFont, Points, Text as SkiaText, vec, Canvas } from "@shopify/react-native-skia";
-import { useSharedValue, useFrameCallback, useDerivedValue } from "react-native-reanimated";
+import { matchFont, Points, Text as SkiaText, vec, Canvas, interpolateColors } from "@shopify/react-native-skia";
+import { useSharedValue, useFrameCallback, useDerivedValue, interpolate, Extrapolation } from "react-native-reanimated";
 import { renderLongFormValue } from "../Model/Unit";
 import TagSelector from "../Components/TagSelector";
 import SkiaChart, { xToCanvas, yToCanvas, Viewport } from "../Components/Chart/SkiaChart";
@@ -87,19 +87,19 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
 
   const largeFontBox = largeFont.measureText("00.00 kg");
 
-  const minChartRange = 1;
-  const minPullWeight = 2;
-  const minPullDuration = 3.0;
-  const showAfterPullWeight = 0.5;
+  const weightInLb = activity.unit.values?.[0]?.unit?.unit === "lb";
+  const minPullWeight = activity.special?.minWeight ?? NaN;
+  const minPullDuration = 2.5;
+  const showAbovePullWeight = minPullWeight;
   const showAfterDuration = 0.1;
-  const thresholdWeight = 0.6;
+  const thresholdWeight = 0.6; // % of peak maximum
 
   const pullIndicators = useDerivedValue(() => {
     const state = scaleInput.get();
     if (state.currentPull.active) {
       const w = state.currentPull.wSum / state.currentPull.wCount;
       const t = state.dataPoints[state.dataPoints.length - 1].t - state.currentPull.t0;
-      if (w > showAfterPullWeight && t > showAfterDuration) {
+      if (w > showAbovePullWeight && t > showAfterDuration) {
         return { pullWeight: w, pullT0: state.currentPull.t0 + (state.t0 ?? 0), pullTime: t };
       } else {
         return { pullWeight: 0, pullT0: 0, pullTime: 0 };
@@ -138,7 +138,9 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
 
   const pushDataPoints = (dataPoints: ScaleDataPoint[]) => {
     scaleInput.set((state) => {
-      const dp = dataPoints;
+      const dp = weightInLb ?
+        dataPoints.map((dp) => ({ ...dp, w: dp.w * 2.20462 })) :
+        dataPoints;
 
       let pull: CurrentPull = state.currentPull;
 
@@ -221,11 +223,14 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   });
 
   const isPulling = useDerivedValue(() => {
-    return pullIndicators.value.pullWeight > showAfterPullWeight && pullIndicators.value.pullTime > showAfterDuration;
+    return pullIndicators.value.pullWeight > showAbovePullWeight && pullIndicators.value.pullTime > showAfterDuration;
   });
 
   const view = useDerivedValue(() => {
-    return { x: { min: tx.value - 10, max: tx.value }, y: { min: 0, max: Math.max(1, scaleInput.value.max * 1.1) } };
+    return {
+      x: { min: tx.value - 10, max: tx.value },
+      y: { min: 0, max: Math.max(minPullWeight, scaleInput.value.max * 1.1) }
+    };
   });
 
   const linePoints = useDerivedValue(() =>
@@ -242,7 +247,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
 
   const timeSinceLastPull = useDerivedValue(() =>
     isPulling.value ?
-      renderLongFormValue(Math.floor(pullIndicators.value.pullTime), timeUnit) :
+      pullIndicators.value.pullTime.toFixed(1) :
       renderLongFormValue(Math.floor(tx.value - (pastPulls[pastPulls.length - 1]?.t1 ?? 0)), timeUnit)
   );
 

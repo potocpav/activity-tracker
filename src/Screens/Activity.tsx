@@ -160,12 +160,13 @@ const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ 
         <ButtonRow>
           <PlusIconButton onPress={() => {
               dismissHint("add_data_point");
-              switch (activity.special) {
+              switch (activity.special?.type ?? null) {
                 case "ble_scale":
                   navigation.navigate("BleScaleInput", { activityName });
                   break;
-                default:
+                case null:
                   navigation.navigate("EditDataPoint", { activityName, newDataPoint: true });
+                  break;
               }
             }} color="white" />
           <EditIconButton onPress={() => navigation.navigate("EditActivity", { activityName })} color="white" />

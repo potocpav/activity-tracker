@@ -7,8 +7,9 @@ import {
   Alert,
 } from "react-native";
 import { Dialog, Portal, SegmentedButtons, MD3Theme, Menu } from 'react-native-paper';
-import { ActivityType, SetTag, Tag, SubUnit, Unit, SpecialActivity } from "../Model/StoreTypes";
+import { ActivityType, SetTag, Tag, SubUnit, Unit, WeightUnit } from "../Model/StoreTypes";
 import { TextInput, Chip } from "react-native-paper";
+import { stringToNumber } from "../Model/Unit";
 import useStore from "../Model/Store";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import DraggableFlatList from 'react-native-draggable-flatlist';
@@ -21,6 +22,8 @@ import { UnitEditor } from "../Components/UnitView";
 import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
 import Hint from "../Components/Hint";
 import { CheckButton, DeleteButton, ButtonRow, Button, PlusIcon } from "../Components/Element";
+
+type SpecialType = "ble_scale" | null;
 
 type EditActivityProps = {
   navigation: any;
@@ -202,11 +205,23 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
 
   const [colorDialogVisible, setColorDialogVisible] = useState(false);
 
-  const [special, setSpecial] = useState<SpecialActivity | null>(activity?.special ?? null);
+  const [specialType, setSpecialType] = useState<SpecialType>(activity?.special?.type ?? null);
+
+  const bleMinWeightUnit = multiUnitInput[0]?.unit?.type === "weight" ? 
+    multiUnitInput[0]?.unit?.unit ?? "kg" : "kg";
+  const [bleMinWeight, setBleMinWeight] = useState<string>("" + (activity?.special?.minWeight ?? 2));
+  let bleMinWeightError: string | null = null;
+  const bleMinWeightNumber = stringToNumber(bleMinWeight, { type: "weight", unit: bleMinWeightUnit });
+  if (bleMinWeightUnit === 'kg' && (bleMinWeightNumber ?? 0) < 1) {
+    bleMinWeightError = "Minimum weight must be at least 1 kg";
+  } else if (bleMinWeightUnit === 'lb' && (bleMinWeightNumber ?? 0) < 2) {
+    bleMinWeightError = "Minimum weight must be at least 2 lb";
+  }
+  const bleMinWeightInputRef = useRef<InputWrapperRef>(undefined);
   const [specialMenuVisible, setSpecialMenuVisible] = useState(false);
 
-  const specialIcon = (special: SpecialActivity) => {
-    switch (special) {
+  const specialIcon = (specialType: SpecialType) => {
+    switch (specialType) {
       case "ble_scale":
         return "bluetooth";
     }
@@ -239,6 +254,12 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
         return;
     }
 
+    const bleMinWeightNumber = stringToNumber(bleMinWeight, { type: "weight", unit: bleMinWeightUnit });
+    if (bleMinWeightNumber === null) {
+      console.error("Error", "Invalid minimum weight");
+      return;
+    }
+
     let updatedActivity: ActivityType;
     if (activity === null) {
       const defaultUnit: Unit = { type: "single", unit: { type: "number", symbol: "" } };
@@ -252,7 +273,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
         stats: defaultStats(defaultUnit),
         calendars: [defaultCalendar(defaultUnit)],
         graphs: [defaultGraph(defaultUnit)],
-        special: special,
+        special: specialType === "ble_scale" ? {type: "ble_scale", minWeight: bleMinWeightNumber} : null,
       };
     } else {
       updatedActivity = {
@@ -260,7 +281,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
         name: activityNameInput,
         description: activityDescriptionInput,
         color: selectedColor,
-        special: special,
+        special: specialType === "ble_scale" ? {type: "ble_scale", minWeight: bleMinWeightNumber} : null,
         // don't update unit, it will be updated in the setUnit call
         // don't update tags, they will be updated in the setTags call
       };
@@ -311,6 +332,10 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
           multiUnitInput[idx].unitRef?.highlightError();
         }
       });
+      hasError = true;
+    }
+    if (specialType === "ble_scale" && bleMinWeightError !== null) {
+      bleMinWeightInputRef?.current?.highlightError();
       hasError = true;
     }
 
@@ -365,14 +390,14 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
         <ButtonRow>
           {experimentalFeatures && (
             <Button onPress={() => setSpecialMenuVisible(true)}>
-              <MaterialCommunityIcons name={special ? specialIcon(special) as any : "star-outline"} size={24} color={"#ffffff"} />
+              <MaterialCommunityIcons name={specialType ? specialIcon(specialType) as any : "star-outline"} size={24} color={"#ffffff"} />
             </Button>
           )}
           <CheckButton onPress={saveActivityWrapper} color={"white"} />
         </ButtonRow>
       ),
     });
-  }, [activityName, navigation, theme, activity, activityNameInput, activityDescriptionInput, singleUnitInput, selectedColor, tagState, multiUnitInput, unitMode, special]);
+  }, [activityName, navigation, theme, activity, activityNameInput, activityDescriptionInput, singleUnitInput, selectedColor, tagState, multiUnitInput, unitMode, specialType, bleMinWeight]);
 
   const onUpdateTag = (action: "delete" | "update") => {
     let hasError = false;
@@ -413,8 +438,8 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
     setTagColorDialogVisible(false);
   };
 
-  const setSpecialActivity = (special: SpecialActivity | null) => {
-    setSpecial(special);
+  const setSpecialActivity = (specialType: SpecialType) => {
+    setSpecialType(specialType);
     setUnitMode('measurable');
     // TODO: allow pounds
     setMultiUnitInput([
@@ -424,9 +449,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   }
 
   const editNoValue = () => (
-    <>
-      <Text style={{ color: theme.colors.onSurfaceVariant, paddingBottom: 10 }}>e.g. Did you excercise? Did you play chess?</Text>
-    </>
+    <Text style={{ color: theme.colors.onSurfaceVariant, paddingBottom: 10 }}>e.g. Did you excercise? Did you play chess?</Text>
   );
 
 
@@ -498,7 +521,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
           <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center' }}>
             <Button onPress={() => setMultiUnitInput([...multiUnitInput, emptyMultiUnit])}>
               <PlusIcon color={theme.colors.onSurface} />
-              <Text>Add Unit</Text>
+              <Text style={{ color: theme.colors.onSurface }}>Add Unit</Text>
             </Button>
           </View>
         )}
@@ -607,7 +630,37 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
               </View>
             </View>
 
-            <LockFrame locked={special === "ble_scale"}>
+            {specialType === "ble_scale" && (
+            <View style={{ marginBottom: 20, gap: 10 }}>
+              
+              <SegmentedButtons
+                  value={bleMinWeightUnit}
+                  onValueChange={value => { 
+                    setMultiUnitInput(multiUnitInput.map((u, idx) => idx === 0 ? { 
+                      ...u, 
+                      unit: { type: "weight", unit: value as WeightUnit } } : 
+                      u))
+                  }}
+                  buttons={[
+                    { value: "kg", label: "kg" },
+                    { value: "lb", label: "lb" },
+                  ]}
+                />
+              <InputWrapper error={showErrors ? bleMinWeightError : null} ref={bleMinWeightInputRef}>
+               
+                <TextInput 
+                style={{ flex: 1 }}
+                label={`Minimum Weight (${bleMinWeightUnit})`}
+                value={bleMinWeight}
+                onChangeText={setBleMinWeight}
+                keyboardType="numeric"
+                mode="outlined"
+                />
+              </InputWrapper>
+            </View>
+            )}
+
+            <LockFrame locked={specialType === "ble_scale"}>
               <Text style={styles.header}>Activity type:</Text>
               <InputWrapper error={showErrors ? unitModeError : null} ref={unitModeInputRef}>
                 <SegmentedButtons

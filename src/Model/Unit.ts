@@ -358,7 +358,7 @@ export const renderShortFormValue = (value: number, unit: SubUnit): string => {
           } else if (value > 3600) {
             return numberToString(Math.round(value), unit);
           } else if (value >= 60) {
-            return numberToString(value, unit);
+            return numberToString(Math.round(value), unit);
           } else {
             return renderShortFormNumber(value);
           }

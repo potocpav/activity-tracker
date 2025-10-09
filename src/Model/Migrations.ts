@@ -7,7 +7,7 @@ import {
   allHints
 } from "./StoreTypes";
 
-export const version = 24;
+export const version = 25;
 
 export const migrate = (persisted: any, version: number) => {
   if (version < 6) {
@@ -100,6 +100,18 @@ export const migrate = (persisted: any, version: number) => {
   }
   if (version < 24) {
     persisted.activeHints = persisted.activeHints.filter((h: HintType | "activity_value_help") => h !== "activity_value_help");
+  }
+  if (version < 25) {
+    persisted.activities.forEach((activity: ActivityType) => {
+      switch (activity.special as string | null) {
+        case "ble_scale":
+          activity.special = {type: "ble_scale", minWeight: 2};
+          break;
+        case null:
+          activity.special = null;
+          break;
+      }
+    });
   }
   return persisted
 };

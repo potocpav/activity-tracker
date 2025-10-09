@@ -111,12 +111,13 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
                 navigation.navigate('EditDataPoint', { activityName: activity.name, newDataPoint: true });
               }
             } else {
-              switch (activity.special) {
+              switch (activity.special?.type ?? null) {
                 case "ble_scale":
                   navigation.navigate("BleScaleInput", { activityName: activity.name });
                   break;
-                default:
+                case null:
                   navigation.navigate('EditDataPoint', { activityName: activity.name, newDataPoint: true });
+                  break;
               }
             }
           }}
@@ -144,10 +145,10 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
                   return <CloseIcon color={palette[activity.color]} />;
                 }
               } else {
-                switch (activity.special) {
+                switch (activity.special?.type ?? null) {
                   case "ble_scale":
                     return <MaterialCommunityIcons name="bluetooth" size={22} color={palette[activity.color]} />;
-                  default:
+                  case null:
                     return <PlusIcon color={palette[activity.color]} />;
                 }
               }

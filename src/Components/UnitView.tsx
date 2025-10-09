@@ -145,7 +145,6 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null, onChange:
   const [unitDialogVisible, setUnitDialogVisible] = useState(false);
   const theme = getTheme();
 
-  const [unitInput, setUnitInput] = useState<SubUnit | null>(unit ?? null);
   const [chosenUnitType, setChosenUnitType] = useState<SubUnitType | null>(unit?.type ?? null);
   const [allUnits, setAllUnits] = useState<SubUnit[]>((() => {
     let defaultUnits: SubUnit[] = [
@@ -174,7 +173,7 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null, onChange:
         <TextInput
           style={{ flex: 1 }}
           label="Unit"
-          value={unitInput === null ? "" : renderUnit(unitInput)}
+          value={unit === null ? "" : renderUnit(unit)}
           editable={false}
           mode="outlined"
         />
@@ -199,7 +198,6 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null, onChange:
             <CheckButton onPress={() => {
               setUnitDialogVisible(false);
               const newUnitInput = allUnits.find(unit => unit.type === chosenUnitType) ?? null;
-              setUnitInput(newUnitInput);
               onChange(newUnitInput);
             }} color={theme.colors.onSurface} />
           </View>
