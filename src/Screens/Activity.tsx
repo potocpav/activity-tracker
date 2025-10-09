@@ -8,13 +8,12 @@ import {
 import { Menu, Button } from 'react-native-paper';
 import useStore from "../Model/Store";
 import { DataPoint, ActivityType, Tag, dateListToDate } from "../Model/StoreTypes";
-import AntDesign from '@expo/vector-icons/AntDesign';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import ActivitySummary from "./ActivitySummary";
 import { File, Paths } from "expo-file-system/next";
 import * as Sharing from 'expo-sharing';
 import { getTheme, getThemeVariant } from "../Model/Theme";
 import { SystemBars } from "react-native-edge-to-edge";
-import { SafeAreaView } from "react-native-safe-area-context";
 import Hint from "../Components/Hint";
 
 type ActivityProps = {
@@ -169,13 +168,19 @@ const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ 
                   navigation.navigate("EditDataPoint", { activityName, newDataPoint: true });
               }
             }}>
-            <AntDesign name="plus" size={24} color={"#ffffff"} />
+            <View>
+              <MaterialCommunityIcons name="plus" size={26} color={"#ffffff"} />
+            </View>
           </Button>
           <Button compact={true} onPress={() => navigation.navigate("EditActivity", { activityName })}>
-            <AntDesign name="edit" size={24} color={"#ffffff"} />
+            <View>
+              <MaterialCommunityIcons name="pencil" size={24} color={"#ffffff"} />
+            </View>
           </Button>
           <Button compact={true} onPress={() => setMenuVisible(!menuVisible)}>
-            <AntDesign name="bars" size={24} color={"#ffffff"} />
+            <View>
+              <MaterialCommunityIcons name="dots-vertical" size={24} color={"#ffffff"} />
+            </View>
           </Button>
         </View>
       ),

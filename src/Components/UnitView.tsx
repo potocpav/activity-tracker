@@ -7,6 +7,7 @@ import { getTheme, useWideDisplay } from "../Model/Theme";
 import { renderUnit, mapStringValue, uiaaGrades, vScaleGrades, numberToString, stringToNumber, ydsGrades, frenchGrades, fontGrades } from "../Model/Unit";
 import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { MinusIcon, PlusIcon } from "./Element";
 
 
 const subUnitProps = (subUnitType: SubUnitType, allUnits: SubUnit[], setAllUnits: (units: SubUnit[]) => void): { title: string, icon: string, description: string | null, children: React.ReactNode | null } => {
@@ -423,14 +424,10 @@ export const ValueEditor = ({
                     mode="outlined"
                   />
                   <Button onPress={() => onChange(mapStringValue(unit, value, v => v - 1))} compact={true} mode="outlined" style={{ marginTop: 4 }}>
-                    <View>
-                      <MaterialCommunityIcons name="minus" size={24} color={theme.colors.onSurface} />
-                    </View>
+                    <MinusIcon color={theme.colors.onSurface} />
                   </Button>
                   <Button onPress={() => onChange(mapStringValue(unit, value, v => v + 1))} compact={true} mode="outlined" style={{ marginTop: 4 }}>
-                    <View>
-                      <MaterialCommunityIcons name="plus" size={24} color={theme.colors.onSurface} />
-                    </View>
+                    <PlusIcon color={theme.colors.onSurface} />
                   </Button>
                 </>
               )

@@ -13,7 +13,7 @@ import { ActivityType, dateToDateList, DataPoint, dateListToDate, SubUnit, DateL
 import useStore from "../Model/Store";
 import { DatePickerModal } from "react-native-paper-dates";
 import { CalendarDate } from "react-native-paper-dates/lib/typescript/Date/Calendar";
-import AntDesign from '@expo/vector-icons/AntDesign';
+import { CheckButton, CheckPlusButton, DeleteButton } from "../Components/Element";
 import { cmpDateList, formatDate } from "../Model/Activity";
 import { getTheme, getThemePalette, getThemeVariant } from "../Model/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -23,6 +23,7 @@ import { ValueEditor } from "../Components/UnitView";
 import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
 import Hint from "../Components/Hint";
 import TagSelector from "../Components/TagSelector";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 type EditDataPointProps = {
   navigation: any;
@@ -217,21 +218,10 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
       headerRight: () => (
         <>
           {dataPointIndex !== undefined && (
-            <Button compact={true} onPress={deleteDataPointWrapper}>
-              <AntDesign name="delete" size={24} color={"#ffffff"} />
-            </Button>
+            <DeleteButton onPress={deleteDataPointWrapper} color="white" />
           )}
-          <Button compact={true} onPress={duplicateDataPointWrapper}>
-            <View style={{ position: 'relative' }}>
-              <AntDesign name="check" size={24} color={"#ffffff"} />
-              <View style={{ position: 'absolute', right: 0, bottom: 0 }}>
-                <AntDesign name="pluscircleo" size={12} color={"#ffffff"} />
-              </View>
-            </View>
-          </Button>
-          <Button compact={true} onPress={saveDataPointWrapper}>
-            <AntDesign name="check" size={24} color={"#ffffff"} />
-          </Button>
+          <CheckPlusButton onPress={duplicateDataPointWrapper} color="white" />
+          <CheckButton onPress={saveDataPointWrapper} color="white" />
         </>
       ),
     });
@@ -263,7 +253,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
               </Pressable>
               <Button compact={true} onPress={() => { setDatePickerVisible(true); }}>
                 <View>
-                  <AntDesign name="calendar" size={24} color={theme.colors.onSurface} />
+                  <MaterialCommunityIcons name="calendar" size={24} color={theme.colors.onSurface} />
                 </View>
               </Button>
             </View>

@@ -14,13 +14,12 @@ import { cmpDateList, dayCmp, findZeroSlice, formatDate } from "../Model/Activit
 import { renderTags } from "../Components/Tags";
 import TagMenu from "../Components/TagMenu";
 import { renderLongFormValue } from "../Model/Unit";
-import AntDesign from '@expo/vector-icons/AntDesign';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getThemePalette, getThemeVariant } from "../Model/Theme";
 import { getTheme } from "../Model/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
 import EmptyPagePlaceholder from "../Components/EmptyPagePlaceholder";
-import Hint from "../Components/Hint";
 import Inset from "../Components/SafeAreaInset";
 
 
@@ -108,7 +107,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
                 }
               ])
             }}>
-            <AntDesign name="delete" size={24} color={"#ffffff"} />
+            <MaterialCommunityIcons name="delete" size={24} color={"#ffffff"} />
           </Button>}
           {activity.tags.length > 0 && (
               <TagMenu
@@ -120,14 +119,14 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
                 activityTags={activity.tags}
                 button= {(setMenuVisible) => 
                 <Button compact={true} onPress={() => setMenuVisible()}>
-                  <AntDesign name="filter" size={24} color={"#ffffff"} />
+                  <MaterialCommunityIcons name="filter" size={24} color={"#ffffff"} />
                 </Button>
                 }
               />
           )}
           <Button compact={true}
             onPress={() => navigation.navigate("EditDataPoint", { activityName: activity.name, newDataPoint: true, newDataPointDate: day, tags: requiredTags })}>
-            <AntDesign name="plus" size={24} color={"#ffffff"} />
+            <MaterialCommunityIcons name="plus" size={26} color={"#ffffff"} />
           </Button>
         </View>
       ),

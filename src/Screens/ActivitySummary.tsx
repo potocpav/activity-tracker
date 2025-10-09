@@ -4,7 +4,6 @@ import { Divider } from 'react-native-paper';
 import useStore from "../Model/Store";
 import { ActivityType, CalendarProps, GraphProps, Stat } from "../Model/StoreTypes";
 import { renderTags } from "../Components/Tags";
-import AntDesign from '@expo/vector-icons/AntDesign';
 import ActivityGraph from "../Components/Activity/ActivityGraph";
 import ActivityCalendar from "../Components/Activity/ActivityCalendar";
 import StatView from "../Components/StatView";

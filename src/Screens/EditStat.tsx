@@ -7,11 +7,12 @@ import { valueToLabel, periodToLabel } from "../Model/Activity";
 import TagMenu from "../Components/TagMenu";
 import SubUnitMenu from "../Components/SubUnitMenu";
 import DropdownMenu from "../Components/DropdownMenu";
-import AntDesign from '@expo/vector-icons/AntDesign';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import StatView from "../Components/StatView";
 import { getTheme, getThemeVariant } from "../Model/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
+import { ButtonRow, CheckButton, CopyButton, DeleteButton } from "../Components/Element";
 
 
 export const EditStat = (
@@ -102,25 +103,13 @@ export const EditStat = (
       headerStyle: themeVariant == 'light' ? { backgroundColor: theme.colors.primary } : undefined,
       headerTintColor: "#ffffff",
       headerRight: () => (
-        <>
-          <Button compact={true} onPress={handleApply}><AntDesign name="check" size={24} color={"#ffffff"} /></Button>
-          <Button
-            compact={true}
-            onPress={handleDuplicate}
-            style={{ marginLeft: 8 }}
-          >
-            <AntDesign name="copy1" size={22} color={"#ffffff"} />
-          </Button>
+        <ButtonRow>
+          <CheckButton onPress={handleApply} color="white" />
+          <CopyButton onPress={handleDuplicate} color="white" />
           {activity.stats.length > 1 && (
-            <Button
-              compact={true}
-              onPress={handleDelete}
-              style={{ marginLeft: 8 }}
-            >
-              <AntDesign name="delete" size={22} color={"#ffffff"} />
-            </Button>
+            <DeleteButton onPress={handleDelete} color="white" />
           )}
-        </>
+        </ButtonRow>
       ),
     });
   }, [activityName, navigation, theme, activity]);

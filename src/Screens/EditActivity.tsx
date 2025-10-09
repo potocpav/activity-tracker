@@ -10,7 +10,6 @@ import { Dialog, Portal, SegmentedButtons, MD3Theme, Menu } from 'react-native-p
 import { ActivityType, SetTag, Tag, SubUnit, Unit, SpecialActivity } from "../Model/StoreTypes";
 import { TextInput, Button, Chip } from "react-native-paper";
 import useStore from "../Model/Store";
-import AntDesign from '@expo/vector-icons/AntDesign';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import ColorPicker from '../Components/ColorPicker';
@@ -21,6 +20,7 @@ import { SystemBars } from "react-native-edge-to-edge";
 import { UnitEditor } from "../Components/UnitView";
 import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
 import Hint from "../Components/Hint";
+import { CheckButton, DeleteButton } from "../Components/Element";
 
 type EditActivityProps = {
   navigation: any;
@@ -390,7 +390,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
               <MaterialCommunityIcons name={special ? specialIcon(special) as any : "star-outline"} size={24} color={"#ffffff"} />
             </Button>
           )}
-          <Button compact={true} onPress={saveActivityWrapper}><AntDesign name="check" size={24} color={"#ffffff"} /></Button>
+          <CheckButton onPress={saveActivityWrapper} color={"white"} />
         </>
       ),
     });
@@ -498,7 +498,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
               }} />
             </InputWrapper>
             <View>
-              <Button compact={true} onPress={() => {
+              <DeleteButton onPress={() => {
                 if (multiUnitInput.length >= 3) {
                   // Delete unit
                   const newVals = [...multiUnitInput];
@@ -513,22 +513,16 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
                   setMeasurableMode('single');
                   setSingleUnitInput(multiUnitInput[1 - idx].unit);
                 }
-              }}><AntDesign name="delete" size={20} color={theme.colors.onSurface} /></Button>
+              }} color={theme.colors.onSurface} />
             </View>
           </View>
         ))}
         {multiUnitInput.length < 4 && (
-          // <Button compact={true} onPress={() => {
-          //   // Add unit to the end
-          //   setMultiUnitInput([...multiUnitInput, emptyMultiUnit]);
-          // }}>
-          //   <AntDesign name="plus" size={20} color={theme.colors.onSurface} />
-          // </Button>
-      <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center' }}>
-      <Button compact={true} onPress={() => setMultiUnitInput([...multiUnitInput, emptyMultiUnit])} icon="plus">
-        Add Unit
-      </Button>
-    </View>
+          <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center' }}>
+            <Button compact={true} onPress={() => setMultiUnitInput([...multiUnitInput, emptyMultiUnit])} icon="plus">
+              Add Unit
+            </Button>
+          </View>
         )}
       </View>
     </View>
@@ -673,8 +667,8 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
             </View>
           </Dialog.Content>
           <Dialog.Actions>
-            <Button onPress={() => onUpdateTag("delete")}><AntDesign name="delete" size={24} color={theme.colors.onSurface} /></Button>
-            <Button onPress={() => onUpdateTag("update")}><AntDesign name="check" size={24} color={theme.colors.onSurface} /></Button>
+            <DeleteButton onPress={() => onUpdateTag("delete")} color={theme.colors.onSurface} />
+            <CheckButton onPress={() => onUpdateTag("update")} color={theme.colors.onSurface} />
           </Dialog.Actions>
         </Dialog>
         {/* Color picker dialog */}
