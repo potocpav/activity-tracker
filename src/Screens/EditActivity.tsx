@@ -77,20 +77,6 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   const [showErrors, setShowErrors] = useState(false);
   const [showTagDialogErrors, setShowTagDialogErrors] = useState(false);
 
-  const [measurableMode, setMeasurableMode] = useState<'single' | 'multiple'>((() => {
-    if (!activity) {
-      return 'single';
-    } else {
-      switch (activity.unit.type) {
-        case 'none':
-          return 'single';
-        case 'single':
-          return 'single';
-        case 'multiple':
-          return 'multiple';
-      }
-    }
-  })());
   const [unitMode, setUnitMode] = useState<'yes_no' | 'measurable' | null>((() => {
     if (!activity) {
       return null;
@@ -135,11 +121,6 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       }
     }
   })());
-  const singleUnitInputRef = useRef<InputWrapperRef>(undefined);
-  let singleUnitInputError: string | null = null;
-  if (unitMode === 'measurable' && measurableMode === 'single' && singleUnitInput === null) {
-    singleUnitInputError = "Select a unit";
-  }
 
   const [selectedColor, setSelectedColor] = useState(
     activity === null ?
@@ -183,14 +164,14 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   const [multiUnitInput, setMultiUnitInputInternal] = useState<{ name: string, unit: SubUnit | null, nameRef: InputWrapperRef | null, unitRef: InputWrapperRef | null, nameError: string | null, unitError: string | null }[]>((() => {
     let res = [];
     if (!activity) {
-      res = [emptyMultiUnit, emptyMultiUnit];
+      res = [emptyMultiUnit];
     } else {
       switch (activity.unit.type) {
         case 'none':
-          res = [emptyMultiUnit, emptyMultiUnit];
+          res = [emptyMultiUnit];
           break;
         case 'single':
-          res = [{ ...emptyMultiUnit, unit: activity.unit.unit }, emptyMultiUnit];
+          res = [{ ...emptyMultiUnit, unit: activity.unit.unit }];
           break;
         case 'multiple':
           res = activity.unit.values.map((u: { name: string, unit: SubUnit }) => ({ ...emptyMultiUnit, name: u.name, unit: u.unit }));
@@ -238,22 +219,19 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
         newUnit = { type: "none" };
         break;
       case 'measurable':
-        switch (measurableMode) {
-          case 'single':
-            if (singleUnitInput === null) {
-              console.error("Error", "Single unit cannot be null");
-              return;
-            }
-            newUnit = { type: "single", unit: singleUnitInput };
-            break;
-          case 'multiple':
-            if (multiUnitInput.findIndex((u) => u.unit === null) !== -1) {
-              console.error("Error", "All value units must be non-empty");
-              return;
-            }
-            // no nulls at this point
-            newUnit = { type: "multiple", values: multiUnitInput as { name: string, unit: SubUnit }[] };
-            break;
+        if (multiUnitInput.length === 1) {
+          if (multiUnitInput[0].unit === null) {
+            console.error("Error", "Single unit cannot be null");
+            return;
+          }
+          newUnit = { type: "single", unit: multiUnitInput[0].unit };
+        } else {
+          if (multiUnitInput.findIndex((u) => u.unit === null) !== -1) {
+            console.error("Error", "All value units must be non-empty");
+            return;
+          }
+          // no nulls at this point
+          newUnit = { type: "multiple", values: multiUnitInput as { name: string, unit: SubUnit }[] };
         }
         break;
       case null:
@@ -320,11 +298,11 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       unitModeInputRef?.current?.highlightError();
       hasError = true;
     }
-    if (unitMode === 'measurable' && measurableMode === 'single' && singleUnitInputError !== null) {
-      singleUnitInputRef?.current?.highlightError();
+    if (unitMode === 'measurable' && multiUnitInput.length === 1 && multiUnitInput[0].unitError !== null) {
+      multiUnitInput[0].unitRef?.highlightError();
       hasError = true;
     }
-    if (unitMode === 'measurable' && measurableMode === 'multiple' && multiUnitInput.find((e) => e.nameError !== null || e.unitError !== null) !== undefined) {
+    if (unitMode === 'measurable' && multiUnitInput.length > 1 && multiUnitInput.find((e) => e.nameError !== null || e.unitError !== null) !== undefined) {
       multiUnitInput.forEach((e, idx) => {
         if (e.nameError !== null) {
           multiUnitInput[idx].nameRef?.highlightError();
@@ -355,15 +333,15 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
     if (activity !== null && activity.dataPoints.length > 0) {
       if (unitMode === 'yes_no' && activity.unit.type !== 'none') {
         dataLossAlert(saveActivity);
-      } else if (unitMode === 'measurable' && measurableMode === 'single' && activity.unit.type === 'multiple') {
+      } else if (unitMode === 'measurable' && multiUnitInput.length === 1 && activity.unit.type === 'multiple') {
         dataLossAlert(saveActivity);
-      } else if (unitMode === 'measurable' && measurableMode === 'multiple' && activity.unit.type === 'single') {
+      } else if (unitMode === 'measurable' && multiUnitInput.length > 1 && activity.unit.type === 'single') {
         if (oldUnitMap.findIndex((u) => u.oldName === null) === -1) {
           dataLossAlert(saveActivity);
         } else {
           saveActivity();
         }
-      } else if (unitMode === 'measurable' && measurableMode === 'multiple' && activity.unit.type === 'multiple') {
+      } else if (unitMode === 'measurable' && multiUnitInput.length > 1 && activity.unit.type === 'multiple') {
         let oldNames: any[] = oldUnitMap.map((u) => u.oldName)
         if (isSupersetOf(new Set(oldNames), new Set(activity.unit.values.map((u: { name: string, unit: SubUnit }) => u.name)))) {
           saveActivity();
@@ -438,7 +416,6 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   const setSpecialActivity = (special: SpecialActivity | null) => {
     setSpecial(special);
     setUnitMode('measurable');
-    setMeasurableMode('multiple');
     // TODO: allow pounds
     setMultiUnitInput([
       { name: "Weight", unit: { type: "weight", unit: "kg" }, unitRef: null, nameRef: null },
@@ -453,22 +430,22 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   );
 
 
+
   const editSingleValue = () => (
     <View style={{ gap: 10 }}>
       <Text style={{ color: theme.colors.onSurfaceVariant }}>e.g. How many kilometers did you run? How many pull-ups did you do?</Text>
-      <InputWrapper error={showErrors ? singleUnitInputError : null} ref={singleUnitInputRef}>
-        <UnitEditor unit={singleUnitInput} onChange={(unit: SubUnit | null) => {
-          setSingleUnitInput(unit);
+      <InputWrapper error={showErrors ? multiUnitInput[0].unitError : null} ref={el => multiUnitInput[0].unitRef = el}>
+        <UnitEditor unit={multiUnitInput[0].unit} onChange={(unit: SubUnit | null) => {
+          setMultiUnitInput([{ ...multiUnitInput[0], unit: unit }]);
         }} />
       </InputWrapper>
       <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center' }}>
-        <Button compact={true} onPress={() => setMeasurableMode('multiple')} icon="plus">
+        <Button compact={true} onPress={() => setMultiUnitInput([...multiUnitInput, emptyMultiUnit])} icon="plus">
           Add Unit
         </Button>
       </View>
     </View>
   );
-
 
   const editMultipleValues = () => (
     <View style={{ gap: 10 }}>
@@ -510,8 +487,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
                     .map((u) => u.newIndex > idx ? { ...u, newIndex: u.newIndex - 1 } : u);
                   setOldUnitMap(newOldUnitMap);
                 } else {
-                  setMeasurableMode('single');
-                  setSingleUnitInput(multiUnitInput[1 - idx].unit);
+                  setMultiUnitInput(multiUnitInput.slice(0, idx).concat(multiUnitInput.slice(idx + 1)));
                 }
               }} color={theme.colors.onSurface} />
             </View>
@@ -649,7 +625,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
                 />
               </InputWrapper>
               <View>
-                {unitMode === null ? null : unitMode === 'yes_no' ? editNoValue() : unitMode === 'measurable' ? measurableMode === 'single' ? editSingleValue() : editMultipleValues() : null}
+                {unitMode === null ? null : unitMode === 'yes_no' ? editNoValue() : unitMode === 'measurable' ? multiUnitInput.length === 1 ? editSingleValue() : editMultipleValues() : null}
               </View>
             </LockFrame>
           </View>
