@@ -15,6 +15,7 @@ import { getTheme, getThemeVariant } from "../Model/Theme";
 import { SystemBars } from "react-native-edge-to-edge";
 import Hint from "../Components/Hint";
 import { ButtonRow, DotsIconButton, EditIconButton, PlusIconButton } from "../Components/Element";
+import { EncodingType } from "expo-file-system/src/ExpoFileSystem.types";
 
 type ActivityProps = {
   navigation: any;
@@ -139,7 +140,7 @@ const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ 
         file.delete();
       }
       file.create(); // can throw an error if the file already exists or no permission to create it
-      file.write(csv);
+      file.write(csv, { encoding: EncodingType.UTF8 });
 
       await Sharing.shareAsync(file.uri, {
         dialogTitle: 'Export Activity',
