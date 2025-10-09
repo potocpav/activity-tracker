@@ -1,35 +1,18 @@
-import React, { useState, FC, useRef, Fragment } from "react";
+import React from "react";
 import {
   View,
   Text,
-  StyleSheet,
-  ScrollView,
-  Alert,
-  ToastAndroid,
-  Pressable,
 } from "react-native";
-import { Chip, TextInput, Button, MD3Theme } from 'react-native-paper';
-import { ActivityType, dateToDateList, DataPoint, dateListToDate, SubUnit, DateList } from "../Model/StoreTypes";
-import useStore from "../Model/Store";
-import { DatePickerModal } from "react-native-paper-dates";
-import { CalendarDate } from "react-native-paper-dates/lib/typescript/Date/Calendar";
-import AntDesign from '@expo/vector-icons/AntDesign';
-import { cmpDateList, formatDate } from "../Model/Activity";
-import { getTheme, getThemePalette, getThemeVariant } from "../Model/Theme";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { SystemBars } from "react-native-edge-to-edge";
-import { numberToString, stringToNumber, renderUnit } from "../Model/Unit";
-import { ValueEditor } from "../Components/UnitView";
-import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
-import Hint from "../Components/Hint";
+import { Chip, MD3Theme } from 'react-native-paper';
+import { ActivityType } from "../Model/StoreTypes";
 
 export const TagSelector = ({ activity, inputTags, toggleInputTag, palette, theme }:
-  { 
-    activity: ActivityType, 
-    inputTags: string[], 
-    toggleInputTag: (tag: string) => void, 
-    palette: string[], 
-    theme: MD3Theme, 
+  {
+    activity: ActivityType,
+    inputTags: string[],
+    toggleInputTag: (tag: string) => void,
+    palette: string[],
+    theme: MD3Theme,
   }) => {
   return (activity.tags.length > 0 && (<View style={{ gap: 10 }}>
     <Text style={{ color: theme.colors.onSurfaceVariant, fontSize: 16 }}>Tags:</Text>

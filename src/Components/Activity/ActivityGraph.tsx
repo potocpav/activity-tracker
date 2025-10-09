@@ -4,7 +4,7 @@ import { Menu, Button, Portal, Dialog, TextInput } from 'react-native-paper';
 import useStore from "../../Model/Store";
 import { DataPoint, dateListToTime, ActivityType, GraphType, WeekStart, DateList, SubUnit, GraphProps, Unit } from "../../Model/StoreTypes";
 import { binTime, binTimeSeries, BinSize, extractValue } from "../../Model/Activity";
-import AntDesign from '@expo/vector-icons/AntDesign';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import TagMenu from "../TagMenu";
 import SubUnitMenu from "../SubUnitMenu";
 import DropdownMenu from "../DropdownMenu";
@@ -59,35 +59,35 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
     if (gType === "box") {
       return (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <AntDesign name="barchart" size={24} color={theme.colors.onSurfaceVariant} />
+          <MaterialCommunityIcons name="chart-waterfall" size={24} color={theme.colors.onSurfaceVariant} />
           <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Box</Text>
         </View>
       );
     } else if (gType === "bar-count") {
       return (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <AntDesign name="barschart" size={24} color={theme.colors.onSurfaceVariant} />
+          <MaterialCommunityIcons name="chart-bar" size={24} color={theme.colors.onSurfaceVariant} />
           <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Count</Text>
         </View>
       );
     } else if (gType === "bar-daily-mean") {
       return (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <AntDesign name="barschart" size={24} color={theme.colors.onSurfaceVariant} />
+          <MaterialCommunityIcons name="chart-bar" size={24} color={theme.colors.onSurfaceVariant} />
           <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Daily Mean</Text>
         </View>
       );
     } else if (gType === "bar-sum") {
       return (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <AntDesign name="barschart" size={24} color={theme.colors.onSurfaceVariant} />
+          <MaterialCommunityIcons name="chart-bar" size={24} color={theme.colors.onSurfaceVariant} />
           <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Sum</Text>
         </View>
       );
     } else if (gType === "line-mean") {
       return (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <AntDesign name="linechart" size={24} color={theme.colors.onSurfaceVariant} />
+          <MaterialCommunityIcons name="chart-line" size={24} color={theme.colors.onSurfaceVariant} />
           <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Mean</Text>
         </View>
       );
@@ -162,7 +162,7 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
             <Button compact={true} onPress={() => setGraphTypeMenuVisible(true)}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 {graphLabel(graph.graphType)}
-                <AntDesign name="down" size={16} color={theme.colors.onSurfaceVariant} style={{ marginLeft: 6 }} />
+                <MaterialCommunityIcons name="chevron-down" size={23} color={theme.colors.onSurfaceVariant} style={{ marginLeft: 6 }} />
               </View>
             </Button>
           }
@@ -196,7 +196,9 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
                 setGraphDialogVisible(false);
                 ToastAndroid.show('Graph deleted', ToastAndroid.SHORT);
               }}>
-                <AntDesign name="delete" size={22} color={theme.colors.onSurface} />
+              <View>
+                <MaterialCommunityIcons name="delete" size={22} color={theme.colors.onSurface} />
+              </View>
               </Button>
             )}
             <Button onPress={() => {
@@ -204,13 +206,17 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
               setGraphDialogVisible(false);
               ToastAndroid.show('Graph cloned', ToastAndroid.SHORT);
             }}>
-              <AntDesign name="copy1" size={22} color={theme.colors.onSurface} />
+              <View>
+              <MaterialCommunityIcons name="content-copy" size={20} color={theme.colors.onSurface} />
+              </View>
             </Button>
             <Button onPress={() => {
               setActivityGraph(activityName, graphIndex, { ...graph, label: graphDialogNameInput });
               setGraphDialogVisible(false);
             }}>
-              <AntDesign name="check" size={22} color={theme.colors.onSurface} />
+              <View>
+              <MaterialCommunityIcons name="check" size={22} color={theme.colors.onSurface} />
+              </View>
             </Button>
           </Dialog.Actions>
         </Dialog>

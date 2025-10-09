@@ -14,7 +14,7 @@ import Calendar from "../Calendar";
 import ValueMenu from "../ValueMenu";
 import SubUnitMenu from "../SubUnitMenu";
 import { getTheme } from "../../Model/Theme";
-import AntDesign from '@expo/vector-icons/AntDesign';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Dialog, Portal, TextInput, Button } from "react-native-paper";
 import Hint from "../Hint";
 
@@ -118,7 +118,9 @@ const ActivityCalendar = ({ navigation, activityName, calendarIndex }: ActivityC
                 setCalendarDialogVisible(false);
                 ToastAndroid.show('Calendar deleted', ToastAndroid.SHORT);
                 }}>
-                <AntDesign name="delete" size={22} color={theme.colors.onSurface} />
+              <View>
+                <MaterialCommunityIcons name="delete" size={22} color={theme.colors.onSurface} />
+              </View>
               </Button>
             )}
             <Button onPress={() => {
@@ -126,10 +128,14 @@ const ActivityCalendar = ({ navigation, activityName, calendarIndex }: ActivityC
               setCalendarDialogVisible(false);
               ToastAndroid.show('Calendar cloned', ToastAndroid.SHORT);
               }}>
-              <AntDesign name="copy1" size={22} color={theme.colors.onSurface} />
+              <View>
+              <MaterialCommunityIcons name="content-copy" size={20} color={theme.colors.onSurface} />
+              </View>
             </Button>
             <Button onPress={() => {setActivityCalendar(activityName, calendarIndex, { ...calendar, label: calendarDialogNameInput }); setCalendarDialogVisible(false);}}>
-              <AntDesign name="check" size={22} color={theme.colors.onSurface} />
+              <View>
+              <MaterialCommunityIcons name="check" size={22} color={theme.colors.onSurface} />
+              </View>
             </Button>
           </Dialog.Actions>
         </Dialog>

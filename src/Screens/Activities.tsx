@@ -3,7 +3,6 @@ import {
   StyleSheet,
   Text,
   View,
-  TouchableOpacity,
   useWindowDimensions,
   Pressable,
 } from "react-native";
@@ -11,7 +10,6 @@ import { Button } from 'react-native-paper';
 import useStore from "../Model/Store";
 import { ActivityType, DataPoint, dateToDateList, Stat } from "../Model/StoreTypes";
 import DraggableFlatList from 'react-native-draggable-flatlist'
-import AntDesign from '@expo/vector-icons/AntDesign';
 import { dayCmp, findZeroSlice, renderStatValue } from "../Model/Activity";
 import { getTheme, getThemePalette, getThemeVariant, useWideDisplay } from "../Model/Theme";
 import { SystemBars } from "react-native-edge-to-edge";
@@ -50,13 +48,13 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
             dismissHint("hello");
             navigation.navigate('EditActivity', { activityName: null });
           }}>
-            <AntDesign name="plus" size={23} color={theme.colors.onSurface} />
+            <MaterialCommunityIcons name="plus" size={26} color={theme.colors.onSurface} />
           </Button>
           <Button compact={true} onPress={() => {
             dismissHint("hello");
             navigation.navigate('Settings');
           }}>
-            <AntDesign name="setting" size={23} color={theme.colors.onSurface} />
+            <MaterialCommunityIcons name="cog" size={24} color={theme.colors.onSurface} />
           </Button>
         </View>
       ),
@@ -143,23 +141,23 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
                 if (todayPointIndices.length > 1) {
                   return (
                     <View>
-                      <AntDesign name="check" size={22} color={palette[activity.color]} />
+                      <MaterialCommunityIcons name="check" size={23} color={palette[activity.color]} />
                       <View style={{ position: "absolute", top: 0, left: 5, opacity: 0.5 }}>
-                        <AntDesign name="check" size={22} color={palette[activity.color]} />
+                        <MaterialCommunityIcons name="check" size={23} color={palette[activity.color]} />
                       </View>
                     </View>
                   );
                 } else if (todayPointIndices.length === 1) {
-                  return <AntDesign name="check" size={22} color={palette[activity.color]} />;
+                  return <MaterialCommunityIcons name="check" size={23} color={palette[activity.color]} />;
                 } else {
-                  return <AntDesign name="close" size={22} color={palette[activity.color]} />;
+                  return <MaterialCommunityIcons name="close" size={23} color={palette[activity.color]} />;
                 }
               } else {
                 switch (activity.special) {
                   case "ble_scale":
                     return <MaterialCommunityIcons name="bluetooth" size={22} color={palette[activity.color]} />;
                   default:
-                    return <AntDesign name="plus" size={24} color={palette[activity.color]} />;
+                    return <MaterialCommunityIcons name="plus" size={26} color={palette[activity.color]} />;
                 }
               }
             })()}

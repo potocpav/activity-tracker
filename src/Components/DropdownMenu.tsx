@@ -1,7 +1,8 @@
 import React from "react";
 import { View, Text } from "react-native";
 import { Menu, Button } from 'react-native-paper';
-import AntDesign from '@expo/vector-icons/AntDesign';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+
 
 export interface DropdownMenuOption {
   key: string;
@@ -40,7 +41,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
         }}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Text style={{ marginRight: 10, color: themeColors.onSurfaceVariant }}>{selectedLabel}</Text>
-            <AntDesign name="down" size={16} color={themeColors.onSurfaceVariant} />
+            <MaterialCommunityIcons name="chevron-down" size={23} color={themeColors.onSurfaceVariant} />
           </View>
         </Button>
       }

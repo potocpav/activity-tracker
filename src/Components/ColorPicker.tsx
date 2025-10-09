@@ -1,7 +1,7 @@
 import React from 'react';
 import { View } from 'react-native';
 import { Dialog, Button } from 'react-native-paper';
-import AntDesign from '@expo/vector-icons/AntDesign';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 interface ColorPickerProps {
   visible: boolean;
@@ -39,7 +39,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ visible, palette, selectedCol
                 }}
                 contentStyle={{ width: 40, height: 40 }}
               >
-                {selectedColor === row * 4 + idx ? <AntDesign name="check" size={20} color={theme.colors.surface} /> : null}
+                {selectedColor === row * 4 + idx ? <MaterialCommunityIcons name="check" size={23} color={theme.colors.surface} /> : null}
               </Button>
             ))}
           </View>

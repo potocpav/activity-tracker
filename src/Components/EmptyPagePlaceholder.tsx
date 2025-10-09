@@ -4,18 +4,18 @@ import {
   Text,
   View,
 } from "react-native";
-import AntDesign from '@expo/vector-icons/AntDesign';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getTheme } from "../Model/Theme";
 
 const ITEM_HEIGHT = 60;
 
 const EmptyPagePlaceholder = ({ title, subtext }: { title: string, subtext: string }) => {
-  const theme = getTheme();
+  const theme = getTheme(); 
   const styles = getStyles(theme);
 
   return (
           <View style={styles.emptyStateContainer}>
-            <AntDesign name="inbox" size={64} color={theme.colors.onSurfaceVariant} />
+            <MaterialCommunityIcons name="inbox" size={64} color={theme.colors.onSurfaceVariant} />
             <Text style={styles.emptyStateText}>{title}</Text>
             <Text style={styles.emptyStateSubtext}>{subtext}</Text>
           </View>

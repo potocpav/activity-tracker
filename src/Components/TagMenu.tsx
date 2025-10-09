@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text } from "react-native";
 import { Menu, Button } from 'react-native-paper';
-import AntDesign from '@expo/vector-icons/AntDesign';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Tag, ActivityType } from "../Model/StoreTypes";
 import { getTheme, getThemePalette } from "../Model/Theme";
 
@@ -16,6 +16,7 @@ interface TagMenuProps {
 }
 
 const TagMenu: React.FC<TagMenuProps> = ({
+  activity,
   tags,
   onChange,
   menuVisible,
@@ -23,7 +24,7 @@ const TagMenu: React.FC<TagMenuProps> = ({
   activityTags,
   button,
 }) => {
-  const theme = getTheme();
+  const theme = getTheme(activity.color);
   const palette = getThemePalette();
   return (
     activityTags.length > 0 && (
@@ -35,13 +36,8 @@ const TagMenu: React.FC<TagMenuProps> = ({
           <Button compact={true} onPress={() => setMenuVisible(true)} style={{ 
             padding: 5,
             }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={{ marginRight: 10, color: theme.colors.onSurfaceVariant }}>
-                <AntDesign name="tag" size={16} color={theme.colors.onSurfaceVariant} />
-                {tags.length === 0 ? '' : '*'}
-              </Text>
-              <AntDesign name="down" size={16} color={theme.colors.onSurfaceVariant} />
-            </View>
+              <MaterialCommunityIcons name="tag" size={18} color={tags.length === 0 ? theme.colors.onSurfaceVariant : theme.colors.primary} />
+              <MaterialCommunityIcons name="chevron-down" size={23} color={theme.colors.onSurfaceVariant} />
           </Button>
         }
       >

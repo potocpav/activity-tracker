@@ -2,10 +2,11 @@ import { Text, View, ScrollView, Pressable, Modal, FlatList, useWindowDimensions
 import { TextInput, Button, RadioButton, Dialog, Portal, List, SegmentedButtons } from "react-native-paper";
 import { ClimbingGrade, DistanceUnit, SubUnit, SubUnitType, TimeUnit, WeightUnit } from "../Model/StoreTypes";
 import { useRef, useState } from "react";
-import AntDesign from '@expo/vector-icons/AntDesign';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getTheme, useWideDisplay } from "../Model/Theme";
 import { renderUnit, mapStringValue, uiaaGrades, vScaleGrades, numberToString, stringToNumber, ydsGrades, frenchGrades, fontGrades } from "../Model/Unit";
 import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 
 const subUnitProps = (subUnitType: SubUnitType, allUnits: SubUnit[], setAllUnits: (units: SubUnit[]) => void): { title: string, icon: string, description: string | null, children: React.ReactNode | null } => {
@@ -186,10 +187,10 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null, onChange:
         visible={unitDialogVisible}
         onDismiss={() => setUnitDialogVisible(false)}
       >
-        <View style={{ flex: 1 }}>
+        <SafeAreaView style={{ flex: 1 }}>
           <View style={{ backgroundColor: theme.colors.elevation.level1, elevation: 2, flexDirection: 'row', paddingVertical: 10, alignItems: 'center' }}>
             <Button onPress={() => setUnitDialogVisible(false)}>
-              <AntDesign name="arrowleft" size={24} color={theme.colors.onSurface} />
+              <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onSurface} />
             </Button>
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: 20, color: theme.colors.onSurface }}>Select Unit</Text>
@@ -200,7 +201,7 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null, onChange:
               setUnitInput(newUnitInput);
               onChange(newUnitInput);
             }}>
-              <AntDesign name="check" size={24} color={theme.colors.onSurface} />
+              <MaterialCommunityIcons name="check" size={24} color={theme.colors.onSurface} />
             </Button>
           </View>
           <ScrollView>
@@ -235,7 +236,7 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null, onChange:
               })}
             </View>
           </ScrollView>
-        </View>
+        </SafeAreaView>
       </Modal>
       {/* </Portal> */}
     </View>
@@ -343,14 +344,14 @@ export const ValueEditor = ({
                   setClimbingGradeDialogVisible(false);
                   onChange("");
                 }} compact={true}>
-                  <AntDesign name="close" size={24} color={theme.colors.onSurface} />
+                  <MaterialCommunityIcons name="close" size={24} color={theme.colors.onSurface} />
                 </Button>
               </View>
             </Dialog.Title>
             <Dialog.ScrollArea>
               <View style={{ flex: 1, alignItems: 'flex-end', justifyContent: 'flex-end' }}>
                 <Button onPress={() => { setClimbingGradeDialogVisible(false) }}>
-                  <AntDesign name="close" size={24} color={theme.colors.onSurface} />
+                  <MaterialCommunityIcons name="close" size={24} color={theme.colors.onSurface} />
                 </Button>
               </View>
               <FlatList
@@ -400,12 +401,12 @@ export const ValueEditor = ({
                   />
                   <Button onPress={() => resetTimer()} compact={true} style={{ marginTop: 4 }} mode="outlined">
                     <View>
-                      <AntDesign name={"reload1"} size={22} color={theme.colors.onSurface} />
+                      <MaterialCommunityIcons name="reload" size={22} color={theme.colors.onSurface} />
                     </View>
                   </Button>
                   <Button onPress={() => toggleTimer(unit.unit)} compact={true} style={{ marginTop: 4 }} mode="outlined">
                     <View>
-                      <AntDesign name={timerActive ? "pausecircleo" : "playcircleo"} size={22} color={theme.colors.onSurface} />
+                      <MaterialCommunityIcons name={timerActive ? "pause" : "play"} size={22} color={theme.colors.onSurface} />
                     </View>
                   </Button>
                 </>
@@ -423,12 +424,12 @@ export const ValueEditor = ({
                   />
                   <Button onPress={() => onChange(mapStringValue(unit, value, v => v - 1))} compact={true} mode="outlined" style={{ marginTop: 4 }}>
                     <View>
-                      <AntDesign name="minus" size={24} color={theme.colors.onSurface} />
+                      <MaterialCommunityIcons name="minus" size={24} color={theme.colors.onSurface} />
                     </View>
                   </Button>
                   <Button onPress={() => onChange(mapStringValue(unit, value, v => v + 1))} compact={true} mode="outlined" style={{ marginTop: 4 }}>
                     <View>
-                      <AntDesign name="plus" size={22} color={theme.colors.onSurface} />
+                      <MaterialCommunityIcons name="plus" size={24} color={theme.colors.onSurface} />
                     </View>
                   </Button>
                 </>
