@@ -36,8 +36,8 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
       onDismiss={() => setVisible(false)}
       anchor={
         <Button onPress={() => setVisible(true)}>
-            <Text style={{ color: themeColors.onSurface }}>{selectedLabel}</Text>
-            <ChevronDownIcon color={themeColors.onSurface} />
+            <Text style={{ color: themeColors.onSurfaceVariant }}>{selectedLabel}</Text>
+            <ChevronDownIcon color={themeColors.onSurfaceVariant} />
         </Button>
       }
     >

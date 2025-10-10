@@ -60,36 +60,36 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
     if (gType === "box") {
       return (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <MaterialCommunityIcons name="chart-waterfall" size={24} color={theme.colors.onSurface} />
-          <Text style={{ marginLeft: 6, color: theme.colors.onSurface }}>Box</Text>
+          <MaterialCommunityIcons name="chart-waterfall" size={24} color={theme.colors.onSurfaceVariant} />
+          <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Box</Text>
         </View>
       );
     } else if (gType === "bar-count") {
       return (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <MaterialCommunityIcons name="chart-bar" size={24} color={theme.colors.onSurface} />
-          <Text style={{ marginLeft: 6, color: theme.colors.onSurface }}>Count</Text>
+          <MaterialCommunityIcons name="chart-bar" size={24} color={theme.colors.onSurfaceVariant} />
+          <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Count</Text>
         </View>
       );
     } else if (gType === "bar-daily-mean") {
       return (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <MaterialCommunityIcons name="chart-bar" size={24} color={theme.colors.onSurface} />
-          <Text style={{ marginLeft: 6, color: theme.colors.onSurface }}>Daily Mean</Text>
+          <MaterialCommunityIcons name="chart-bar" size={24} color={theme.colors.onSurfaceVariant} />
+          <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Daily Mean</Text>
         </View>
       );
     } else if (gType === "bar-sum") {
       return (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <MaterialCommunityIcons name="chart-bar" size={24} color={theme.colors.onSurface} />
-          <Text style={{ marginLeft: 6, color: theme.colors.onSurface }}>Sum</Text>
+          <MaterialCommunityIcons name="chart-bar" size={24} color={theme.colors.onSurfaceVariant} />
+          <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Sum</Text>
         </View>
       );
     } else if (gType === "line-mean") {
       return (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <MaterialCommunityIcons name="chart-line" size={24} color={theme.colors.onSurface} />
-          <Text style={{ marginLeft: 6, color: theme.colors.onSurface }}>Mean</Text>
+          <MaterialCommunityIcons name="chart-line" size={24} color={theme.colors.onSurfaceVariant} />
+          <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Mean</Text>
         </View>
       );
     }
