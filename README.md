@@ -60,7 +60,7 @@ Track your performance metrics and their progress over time. With custom statist
 - [ ] Polish Bluetooth integration with Tindeq Progressor and other scales
   - [x] Smooth endless scrolling
   - [x] Lbs support
-  - [ ] Min weight configuration
+  - [x] Min weight configuration
   - [ ] Add a swipe-up data log
   - [ ] Add nice animations
   - [ ] Add last pull stats
