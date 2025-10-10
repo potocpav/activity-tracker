@@ -75,14 +75,14 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
         </Fragment>
 
         <Fragment>
-          {activity.calendars.map((calendar: CalendarProps, index: number) => (
+          {activity.calendars.map((_: CalendarProps, index: number) => (
             <Fragment key={`calendar-${index}`}>
               <ActivityCalendar navigation={navigation} activityName={activityName} calendarIndex={index} />
               <Divider />
             </Fragment>
           ))}
 
-          {activity.graphs.map((graph: GraphProps, index: number) => (
+          {activity.graphs.map((_: GraphProps, index: number) => (
             <Fragment key={`graph-${index}`}>
               <ActivityGraph activityName={activityName} graphIndex={index} />
               <Divider />

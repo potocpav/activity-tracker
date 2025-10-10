@@ -107,13 +107,13 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
   const graphTypes = activity.unit.type === "none" ? ["bar-count", "bar-daily-mean"] : ["box", "bar-count", "bar-sum"];
 
   return (
-    <View style={{ flex: 1, padding: 10, marginVertical: 16 }}>
-      <View style={styles.headerContainer}>
-        <Pressable onPress={() => setGraphDialogVisible(true)} android_ripple={{ color: theme.colors.outline, foreground: false }}>
+    <View style={styles.container}>
+      <ButtonRow>
+        <Button onPress={() => setGraphDialogVisible(true)}>
           <Text style={styles.headerText}>{graph.label}</Text>
-        </Pressable>
-      </View>
-      <View key="activityGraph" style={{ width: '100%', marginVertical: 8 }}>
+        </Button>
+      </ButtonRow>
+      <View key="activityGraph">
         <ActivityChart
           key={`activityChart-${graph.binSize}`}
           height={300}
@@ -193,22 +193,22 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
           </Dialog.Content>
           <Dialog.Actions>
             <ButtonRow>
-            {activity.graphs.length > 1 && (
-              <DeleteButton onPress={() => {
-                deleteActivityGraph(activityName, graphIndex);
+              {activity.graphs.length > 1 && (
+                <DeleteButton onPress={() => {
+                  deleteActivityGraph(activityName, graphIndex);
+                  setGraphDialogVisible(false);
+                  ToastAndroid.show('Graph deleted', ToastAndroid.SHORT);
+                }} color={theme.colors.onSurface} />
+              )}
+              <CopyButton onPress={() => {
+                cloneActivityGraph(activityName, graphIndex);
                 setGraphDialogVisible(false);
-                ToastAndroid.show('Graph deleted', ToastAndroid.SHORT);
+                ToastAndroid.show('Graph cloned', ToastAndroid.SHORT);
               }} color={theme.colors.onSurface} />
-            )}
-            <CopyButton onPress={() => {
-              cloneActivityGraph(activityName, graphIndex);
-              setGraphDialogVisible(false);
-              ToastAndroid.show('Graph cloned', ToastAndroid.SHORT);
-            }} color={theme.colors.onSurface} />
-            <CheckButton onPress={() => {
-              setActivityGraph(activityName, graphIndex, { ...graph, label: graphDialogNameInput });
-              setGraphDialogVisible(false);
-            }} color={theme.colors.onSurface} />
+              <CheckButton onPress={() => {
+                setActivityGraph(activityName, graphIndex, { ...graph, label: graphDialogNameInput });
+                setGraphDialogVisible(false);
+              }} color={theme.colors.onSurface} />
             </ButtonRow>
           </Dialog.Actions>
         </Dialog>
@@ -532,16 +532,13 @@ const ActivityChart = (
 }
 
 const getStyles = (theme: any) => StyleSheet.create({
-  headerContainer: {
-    marginHorizontal: 8,
-    marginBottom: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  container: {
+    flex: 1,
+    marginVertical: 15,
+    paddingHorizontal: 4,
   },
   headerText: {
     fontSize: 16,
-    padding: 5,
     color: theme.colors.onSurface,
   },
 });

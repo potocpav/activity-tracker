@@ -56,20 +56,22 @@ const ActivityCalendar = ({ navigation, activityName, calendarIndex }: ActivityC
   }
 
   return (
-    <View style={[styles.container, { paddingHorizontal: 4 }]}>
-      <View style={styles.headerContainer}>
-        <Pressable onPress={() => {
+    <View style={styles.container}>
+      <ButtonRow>
+        <Button onPress={() => {
           setCalendarDialogVisible(true);
           dismissHint("rename_calendar");
-        }} android_ripple={{ color: theme.colors.outline, foreground: false }}>
+        }}>
           <Text style={styles.headerText}>{calendar.label}</Text>
-        </Pressable>
+        </Button>
+      </ButtonRow>
+      <View style={{ marginVertical: 5 }}>
+        {calendarIndex === 0 && activity.dataPoints.length > 20 &&
+          <Hint hint="rename_calendar" />}
+        <Calendar navigation={navigation} activityName={activityName} calendarIndex={calendarIndex} />
       </View>
-      {calendarIndex === 0 && activity.dataPoints.length > 20 && 
-        <Hint hint="rename_calendar" />}
-      <Calendar navigation={navigation} activityName={activityName} calendarIndex={calendarIndex}/>
       {calendarIndex === 0 && activity.dataPoints.length > 0 && <Hint hint="calendar_introduction" />}
-      {calendarIndex === 0 && activity.unit.type === "none" && activity.dataPoints.length > 10 && 
+      {calendarIndex === 0 && activity.unit.type === "none" && activity.dataPoints.length > 10 &&
         <Hint hint="quick_check_daily_activity" />}
       <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
         {activity.tags.length > 0 && (
@@ -113,23 +115,23 @@ const ActivityCalendar = ({ navigation, activityName, calendarIndex }: ActivityC
           </Dialog.Content>
           <Dialog.Actions>
             <ButtonRow>
-            {activity.calendars.length > 1 && (
-              <Button onPress={() => {
-                deleteActivityCalendar(activityName, calendarIndex); 
-                setCalendarDialogVisible(false);
-                ToastAndroid.show('Calendar deleted', ToastAndroid.SHORT);
+              {activity.calendars.length > 1 && (
+                <Button onPress={() => {
+                  deleteActivityCalendar(activityName, calendarIndex);
+                  setCalendarDialogVisible(false);
+                  ToastAndroid.show('Calendar deleted', ToastAndroid.SHORT);
                 }}>
-                <DeleteIcon color={theme.colors.onSurface} />
-              </Button>
-            )}
-            <CopyButton onPress={() => {
-              cloneActivityCalendar(activityName, calendarIndex); 
-              setCalendarDialogVisible(false);
-              ToastAndroid.show('Calendar cloned', ToastAndroid.SHORT);
+                  <DeleteIcon color={theme.colors.onSurface} />
+                </Button>
+              )}
+              <CopyButton onPress={() => {
+                cloneActivityCalendar(activityName, calendarIndex);
+                setCalendarDialogVisible(false);
+                ToastAndroid.show('Calendar cloned', ToastAndroid.SHORT);
               }} color={theme.colors.onSurface} />
-            <CheckButton onPress={() => {
-              setActivityCalendar(activityName, calendarIndex, { ...calendar, label: calendarDialogNameInput }); 
-              setCalendarDialogVisible(false);
+              <CheckButton onPress={() => {
+                setActivityCalendar(activityName, calendarIndex, { ...calendar, label: calendarDialogNameInput });
+                setCalendarDialogVisible(false);
               }} color={theme.colors.onSurface} />
             </ButtonRow>
           </Dialog.Actions>
@@ -142,18 +144,11 @@ const ActivityCalendar = ({ navigation, activityName, calendarIndex }: ActivityC
 const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    marginVertical: 16,
-  },
-  headerContainer: {
-    marginHorizontal: 8,
-    marginBottom: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    marginVertical: 15,
+    paddingHorizontal: 4,
   },
   headerText: {
     fontSize: 16,
-    padding: 5,
     color: theme.colors.onSurface,
   },
 });

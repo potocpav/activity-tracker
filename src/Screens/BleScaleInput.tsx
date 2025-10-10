@@ -278,22 +278,22 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
           case "connected":
             return (
               <Button onPress={disconnectDevice} >
-                <Text style={{ color: "white" }}>Disconnect</Text>
-                <MaterialCommunityIcons name="bluetooth-off" size={24} color={"white"} />
+                <Text style={{ color: "white", fontSize: 16, fontWeight: "semibold" }}>Disconnect</Text>
+                <MaterialCommunityIcons name="bluetooth-off" size={22} color={"white"} />
               </Button>
             );
           case "disconnected":
             return (
               <Button onPress={openConnectionModal} >
-                <Text style={{ color: "white" }}>Connect</Text>
-                <MaterialCommunityIcons name="bluetooth" size={24} color={"white"} />
+                <Text style={{ color: "white", fontSize: 16, fontWeight: "semibold" }}>Connect</Text>
+                <MaterialCommunityIcons name="bluetooth" size={22} color={"white"} />
               </Button>
             );
           case "connecting":
             return (
               <Button onPress={() => { disconnectDevice() }} >
-                <Text style={{ color: "white" }}>Connecting...</Text>
-                <MaterialCommunityIcons name="bluetooth" size={24} color={"white"} />
+                <Text style={{ color: "white", fontSize: 16, fontWeight: "semibold" }}>Connecting...</Text>
+                <MaterialCommunityIcons name="bluetooth" size={22} color={"white"} />
               </Button>
             );
         }
