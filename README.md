@@ -57,17 +57,19 @@ Track your performance metrics and their progress over time. With custom statist
 
 ### 4.0.0 (In progress)
 
-- [x] Polish Bluetooth integration with Tindeq Progressor and other scales
-  - [ ] Lbs support, min weight configuration
+- [ ] Polish Bluetooth integration with Tindeq Progressor and other scales
+  - [x] Smooth endless scrolling
+  - [x] Lbs support
+  - [ ] Min weight configuration
   - [ ] Add a swipe-up data log
   - [ ] Add nice animations
   - [ ] Add last pull stats
 
 ### 3.1.0
 
-- Import data from Loop Habit Tracker [Loop Habit Tracker](https://loophabits.org/)
+- Import data from [Loop Habit Tracker](https://loophabits.org/)
 - Add statistics and regression line to selected ranges in graphs
-- Experimental Tindeq Progressor support
+- Experimental [Tindeq Progressor](https://tindeq.com/product/progressor/) support
 - New icons, UX tweaks
 
 ### 3.0.0
