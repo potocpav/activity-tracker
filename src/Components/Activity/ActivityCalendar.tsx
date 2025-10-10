@@ -65,11 +65,11 @@ const ActivityCalendar = ({ navigation, activityName, calendarIndex }: ActivityC
           <Text style={styles.headerText}>{calendar.label}</Text>
         </Pressable>
       </View>
-      {calendarIndex === 0 && activity.calendars.length > 1 && 
+      {calendarIndex === 0 && activity.dataPoints.length > 20 && 
         <Hint hint="rename_calendar" />}
       <Calendar navigation={navigation} activityName={activityName} calendarIndex={calendarIndex}/>
       {calendarIndex === 0 && activity.dataPoints.length > 0 && <Hint hint="calendar_introduction" />}
-      {calendarIndex === 0 && activity.unit.type === "none" && activity.dataPoints.length > 3 && 
+      {calendarIndex === 0 && activity.unit.type === "none" && activity.dataPoints.length > 10 && 
         <Hint hint="quick_check_daily_activity" />}
       <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
         {activity.tags.length > 0 && (

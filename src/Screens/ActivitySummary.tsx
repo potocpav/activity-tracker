@@ -68,7 +68,7 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
                 } sharedTransitionTag={index == 0 ? "tag" : undefined} />
               ))}
             </Animated.View>
-            {activities.length > 2 && activity.dataPoints.length > 10 && activity.stats.length > 0 && 
+            {activities.length > 2 && activity.dataPoints.length > 20 && activity.stats.length > 0 && 
             <Hint hint="overview_edit_hint" />}
           </View>
           <Divider />

@@ -164,10 +164,10 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
       <SystemBars style={themeVariant == 'light' ? "dark" : "light"} />
       <Hint hint="hello" />
       <View style={{ position: 'absolute', top: 100, left: 0, right: 0 }}>
-        {activities.length >= 2 && (
+        {activities.length >= 4 && (
           <Hint hint="quickly_add_point" />
         )}
-        {activities.length >= 4 && (
+        {activities.length >= 6 && (
           <Hint hint="reorder_activities" />
         )}
       </View>

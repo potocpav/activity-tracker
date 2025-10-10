@@ -550,7 +550,6 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
             trailingIcon={specialIcon("ble_scale") as any} />
         </Menu>
       </View>
-      <Hint hint="edit_activity_introduction" />
       <ScrollView>
         <SafeAreaView edges={["left", "right", "bottom"]}>
           <View style={{ padding: 10, gap: 12 }}>

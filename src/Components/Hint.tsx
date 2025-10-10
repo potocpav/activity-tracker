@@ -69,17 +69,10 @@ const hintInfo = (hint: HintType) => {
         ],
         arrowPos: 0.5,
       };
-    case "edit_activity_introduction":
-      return {
-        text: [
-          "Activities can always be edited later. Don't be afraid to experiment.",
-        ],
-        arrowPos: 0.2,
-      };
     case "save_data_point":
       return {
         text: [
-          "When ready, save the data point (✓), or save and immediately start editing a new one (✓+).",
+          "Save the data point (✓), or save and immediately start editing a new one (✓+) when ready",
         ],
         arrowPos: 1.0,
       };
