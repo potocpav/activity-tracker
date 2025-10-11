@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   StyleSheet,
   Text,
@@ -18,6 +18,7 @@ import SkiaChart, { xToCanvas, yToCanvas, Viewport } from "../Components/Chart/S
 import { SystemBars } from "react-native-edge-to-edge";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Button } from "../Components/Element";
+import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
 
 const fontFamily = Platform.select({ default: "sans-serif" });
 const largeFont = matchFont({ fontFamily: fontFamily, fontSize: 24 });
@@ -70,6 +71,8 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   const [recordingState, setRecordingState] = useState<"recording" | "stopped">("stopped");
 
   const [pastPulls, setPastPulls] = useState<PastPull[]>([]);
+
+  const actionSheetRef = useRef<ActionSheetRef>(null);
 
   const scaleInput = useSharedValue<ScaleInput>({
     t0: null,
@@ -302,10 +305,11 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   }, [theme, activityName, navigation, connecting, connectedDevice]);
 
   return (
+    <>
     <SafeAreaView style={[styles.container]} edges={["left", "right", "bottom"]}>
       <SystemBars style={{ statusBar: "light", navigationBar: themeVariant == 'light' ? "dark" : "light" }} />
       <>
-        <View style={{ paddingHorizontal: 10 }}>
+        <View style={{ padding: 8 }}>
           <TagSelector
             activity={activity}
             inputTags={inputTags}
@@ -316,7 +320,6 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
         </View>
 
         {/* Control Buttons Section */}
-        <View style={styles.controlSection}>
           <View style={styles.buttonRow}>
             {workoutState === "paused" ? (
               <PaperButton
@@ -394,10 +397,8 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
               <Text>Tare</Text>
             </PaperButton>
           </View>
-        </View>
 
         {/* Weight and Time Display Section */}
-        <View style={styles.weightSection}>
           <View style={styles.measurementRow}>
             <View style={styles.measurementColumn}>
               <Text style={[styles.measurementLabel, { color: theme.colors.onSurface, width: largeFontBox.width }]}>Weight</Text>
@@ -459,7 +460,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
             </View>
           </View>
 
-          <View style={{ width: '100%', flex: 1 }}>
+          <View style={{ flex: 1, marginHorizontal: 5 }}>
             <SkiaChart
               gridLineColor={theme.colors.outline}
               view={view}
@@ -486,9 +487,24 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
             </SkiaChart>
           </View>
           <View style={{ height: 50 }} />
-        </View>
       </>
     </SafeAreaView>
+    {/* <ActionSheet 
+      ref={actionSheetRef}
+      isModal={false}
+      backgroundInteractionEnabled
+      snapPoints={[30, 100]}
+      gestureEnabled
+      closable={false}
+      disableDragBeyondMinimumSnapPoint
+      containerStyle={{
+        borderWidth: 1,
+        borderColor: 'red',
+      }}
+      >
+      <Text>Hi, I am here.</Text>
+    </ActionSheet> */}
+    </>
   );
 };
 
@@ -496,15 +512,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  controlSection: {
-    marginTop: 10,
-    padding: 0,
-    gap: 10,
-  },
   buttonRow: {
     flexDirection: 'row',
-    gap: 10,
-    marginHorizontal: 10,
+    gap: 8,
+    marginHorizontal: 8,
   },
   weightSection: {
     flex: 1,
@@ -514,9 +525,9 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   measurementRow: {
+    alignItems: "center",
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
+    justifyContent: 'space-between',
     width: '100%',
   },
   measurementColumn: {
@@ -529,25 +540,6 @@ const styles = StyleSheet.create({
   measurementLabel: {
     fontSize: 16,
     fontWeight: "bold",
-  },
-  disconnectedSection: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    marginHorizontal: 20,
-    marginTop: 10,
-    borderRadius: 10,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  disconnectedText: {
-    fontSize: 20,
-    fontWeight: "bold",
-    textAlign: "center",
   },
 });
 

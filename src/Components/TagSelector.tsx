@@ -15,15 +15,13 @@ export const TagSelector = ({ activity, inputTags, toggleInputTag, palette, them
     theme: MD3Theme,
   }) => {
   return (activity.tags.length > 0 && (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
       {activity.tags.map((tag: any, index: number) => (
         <Chip
           key={tag.name}
           onPress={() => { toggleInputTag(tag.name); }}
           mode={inputTags.includes(tag.name) ? "flat" : "outlined"}
           style={{
-            marginRight: 8,
-            marginBottom: 8,
             backgroundColor: inputTags.includes(tag.name) ? palette[tag.color] : theme.colors.surface,
           }}
           textStyle={{

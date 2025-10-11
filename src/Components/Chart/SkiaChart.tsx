@@ -107,7 +107,7 @@ const SkiaChart = (
       };
     },
     (value, oldValue) => {
-      if (Math.floor(value.view.x.max) !== Math.floor((oldValue?.view.x.max ?? 0))) {
+      if (Math.floor(value.view.x.max) !== Math.floor((oldValue?.view.x.max ?? NaN))) {
         const unitX: SubUnit = { type: "time", unit: "seconds" };
         const xTicks = cmpMajorTicks(unitX, value.view.x, xNumTicks);
         const xTickLabels = xTicks.map((tick) => renderShortFormValue(tick, unitX));
