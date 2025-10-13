@@ -13,7 +13,8 @@ import { allHints, ActivityType, DateList, Unit } from '../Model/StoreTypes';
 import { cmpDateList, uniqueName } from '../Model/Activity';
 import { SystemBars } from 'react-native-edge-to-edge';
 import * as SQLite from 'expo-sqlite';
-import { defaultGraph, defaultCalendar, defaultStats } from '../Model/DefaultActivity';
+import { defaultGraphs, defaultCalendar, defaultStats } from '../Model/DefaultActivity';
+import { EncodingType } from 'expo-file-system/src/ExpoFileSystem.types';
 
 const Settings = () => {
   const theme = getTheme();
@@ -50,7 +51,7 @@ const Settings = () => {
         file.delete();
       }
       file.create(); // can throw an error if the file already exists or no permission to create it
-      file.write(data);
+      file.write(data, { encoding: EncodingType.UTF8 });
 
       await Sharing.shareAsync(file.uri, {
         dialogTitle: 'Export Activities',
@@ -74,7 +75,7 @@ const Settings = () => {
 
       try {
         const file = new File(asset.uri);
-        const contents = file.text()
+        const contents = await file.text()
         const json = JSON.parse(contents);
 
         if (json.version === undefined) {
@@ -153,7 +154,7 @@ const Settings = () => {
             color: habit.color,
             stats: defaultStats(unit),
             calendars: [defaultCalendar(unit)],
-            graphs: [defaultGraph(unit, "week")],
+            graphs: defaultGraphs(unit),
             special: null,
           };
           activities.push(activity);

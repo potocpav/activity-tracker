@@ -262,17 +262,16 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
 
     let updatedActivity: ActivityType;
     if (activity === null) {
-      const defaultUnit: Unit = { type: "single", unit: { type: "number", symbol: "" } };
       updatedActivity = {
         name: activityNameInput,
         description: activityDescriptionInput,
-        unit: defaultUnit,
+        unit: newUnit,
         color: selectedColor,
         dataPoints: [],
         tags: [],
-        stats: defaultStats(defaultUnit),
-        calendars: [defaultCalendar(defaultUnit)],
-        graphs: specialType === "ble_scale" ? defaultBleScaleGraphs(defaultUnit) : defaultGraphs(defaultUnit),
+        stats: defaultStats(newUnit),
+        calendars: [defaultCalendar(newUnit)],
+        graphs: specialType === "ble_scale" ? defaultBleScaleGraphs(newUnit) : defaultGraphs(newUnit),
         special: specialType === "ble_scale" ? {type: "ble_scale", minWeight: bleMinWeightNumber} : null,
       };
     } else {
@@ -465,7 +464,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center' }}>
         <Button onPress={() => setMultiUnitInput([...multiUnitInput, emptyMultiUnit])}>
           <PlusIcon color={theme.colors.onSurface} />
-          <Text>Add Unit</Text>
+          <Text style={{ color: theme.colors.onSurface }}>Add Unit</Text>
         </Button>
       </View>
     </View>

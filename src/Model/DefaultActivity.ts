@@ -85,7 +85,7 @@ export const defaultGraphs = (unit: Unit): GraphProps[] => {
       label: "Counts",
       subUnit: firstSubUnitName(unit),
       tagFilters: [],
-      graphType: "box",
+      graphType: "bar-count",
       binSize: "week",
     }
   ];
