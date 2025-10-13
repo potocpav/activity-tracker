@@ -67,11 +67,13 @@ Track your performance metrics and their progress over time. With custom statist
   - [ ] Add nice animations
   - [ ] Add last pull stats
 
-### 3.2.0 (Time input update)
+### 3.2.0
 
+- Fix data import (3.1.0 bug)
 - Replace Date picker with a native widget
 - Add Time picker for hourly time units
-- Chart mode where every data point is displayed
+- Add chart mode "Points" where every data point is displayed individually
+- Improve default graph display
 
 ### 3.1.0
 
