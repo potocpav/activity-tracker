@@ -64,7 +64,7 @@ type FlatListChartData = {
   height: number,
   unit: SubUnit,
   gridLineColor: string,
-  items: { time: number, values: number[], nDays: number }[], // todo: swap for any[]
+  items: { time: number, values: number[], nDays: number, dayIndex?: number }[], // todo: swap for any[]
   renderItem: (params: { item: any, index: number, view: ViewDimensions }) => React.ReactNode,
   itemBoundingBox: (item: any, itemWidthPx: number) => BoundingBox,
   itemLabel: (item: any) => string,
@@ -229,13 +229,13 @@ const FlatListChart = (
                     </Text>
                   </View>);
                 return (
-                  <View key={item.time.toString()} style={{ top: topViewportPadding, width: binWidth, height: viewportHeight }}>
+                  <View style={{ top: topViewportPadding, width: binWidth, height: viewportHeight }}>
                     {drawnElement}
                     {xLabelElement}
                   </View>
                 );
               }}
-              keyExtractor={(item) => item.time.toString()}
+              keyExtractor={(item) => `${item.time.toString()}-${item.dayIndex?.toString() ?? ""}`}
               inverted={true}
               horizontal={true}
             />

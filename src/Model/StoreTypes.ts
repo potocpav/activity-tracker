@@ -124,7 +124,10 @@ export type CalendarProps = {
 //TODO: remove line-mean, or implement it
 export type GraphType = "box" | "bar-count" | "bar-daily-mean" | "bar-sum";
 
-export type BinSize = "day" | "week" | "month" | "quarter" | "year";
+export type BinSize = "point" | "day" | "week" | "month" | "quarter" | "year";
+
+// subset of `BinSize` that can be used for time-based binning
+export type BinnableSize = "day" | "week" | "month" | "quarter" | "year";
 
 export const binSizes : BinSize[] = [
   "day", "week", "month", "quarter", "year"

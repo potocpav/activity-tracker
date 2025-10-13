@@ -2,14 +2,13 @@ import React, { useState } from "react";
 import { View, Text, useWindowDimensions, StyleSheet, ToastAndroid, Pressable } from "react-native";
 import { Menu, Portal, Dialog, TextInput } from 'react-native-paper';
 import useStore from "../../Model/Store";
-import { DataPoint, dateListToTime, ActivityType, GraphType, WeekStart, DateList, SubUnit, GraphProps, Unit } from "../../Model/StoreTypes";
-import { binTime, binTimeSeries, BinSize, extractValue } from "../../Model/Activity";
+import { DataPoint, dateListToTime, ActivityType, GraphType, WeekStart, DateList, SubUnit, GraphProps, Unit, BinSize, BinnableSize } from "../../Model/StoreTypes";
+import { binTime, binTimeSeries, cmpDateList, extractValue } from "../../Model/Activity";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import TagMenu from "../TagMenu";
 import SubUnitMenu from "../SubUnitMenu";
 import DropdownMenu from "../DropdownMenu";
 import { getTheme } from "../../Model/Theme";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import FlatListChart, { BarChart, BoxChart, barBoundingBox, ViewDimensions } from "../Chart/FlatListChart";
 import Animated, { FadeInUp, FadeOutUp } from "react-native-reanimated";
 import { renderLongFormValue, isSummable } from "../../Model/Unit";
@@ -23,8 +22,6 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
   const graph = activity.graphs[graphIndex];
   const weekStart = useStore((state: any) => state.weekStart);
   const theme = getTheme(activity.color);
-  const insets = useSafeAreaInsets();
-  const windowDimensions = useWindowDimensions();
 
   const setActivityGraph = useStore((state: any) => state.setActivityGraph);
   const cloneActivityGraph = useStore((state: any) => state.cloneActivityGraph);
@@ -41,20 +38,6 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
 
   const [graphDialogVisible, setGraphDialogVisible] = useState(false);
   const [graphDialogNameInput, setGraphDialogNameInput] = useState(graph.label);
-
-  const now = new Date();
-
-  var ticks = [];
-  if (activity.dataPoints.length > 0) {
-    var tick_t = binTime(graph.binSize, dateListToTime(activity.dataPoints[0].date), 0, weekStart).getTime();
-    for (let i = 0; tick_t < now.getTime(); i++) {
-      tick_t = binTime(graph.binSize, dateListToTime(activity.dataPoints[0].date), i, weekStart).getTime();
-      ticks.push(tick_t);
-      if (i > 1000) {
-        break; // limit
-      }
-    }
-  }
 
   const graphLabel = (gType: any) => {
     if (gType === "box") {
@@ -96,6 +79,7 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
   }
 
   const binningLabels: Record<typeof graph.binSize, string> = {
+    point: "Point",
     day: "Day",
     week: "Week",
     month: "Month",
@@ -217,24 +201,36 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
   );
 };
 
-const xLabel = (t: number, binSize: BinSize) => {
+const xLabel = (t: number, binSize: BinSize, dayIndex?: number) => {
   const d = new Date(t);
-  if (binSize === "day") {
-    const date = d.getDate();
-    return date > 1 ? `${date}` : `${date}\n${d.toLocaleString('default', { month: 'short' })}`;
-  } else if (binSize === "week") {
-    const date = d.getDate();
-    return date > 7 ? `${date}` : `${date}\n${d.toLocaleString('default', { month: 'short' })}`;
-  } else if (binSize === "month") {
-    const m = d.getMonth() + 1;
-    return m > 1 ? `${m}` : `${m}\n'${d.getFullYear() % 100}`;
-  } else if (binSize === "quarter") {
-    const q = d.getMonth() / 3 + 1;
-    return q > 1 ? `q${q}` : `q${q}\n'${d.getFullYear() % 100}`;
-  } else if (binSize === "year") {
-    return `'${d.getFullYear() % 100}`;
-  } else {
-    throw new Error("Invalid bin size");
+  switch (binSize) {
+    case "point": {
+      if (dayIndex !== undefined && dayIndex === 0) {
+        const date = d.getDate();
+        return date > 1 ? `${date}` : `${date}\n${d.toLocaleString('default', { month: 'short' })}`;
+      } else {
+        return "";
+      }
+    }
+    case "day": {
+      const date = d.getDate();
+      return date > 1 ? `${date}` : `${date}\n${d.toLocaleString('default', { month: 'short' })}`;
+    }
+    case "week": {
+      const date = d.getDate();
+      return date > 7 ? `${date}` : `${date}\n${d.toLocaleString('default', { month: 'short' })}`;
+    }
+    case "month": {
+      const m = d.getMonth() + 1;
+      return m > 1 ? `${m}` : `${m}\n'${d.getFullYear() % 100}`;
+    }
+    case "quarter": {
+      const q = d.getMonth() / 3 + 1;
+      return q > 1 ? `q${q}` : `q${q}\n'${d.getFullYear() % 100}`;
+    }
+    case "year": {
+      return `'${d.getFullYear() % 100}`;
+    }
   }
 };
 
@@ -242,55 +238,59 @@ const StatBox = ({
   theme,
   unit,
   stats,
+  onPress,
 }: {
   theme: any,
   unit: SubUnit,
   stats: Stats,
+  onPress: () => void,
 }) => {
   return (
     <View style={{ position: 'relative' }}>
-      <Animated.View
-        key="stats"
-        entering={FadeInUp}
-        exiting={FadeOutUp}
-        style={{
-          position: 'absolute',
-          top: 0,
-          right: 0,
-          left: 0,
-          minHeight: 60,
-          borderWidth: 1,
-          borderColor: theme.colors.outline,
-          borderRadius: 8,
-          padding: 8,
-          marginTop: 8,
-          backgroundColor: theme.colors.surface,
-          elevation: 1,
-          flexDirection: 'column',
-          zIndex: 1,
-        }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-          <View style={{ flex: 1, minWidth: 100 }}>
-            <Text style={{ color: theme.colors.onSurface }} numberOfLines={1}>
-              Count: {Math.round(stats.count)}
-            </Text>
-          </View>
-          <View style={{ flex: 1, minWidth: 100 }}>
-            <Text style={{ color: theme.colors.onSurface }} numberOfLines={1}>
-              Mean: {isFinite(stats.mean) ? renderLongFormValue(stats.mean, unit) : "-"}
-            </Text>
-          </View>
-        </View>
-        {stats.regression && (
+        <Animated.View
+          key="stats"
+          entering={FadeInUp}
+          exiting={FadeOutUp}
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            left: 0,
+            minHeight: 60,
+            borderWidth: 1,
+            borderColor: theme.colors.outline,
+            borderRadius: 8,
+            padding: 8,
+            marginTop: 8,
+            backgroundColor: theme.colors.surface,
+            elevation: 1,
+            flexDirection: 'column',
+            zIndex: 1,
+          }}>
+                  <Pressable style={{ flex: 1 }} onPress={onPress}>
           <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
             <View style={{ flex: 1, minWidth: 100 }}>
               <Text style={{ color: theme.colors.onSurface }} numberOfLines={1}>
-                {`${stats.regression.slope >= 0 ? "+" : ""}${renderLongFormValue(stats.regression.slope * 1e3 * 3600 * 24 * 30, unit)} per month`}
+                Count: {Math.round(stats.count)}
+              </Text>
+            </View>
+            <View style={{ flex: 1, minWidth: 100 }}>
+              <Text style={{ color: theme.colors.onSurface }} numberOfLines={1}>
+                Mean: {isFinite(stats.mean) ? renderLongFormValue(stats.mean, unit) : "-"}
               </Text>
             </View>
           </View>
-        )}
-      </Animated.View>
+          {stats.regression && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+              <View style={{ flex: 1, minWidth: 100 }}>
+                <Text style={{ color: theme.colors.onSurface }} numberOfLines={1}>
+                  {`${stats.regression.slope >= 0 ? "+" : ""}${renderLongFormValue(stats.regression.slope * 1e3 * 3600 * 24 * 30, unit)} per month`}
+                </Text>
+              </View>
+            </View>
+          )}
+      </Pressable>
+        </Animated.View>
     </View>
   );
 }
@@ -349,7 +349,7 @@ const RegressionLine = ({
   time: number,
   view: ViewDimensions,
   weekStart: WeekStart,
-  binSize: BinSize,
+  binSize: BinnableSize,
 }) => {
   const x0 = binTime(binSize, time, -1, weekStart).getTime();
   const x1 = binTime(binSize, time, 1, weekStart).getTime();
@@ -413,7 +413,24 @@ const ActivityChart = (
     ))
     .filter(x => x.value !== null) as { date: DateList, value: number }[];
 
-  const items = binTimeSeries(graph.binSize, filteredValues, weekStart).reverse();
+  let items: { time: number, values: any[], nDays: number, dayIndex?: number }[];
+  if (graph.binSize === "point") {
+    items = [];
+    let dayIndex = 0;
+    let lastDate = null;
+    for (let i = 0; i < filteredValues.length; i++) {
+      if (lastDate === null || cmpDateList(lastDate, filteredValues[i].date) !== 0) {
+        lastDate = filteredValues[i].date;
+        dayIndex = 0;
+      } else {
+        dayIndex++;
+      }
+      items.push({ time: dateListToTime(filteredValues[i].date), values: [filteredValues[i].value], nDays: 1, dayIndex });
+    }
+    items.reverse();
+  } else {
+    items = binTimeSeries(graph.binSize as BinnableSize, filteredValues, weekStart).reverse();
+  }
 
   let unit: SubUnit;
   if (graph.graphType === "bar-count") {
@@ -453,9 +470,11 @@ const ActivityChart = (
         rangeValues = rangeItems.map((item) => item.values.map((y) => ({ x: item.time, y }))).flat();
         break;
     }
-    const { slope, intercept } = linearRegression(rangeValues);
-    if (isSummable(unit) && selectedRange.max - selectedRange.min >= 1 && isFinite(slope) && isFinite(intercept)) {
-      regression = { slope, intercept };
+    if (isSummable(unit) && rangeItems.length >= 1 && graph.binSize !== "point") {
+      const { slope, intercept } = linearRegression(rangeValues);
+      if (isSummable(unit) && selectedRange.max - selectedRange.min >= 1 && isFinite(slope) && isFinite(intercept)) {
+        regression = { slope, intercept };
+      }
     }
     selectionStats = {
       regression: regression,
@@ -485,7 +504,7 @@ const ActivityChart = (
       renderItem = ({ item, index, view }: { item: any, index: number, view: ViewDimensions }) => (
         <>
           {selectedRange && <SelectedRangeBox theme={theme} selectedRange={selectedRange} index={index} view={view} cornerRadius={4} />}
-          {selectionStats?.regression && <RegressionLine theme={theme} regression={selectionStats.regression} time={item.time} weekStart={weekStart} binSize={graph.binSize} view={view} />}
+          {selectionStats?.regression && graph.binSize !== "point" && <RegressionLine theme={theme} regression={selectionStats.regression} time={item.time} weekStart={weekStart} binSize={graph.binSize} view={view} />}
           <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} fontScale={windowDimensions.fontScale} />
         </>
       );
@@ -496,7 +515,7 @@ const ActivityChart = (
       renderItem = ({ item, index, view }: { item: any, index: number, view: ViewDimensions }) => (
         <>
           {selectedRange && <SelectedRangeBox theme={theme} selectedRange={selectedRange} index={index} view={view} cornerRadius={10} />}
-          {selectionStats?.regression && <RegressionLine theme={theme} regression={selectionStats.regression} time={item.time} view={view} weekStart={weekStart} binSize={graph.binSize} />}
+          {selectionStats?.regression && graph.binSize !== "point" && <RegressionLine theme={theme} regression={selectionStats.regression} time={item.time} view={view} weekStart={weekStart} binSize={graph.binSize} />}
           <BoxChart view={view} values={item.values} unit={unit} color={theme.colors.primary} surfaceColor={theme.colors.surface} />
         </>
       );
@@ -519,10 +538,11 @@ const ActivityChart = (
         items={items}
         renderItem={renderItem}
         itemBoundingBox={itemBoundingBox}
-        itemLabel={(item) => xLabel(item.time, graph.binSize)}
+        itemLabel={(item) => xLabel(item.time, graph.binSize, item.dayIndex)}
         setSelectedRange={setSelectedRange}
       />
       {selectionStats && <StatBox
+        onPress={() => setSelectedRange(null)}
         theme={theme}
         unit={unit}
         stats={selectionStats}

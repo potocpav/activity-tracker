@@ -12,12 +12,12 @@ import {
   ActivityType, 
   WeekStart, 
   dateListToDate, 
+  BinnableSize,
 } from "./StoreTypes";
 import { renderLongFormNumber, renderLongFormValue } from "./Unit";
 import { NativeModules } from "react-native";
 
 const locale = NativeModules.I18nManager.localeIdentifier;
-export type BinSize = "day" | "week" | "month" | "quarter" | "year";
 
 export const dayCmp = (dp: DataPoint, day: DateList) => {
   return cmpDateList(dp.date, day);
@@ -213,69 +213,37 @@ export const findZeroSlice = (data: any[], cmp: (x: any) => number): [number, nu
   return [startLo, endLo];
 }
 
-export const binTime = (binSize: BinSize, t0: number, i: number, weekStart: WeekStart): Date => {
+export const binTime = (binSize: BinnableSize, t0: number, i: number, weekStart: WeekStart): Date => {
   const t0Date = new Date(t0);
-  if (binSize === "day") {
-    return new Date(t0Date.getFullYear(), t0Date.getMonth(), t0Date.getDate() + i, 0);
-  } else if (binSize === "week") {
-    const startDay = weekStart === "sunday" ? 0 : 1;
-    const dayOfWeek = (t0Date.getDay() - startDay + 7) % 7;
-    return new Date(t0Date.getFullYear(), t0Date.getMonth(), t0Date.getDate() - dayOfWeek + i * 7, 0);
-  } else if (binSize === "month") {
-    return new Date(t0Date.getFullYear(), t0Date.getMonth() + i, 1, 0);
-  } else if (binSize === "quarter") {
-    const month = t0Date.getMonth()
-    return new Date(t0Date.getFullYear(), month - (month % 3) + i * 3, 1, 0);
-  } else if (binSize === "year") {
-    return new Date(t0Date.getFullYear() + i, 0, 1, 0);
-  } else {
-    console.error("Invalid bin size: " + binSize);
-    throw new Error("Invalid bin size: " + binSize);
+  switch (binSize) {
+    case "day": {
+      return new Date(t0Date.getFullYear(), t0Date.getMonth(), t0Date.getDate() + i, 0);
+    }
+    case "week": {
+      const startDay = weekStart === "sunday" ? 0 : 1;
+      const dayOfWeek = (t0Date.getDay() - startDay + 7) % 7;
+      return new Date(t0Date.getFullYear(), t0Date.getMonth(), t0Date.getDate() - dayOfWeek + i * 7, 0);
+    }
+    case "month": {
+      return new Date(t0Date.getFullYear(), t0Date.getMonth() + i, 1, 0);
+    }
+    case "quarter": {
+      const month = t0Date.getMonth()
+      return new Date(t0Date.getFullYear(), month - (month % 3) + i * 3, 1, 0);
+    }
+    case "year": {
+      return new Date(t0Date.getFullYear() + i, 0, 1, 0);
+    }
   }
 };
 
-export const binTimeSeriesOld = (binSize: BinSize, dataPoints: DataPoint[], weekStart: WeekStart) => {
-    if (dataPoints.length === 0) {
-      return [];
-    }
-    const t0 = dateListToTime(dataPoints[0].date);
-  
-    const nDays = (binSize: BinSize, idx: number) => {
-      const tDiff = binTime(binSize, t0, idx + 1, weekStart).getTime() - binTime(binSize, t0, idx, weekStart).getTime();
-      return Math.round(tDiff / (1000 * 60 * 60 * 24));
-    };
-  
-    var bins: { time: number, nDays: number, values: any[] }[] = [{ 
-      time: binTime(binSize, t0, 0, weekStart).getTime(), 
-      nDays: nDays(binSize, 0), 
-      values: [] 
-    }];
-    var binIx = 0;
-    for (let i = 0; i < dataPoints.length; i++) {
-      const dp = dataPoints[i];
-      while (binTime(binSize, t0, binIx + 1, weekStart).getTime() <= dateListToTime(dp.date)) {
-        binIx++;
-        bins.push({ time: binTime(binSize, t0, binIx, weekStart).getTime(), nDays: nDays(binSize, binIx), values: [] });
-      }
-      bins[bins.length - 1].values.push(dp);
-    };
-    // pad till today
-    const t1 = new Date().getTime();
-    while (binTime(binSize, t0, binIx + 1, weekStart).getTime() <= t1) {
-      binIx++;
-      bins.push({ time: binTime(binSize, t0, binIx, weekStart).getTime(), nDays: nDays(binSize, binIx), values: [] });
-    }
-  
-    return bins;
-  };
-
-export const binTimeSeries = (binSize: BinSize, dataPoints: { date: DateList, value: number }[], weekStart: WeekStart) => {
+export const binTimeSeries = (binSize: BinnableSize, dataPoints: { date: DateList, value: number }[], weekStart: WeekStart) : { time: number, nDays: number, values: any[] }[] => {
   if (dataPoints.length === 0) {
     return [];
   }
   const t0 = dateListToTime(dataPoints[0].date);
 
-  const nDays = (binSize: BinSize, idx: number) => {
+  const nDays = (binSize: BinnableSize, idx: number) => {
     const tDiff = binTime(binSize, t0, idx + 1, weekStart).getTime() - binTime(binSize, t0, idx, weekStart).getTime();
     return Math.round(tDiff / (1000 * 60 * 60 * 24));
   };
