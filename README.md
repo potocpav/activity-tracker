@@ -65,6 +65,14 @@ Track your performance metrics and their progress over time. With custom statist
   - [ ] Add nice animations
   - [ ] Add last pull stats
 
+### 3.2.0 (Time input update)
+
+- [ ] Keyboard avoidance in Edit Activity and other screens
+- [x] More compact date inputs
+- [ ] Chart mode where every data point is displayed
+- [ ] Replace Date picker with a native widget
+- [ ] Add Time picker to hourly time units, (probably) remove timer there
+
 ### 3.1.0
 
 - Import data from [Loop Habit Tracker](https://loophabits.org/)

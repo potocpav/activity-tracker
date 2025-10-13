@@ -11,8 +11,7 @@ import {
 import { TextInput, MD3Theme } from 'react-native-paper';
 import { ActivityType, dateToDateList, DataPoint, dateListToDate, SubUnit, DateList } from "../Model/StoreTypes";
 import useStore from "../Model/Store";
-import { DatePickerModal } from "react-native-paper-dates";
-import { CalendarDate } from "react-native-paper-dates/lib/typescript/Date/Calendar";
+import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { CheckButton, CheckPlusButton, DeleteButton, ButtonRow, Button } from "../Components/Element";
 import { cmpDateList, formatDate } from "../Model/Activity";
 import { getTheme, getThemePalette, getThemeVariant } from "../Model/Theme";
@@ -56,12 +55,12 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   }
 
   const dateTime = dateListToDate(dataPoint.date);
-  const today = dateToDateList(new Date());
+  const today = new Date();
   const [showErrors, setShowErrors] = useState(false);
 
   const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);
   const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
-  const [inputDate, setInputDate] = useState<CalendarDate>(dateTime);
+  const [inputDate, setInputDate] = useState<Date>(dateTime);
   const [noteInput, setNoteInput] = useState<string>(dataPoint.note ?? "");
 
   const dateInputRef = useRef<InputWrapperRef>(undefined);
@@ -69,7 +68,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   let inputDateList: DateList | undefined = inputDate ? dateToDateList(inputDate) : undefined;
   if (inputDateList === undefined) {
     dateError = "Date is required";
-  } else if (cmpDateList(inputDateList, today) > 0) {
+  } else if (cmpDateList(inputDateList, dateToDateList(today)) > 0) {
     dateError = "Date cannot be in the future";
   } else if (cmpDateList(inputDateList, [2000, 1, 1]) < 0) {
     dateError = "Date must be from this millenium";
@@ -210,6 +209,20 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
     navigation.navigate("EditDataPoint", { activityName, dataPointIndex: newIndex, newDataPoint: true });
   };
 
+  const showDatePicker = () => {
+    DateTimePickerAndroid.open({
+      value: inputDate,
+      maximumDate: today,
+      minimumDate: new Date(2000, 0, 1),
+      firstDayOfWeek: weekStart === "monday" ? 1 : 0,
+      onChange: (event, selectedDate) => {
+        if (selectedDate !== undefined) {
+          setInputDate(selectedDate);
+        }
+      },
+    });
+  };
+
   React.useEffect(() => {
     navigation.setOptions({
       title: newDataPoint ? 'New data point' : `${formatDate(dateListToDate(dataPoint.date))} #${dataPointIndex + 1}`,
@@ -235,7 +248,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
         <SafeAreaView style={{ gap: 10, padding: 10 }} edges={["left", "right", "bottom"]}>
           <InputWrapper error={showErrors ? dateError : null} ref={dateInputRef}>
             <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <Pressable onPress={() => { setDatePickerVisible(true); }}
+              <Pressable onPress={showDatePicker}
                 style={({ pressed }) => [
                   {
                     flex: 1,
@@ -251,7 +264,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
                   value={inputDate ? inputDate.toLocaleDateString(locale) : "Select date"}
                 />
               </Pressable>
-              <Button onPress={() => { setDatePickerVisible(true); }}>
+              <Button onPress={showDatePicker}>
                   <MaterialCommunityIcons name="calendar" size={24} color={theme.colors.onSurface} />
               </Button>
             </View>
@@ -303,23 +316,6 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
           )}
         </SafeAreaView>
       </ScrollView>
-
-      <DatePickerModal
-        mode="single"
-        endYear={new Date().getFullYear()}
-        label={"Select date"}
-        locale={"en-GB"}
-        visible={datePickerVisible}
-        onDismiss={() => { setDatePickerVisible(false); }}
-        startYear={2000}
-        validRange={{
-          startDate: new Date(2000, 0, 1),
-          endDate: new Date(),
-        }}
-        date={inputDate}
-        startWeekOnMonday={weekStart === "monday"}
-        onConfirm={(d) => { setInputDate(d.date); setDatePickerVisible(false); }}
-      />
     </Fragment>
   );
 };

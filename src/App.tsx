@@ -2,6 +2,7 @@ import React from "react";
 import {
   StyleSheet,
   View,
+  Appearance,
 } from "react-native";
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -24,7 +25,6 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { getTheme, getThemeVariant } from "./Model/Theme";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import EditStat from "./Screens/EditStat";
-import { enGB, registerTranslation } from 'react-native-paper-dates'
 import BleConnectionModal from "./Components/BleConnectionModal";
 import "expo-font";
 
@@ -47,11 +47,10 @@ const MD3BlackTheme = {
   },
 };
 
-registerTranslation('en-GB', enGB)
-
 const App = () => {
   const themeVariant = getThemeVariant();
   const blackBackground = useStore((state: any) => state.blackBackground);
+  Appearance.setColorScheme(themeVariant);
 
   return (
     <SafeAreaProvider>
