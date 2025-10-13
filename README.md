@@ -67,11 +67,11 @@ Track your performance metrics and their progress over time. With custom statist
 
 ### 3.2.0 (Time input update)
 
-- [ ] Keyboard avoidance in Edit Activity and other screens
 - [x] More compact date inputs
+- [x] Replace Date picker with a native widget
+- [x] Add Time picker to hourly time units, remove timer there
+- [ ] Keyboard avoidance in Edit Activity and other screens
 - [ ] Chart mode where every data point is displayed
-- [ ] Replace Date picker with a native widget
-- [ ] Add Time picker to hourly time units, (probably) remove timer there
 
 ### 3.1.0
 
