@@ -8,6 +8,7 @@ import { renderUnit, mapStringValue, uiaaGrades, vScaleGrades, numberToString, s
 import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CheckButton, CloseButton, MinusIcon, PlusIcon, Button } from "./Element";
+import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 
 
 const subUnitProps = (subUnitType: SubUnitType, allUnits: SubUnit[], setAllUnits: (units: SubUnit[]) => void): { title: string, icon: string, description: string | null, children: React.ReactNode | null } => {
@@ -357,14 +358,14 @@ export const ValueEditor = ({
                 indicatorStyle="black"
                 data={options}
                 renderItem={({ item }) => (
-                    <List.Item
-                      right={value === item ? (props) => <List.Icon {...props} icon="check" /> : undefined}
-                      style={{ flex: 1, height: itemHeight }}
-                      key={item}
-                      onPress={() => { onChange(item); setClimbingGradeDialogVisible(false); }}
-                      title={item}
-                    />
-                  )}
+                  <List.Item
+                    right={value === item ? (props) => <List.Icon {...props} icon="check" /> : undefined}
+                    style={{ flex: 1, height: itemHeight }}
+                    key={item}
+                    onPress={() => { onChange(item); setClimbingGradeDialogVisible(false); }}
+                    title={item}
+                  />
+                )}
               />
             </Dialog.ScrollArea>
           </Dialog>
@@ -373,30 +374,74 @@ export const ValueEditor = ({
     );
   }
 
+  const showTimePicker = () => {
+    const valueHours = stringToNumber(value, unit);
+    DateTimePickerAndroid.open({
+      mode: "time",
+      is24Hour: true,
+      value: valueHours ? new Date(0, 0, 0, Math.floor((valueHours ?? 0) + 1/120), Math.floor(((valueHours ?? 0) + 1/120) % 1 * 60)) : new Date(),
+      onChange: (event, selectedDate) => {
+        if (selectedDate !== undefined) {
+          const newValue = selectedDate.getHours() + selectedDate.getMinutes() / 60;
+          onChange(numberToString(newValue, unit));
+        }
+        
+      },
+    });
+  }
+
   return (
     <InputWrapper error={error} ref={inputWrapperRef}>
       <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, marginVertical: 4 }}>
         {(() => {
           switch (unit.type) {
             case "time":
-              return (
-                <>
-                  <TextInput
-                    style={{ flex: 1 }}
-                    label={label}
-                    value={timerActive ? addTimerToValue(value) : value}
-                    editable={!timerActive}
-                    onChangeText={text => onChange(text)}
-                    mode="outlined"
-                  />
-                  <Button onPress={() => resetTimer()}>
-                    <MaterialCommunityIcons name="reload" size={22} color={theme.colors.onSurface} />
-                  </Button>
-                  <Button onPress={() => toggleTimer(unit.unit)}>
-                      <MaterialCommunityIcons name={timerActive ? "pause" : "play"} size={22} color={theme.colors.onSurface} />
-                  </Button>
-                </>
-              );
+              switch (unit.unit) {
+                case "hours":
+                  return (
+                    <>
+                      <Pressable onPress={showTimePicker}
+                        style={({ pressed }) => [
+                          {
+                            flex: 1,
+                            opacity: pressed ? 0.7 : 1,
+                          },
+                        ]}>
+                        <TextInput
+                          style={{ flex: 1 }}
+                          label={label}
+                          editable={false}
+                          value={value}
+                          mode="outlined"
+                        />
+                      </Pressable>
+                      <Button onPress={() => showTimePicker()}>
+                        <MaterialCommunityIcons name="timer" size={22} color={theme.colors.onSurface} />
+                      </Button>
+                    </>
+                  );
+                case "seconds":
+                  return (
+                    <>
+                      <TextInput
+                        style={{ flex: 1 }}
+                        label={label}
+                        value={timerActive ? addTimerToValue(value) : value}
+                        editable={!timerActive}
+                        onChangeText={text => onChange(text)}
+                        mode="outlined"
+                      />
+                      <Button onPress={() => resetTimer()}>
+                        <MaterialCommunityIcons name="reload" size={22} color={theme.colors.onSurface} />
+                      </Button>
+                      <Button onPress={() => toggleTimer(unit.unit)}>
+                        <MaterialCommunityIcons name={timerActive ? "pause" : "play"} size={22} color={theme.colors.onSurface} />
+                      </Button>
+                    </>
+                  );
+                default:
+                  return null;
+              }
             case "count":
               return (
                 <>

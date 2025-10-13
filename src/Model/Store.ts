@@ -646,7 +646,6 @@ const useStore = create<State>()(
 
       tareScale: async () => {
         get().withDevice(async (device: Device) => {
-          // console.log("abc", get().subscription);
           await tareScale(device);
         });
       },
