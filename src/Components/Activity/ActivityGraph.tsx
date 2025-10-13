@@ -78,14 +78,25 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
     }
   }
 
-  const binningLabels: Record<typeof graph.binSize, string> = {
-    point: "Point",
-    day: "Day",
-    week: "Week",
-    month: "Month",
-    quarter: "Quarter",
-    year: "Year"
-  };
+  let binningLabels;
+  if (activity.unit.type === "none") {
+    binningLabels = {
+      day: "Day",
+      week: "Week",
+      month: "Month",
+      quarter: "Quarter",
+      year: "Year"
+    };
+  } else {
+    binningLabels = {
+      point: "Point",
+      day: "Day",
+      week: "Week",
+      month: "Month",
+      quarter: "Quarter",
+      year: "Year"
+    };
+  }
   const binningOptions = Object.entries(binningLabels).map(([key, label]) => ({ key, label }));
 
   const graphTypes = activity.unit.type === "none" ? ["bar-count", "bar-daily-mean"] : ["box", "bar-count", "bar-sum"];
@@ -114,7 +125,6 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
           options={binningOptions}
           selectedKey={graph.binSize}
           onSelect={(key) => {
-            // TODO: reset viewport
             setActivityGraph(activityName, graphIndex, { ...graph, binSize: key as BinSize });
           }}
           visible={binMenuVisible}
@@ -247,26 +257,26 @@ const StatBox = ({
 }) => {
   return (
     <View style={{ position: 'relative' }}>
-        <Animated.View
-          key="stats"
-          entering={FadeInUp}
-          exiting={FadeOutUp}
-          style={{
-            position: 'absolute',
-            top: 0,
-            right: 0,
-            left: 0,
-            minHeight: 60,
-            borderWidth: 1,
-            borderColor: theme.colors.outline,
-            borderRadius: 8,
-            padding: 8,
-            backgroundColor: theme.colors.surface,
-            elevation: 1,
-            flexDirection: 'column',
-            zIndex: 1,
-          }}>
-                  <Pressable style={{ flex: 1 }} onPress={onPress}>
+      <Animated.View
+        key="stats"
+        entering={FadeInUp}
+        exiting={FadeOutUp}
+        style={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          left: 0,
+          minHeight: 60,
+          borderWidth: 1,
+          borderColor: theme.colors.outline,
+          borderRadius: 8,
+          padding: 8,
+          backgroundColor: theme.colors.surface,
+          elevation: 1,
+          flexDirection: 'column',
+          zIndex: 1,
+        }}>
+        <Pressable style={{ flex: 1 }} onPress={onPress}>
           <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
             <View style={{ flex: 1, minWidth: 100 }}>
               <Text style={{ color: theme.colors.onSurface }} numberOfLines={1}>
@@ -288,8 +298,8 @@ const StatBox = ({
               </View>
             </View>
           )}
-      </Pressable>
-        </Animated.View>
+        </Pressable>
+      </Animated.View>
     </View>
   );
 }

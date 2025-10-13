@@ -345,10 +345,14 @@ const useStore = create<State>()(
 
           const newGraphs = activity.graphs.map((graph: GraphProps) => {
             let newGraphType;
+            let newBinSize = graph.binSize;
             if (unit.type === "none" && activity.unit.type !== "none") {
               newGraphType = "bar-count";
+              if (graph.binSize === "point") {
+                newBinSize = "day";
+              }
             } else if (unit.type !== "none" && activity.unit.type === "none") {
-              newGraphType = "box";
+              newGraphType = "bar-count";
             } else {
               newGraphType = graph.graphType;
             }
@@ -356,6 +360,7 @@ const useStore = create<State>()(
             return {
               ...graph,
               graphType: newGraphType,
+              binSize: newBinSize,
               subUnit: setSubUnitName(graph.subUnit)
             };
           });
