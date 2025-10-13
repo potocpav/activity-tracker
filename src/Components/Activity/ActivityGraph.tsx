@@ -261,7 +261,6 @@ const StatBox = ({
             borderColor: theme.colors.outline,
             borderRadius: 8,
             padding: 8,
-            marginTop: 8,
             backgroundColor: theme.colors.surface,
             elevation: 1,
             flexDirection: 'column',

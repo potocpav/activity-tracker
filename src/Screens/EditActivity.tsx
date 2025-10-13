@@ -15,7 +15,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import ColorPicker from '../Components/ColorPicker';
 import { getTheme, getThemePalette, getThemeVariant } from "../Model/Theme";
-import { defaultCalendar, defaultGraph, defaultStats } from "../Model/DefaultActivity";
+import { defaultCalendar, defaultGraphs, defaultStats, defaultBleScaleGraphs } from "../Model/DefaultActivity";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
 import { UnitEditor } from "../Components/UnitView";
@@ -272,7 +272,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
         tags: [],
         stats: defaultStats(defaultUnit),
         calendars: [defaultCalendar(defaultUnit)],
-        graphs: [defaultGraph(defaultUnit)],
+        graphs: specialType === "ble_scale" ? defaultBleScaleGraphs(defaultUnit) : defaultGraphs(defaultUnit),
         special: specialType === "ble_scale" ? {type: "ble_scale", minWeight: bleMinWeightNumber} : null,
       };
     } else {

@@ -61,24 +61,52 @@ export const defaultCalendar = (unit: Unit): CalendarProps => {
   };
 };
 
-export const defaultGraph = (unit: Unit, binSize?: BinSize): GraphProps => {
+export const defaultGraphs = (unit: Unit): GraphProps[] => {
   if (unit.type === "none") {
-    return {
+    return [
+      {
       label: "Graph",
       subUnit: null,
       tagFilters: [],
       graphType: "bar-count",
-      binSize: binSize || "day",
-    };
+      binSize: "week",
+    }
+  ];
   } else {
-    return {
+    return [
+      {
       label: "Graph",
       subUnit: firstSubUnitName(unit),
       tagFilters: [],
       graphType: "box",
-      binSize: binSize || "day",
-    };
+      binSize: "week",
+    },
+    {
+      label: "Counts",
+      subUnit: firstSubUnitName(unit),
+      tagFilters: [],
+      graphType: "box",
+      binSize: "week",
+    }
+  ];
   }
 };
 
-
+export const defaultBleScaleGraphs = (unit: Unit): GraphProps[] => {
+  return [
+    {
+      label: "Measurements",
+      subUnit: firstSubUnitName(unit),
+      tagFilters: [],
+      graphType: "bar-sum",
+      binSize: "point",
+    },
+    {
+      label: "Daily stats",
+      subUnit: firstSubUnitName(unit),
+      tagFilters: [],
+      graphType: "box",
+      binSize: "day",
+    },
+  ]
+};
