@@ -6,7 +6,7 @@ import {
   View,
 } from "react-native";
 import useStore from "../Model/Store";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { getTheme, getThemePalette, getThemeVariant } from "../Model/Theme";
 import { ActivityType, DataPoint, dateToDateList } from "../Model/StoreTypes";
 import { Button as PaperButton } from "react-native-paper";
@@ -18,7 +18,9 @@ import SkiaChart, { xToCanvas, yToCanvas, Viewport } from "../Components/Chart/S
 import { SystemBars } from "react-native-edge-to-edge";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Button } from "../Components/Element";
-import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
+import ActionSheet, { ActionSheetRef, FlatList } from "react-native-actions-sheet";
+import { DataPointCard } from "./ActivityData";
+import { dayCmp, findZeroSlice } from "../Model/Activity";
 
 const fontFamily = Platform.select({ default: "sans-serif" });
 const largeFont = matchFont({ fontFamily: fontFamily, fontSize: 24 });
@@ -72,6 +74,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
 
   const [pastPulls, setPastPulls] = useState<PastPull[]>([]);
 
+  const insets = useSafeAreaInsets();
   const actionSheetRef = useRef<ActionSheetRef>(null);
 
   const scaleInput = useSharedValue<ScaleInput>({
@@ -81,6 +84,8 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
     currentPull: { t0: 0, wSum: 0, wCount: 0, wMax: 0, wMin: 0, active: false },
   });
   const [newDataPoint, setNewDataPoint] = useState<DataPoint | null>(null);
+  const pastDataPoints = activity.dataPoints.slice(...findZeroSlice(activity.dataPoints, (dp) => dayCmp(dp, today)));
+  // const pastDataPoints = activity.dataPoints.slice(-10);
 
   const [inputTags, setInputTags] = useState<string[]>([]);
 
@@ -273,6 +278,10 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   });
 
   React.useEffect(() => {
+    actionSheetRef.current?.show();
+  }, []);
+
+  React.useEffect(() => {
     navigation.setOptions({
       headerStyle: themeVariant == 'light' ? { backgroundColor: theme.colors.primary } : undefined,
       headerTintColor: "#ffffff",
@@ -443,22 +452,6 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
               </Canvas>
             </View>
           </View>
-          <View style={styles.measurementRow}>
-            <View style={styles.measurementColumn}>
-              <Text style={[styles.measurementLabel, { color: theme.colors.onSurface, width: largeFontBox.width }]}>Reps</Text>
-              <Canvas
-                style={{ width: largeFontBox.width, height: largeFontBox.height }}
-              >
-                <SkiaText
-                  text={pastPulls.length.toString()}
-                  font={largeFont}
-                  color={theme.colors.onSurface}
-                  x={0}
-                  y={-largeFontBox.y}
-                />
-              </Canvas>
-            </View>
-          </View>
 
           <View style={{ flex: 1, marginHorizontal: 5 }}>
             <SkiaChart
@@ -486,31 +479,46 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
               />
             </SkiaChart>
           </View>
-          <View style={{ height: 50 }} />
       </>
     </SafeAreaView>
-    {/* <ActionSheet 
+    <ActionSheet 
       ref={actionSheetRef}
       isModal={false}
       backgroundInteractionEnabled
       snapPoints={[30, 100]}
       gestureEnabled
+      headerAlwaysVisible
       closable={false}
+      useBottomSafeAreaPadding
       disableDragBeyondMinimumSnapPoint
+      safeAreaInsets={insets}
+      indicatorStyle={{ backgroundColor: theme.colors.outline }}
       containerStyle={{
-        borderWidth: 1,
-        borderColor: 'red',
+        backgroundColor: theme.colors.elevation.level1,
+        paddingLeft: insets.left,
+        paddingRight: insets.right,
       }}
       >
-      <Text>Hi, I am here.</Text>
-    </ActionSheet> */}
+      <FlatList
+        data={pastDataPoints}
+        ListHeaderComponent={() => (
+          <View style={{ padding: 8 }}>
+            <Text style={{ color: theme.colors.onSurface }}>Past Data</Text>
+          </View>
+        )}
+        renderItem={({ item, index }) => 
+          <DataPointCard activity={activity} i={index} repNumber={pastDataPoints.length - index} theme={theme} palette={palette} navigation={navigation} />
+        }
+      />
+    </ActionSheet>
     </>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    height: '70%',
+
   },
   buttonRow: {
     flexDirection: 'row',

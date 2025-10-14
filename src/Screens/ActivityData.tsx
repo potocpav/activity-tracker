@@ -8,11 +8,11 @@ import {
   Alert,
 } from "react-native";
 import useStore from "../Model/Store";
-import { DataPoint, ActivityType, Tag, DateList, dateListToDate, Unit } from "../Model/StoreTypes";
+import { DataPoint, ActivityType, Tag, DateList, dateListToDate, Unit, SubUnit } from "../Model/StoreTypes";
 import { cmpDateList, dayCmp, findZeroSlice, formatDate } from "../Model/Activity";
 import { renderTags } from "../Components/Tags";
 import TagMenu from "../Components/TagMenu";
-import { renderLongFormValue } from "../Model/Unit";
+import { renderLongFormNumber, renderLongFormValue } from "../Model/Unit";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { getThemePalette, getThemeVariant } from "../Model/Theme";
 import { getTheme } from "../Model/Theme";
@@ -30,6 +30,167 @@ type ActivityDataProps = {
 
 const ITEM_HEIGHT = 60;
 
+export const DataPointCard = (
+  { activity, i, repNumber = undefined, theme, palette, navigation }: { activity: ActivityType, i: number, repNumber?: number, theme: any, palette: any, navigation: any }) => {
+  const styles = getStyles(theme);
+  const dataPoint = activity.dataPoints[i];
+
+  const renderValue = (value: null | number | Record<string, number>, unit: Unit): React.ReactNode => {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        {unit.type === "none" ? (
+          <Text style={{ color: theme.colors.onSurface }}>✓</Text>
+        ) : typeof value === "number" && unit.type === "single" ? (
+          <Text style={{ color: theme.colors.onSurface }}>{renderLongFormValue(value, unit.unit)}</Text>
+        ) : typeof value === "object" && unit.type === "multiple" ? (
+          unit.values.map((u: any) => {
+            if (value !== null && value[u.name] !== null && value[u.name] !== undefined) {
+              return (
+                <View key={u.name} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                  <Text style={{ color: theme.colors.onSurface }} numberOfLines={1} adjustsFontSizeToFit>
+                    {renderLongFormValue(value[u.name], u.unit)}
+                  </Text>
+                </View>
+              )
+            }
+          })
+        ) : (
+          <Text>n/a</Text>
+        )}
+      </View>
+    );
+  };
+
+  const renderNoteAndTags = (dataPoint: DataPoint) => {
+    return (
+      <View style={{ gap: 6, flex: 1 }}>
+        <View style={styles.activityNoteTags}>
+          <Text numberOfLines={1} style={{ color: theme.colors.onSurface }}>{dataPoint.note ?? ""}</Text>
+        </View>
+        <View style={styles.activityNoteTags}>
+          {renderTags(
+            activity.tags.filter((t: Tag) => (dataPoint.tags ?? []).includes(t.name)),
+            theme,
+            palette,
+            false
+          )}
+        </View>
+      </View>
+    );
+  }
+
+  const renderValueless = () => {
+    return (
+      <Pressable
+        onPress={() => navigation.navigate("EditDataPoint", { activityName: activity.name, dataPointIndex: i })}
+        android_ripple={{ color: theme.colors.outline, foreground: false }}
+        style={styles.activityCard}
+      >
+        <View style={styles.activityContent}>
+          <View style={styles.activityValues}>
+            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+              <Text numberOfLines={1} adjustsFontSizeToFit
+                style={{ color: theme.colors.onSurface, fontSize: 40 }}>
+                ✓
+              </Text>
+            </View>
+          </View>
+          {renderNoteAndTags(dataPoint)}
+        </View>
+      </Pressable>
+    );
+  };
+
+  const renderSingleValue = () => (
+    <Pressable
+      onPress={() => navigation.navigate("EditDataPoint", { activityName: activity.name, dataPointIndex: i })}
+      android_ripple={{ color: theme.colors.outline, foreground: false }}
+      style={styles.activityCard}
+    >
+      <View style={styles.activityContent}>
+        <View style={styles.activityValues}>
+          {renderValue(dataPoint.value ?? null, activity.unit)}
+        </View>
+        <View style={{ flex: 1 }}>
+          {renderNoteAndTags(dataPoint)}
+        </View>
+      </View>
+    </Pressable>
+  );
+
+  const renderLabelAndValue = (name: string, value: number | undefined, unit: SubUnit) => {
+    const stringValue = value === undefined ? "-" : renderLongFormValue(value, unit);
+    return (
+      <View key={name} style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{ padding: 2 }}>
+          <Text style={{ color: theme.colors.onSurface, fontSize: 12 }}>{name}</Text>
+        </View>
+        <View style={{ padding: 2, paddingBottom: 4 }}>
+          <Text style={{ color: theme.colors.onSurface, fontSize: 20, fontWeight: 'bold' }}>
+            {stringValue}
+          </Text>
+        </View>
+      </View>
+    );
+
+  };
+
+  const renderMultipleValues = () => {
+    let renderedValues: React.ReactNode[] = [];
+    
+    if (repNumber !== undefined) {
+      renderedValues.push(renderLabelAndValue("Rep", repNumber, { type: "count" }));
+    }
+    if (activity.unit.type === "multiple") {
+      activity.unit.values.forEach(({ name, unit }) =>
+        renderedValues.push(renderLabelAndValue(name, (dataPoint.value as any)[name], unit))
+      );
+    }
+    return (
+      <Pressable
+        onPress={() => navigation.navigate("EditDataPoint", { activityName: activity.name, dataPointIndex: i })}
+        android_ripple={{ color: theme.colors.outline, foreground: false }}
+        style={{
+          padding: 6,
+          backgroundColor: theme.colors.elevation.level2,
+          margin: 4,
+          borderRadius: 15,
+          elevation: 2,
+          gap: 4,
+        }}
+      >
+        <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center', justifyContent: 'space-between' }}>
+          {renderedValues}
+        </View>
+        {dataPoint.tags && (
+          <View style={{marginHorizontal: 0}}>
+            {renderTags(
+              activity.tags.filter((t: Tag) => (dataPoint.tags ?? []).includes(t.name)),
+              theme,
+              palette,
+              false
+            )}
+          </View>
+        )}
+        {dataPoint.note && (
+          <View style={{marginHorizontal: 5}}>
+            <Text style={{ color: theme.colors.onSurface }}>{dataPoint.note}</Text>
+          </View>
+        )}
+      </Pressable>
+    );
+  }
+
+  switch (activity.unit.type) {
+    case "none":
+      return renderValueless();
+    case "single":
+      return renderSingleValue();
+    case "multiple":
+      return renderMultipleValues();
+  }
+}
+
 const ActivityData = ({ navigation, route }: ActivityDataProps) => {
   const { activityName, day } = route.params;
   const activities = useStore((state: any) => state.activities);
@@ -37,9 +198,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
   const deleteActivityDataPoints = useStore((state: any) => state.deleteActivityDataPoints);
   const theme = getTheme(activity.color);
   const themeVariant = getThemeVariant();
-  const blackBackground = useStore((state: any) => state.blackBackground);
-  const blackTheme = themeVariant == 'dark' && blackBackground;
-  
+
   const palette = getThemePalette();
   const styles = getStyles(theme);
 
@@ -93,153 +252,75 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
       headerRight: () => (
         <ButtonRow>
           {filteredDataPoints.length > 0 && day && <Button onPress={() => {
-              Alert.alert("Delete all listed data?", "This action cannot be undone.", [
-                {
-                  text: "Cancel",
-                  style: "cancel"
-                },
-                {
-                  text: "Delete",
-                  style: "destructive",
-                  onPress: () => {
-                    deleteActivityDataPoints(activityName, filteredDataPoints.map(([_, i]) => i));
-                  }
+            Alert.alert("Delete all listed data?", "This action cannot be undone.", [
+              {
+                text: "Cancel",
+                style: "cancel"
+              },
+              {
+                text: "Delete",
+                style: "destructive",
+                onPress: () => {
+                  deleteActivityDataPoints(activityName, filteredDataPoints.map(([_, i]) => i));
                 }
-              ])
-            }}>
-              <DeleteIcon color="white" />
-            </Button>}
+              }
+            ])
+          }}>
+            <DeleteIcon color="white" />
+          </Button>}
           {activity.tags.length > 0 && (
-              <TagMenu
-                activity={activity}
-                tags={tags}
-                onChange={(tags) => setTags(tags)}
-                menuVisible={tagsMenuVisible}
-                setMenuVisible={setTagsMenuVisible}
-                activityTags={activity.tags}
-                button= {(setMenuVisible) => 
+            <TagMenu
+              activity={activity}
+              tags={tags}
+              onChange={(tags) => setTags(tags)}
+              menuVisible={tagsMenuVisible}
+              setMenuVisible={setTagsMenuVisible}
+              activityTags={activity.tags}
+              button={(setMenuVisible) =>
                 <Button onPress={() => setMenuVisible()}>
-                    <MaterialCommunityIcons name="filter" size={24} color="white" />
+                  <MaterialCommunityIcons name="filter" size={24} color="white" />
                 </Button>
-                }
-              />
+              }
+            />
           )}
           <Button
             onPress={() => navigation.navigate("EditDataPoint", { activityName: activity.name, newDataPoint: true, newDataPointDate: day, tags: requiredTags })}>
-              <MaterialCommunityIcons name="plus" size={26} color={"#ffffff"} />
+            <MaterialCommunityIcons name="plus" size={26} color={"#ffffff"} />
           </Button>
         </ButtonRow>
       ),
     });
   }, [navigation, theme, tagsMenuVisible, tags, activity]);
 
-
-  const renderValue = (value: null | number | Record<string, number>, unit: Unit): React.ReactNode => {
-    return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        {unit.type === "none" ? (
-          <Text style={{ color: theme.colors.onSurface }}>✓</Text>
-        ) : typeof value === "number" && unit.type === "single" ? (
-          <Text style={{ color: theme.colors.onSurface }}>{renderLongFormValue(value, unit.unit)}</Text>
-        ) : typeof value === "object" && unit.type === "multiple" ? (
-            unit.values.map((u: any) => {
-              if (value !== null && value[u.name] !== null && value[u.name] !== undefined) {
-                return (
-                  <View key={u.name} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-                    <Text style={{ color: theme.colors.onSurface }} numberOfLines={1} adjustsFontSizeToFit>
-                      {renderLongFormValue(value[u.name], u.unit)}
-                    </Text>
-                  </View>
-                )
-              }
-            })
-        ) : (
-          <Text>n/a</Text>
-        )}
-      </View>
-    );
-  };
-
-  const renderNoteAndTags = (dataPoint: DataPoint) => {
-    return (
-      <View style={{gap: 6, flex: 1}}>
-        <View style={styles.activityNoteTags}>
-          <Text numberOfLines={1} style={{ color: theme.colors.onSurface }}>{dataPoint.note ?? ""}</Text>
-        </View>
-        <View style={styles.activityNoteTags}>
-          {renderTags(
-            activity.tags.filter((t: Tag) => (dataPoint.tags ?? []).includes(t.name)),
-            theme,
-            palette,
-            false
-          )}
-        </View>
-      </View>
-    );
-  }
-
-  const renderValueless = (dataPoint: DataPoint, i: number) => {
-    return (
-      <Pressable
-        onPress={() => navigation.navigate("EditDataPoint", { activityName: activity.name, dataPointIndex: i })}
-        android_ripple={{ color: theme.colors.outline, foreground: false }}
-        style={styles.activityCard}
-      >
-        <View style={styles.activityContent}>
-          <View style={styles.activityValues}>
-            <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-            <Text numberOfLines={1} adjustsFontSizeToFit 
-              style={{ color: theme.colors.onSurface, fontSize: 40 }}>
-                ✓
-            </Text>
-            </View>
-          </View>
-          {renderNoteAndTags(dataPoint)}
-        </View>
-      </Pressable>
-    );
-  };
-
-  const renderWithValue = (dataPoint: DataPoint, i: number) => {
-    return (
-      <Pressable
-        onPress={() => navigation.navigate("EditDataPoint", { activityName: activity.name, dataPointIndex: i })}
-        android_ripple={{ color: theme.colors.outline, foreground: false }}
-        style={styles.activityCard}
-      >
-        <View style={styles.activityContent}>
-          <View style={styles.activityValues}>
-            {renderValue(dataPoint.value ?? null, activity.unit)}
-          </View>
-          <View style={{flex: 1}}>
-            {renderNoteAndTags(dataPoint)}
-          </View>
-        </View>
-      </Pressable>
-    );
-  }
-
   return (
     <SafeAreaView style={[styles.container]} edges={["left", "right"]}>
-      <SystemBars style={{statusBar: "light", navigationBar: themeVariant == 'light' ? "dark" : "light"}} />
+      <SystemBars style={{ statusBar: "light", navigationBar: themeVariant == 'light' ? "dark" : "light" }} />
       {sections.length === 0 ? (
         <EmptyPagePlaceholder title="No data" subtext="Tap the + button to create a data point" />
       ) : (
-      <SectionList
-        style={styles.scrollView}
-        sections={sections}
-        keyExtractor={([_, i]) => i.toString()}
-        windowSize={11}
-        ListFooterComponent={() => (
-          <Inset type="bottom" />
-        )}
-        renderSectionHeader={({ section: { date } }) => (
-          <View style={ styles.sectionHeader}>
-            <Text style={{ color: theme.colors.onSurface }}>{formatDate(dateListToDate(date as DateList))}</Text>
-          </View>
-        )}
-        renderItem={({ item: [dataPoint, i] }) => activity.unit.type === "none" ? renderValueless(dataPoint, i) : renderWithValue(dataPoint, i)}
-      />
+        <SectionList
+          style={styles.scrollView}
+          sections={sections}
+          keyExtractor={([_, i]) => i.toString()}
+          windowSize={11}
+          ListFooterComponent={() => (
+            <Inset type="bottom" />
+          )}
+          renderSectionHeader={({ section: { date } }) => (
+            <View style={styles.sectionHeader}>
+              <Text style={{ color: theme.colors.onSurface }}>{formatDate(dateListToDate(date as DateList))}</Text>
+            </View>
+          )}
+          renderItem={({ item: [dataPoint, i] }) =>
+            <DataPointCard
+              activity={activity}
+              i={i}
+              theme={theme}
+              palette={palette}
+              navigation={navigation}
+            />
+          }
+        />
       )}
     </SafeAreaView>
   );
@@ -285,11 +366,11 @@ const getStyles = (theme: any) => StyleSheet.create({
     gap: 6,
   },
   activityValues: {
-    width: ITEM_HEIGHT * 1.3, 
+    width: ITEM_HEIGHT * 1.3,
     backgroundColor: theme.colors.elevation.level5,
     borderRadius: 15,
     elevation: 5,
-    alignItems: 'center', 
+    alignItems: 'center',
     justifyContent: 'center'
   },
   activityNoteTags: {
