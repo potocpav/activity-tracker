@@ -48,25 +48,6 @@ const ColorButton = ({ color, onPress }: { color: number, onPress: () => void })
   );
 };
 
-const LockFrame = ({ children, locked }: { children: React.ReactNode, locked: boolean }) => {
-  const theme = getTheme();
-  if (locked) {
-    return (
-      <View style={{ position: 'relative' }}>
-        <View style={{ position: 'absolute', top: -13, right: 20, paddingHorizontal: 8, backgroundColor: theme.colors.background, zIndex: 1 }}>
-          <MaterialCommunityIcons name="lock" size={24} color={theme.colors.outline} />
-        </View>
-        <View style={{ borderWidth: 1, borderColor: theme.colors.onSurfaceVariant, borderRadius: 8, paddingHorizontal: 8, paddingTop: 10, padding: 10, gap: 10 }}>
-          {children}
-        </View>
-        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: theme.colors.background, opacity: 0.5, borderRadius: 8, padding: 3 }} />
-      </View>
-    )
-  } else {
-    return children;
-  }
-};
-
 const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   const { activityName } = route.params;
   const activities = useStore((state: any) => state.activities);
@@ -657,7 +638,8 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
             </View>
             )}
 
-            <LockFrame locked={specialType === "ble_scale"}>
+            {specialType !== "ble_scale" && (
+            <>
               <Text style={styles.header}>Activity type:</Text>
               <InputWrapper error={showErrors ? unitModeError : null} ref={unitModeInputRef}>
                 <SegmentedButtons
@@ -680,7 +662,8 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
               <View>
                 {unitMode === null ? null : unitMode === 'yes_no' ? editNoValue() : unitMode === 'measurable' ? multiUnitInput.length === 1 ? editSingleValue() : editMultipleValues() : null}
               </View>
-            </LockFrame>
+            </>
+            )}
           </View>
         </SafeAreaView>
       </ScrollView>

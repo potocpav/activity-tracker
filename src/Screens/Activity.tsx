@@ -166,9 +166,9 @@ const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ 
                     dismissHint("add_data_point");
                     navigation.navigate("BleScaleInput", { activityName });
                   }}>
-                <BleScaleIcon color="white" />
-                    </Button>
-                    );
+                    <BleScaleIcon color="white" />
+                  </Button>
+                );
               case null:
                 return (<PlusIconButton onPress={() => {
                   dismissHint("add_data_point");
