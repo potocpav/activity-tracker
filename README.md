@@ -63,9 +63,11 @@ Track your performance metrics and their progress over time. With custom statist
   - [x] Smooth endless scrolling
   - [x] Lbs support
   - [x] Min weight configuration
-  - [ ] Add a swipe-up data log
-  - [ ] Add nice animations
-  - [ ] Add last pull stats
+  - [x] Add a swipe-up data log
+  - [x] Add nice animations
+  - [x] Add last pull stats
+  - [ ] Horizontal screen support
+- [ ] New data point list design
 
 ### 3.2.0
 

@@ -31,7 +31,7 @@ type ActivityDataProps = {
 
 const ITEM_HEIGHT = 60;
 
-export const DataPointCardContainer = (props: {
+export const DataPointCardMultiContainer = (props: {
   children: React.ReactNode[],
   tags: ReactElement<any, any> | undefined,
   note: React.ReactNode | undefined,
@@ -71,6 +71,50 @@ export const DataPointCardContainer = (props: {
   );
 }
 
+
+export const DataPointCardSingleContainer = (props: {
+  children: React.ReactNode,
+  tags: ReactElement<any, any> | undefined,
+  note: React.ReactNode | undefined,
+  theme: any,
+  onPress?: () => void,
+  style?: any,
+}) => {
+  return (
+    <Pressable
+      onPress={props.onPress}
+      android_ripple={{ color: props.theme.colors.outline, foreground: false }}
+      style={[{
+        padding: 6,
+        backgroundColor: props.theme.colors.elevation.level2,
+        margin: 4,
+        borderRadius: 15,
+        elevation: 2,
+        gap: 4,
+        justifyContent: 'center',
+        flexDirection: 'row',
+      }, props.style]}
+    >
+      <View key="children" style={{ width: ITEM_HEIGHT * 1.5, flexDirection: 'row', gap: 6, alignItems: 'center', justifyContent: 'space-between' }}>
+        {props.children}
+      </View>
+      <View key="divider" style={{ width: 0.5, height: '100%', backgroundColor: props.theme.colors.outline }} />
+      <View key="content" style={{ flex: 1, gap: 6, justifyContent: 'space-between' }}>
+        {props.tags && (
+          <View key="tags" style={{ marginHorizontal: 0, marginTop: 1 }}>
+            {props.tags}
+          </View>
+        )}
+        {props.note && (
+          <View key="note" style={{ marginHorizontal: 5 }}>
+            {props.note}
+          </View>
+        )}
+      </View>
+    </Pressable>
+  );
+}
+
 export const LabeledValue = (props: {
   label: string,
   children: React.ReactNode,
@@ -79,7 +123,7 @@ export const LabeledValue = (props: {
   return (
     <View key={props.label} style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
       <View style={{ padding: 2 }}>
-        <Text style={{ color: props.theme.colors.onSurface, fontSize: 12 }}>{props.label}</Text>
+        <Text style={{ color: props.theme.colors.onSurface, fontSize: 12, textAlign: 'center' }}>{props.label}</Text>
       </View>
       <View style={{ padding: 2, paddingBottom: 4 }}>
         {props.children}
@@ -101,100 +145,52 @@ export const DataPointCard = (
   { activity, i, repNumber = undefined, theme, palette, navigation }:
     { activity: ActivityType, i: number, repNumber?: number, theme: any, palette: any, navigation: any }
 ) => {
-  const styles = getStyles(theme);
   const dataPoint = activity.dataPoints[i];
 
-  const renderValue = (value: null | number | Record<string, number>, unit: Unit): React.ReactNode => {
-    return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        {unit.type === "none" ? (
-          <Text style={{ color: theme.colors.onSurface }}>✓</Text>
-        ) : typeof value === "number" && unit.type === "single" ? (
-          <Text style={{ color: theme.colors.onSurface }}>{renderLongFormValue(value, unit.unit)}</Text>
-        ) : typeof value === "object" && unit.type === "multiple" ? (
-          unit.values.map((u: any) => {
-            if (value !== null && value[u.name] !== null && value[u.name] !== undefined) {
-              return (
-                <View key={u.name} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-                  <Text style={{ color: theme.colors.onSurface }} numberOfLines={1} adjustsFontSizeToFit>
-                    {renderLongFormValue(value[u.name], u.unit)}
-                  </Text>
-                </View>
-              )
-            }
-          })
-        ) : (
-          <Text>n/a</Text>
-        )}
-      </View>
-    );
-  };
+  const tags = dataPoint.tags && (
+    <RenderTags
+      tags={activity.tags.filter((t: Tag) => (dataPoint.tags ?? []).includes(t.name))}
+      theme={theme}
+      palette={palette}
+      wrap={false}
+    />
+  );
 
-  const renderNoteAndTags = (dataPoint: DataPoint) => {
-    return (
-      <View style={{ gap: 6, flex: 1 }}>
-        <View style={styles.activityNoteTags}>
-          <Text numberOfLines={1} style={{ color: theme.colors.onSurface }}>{dataPoint.note ?? ""}</Text>
-        </View>
-        <View style={styles.activityNoteTags}>
-          <RenderTags 
-            tags={activity.tags.filter((t: Tag) => (dataPoint.tags ?? []).includes(t.name))}
-            theme={theme} 
-            palette={palette} 
-            wrap={false} />
-        </View>
-      </View>
-    );
-  }
+  const note = dataPoint.note && (
+    <Text style={{ color: theme.colors.onSurface }}>{dataPoint.note}</Text>
+  );
 
-  const renderValueless = () => {
-    return (
-      <Pressable
-        onPress={() => navigation.navigate("EditDataPoint", { activityName: activity.name, dataPointIndex: i })}
-        android_ripple={{ color: theme.colors.outline, foreground: false }}
-        style={styles.activityCard}
-      >
-        <View style={styles.activityContent}>
-          <View style={styles.activityValues}>
-            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-              <Text numberOfLines={1} adjustsFontSizeToFit
-                style={{ color: theme.colors.onSurface, fontSize: 40 }}>
-                ✓
-              </Text>
-            </View>
-          </View>
-          {renderNoteAndTags(dataPoint)}
-        </View>
-      </Pressable>
-    );
-  };
+  const editDataPoint = () => navigation.navigate("EditDataPoint", { activityName: activity.name, dataPointIndex: i });
+
+  const renderValueless = () => (
+    <DataPointCardSingleContainer onPress={editDataPoint} tags={tags} note={note} theme={theme}>
+      <LabeledValue label="Value" theme={theme}>
+        <TextValue theme={theme}>
+          {"✓"}
+        </TextValue>
+      </LabeledValue>
+    </DataPointCardSingleContainer>
+  );
 
   const renderSingleValue = () => (
-    <Pressable
-      onPress={() => navigation.navigate("EditDataPoint", { activityName: activity.name, dataPointIndex: i })}
-      android_ripple={{ color: theme.colors.outline, foreground: false }}
-      style={styles.activityCard}
-    >
-      <View style={styles.activityContent}>
-        <View style={styles.activityValues}>
-          {renderValue(dataPoint.value ?? null, activity.unit)}
-        </View>
-        <View style={{ flex: 1 }}>
-          {renderNoteAndTags(dataPoint)}
-        </View>
-      </View>
-    </Pressable>
+    <DataPointCardSingleContainer onPress={editDataPoint} tags={tags} note={note} theme={theme}>
+      <LabeledValue label="Value" theme={theme}>
+        <TextValue theme={theme}>
+          {typeof dataPoint.value === "number" && activity.unit.type === "single" ? renderLongFormValue(dataPoint.value, activity.unit.unit) : "-"}
+        </TextValue>
+      </LabeledValue>
+    </DataPointCardSingleContainer>
   );
 
   const renderMultipleValues = () => {
     let renderedValues: React.ReactNode[] = [];
 
     if (repNumber !== undefined) {
-        renderedValues.push(
-          <LabeledValue label="Rep" theme={theme}>
-            <TextValue theme={theme}>{repNumber.toString()}</TextValue>
-          </LabeledValue>
-        );
+      renderedValues.push(
+        <LabeledValue label="Rep" theme={theme}>
+          <TextValue theme={theme}>{repNumber.toString()}</TextValue>
+        </LabeledValue>
+      );
     }
     if (activity.unit.type === "multiple") {
       activity.unit.values.forEach(({ name, unit }) => {
@@ -210,23 +206,9 @@ export const DataPointCard = (
       });
     }
     return (
-      <DataPointCardContainer
-        onPress={() => navigation.navigate("EditDataPoint", { activityName: activity.name, dataPointIndex: i })}
-        tags={dataPoint.tags && (
-          <RenderTags 
-            tags={activity.tags.filter((t: Tag) => (dataPoint.tags ?? []).includes(t.name))}  
-            theme={theme} 
-            palette={palette} 
-            wrap={false} 
-            />
-        )}
-        note={dataPoint.note && (
-            <Text style={{ color: theme.colors.onSurface }}>{dataPoint.note}</Text>
-        )}
-        theme={theme}
-      >
+      <DataPointCardMultiContainer onPress={editDataPoint} tags={tags} note={note} theme={theme}>
         {renderedValues}
-      </DataPointCardContainer>
+      </DataPointCardMultiContainer>
     );
   }
 
@@ -362,6 +344,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
           )}
           renderItem={({ item: [dataPoint, i] }) =>
             <DataPointCard
+              key={i.toString()}
               activity={activity}
               i={i}
               theme={theme}

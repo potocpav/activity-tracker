@@ -20,7 +20,7 @@ import { SystemBars } from "react-native-edge-to-edge";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Button } from "../Components/Element";
 import ActionSheet, { ActionSheetRef, FlatList } from "react-native-actions-sheet";
-import { DataPointCard, DataPointCardContainer, LabeledValue, TextValue } from "./ActivityData";
+import { DataPointCard, DataPointCardMultiContainer, LabeledValue, TextValue } from "./ActivityData";
 import { dayCmp, findZeroSlice } from "../Model/Activity";
 import { useFocusEffect } from "@react-navigation/native";
 
@@ -575,7 +575,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
             if (item.dataPoint === null) {
               return (
                   <Animated.View entering={FadeIn} style={{ height: pullCardHeight }}>
-                    <DataPointCardContainer
+                    <DataPointCardMultiContainer
                       tags={undefined}
                       note={undefined}
                       theme={theme}
@@ -607,7 +607,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                           />
                         </Canvas>
                       </LabeledValue>
-                    </DataPointCardContainer>
+                    </DataPointCardMultiContainer>
                   </Animated.View>
                 );
             } else {
