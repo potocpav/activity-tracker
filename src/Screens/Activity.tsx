@@ -14,7 +14,7 @@ import * as Sharing from 'expo-sharing';
 import { getTheme, getThemeVariant } from "../Model/Theme";
 import { SystemBars } from "react-native-edge-to-edge";
 import Hint from "../Components/Hint";
-import { ButtonRow, DotsIconButton, EditIconButton, PlusIconButton } from "../Components/Element";
+import { BleScaleIcon, ButtonRow, DotsIconButton, EditIconButton, PlusIconButton, Button } from "../Components/Element";
 import { EncodingType } from "expo-file-system/src/ExpoFileSystem.types";
 
 type ActivityProps = {
@@ -158,17 +158,24 @@ const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ 
       headerTintColor: "#ffffff",
       headerRight: () => (
         <ButtonRow>
-          <PlusIconButton onPress={() => {
-              dismissHint("add_data_point");
-              switch (activity.special?.type ?? null) {
-                case "ble_scale":
-                  navigation.navigate("BleScaleInput", { activityName });
-                  break;
-                case null:
+          {(() => {
+            switch (activity.special?.type ?? null) {
+              case "ble_scale":
+                return (
+                  <Button onPress={() => {
+                    dismissHint("add_data_point");
+                    navigation.navigate("BleScaleInput", { activityName });
+                  }}>
+                <BleScaleIcon color="white" />
+                    </Button>
+                    );
+              case null:
+                return (<PlusIconButton onPress={() => {
+                  dismissHint("add_data_point");
                   navigation.navigate("EditDataPoint", { activityName, newDataPoint: true });
-                  break;
-              }
-            }} color="white" />
+                }} color="white" />);
+            }
+          })()}
           <EditIconButton onPress={() => navigation.navigate("EditActivity", { activityName })} color="white" />
           <DotsIconButton onPress={() => setMenuVisible(!menuVisible)} color="white" />
         </ButtonRow>
@@ -177,8 +184,8 @@ const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ 
   }, [navigation, theme, menuVisible, activity]);
 
   return (
-    <View style={{flex: 1}}>
-      <SystemBars style={{statusBar: "light", navigationBar: themeVariant == 'light' ? "dark" : "light"}} />
+    <View style={{ flex: 1 }}>
+      <SystemBars style={{ statusBar: "light", navigationBar: themeVariant == 'light' ? "dark" : "light" }} />
       <View style={{ position: 'absolute', top: 10, right: 0 }}>
         <Menu
           key={menuVisible ? "open" : "closed"}
@@ -199,7 +206,7 @@ const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ 
           <Menu.Item onPress={() => { setMenuVisible(false); deleteActivityWrapper() }} title="Delete" />
         </Menu>
       </View>
-      { activity.dataPoints.length === 0 && <Hint hint="add_data_point" />}
+      {activity.dataPoints.length === 0 && <Hint hint="add_data_point" />}
       <ActivitySummary activityName={activityName} navigation={navigation} />
     </View>
   );

@@ -17,7 +17,7 @@ import EmptyPagePlaceholder from "../Components/EmptyPagePlaceholder";
 import Hint from "../Components/Hint";
 import Inset from "../Components/SafeAreaInset";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { ButtonRow, CheckIcon, CloseIcon, DoubleCheckIcon, PlusIcon, PlusIconButton, Button } from "../Components/Element";
+import { ButtonRow, CheckIcon, CloseIcon, DoubleCheckIcon, PlusIcon, PlusIconButton, Button, BleScaleIcon } from "../Components/Element";
 
 type ActivitiesProps = {
   navigation: any;
@@ -147,7 +147,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
               } else {
                 switch (activity.special?.type ?? null) {
                   case "ble_scale":
-                    return <MaterialCommunityIcons name="bluetooth" size={22} color={palette[activity.color]} />;
+                    return <BleScaleIcon color={palette[activity.color]} />;
                   case null:
                     return <PlusIcon color={palette[activity.color]} />;
                 }

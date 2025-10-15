@@ -105,6 +105,10 @@ export const CheckIcon = ({ color }: { color: string }) => (
     <MaterialCommunityIcons name="check" size={23} color={color} />
 );
 
+export const BleScaleIcon = ({ color }: { color: string }) => (
+    <MaterialCommunityIcons name="bluetooth" size={22} color={color} />
+);
+
 export const CheckPlusIcon = ({ color }: { color: string }) => (
   <View style={{ position: 'relative' }}>
     <MaterialCommunityIcons name="check" size={24} color={color} />
