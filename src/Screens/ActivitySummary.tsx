@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, Text, View, Pressable } from "react-native";
 import { Divider } from 'react-native-paper';
 import useStore from "../Model/Store";
 import { ActivityType, CalendarProps, GraphProps, Stat } from "../Model/StoreTypes";
-import { renderTags } from "../Components/Tags";
+import { RenderTags } from "../Components/Tags";
 import ActivityGraph from "../Components/Activity/ActivityGraph";
 import ActivityCalendar from "../Components/Activity/ActivityCalendar";
 import StatView from "../Components/StatView";
@@ -42,7 +42,7 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
 
             {activity.tags.length > 0 && (
               <View key="activity-tags" style={styles.tagsRow}>
-                {renderTags(activity.tags, theme, palette)}
+                <RenderTags tags={activity.tags} theme={theme} palette={palette} wrap />
               </View>
             )}
           </View>

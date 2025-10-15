@@ -53,10 +53,10 @@ export const DataPointCardContainer = (props: {
         justifyContent: 'center',
       }, props.style]}
     >
-      <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center', justifyContent: 'space-between' }}>
+      <View key="children" style={{ flexDirection: 'row', gap: 6, alignItems: 'center', justifyContent: 'space-between' }}>
         {props.children}
       </View>
-      {(props.tags || props.note) && <Divider />}
+      {(props.tags || props.note) && <Divider key="divider" />}
       {props.tags && (
         <View key="tags" style={{ marginHorizontal: 0, marginTop: 1 }}>
           {props.tags}

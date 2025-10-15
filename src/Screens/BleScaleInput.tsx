@@ -12,7 +12,7 @@ import { getTheme, getThemePalette, getThemeVariant } from "../Model/Theme";
 import { ActivityType, BleScaleWorkoutState, DataPoint, dateToDateList } from "../Model/StoreTypes";
 import { Button as PaperButton } from "react-native-paper";
 import { matchFont, Points, Text as SkiaText, vec, Canvas, interpolateColors } from "@shopify/react-native-skia";
-import Animated, { useSharedValue, useFrameCallback, useDerivedValue, interpolate, Extrapolation, LinearTransition, useAnimatedReaction, useAnimatedStyle, withSpring } from "react-native-reanimated";
+import Animated, { useSharedValue, useFrameCallback, useDerivedValue, interpolate, Extrapolation, LinearTransition, useAnimatedReaction, useAnimatedStyle, withSpring, FadeIn } from "react-native-reanimated";
 import { renderLongFormValue } from "../Model/Unit";
 import TagSelector from "../Components/TagSelector";
 import SkiaChart, { xToCanvas, yToCanvas, Viewport } from "../Components/Chart/SkiaChart";
@@ -128,39 +128,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
     }
   });
 
-  const pullCardHeight = 100;
-  const pullCardVisibility = useSharedValue(0);
-
-  useEffect(() => {
-    pullCardVisibility.value = 0;
-  }, [pastDataPoints]);
-
-  useAnimatedReaction(() => {
-    return {
-      pull: pullIndicators.value,
-      pastPulls: pastPulls.value,
-    };
-  }, (value, oldValue) => {
-    if (value.pull.pullActive && !oldValue?.pull.pullActive) {
-      pullCardVisibility.value = withSpring(1);
-    } else if (!value.pull.pullActive && oldValue?.pull.pullActive) {
-      pullCardVisibility.value = withSpring(0);
-    }
-  });
-
-
-  const pullCardAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      // { scaleY: withSpring(pullIndicators.value.pullActive ? 1 : 0 )}, 
-      // { translateY: withSpring(pullIndicators.value.pullActive ? 0 : -pullCardHeight / 2 )}
-      { scaleY: pullCardVisibility.value },
-      { translateY: (1 - pullCardVisibility.value) * -pullCardHeight / 2 }
-    ],
-  }));
-
-  const dataListCardAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: (pullCardVisibility.value - 1) * pullCardHeight }],
-  }));
+  const pullCardHeight = 80;
 
   const openConnectionModal = async () => {
     scanForDevices();
@@ -361,13 +329,21 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   });
 
   const pullWeight = useDerivedValue(() => {
-    const w = pullIndicators.value.pullWeight;
-    return w.toFixed(w >= 100 ? 1 : 2) + " " + weightUnit.unit
+    if (pullIndicators.value.pullActive) {
+      const w = pullIndicators.value.pullWeight;
+      return w.toFixed(w >= 100 ? 1 : 2) + " " + weightUnit.unit;
+    } else {
+      return "      -";
+    }
   });
 
-  const pullTime = useDerivedValue(() =>
-    pullIndicators.value.pullTime.toFixed(1) + " s"
-  );
+  const pullTime = useDerivedValue(() => {
+    if (pullIndicators.value.pullActive) {
+      return pullIndicators.value.pullTime.toFixed(1) + " s";
+    } else {
+      return "       -";
+    }
+  });
 
   const totalTime = useDerivedValue(() =>
     renderLongFormValue(Math.floor(tx.value), timeUnit)
@@ -598,16 +574,13 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
           renderItem={({ item, index }) => {
             if (item.dataPoint === null) {
               return (
-                  <Animated.View style={[
-                    { height: pullCardHeight },
-                    pullCardAnimatedStyle
-                  ]}>
+                  <Animated.View entering={FadeIn} style={{ height: pullCardHeight }}>
                     <DataPointCardContainer
                       tags={undefined}
                       note={undefined}
                       theme={theme}
                       onPress={undefined}
-                      style={{ flex: 1 }}
+                      style={{ flex: 1, borderWidth: 1, borderColor: theme.colors.primary }}
                     >
                       <LabeledValue label="Rep" theme={theme}>
                         <Text style={{ color: theme.colors.primary, fontWeight: "bold", fontSize: 24 }}>{`${pastDataPoints.length - index}`}</Text>
@@ -639,7 +612,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                 );
             } else {
               return (
-                <Animated.View layout={LinearTransition} style={dataListCardAnimatedStyle}>
+                <Animated.View layout={LinearTransition}>
                   <DataPointCard
                     activity={activity}
                     i={item.index}
