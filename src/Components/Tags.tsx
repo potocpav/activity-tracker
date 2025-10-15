@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from "react-native";
 
 
 // TODO: make into a component
-export const renderTags = (tags: Tag[], theme: any, palette: string[], wrap: boolean = true) => {
+export const RenderTags = ({ tags, theme, palette, wrap }: { tags: Tag[], theme: any, palette: string[], wrap: boolean }) => {
     if (tags.length === 0) return null;
     return (
       <View style={[styles.tagsContainer, { flexWrap: wrap ? 'wrap' : 'nowrap' }]}>

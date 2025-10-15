@@ -12,7 +12,7 @@ import { getTheme, getThemePalette, getThemeVariant } from "../Model/Theme";
 import { ActivityType, BleScaleWorkoutState, DataPoint, dateToDateList } from "../Model/StoreTypes";
 import { Button as PaperButton } from "react-native-paper";
 import { matchFont, Points, Text as SkiaText, vec, Canvas, interpolateColors } from "@shopify/react-native-skia";
-import { useSharedValue, useFrameCallback, useDerivedValue, interpolate, Extrapolation } from "react-native-reanimated";
+import Animated, { useSharedValue, useFrameCallback, useDerivedValue, interpolate, Extrapolation, LinearTransition, useAnimatedReaction, useAnimatedStyle, withSpring } from "react-native-reanimated";
 import { renderLongFormValue } from "../Model/Unit";
 import TagSelector from "../Components/TagSelector";
 import SkiaChart, { xToCanvas, yToCanvas, Viewport } from "../Components/Chart/SkiaChart";
@@ -20,12 +20,12 @@ import { SystemBars } from "react-native-edge-to-edge";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Button } from "../Components/Element";
 import ActionSheet, { ActionSheetRef, FlatList } from "react-native-actions-sheet";
-import { DataPointCard } from "./ActivityData";
+import { DataPointCard, DataPointCardContainer, LabeledValue, TextValue } from "./ActivityData";
 import { dayCmp, findZeroSlice } from "../Model/Activity";
 import { useFocusEffect } from "@react-navigation/native";
 
 const fontFamily = Platform.select({ default: "sans-serif" });
-const largeFont = matchFont({ fontFamily: fontFamily, fontSize: 24 });
+const largeFont = matchFont({ fontFamily: fontFamily, fontSize: 24, fontWeight: "bold" });
 
 type BleScaleInputProps = {
   navigation: any;
@@ -77,7 +77,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   const setWorkoutState: (workoutState: BleScaleWorkoutState | null) => void = useStore((state: any) => state.setBleScaleWorkoutState);
   const [recordingState, setRecordingState] = useState<"recording" | "stopped">("stopped");
 
-  const [pastPulls, setPastPulls] = useState<PastPull[]>([]);
+  const pastPulls = useSharedValue<PastPull[]>([]);
 
   const insets = useSafeAreaInsets();
   const actionSheetRef = useRef<ActionSheetRef>(null);
@@ -90,11 +90,13 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
     currentPull: { t0: 0, wSum: 0, wCount: 0, wMax: 0, wMin: 0, active: false },
   });
   const [newDataPoint, setNewDataPoint] = useState<DataPoint | null>(null);
-  const pastDataPoints = activity.dataPoints
-    .map((dp: DataPoint, i: number) => ({dataPoint: dp, index: i}))
+  let pastDataPoints = activity.dataPoints
+    .map((dp: DataPoint, i: number) => ({ dataPoint: dp, index: i }))
     .slice(...findZeroSlice(activity.dataPoints, (dp) => dayCmp(dp, today)))
-    .reverse();
-  // const pastDataPoints = activity.dataPoints.slice(-10);
+  pastDataPoints.push({dataPoint: null, index: NaN});
+  pastDataPoints.reverse();
+  // pastDataPoints = pastDataPoints.slice(0, 55);
+
 
   const [inputTags, setInputTags] = useState<string[]>([]);
 
@@ -117,14 +119,48 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
       const w = state.currentPull.wSum / state.currentPull.wCount;
       const t = state.dataPoints[state.dataPoints.length - 1].t - state.currentPull.t0;
       if (w > showAbovePullWeight && t > showAfterDuration) {
-        return { pullWeight: w, pullT0: state.currentPull.t0 + (state.t0 ?? 0), pullTime: t };
+        return { pullActive: true, pullWeight: w, pullT0: state.currentPull.t0 + (state.t0 ?? 0), pullTime: t };
       } else {
-        return { pullWeight: 0, pullT0: 0, pullTime: 0 };
+        return { pullActive: false, pullWeight: 0, pullT0: 0, pullTime: 0 };
       }
     } else {
-      return { pullWeight: 0, pullT0: 0, pullTime: 0 };
+      return { pullActive: false, pullWeight: 0, pullT0: 0, pullTime: 0 };
     }
   });
+
+  const pullCardHeight = 100;
+  const pullCardVisibility = useSharedValue(0);
+
+  useEffect(() => {
+    pullCardVisibility.value = 0;
+  }, [pastDataPoints]);
+
+  useAnimatedReaction(() => {
+    return {
+      pull: pullIndicators.value,
+      pastPulls: pastPulls.value,
+    };
+  }, (value, oldValue) => {
+    if (value.pull.pullActive && !oldValue?.pull.pullActive) {
+      pullCardVisibility.value = withSpring(1);
+    } else if (!value.pull.pullActive && oldValue?.pull.pullActive) {
+      pullCardVisibility.value = withSpring(0);
+    }
+  });
+
+
+  const pullCardAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      // { scaleY: withSpring(pullIndicators.value.pullActive ? 1 : 0 )}, 
+      // { translateY: withSpring(pullIndicators.value.pullActive ? 0 : -pullCardHeight / 2 )}
+      { scaleY: pullCardVisibility.value },
+      { translateY: (1 - pullCardVisibility.value) * -pullCardHeight / 2 }
+    ],
+  }));
+
+  const dataListCardAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: (pullCardVisibility.value - 1) * pullCardHeight }],
+  }));
 
   const openConnectionModal = async () => {
     scanForDevices();
@@ -209,7 +245,8 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
         };
         if (newPull.wAvg > minPullWeight && duration > minPullDuration) {
           // publish the pull
-          setPastPulls((pastPulls) => [...pastPulls, newPull]);
+          pastPulls.set((pastPulls) => [...pastPulls, newPull].slice(-3));
+          // pullCardVisibility.value = withSpring(1);
           setNewDataPoint({
             date: today,
             value: {
@@ -258,7 +295,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   const onReset = () => {
     setWorkoutState(null);
     tx.value = 0;
-    setPastPulls([]);
+    pastPulls.value = [];
     scaleInput.value = {
       t0: null,
       tLast: null,
@@ -303,10 +340,6 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
     }, [recordingState])
   );
 
-  const isPulling = useDerivedValue(() => {
-    return pullIndicators.value.pullWeight > showAbovePullWeight && pullIndicators.value.pullTime > showAfterDuration;
-  });
-
   const view = useDerivedValue(() => {
     return {
       x: { min: tx.value - 10, max: tx.value },
@@ -318,18 +351,30 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
     scaleInput.value.dataPoints.map((dp) => vec(xToCanvas(view.value, viewport.value, dp.t + (scaleInput.value.t0 ?? 0)), yToCanvas(view.value, viewport.value, dp.w)))
   );
 
-  const pullWeight = useDerivedValue(() =>
-    renderLongFormValue(pullIndicators.value.pullWeight, weightUnit)
+  const currentWeight = useDerivedValue(() => {
+    if (scaleInput.value.dataPoints.length > 0 && recordingState === "recording") {
+      const w = scaleInput.value.dataPoints[scaleInput.value.dataPoints.length - 1].w;
+      return w.toFixed(w >= 100 ? 1 : 2) + " " + weightUnit.unit;
+    } else {
+      return "-";
+    }
+  });
+
+  const pullWeight = useDerivedValue(() => {
+    const w = pullIndicators.value.pullWeight;
+    return w.toFixed(w >= 100 ? 1 : 2) + " " + weightUnit.unit
+  });
+
+  const pullTime = useDerivedValue(() =>
+    pullIndicators.value.pullTime.toFixed(1) + " s"
   );
 
   const totalTime = useDerivedValue(() =>
     renderLongFormValue(Math.floor(tx.value), timeUnit)
   );
 
-  const timeSinceLastPull = useDerivedValue(() =>
-    isPulling.value ?
-      pullIndicators.value.pullTime.toFixed(1) :
-      renderLongFormValue(Math.floor(tx.value - (pastPulls[pastPulls.length - 1]?.t1 ?? 0)), timeUnit)
+  const restTime = useDerivedValue(() =>
+    renderLongFormValue(Math.max(0, Math.floor(tx.value - (pastPulls.value[pastPulls.value.length - 1]?.t1 ?? 0))), timeUnit)
   );
 
   const currentPullPoints = useDerivedValue(() => {
@@ -342,7 +387,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   });
 
   const pastPullsPoints = useDerivedValue(() => {
-    return pastPulls.map((pull) => [
+    return pastPulls.value.map((pull) => [
       vec(xToCanvas(view.value, viewport.value, pull.t0), yToCanvas(view.value, viewport.value, 0)),
       vec(xToCanvas(view.value, viewport.value, pull.t0), yToCanvas(view.value, viewport.value, pull.wAvg)),
       vec(xToCanvas(view.value, viewport.value, pull.t1), yToCanvas(view.value, viewport.value, pull.wAvg)),
@@ -388,20 +433,20 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
 
   return (
     <>
-    <SafeAreaView style={[styles.container]} edges={["left", "right", "bottom"]}>
-      <SystemBars style={{ statusBar: "light", navigationBar: themeVariant == 'light' ? "dark" : "light" }} />
-      <>
-        <View style={{ padding: 8 }}>
-          <TagSelector
-            activity={activity}
-            inputTags={inputTags}
-            toggleInputTag={toggleInputTag}
-            palette={palette}
-            theme={theme}
-          />
-        </View>
+      <SafeAreaView style={[styles.container]} edges={["left", "right", "bottom"]}>
+        <SystemBars style={{ statusBar: "light", navigationBar: themeVariant == 'light' ? "dark" : "light" }} />
+        <>
+          <View style={{ padding: 8 }}>
+            <TagSelector
+              activity={activity}
+              inputTags={inputTags}
+              toggleInputTag={toggleInputTag}
+              palette={palette}
+              theme={theme}
+            />
+          </View>
 
-        {/* Control Buttons Section */}
+          {/* Control Buttons Section */}
           <View style={styles.buttonRow}>
             {workoutState === null ? (
               <PaperButton
@@ -452,7 +497,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
             </PaperButton>
           </View>
 
-        {/* Weight and Time Display Section */}
+          {/* Weight and Time Display Section */}
           <View style={styles.measurementRow}>
             <View style={styles.measurementColumn}>
               <Text style={[styles.measurementLabel, { color: theme.colors.onSurface, width: largeFontBox.width }]}>Weight</Text>
@@ -460,9 +505,9 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                 style={{ width: largeFontBox.width, height: largeFontBox.height }}
               >
                 <SkiaText
-                  text={pullWeight}
+                  text={currentWeight}
                   font={largeFont}
-                  color={theme.colors.onSurface}
+                  color={theme.colors.primary}
                   x={0}
                   y={-largeFontBox.y}
                 />
@@ -476,21 +521,21 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                 <SkiaText
                   text={totalTime}
                   font={largeFont}
-                  color={theme.colors.onSurface}
+                  color={theme.colors.primary}
                   x={0}
                   y={-largeFontBox.y}
                 />
               </Canvas>
             </View>
             <View style={styles.measurementColumn}>
-              <Text style={[styles.measurementLabel, { color: theme.colors.onSurface, width: largeFontBox.width }]}>Rest/Pull</Text>
+              <Text style={[styles.measurementLabel, { color: theme.colors.onSurface, width: largeFontBox.width }]}>Rest</Text>
               <Canvas
                 style={{ width: largeFontBox.width, height: largeFontBox.height }}
               >
                 <SkiaText
-                  text={timeSinceLastPull}
+                  text={restTime}
                   font={largeFont}
-                  color={theme.colors.onSurface}
+                  color={theme.colors.primary}
                   x={0}
                   y={-largeFontBox.y}
                 />
@@ -524,41 +569,92 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
               />
             </SkiaChart>
           </View>
-      </>
-    </SafeAreaView>
-    <ActionSheet 
-      ref={actionSheetRef}
-      isModal={false}
-      backgroundInteractionEnabled
-      snapPoints={[30, 100]}
-      gestureEnabled
-      headerAlwaysVisible
-      closable={false}
-      useBottomSafeAreaPadding
-      disableDragBeyondMinimumSnapPoint
-      safeAreaInsets={insets}
-      indicatorStyle={{ backgroundColor: theme.colors.outline }}
-      containerStyle={{
-        backgroundColor: theme.colors.elevation.level1,
-        paddingLeft: insets.left,
-        paddingRight: insets.right,
-      }}
+        </>
+      </SafeAreaView>
+      <ActionSheet
+        ref={actionSheetRef}
+        isModal={false}
+        backgroundInteractionEnabled
+        snapPoints={[30, 100]}
+        gestureEnabled
+        headerAlwaysVisible
+        closable={false}
+        useBottomSafeAreaPadding
+        disableDragBeyondMinimumSnapPoint
+        safeAreaInsets={insets}
+        indicatorStyle={{ backgroundColor: theme.colors.outline }}
+        containerStyle={{
+          backgroundColor: theme.colors.elevation.level1,
+          paddingLeft: insets.left,
+          paddingRight: insets.right,
+        }}
       >
-      <FlatList
-        data={pastDataPoints}
-        ListFooterComponent={() => (
-          <View style={{ height: Math.max(0, dimensions.height - 100 - 50 * pastDataPoints.length) }} />
-        )}
-        ListHeaderComponent={() => (
-          <View style={{ padding: 8 }}>
-            <Text style={{ color: theme.colors.onSurface }}>Past Data</Text>
-          </View>
-        )}
-        renderItem={({ item, index }) => 
-          <DataPointCard activity={activity} i={item.index} repNumber={pastDataPoints.length - index} theme={theme} palette={palette} navigation={navigation} />
-        }
-      />
-    </ActionSheet>
+        <FlatList
+          data={pastDataPoints}
+          ListFooterComponent={() => (
+            <View style={{ height: Math.max(0, dimensions.height - 100 - 50 * pastDataPoints.length) }} />
+          )}
+          keyExtractor={(item, index) => (pastDataPoints.length - index).toString()}
+          renderItem={({ item, index }) => {
+            if (item.dataPoint === null) {
+              return (
+                  <Animated.View style={[
+                    { height: pullCardHeight },
+                    pullCardAnimatedStyle
+                  ]}>
+                    <DataPointCardContainer
+                      tags={undefined}
+                      note={undefined}
+                      theme={theme}
+                      onPress={undefined}
+                      style={{ flex: 1 }}
+                    >
+                      <LabeledValue label="Rep" theme={theme}>
+                        <Text style={{ color: theme.colors.primary, fontWeight: "bold", fontSize: 24 }}>{`${pastDataPoints.length - index}`}</Text>
+                      </LabeledValue>
+                      <LabeledValue label="Weight" theme={theme}>
+                        <Canvas style={{ width: largeFontBox.width, height: largeFontBox.height }}>
+                          <SkiaText
+                            text={pullWeight}
+                            font={largeFont}
+                            color={theme.colors.primary}
+                            x={0}
+                            y={-largeFontBox.y}
+                          />
+                        </Canvas>
+                      </LabeledValue>
+                      <LabeledValue label="Time" theme={theme}>
+                        <Canvas style={{ width: largeFontBox.width, height: largeFontBox.height }}>
+                          <SkiaText
+                            text={pullTime}
+                            font={largeFont}
+                            color={theme.colors.primary}
+                            x={0}
+                            y={-largeFontBox.y}
+                          />
+                        </Canvas>
+                      </LabeledValue>
+                    </DataPointCardContainer>
+                  </Animated.View>
+                );
+            } else {
+              return (
+                <Animated.View layout={LinearTransition} style={dataListCardAnimatedStyle}>
+                  <DataPointCard
+                    activity={activity}
+                    i={item.index}
+                    repNumber={pastDataPoints.length - index}
+                    theme={theme}
+                    palette={palette}
+                    navigation={navigation}
+                  />
+                </Animated.View>
+              );
+            }
+          }
+          }
+        />
+      </ActionSheet>
     </>
   );
 };
@@ -595,7 +691,6 @@ const styles = StyleSheet.create({
   },
   measurementLabel: {
     fontSize: 16,
-    fontWeight: "bold",
   },
 });
 

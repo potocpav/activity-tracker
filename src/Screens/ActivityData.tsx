@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, ReactElement } from "react";
 import {
   StyleSheet,
   Text,
@@ -10,7 +10,7 @@ import {
 import useStore from "../Model/Store";
 import { DataPoint, ActivityType, Tag, DateList, dateListToDate, Unit, SubUnit } from "../Model/StoreTypes";
 import { cmpDateList, dayCmp, findZeroSlice, formatDate } from "../Model/Activity";
-import { renderTags } from "../Components/Tags";
+import { RenderTags } from "../Components/Tags";
 import TagMenu from "../Components/TagMenu";
 import { renderLongFormNumber, renderLongFormValue } from "../Model/Unit";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -21,6 +21,7 @@ import { SystemBars } from "react-native-edge-to-edge";
 import EmptyPagePlaceholder from "../Components/EmptyPagePlaceholder";
 import Inset from "../Components/SafeAreaInset";
 import { ButtonRow, DeleteIcon, Button } from "../Components/Element";
+import { Divider } from "react-native-paper";
 
 
 type ActivityDataProps = {
@@ -30,8 +31,76 @@ type ActivityDataProps = {
 
 const ITEM_HEIGHT = 60;
 
+export const DataPointCardContainer = (props: {
+  children: React.ReactNode[],
+  tags: ReactElement<any, any> | undefined,
+  note: React.ReactNode | undefined,
+  theme: any,
+  onPress?: () => void,
+  style?: any,
+}) => {
+  return (
+    <Pressable
+      onPress={props.onPress}
+      android_ripple={{ color: props.theme.colors.outline, foreground: false }}
+      style={[{
+        padding: 6,
+        backgroundColor: props.theme.colors.elevation.level2,
+        margin: 4,
+        borderRadius: 15,
+        elevation: 2,
+        gap: 4,
+        justifyContent: 'center',
+      }, props.style]}
+    >
+      <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center', justifyContent: 'space-between' }}>
+        {props.children}
+      </View>
+      {(props.tags || props.note) && <Divider />}
+      {props.tags && (
+        <View key="tags" style={{ marginHorizontal: 0, marginTop: 1 }}>
+          {props.tags}
+        </View>
+      )}
+      {props.note && (
+        <View key="note" style={{ marginHorizontal: 5 }}>
+          {props.note}
+        </View>
+      )}
+    </Pressable>
+  );
+}
+
+export const LabeledValue = (props: {
+  label: string,
+  children: React.ReactNode,
+  theme: any,
+}) => {
+  return (
+    <View key={props.label} style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <View style={{ padding: 2 }}>
+        <Text style={{ color: props.theme.colors.onSurface, fontSize: 12 }}>{props.label}</Text>
+      </View>
+      <View style={{ padding: 2, paddingBottom: 4 }}>
+        {props.children}
+      </View>
+    </View>
+  );
+};
+
+export const TextValue = (props: {
+  children: string,
+  theme: any,
+}) => {
+  return (
+    <Text style={{ color: props.theme.colors.onSurface, fontSize: 20, fontWeight: 'bold' }}>{props.children}</Text>
+  );
+}
+
 export const DataPointCard = (
-  { activity, i, repNumber = undefined, theme, palette, navigation }: { activity: ActivityType, i: number, repNumber?: number, theme: any, palette: any, navigation: any }) => {
+  { activity, i, repNumber = undefined, theme, palette, navigation }:
+    { activity: ActivityType, i: number, repNumber?: number, theme: any, palette: any, navigation: any }
+) => {
   const styles = getStyles(theme);
   const dataPoint = activity.dataPoints[i];
 
@@ -68,12 +137,11 @@ export const DataPointCard = (
           <Text numberOfLines={1} style={{ color: theme.colors.onSurface }}>{dataPoint.note ?? ""}</Text>
         </View>
         <View style={styles.activityNoteTags}>
-          {renderTags(
-            activity.tags.filter((t: Tag) => (dataPoint.tags ?? []).includes(t.name)),
-            theme,
-            palette,
-            false
-          )}
+          <RenderTags 
+            tags={activity.tags.filter((t: Tag) => (dataPoint.tags ?? []).includes(t.name))}
+            theme={theme} 
+            palette={palette} 
+            wrap={false} />
         </View>
       </View>
     );
@@ -118,66 +186,47 @@ export const DataPointCard = (
     </Pressable>
   );
 
-  const renderLabelAndValue = (name: string, value: number | undefined, unit: SubUnit) => {
-    const stringValue = value === undefined ? "-" : renderLongFormValue(value, unit);
-    return (
-      <View key={name} style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <View style={{ padding: 2 }}>
-          <Text style={{ color: theme.colors.onSurface, fontSize: 12 }}>{name}</Text>
-        </View>
-        <View style={{ padding: 2, paddingBottom: 4 }}>
-          <Text style={{ color: theme.colors.onSurface, fontSize: 20, fontWeight: 'bold' }}>
-            {stringValue}
-          </Text>
-        </View>
-      </View>
-    );
-
-  };
-
   const renderMultipleValues = () => {
     let renderedValues: React.ReactNode[] = [];
-    
+
     if (repNumber !== undefined) {
-      renderedValues.push(renderLabelAndValue("Rep", repNumber, { type: "count" }));
+        renderedValues.push(
+          <LabeledValue label="Rep" theme={theme}>
+            <TextValue theme={theme}>{repNumber.toString()}</TextValue>
+          </LabeledValue>
+        );
     }
     if (activity.unit.type === "multiple") {
-      activity.unit.values.forEach(({ name, unit }) =>
-        renderedValues.push(renderLabelAndValue(name, (dataPoint.value as any)[name], unit))
-      );
+      activity.unit.values.forEach(({ name, unit }) => {
+        const value = (dataPoint.value as any)[name];
+        const renderedValue = value !== undefined ? renderLongFormValue(value, unit) : "-";
+        renderedValues.push(
+          <LabeledValue label={name} theme={theme}>
+            <TextValue theme={theme}>
+              {renderedValue}
+            </TextValue>
+          </LabeledValue>
+        )
+      });
     }
     return (
-      <Pressable
+      <DataPointCardContainer
         onPress={() => navigation.navigate("EditDataPoint", { activityName: activity.name, dataPointIndex: i })}
-        android_ripple={{ color: theme.colors.outline, foreground: false }}
-        style={{
-          padding: 6,
-          backgroundColor: theme.colors.elevation.level2,
-          margin: 4,
-          borderRadius: 15,
-          elevation: 2,
-          gap: 4,
-        }}
-      >
-        <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center', justifyContent: 'space-between' }}>
-          {renderedValues}
-        </View>
-        {dataPoint.tags && (
-          <View style={{marginHorizontal: 0}}>
-            {renderTags(
-              activity.tags.filter((t: Tag) => (dataPoint.tags ?? []).includes(t.name)),
-              theme,
-              palette,
-              false
-            )}
-          </View>
+        tags={dataPoint.tags && (
+          <RenderTags 
+            tags={activity.tags.filter((t: Tag) => (dataPoint.tags ?? []).includes(t.name))}  
+            theme={theme} 
+            palette={palette} 
+            wrap={false} 
+            />
         )}
-        {dataPoint.note && (
-          <View style={{marginHorizontal: 5}}>
+        note={dataPoint.note && (
             <Text style={{ color: theme.colors.onSurface }}>{dataPoint.note}</Text>
-          </View>
         )}
-      </Pressable>
+        theme={theme}
+      >
+        {renderedValues}
+      </DataPointCardContainer>
     );
   }
 
