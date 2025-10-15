@@ -7,7 +7,7 @@ import {
   allHints
 } from "./StoreTypes";
 
-export const version = 25;
+export const version = 27;
 
 export const migrate = (persisted: any, version: number) => {
   if (version < 6) {
@@ -112,6 +112,13 @@ export const migrate = (persisted: any, version: number) => {
           break;
       }
     });
+  }
+  if (version < 26) {
+    persisted.workoutState = null;
+  }
+  if (version < 27) {
+    persisted.bleScaleWorkoutState = null;
+    delete persisted.workoutState;
   }
   return persisted
 };

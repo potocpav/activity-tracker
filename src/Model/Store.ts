@@ -32,7 +32,7 @@ import {
   State,
   HintType,
   allHints,
-  DateList,
+  BleScaleWorkoutState,
 } from "./StoreTypes";
 import { areUnitsEqual } from "./Unit";
 import { persist, createJSONStorage } from "zustand/middleware";
@@ -42,6 +42,7 @@ import { version, migrate } from "./Migrations";
 
 // Save only the state that is needed to be saved
 export const partialize = (state: State) => ({
+  bleScaleWorkoutState: state.bleScaleWorkoutState,
   activities: state.activities,
   theme: state.theme,
   blackBackground: state.blackBackground,
@@ -60,6 +61,7 @@ const useStore = create<State>()(
       connecting: false,
       connectedDevice: null,
       subscription: null,
+      bleScaleWorkoutState: null,
 
       // Activities related state
       activities: [],
@@ -694,6 +696,10 @@ const useStore = create<State>()(
           });
           set({ subscription: subscription });
         });
+      },
+
+      setBleScaleWorkoutState: (bleScaleWorkoutState: BleScaleWorkoutState | null) => {
+        set({ bleScaleWorkoutState: bleScaleWorkoutState });
       },
 
     }),

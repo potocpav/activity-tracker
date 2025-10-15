@@ -4,11 +4,12 @@ import {
   Text,
   Platform,
   View,
+  useWindowDimensions,
 } from "react-native";
 import useStore from "../Model/Store";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { getTheme, getThemePalette, getThemeVariant } from "../Model/Theme";
-import { ActivityType, DataPoint, dateToDateList } from "../Model/StoreTypes";
+import { ActivityType, BleScaleWorkoutState, DataPoint, dateToDateList } from "../Model/StoreTypes";
 import { Button as PaperButton } from "react-native-paper";
 import { matchFont, Points, Text as SkiaText, vec, Canvas, interpolateColors } from "@shopify/react-native-skia";
 import { useSharedValue, useFrameCallback, useDerivedValue, interpolate, Extrapolation } from "react-native-reanimated";
@@ -21,6 +22,7 @@ import { Button } from "../Components/Element";
 import ActionSheet, { ActionSheetRef, FlatList } from "react-native-actions-sheet";
 import { DataPointCard } from "./ActivityData";
 import { dayCmp, findZeroSlice } from "../Model/Activity";
+import { useFocusEffect } from "@react-navigation/native";
 
 const fontFamily = Platform.select({ default: "sans-serif" });
 const largeFont = matchFont({ fontFamily: fontFamily, fontSize: 24 });
@@ -33,6 +35,7 @@ type BleScaleInputProps = {
 
 type ScaleInput = {
   t0: number | null,
+  tLast: number | null,
   max: number,
   dataPoints: { w: number, t: number }[],
   currentPull: CurrentPull,
@@ -61,6 +64,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   const startMeasurement = useStore((state: any) => state.startMeasurement);
   const stopMeasurement = useStore((state: any) => state.stopMeasurement);
   const tareScale = useStore((state: any) => state.tareScale);
+  const dimensions = useWindowDimensions();
 
   const requestPermissions = useStore((state: any) => state.requestPermissions);
   const scanForPeripherals = useStore((state: any) => state.scanForPeripherals);
@@ -69,7 +73,8 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   const weightUnit = activity.unit.values.find((u: any) => u.name === "Weight")?.unit;
   const timeUnit = activity.unit.values.find((u: any) => u.name === "Time")?.unit;
 
-  const [workoutState, setWorkoutState] = useState<"paused" | "playing">("paused");
+  const workoutState: BleScaleWorkoutState | null = useStore((state: any) => state.bleScaleWorkoutState);
+  const setWorkoutState: (workoutState: BleScaleWorkoutState | null) => void = useStore((state: any) => state.setBleScaleWorkoutState);
   const [recordingState, setRecordingState] = useState<"recording" | "stopped">("stopped");
 
   const [pastPulls, setPastPulls] = useState<PastPull[]>([]);
@@ -79,12 +84,16 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
 
   const scaleInput = useSharedValue<ScaleInput>({
     t0: null,
+    tLast: null,
     max: 0,
     dataPoints: [],
     currentPull: { t0: 0, wSum: 0, wCount: 0, wMax: 0, wMin: 0, active: false },
   });
   const [newDataPoint, setNewDataPoint] = useState<DataPoint | null>(null);
-  const pastDataPoints = activity.dataPoints.slice(...findZeroSlice(activity.dataPoints, (dp) => dayCmp(dp, today)));
+  const pastDataPoints = activity.dataPoints
+    .map((dp: DataPoint, i: number) => ({dataPoint: dp, index: i}))
+    .slice(...findZeroSlice(activity.dataPoints, (dp) => dayCmp(dp, today)))
+    .reverse();
   // const pastDataPoints = activity.dataPoints.slice(-10);
 
   const [inputTags, setInputTags] = useState<string[]>([]);
@@ -144,8 +153,17 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
     }
   }, [newDataPoint]);
 
+  // Pull rectangles are automatically found by a peak detection algorithm.
+  // A peak is a maximal continuous time interval with a maximum weight, where all weight measurements are above 0.6 * max weight. 
+  // For visual feedback, it is important to detect potential peaks before they end.
   const pushDataPoints = (dataPoints: ScaleDataPoint[]) => {
     scaleInput.set((state) => {
+      const tLast = dataPoints[dataPoints.length - 1].t;
+      if (state.tLast && tLast < state.tLast) {
+        console.warn("tLast < state.tLast", tLast - state.tLast);
+        return state;
+      }
+
       const dp = weightInLb ?
         dataPoints.map((dp) => ({ ...dp, w: dp.w * 2.20462 })) :
         dataPoints;
@@ -214,6 +232,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
       // TODO: fix how cutting off data points messes up the current pull
       return {
         t0: state.t0 ?? tx.value,
+        tLast: tLast,
         max: max,
         currentPull: pull,
         dataPoints: newDataPoints,
@@ -221,14 +240,68 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
     });
   };
 
+  const t = useSharedValue(0);
   const tx = useSharedValue(0);
   const viewport = useSharedValue<Viewport>({ left: 0, right: 0, top: 0, bottom: 0 });
 
   useFrameCallback((frameInfo) => {
-    if (workoutState === "playing") {
-      tx.set((t) => t + (frameInfo.timeSincePreviousFrame ?? 0) / 1000);
+    t.set(frameInfo.timestamp / 1000);
+    if (workoutState?.state === "playing") {
+      tx.set((t) => frameInfo.timestamp / 1000 - workoutState.t0);
     }
   });
+
+  const onPlay = () => {
+    setWorkoutState({ state: "playing", t0: t.value, date: today });
+  }
+
+  const onReset = () => {
+    setWorkoutState(null);
+    tx.value = 0;
+    setPastPulls([]);
+    scaleInput.value = {
+      t0: null,
+      tLast: null,
+      max: 0,
+      dataPoints: [],
+      currentPull: { t0: 0, wSum: 0, wCount: 0, wMin: 0, wMax: 0, active: false },
+    };
+    if (recordingState === "recording") {
+      stopMeasurement();
+      setRecordingState("stopped");
+    }
+  }
+
+  const onRecord = () => {
+    scaleInput.value = {
+      t0: null,
+      tLast: null,
+      max: 0,
+      dataPoints: [],
+      currentPull: { t0: 0, wSum: 0, wCount: 0, wMin: 0, wMax: 0, active: false },
+    };
+    if (workoutState?.state !== "playing") {
+      setWorkoutState({ state: "playing", t0: t.value, date: today });
+    }
+    setRecordingState("recording");
+    startMeasurement(onDataUpdate);
+  }
+
+  const onPause = () => {
+    stopMeasurement();
+    setRecordingState("stopped");
+  }
+
+  // when the screen is blurred, pause the recording
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        if (recordingState === "recording") {
+          onPause();
+        }
+      };
+    }, [recordingState])
+  );
 
   const isPulling = useDerivedValue(() => {
     return pullIndicators.value.pullWeight > showAbovePullWeight && pullIndicators.value.pullTime > showAfterDuration;
@@ -330,14 +403,12 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
 
         {/* Control Buttons Section */}
           <View style={styles.buttonRow}>
-            {workoutState === "paused" ? (
+            {workoutState === null ? (
               <PaperButton
                 style={{ flex: 1 }}
                 mode="outlined"
                 icon="play"
-                onPress={() => {
-                  setWorkoutState("playing");
-                }}>
+                onPress={onPlay}>
                 <Text>Start</Text>
               </PaperButton>
             ) : (
@@ -345,20 +416,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                 style={{ flex: 1 }}
                 mode="outlined"
                 icon="refresh"
-                onPress={() => {
-                  tx.value = 0;
-                  setWorkoutState("paused");
-                  scaleInput.value = {
-                    t0: null,
-                    max: 0,
-                    dataPoints: [],
-                    currentPull: { t0: 0, wSum: 0, wCount: 0, wMin: 0, wMax: 0, active: false },
-                  };
-                  if (recordingState === "recording") {
-                    stopMeasurement();
-                    setRecordingState("stopped");
-                  }
-                }}>
+                onPress={onReset}>
                 <Text>Reset</Text>
               </PaperButton>
             )}
@@ -368,17 +426,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                 mode="outlined"
                 icon="record"
                 disabled={connectionStatus() !== "connected"}
-                onPress={() => {
-                  scaleInput.value = {
-                    t0: null,
-                    max: 0,
-                    dataPoints: [],
-                    currentPull: { t0: 0, wSum: 0, wCount: 0, wMin: 0, wMax: 0, active: false },
-                  };
-                  setWorkoutState("playing");
-                  setRecordingState("recording");
-                  startMeasurement(onDataUpdate);
-                }}>
+                onPress={onRecord}>
                 <Text>Record</Text>
               </PaperButton>
             ) : (
@@ -387,10 +435,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                 mode="outlined"
                 icon="pause"
                 disabled={connectionStatus() !== "connected"}
-                onPress={() => {
-                  stopMeasurement();
-                  setRecordingState("stopped");
-                }}>
+                onPress={onPause}>
                 <Text>Pause</Text>
               </PaperButton>
             )}
@@ -501,13 +546,16 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
       >
       <FlatList
         data={pastDataPoints}
+        ListFooterComponent={() => (
+          <View style={{ height: Math.max(0, dimensions.height - 100 - 50 * pastDataPoints.length) }} />
+        )}
         ListHeaderComponent={() => (
           <View style={{ padding: 8 }}>
             <Text style={{ color: theme.colors.onSurface }}>Past Data</Text>
           </View>
         )}
         renderItem={({ item, index }) => 
-          <DataPointCard activity={activity} i={index} repNumber={pastDataPoints.length - index} theme={theme} palette={palette} navigation={navigation} />
+          <DataPointCard activity={activity} i={item.index} repNumber={pastDataPoints.length - index} theme={theme} palette={palette} navigation={navigation} />
         }
       />
     </ActionSheet>

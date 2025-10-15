@@ -396,12 +396,12 @@ export const renderLongFormValue = (value: number, unit: SubUnit): string => {
             return numberToString(value, unit);
           }
         case "seconds":
-          if (Math.abs(value) > 10 * 3600) {
+          if (Math.abs(value) >= 10 * 3600) {
             return renderShortFormNumber(value / 3600) + " h";
-          } else if (Math.abs(value) > 60) {
+          } else if (Math.abs(value) >= 60) {
             return numberToString(Math.round(value), unit);
           } else {
-            return numberToString(value, unit);
+            return renderShortFormNumber(value) + " s";
           }
       }
     case "climbing_grade":
