@@ -188,7 +188,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
 
   const [specialType, setSpecialType] = useState<SpecialType>(activity?.special?.type ?? null);
 
-  const bleMinWeightUnit = multiUnitInput[0]?.unit?.type === "weight" ? 
+  const bleMinWeightUnit = multiUnitInput[0]?.unit?.type === "weight" ?
     multiUnitInput[0]?.unit?.unit ?? "kg" : "kg";
   const [bleMinWeight, setBleMinWeight] = useState<string>("" + (activity?.special?.minWeight ?? 2));
   let bleMinWeightError: string | null = null;
@@ -253,7 +253,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
         stats: defaultStats(newUnit),
         calendars: [defaultCalendar(newUnit)],
         graphs: specialType === "ble_scale" ? defaultBleScaleGraphs(newUnit) : defaultGraphs(newUnit),
-        special: specialType === "ble_scale" ? {type: "ble_scale", minWeight: bleMinWeightNumber} : null,
+        special: specialType === "ble_scale" ? { type: "ble_scale", minWeight: bleMinWeightNumber } : null,
       };
     } else {
       updatedActivity = {
@@ -261,7 +261,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
         name: activityNameInput,
         description: activityDescriptionInput,
         color: selectedColor,
-        special: specialType === "ble_scale" ? {type: "ble_scale", minWeight: bleMinWeightNumber} : null,
+        special: specialType === "ble_scale" ? { type: "ble_scale", minWeight: bleMinWeightNumber } : null,
         // don't update unit, it will be updated in the setUnit call
         // don't update tags, they will be updated in the setTags call
       };
@@ -511,7 +511,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
 
   return (
     <View style={{ flex: 1 }}>
-      <SystemBars style={{statusBar: "light", navigationBar: themeVariant == 'light' ? "dark" : "light"}} />
+      <SystemBars style={{ statusBar: "light", navigationBar: themeVariant == 'light' ? "dark" : "light" }} />
       <View style={{ position: 'absolute', top: 10, right: 0 }}>
         <Menu
           key={specialMenuVisible ? "open" : "closed"}
@@ -609,14 +609,15 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
             </View>
 
             {specialType === "ble_scale" && (
-            <View style={{ marginBottom: 20, gap: 10 }}>
-              
-              <SegmentedButtons
+              <View style={{ marginBottom: 20, gap: 10 }}>
+
+                <SegmentedButtons
                   value={bleMinWeightUnit}
-                  onValueChange={value => { 
-                    setMultiUnitInput(multiUnitInput.map((u, idx) => idx === 0 ? { 
-                      ...u, 
-                      unit: { type: "weight", unit: value as WeightUnit } } : 
+                  onValueChange={value => {
+                    setMultiUnitInput(multiUnitInput.map((u, idx) => idx === 0 ? {
+                      ...u,
+                      unit: { type: "weight", unit: value as WeightUnit }
+                    } :
                       u))
                   }}
                   buttons={[
@@ -624,45 +625,45 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
                     { value: "lb", label: "lb" },
                   ]}
                 />
-              <InputWrapper error={showErrors ? bleMinWeightError : null} ref={bleMinWeightInputRef}>
-               
-                <TextInput 
-                style={{ flex: 1 }}
-                label={`Minimum Weight (${bleMinWeightUnit})`}
-                value={bleMinWeight}
-                onChangeText={setBleMinWeight}
-                keyboardType="numeric"
-                mode="outlined"
-                />
-              </InputWrapper>
-            </View>
+                <InputWrapper error={showErrors ? bleMinWeightError : null} ref={bleMinWeightInputRef}>
+
+                  <TextInput
+                    style={{ flex: 1 }}
+                    label={`Minimum Weight (${bleMinWeightUnit})`}
+                    value={bleMinWeight}
+                    onChangeText={setBleMinWeight}
+                    keyboardType="numeric"
+                    mode="outlined"
+                  />
+                </InputWrapper>
+              </View>
             )}
 
             {specialType !== "ble_scale" && (
-            <>
-              <Text style={styles.header}>Activity type:</Text>
-              <InputWrapper error={showErrors ? unitModeError : null} ref={unitModeInputRef}>
-                <SegmentedButtons
-                  value={unitMode ?? ""}
-                  onValueChange={(value) => setUnitMode(value as "yes_no" | "measurable" | null)}   // TODO: fix this
-                  buttons={[
-                    {
-                      value: 'yes_no',
-                      label: 'Yes or No',
-                      icon: 'checkbox-marked-outline',
-                    },
-                    {
-                      value: 'measurable',
-                      label: 'Measurable',
-                      icon: 'numeric',
-                    },
-                  ]}
-                />
-              </InputWrapper>
-              <View>
-                {unitMode === null ? null : unitMode === 'yes_no' ? editNoValue() : unitMode === 'measurable' ? multiUnitInput.length === 1 ? editSingleValue() : editMultipleValues() : null}
-              </View>
-            </>
+              <>
+                <Text style={styles.header}>Activity type:</Text>
+                <InputWrapper error={showErrors ? unitModeError : null} ref={unitModeInputRef}>
+                  <SegmentedButtons
+                    value={unitMode ?? ""}
+                    onValueChange={(value) => setUnitMode(value as "yes_no" | "measurable" | null)}   // TODO: fix this
+                    buttons={[
+                      {
+                        value: 'yes_no',
+                        label: 'Yes or No',
+                        icon: 'checkbox-marked-outline',
+                      },
+                      {
+                        value: 'measurable',
+                        label: 'Measurable',
+                        icon: 'numeric',
+                      },
+                    ]}
+                  />
+                </InputWrapper>
+                <View>
+                  {unitMode === null ? null : unitMode === 'yes_no' ? editNoValue() : unitMode === 'measurable' ? multiUnitInput.length === 1 ? editSingleValue() : editMultipleValues() : null}
+                </View>
+              </>
             )}
           </View>
         </SafeAreaView>

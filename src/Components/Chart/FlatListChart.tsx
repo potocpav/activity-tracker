@@ -4,7 +4,8 @@ import { Canvas, matchFont, RoundedRect, Text as SkiaText, vec, Line } from "@sh
 import { SubUnit } from "../../Model/StoreTypes";
 import { renderShortFormValue } from "../../Model/Unit";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import { useAnimatedReaction, useSharedValue, runOnJS } from "react-native-reanimated";
+import { useAnimatedReaction, useSharedValue } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
 import { BoundingBox, cmpMajorTicks, boundingBoxToRange } from "./Common";
 
 const fontFamily = Platform.select({ default: "sans-serif" });
@@ -156,9 +157,9 @@ const FlatListChart = (
       if (setSelectedRange) {
         if (currentValue?.p0 !== previousValue?.p0 || currentValue?.p1 !== previousValue?.p1) {
           if (!currentValue || items.length === 0) {
-            runOnJS(setSelectedRange)(null);
+            scheduleOnRN(setSelectedRange, null);
           } else {
-            runOnJS(setSelectedRange)({
+            scheduleOnRN(setSelectedRange, {
               min: Math.min(currentValue.p0, currentValue.p1),
               max: Math.max(currentValue.p0, currentValue.p1)
             });

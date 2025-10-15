@@ -4,7 +4,6 @@ import {
   Text,
   View,
   SectionList,
-  Pressable,
   Alert,
 } from "react-native";
 import useStore from "../Model/Store";
@@ -22,6 +21,9 @@ import EmptyPagePlaceholder from "../Components/EmptyPagePlaceholder";
 import Inset from "../Components/SafeAreaInset";
 import { ButtonRow, DeleteIcon, Button } from "../Components/Element";
 import { Divider } from "react-native-paper";
+import { Directions, Gesture, GestureDetector, Pressable } from "react-native-gesture-handler";
+import Animated, { useAnimatedReaction, useAnimatedStyle, useSharedValue, withDecay, withSpring, cancelAnimation, ReduceMotion } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
 
 
 type ActivityDataProps = {
@@ -37,37 +39,82 @@ export const DataPointCardMultiContainer = (props: {
   note: React.ReactNode | undefined,
   theme: any,
   onPress?: () => void,
+  onDelete?: () => void,
   style?: any,
 }) => {
+  const position = useSharedValue(0);
+  const isPanning = useSharedValue(false);
+  const THRESHOLD = 200;
+  const TOLERANCE = 10;
+
+  const panGesture = Gesture.Pan().activeOffsetX([-TOLERANCE, TOLERANCE]).failOffsetY([-TOLERANCE, TOLERANCE])
+    .onStart((e) => {
+      position.value = e.translationX;
+      isPanning.value = true;
+    })
+    .onUpdate((e) => {
+      position.value = e.translationX;
+    })
+    .onEnd((event) => {
+      position.value = withDecay({
+        velocity: event.velocityX,
+        rubberBandEffect: true,
+        reduceMotion: ReduceMotion.Never,
+        clamp: [0, 0],
+      });
+      isPanning.value = false;
+    });
+
+  useAnimatedReaction(() => ({
+    position: position.value,
+    isPanning: isPanning.value,
+  }), (value, oldValue) => {
+    if (Math.abs(value.position) > THRESHOLD && ((Math.abs(oldValue?.position ?? 0) <= THRESHOLD && !value.isPanning) || (!value.isPanning && oldValue?.isPanning))) {
+      if (props.onDelete) {
+        cancelAnimation(position);
+        position.value = withSpring(1000 * Math.sign(value.position));
+        scheduleOnRN(props.onDelete);
+      }
+    }
+  });
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: position.value }],
+  }));
+
   return (
-    <Pressable
-      onPress={props.onPress}
-      android_ripple={{ color: props.theme.colors.onSurfaceVariant, foreground: true }}
-      style={[{
-        padding: 6,
-        backgroundColor: props.theme.colors.elevation.level2,
-        margin: 4,
-        borderRadius: 15,
-        elevation: 2,
-        gap: 4,
-        justifyContent: 'center',
-      }, props.style]}
-    >
-      <View key="children" style={{ flexDirection: 'row', gap: 6, alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        {props.children}
-      </View>
-      {(props.tags || props.note) && <Divider key="divider" />}
-      {props.tags && (
-        <View key="tags" style={{ marginHorizontal: 0, marginTop: 1 }}>
-          {props.tags}
-        </View>
-      )}
-      {props.note && (
-        <View key="note" style={{ marginHorizontal: 5 }}>
-          {props.note}
-        </View>
-      )}
-    </Pressable>
+    <GestureDetector gesture={panGesture}>
+      <Animated.View style={animatedStyle}>
+        <Pressable
+          onPress={props.onPress}
+          android_ripple={{ color: props.theme.colors.onSurfaceVariant, foreground: true }}
+          style={[{
+            padding: 6,
+            backgroundColor: props.theme.colors.elevation.level2,
+            margin: 4,
+            borderRadius: 15,
+            elevation: 2,
+            gap: 4,
+            justifyContent: 'center',
+          }, props.style]}
+        >
+          <View key="children" style={{ flexDirection: 'row', gap: 6, alignItems: 'flex-start', justifyContent: 'space-between' }}>
+            {props.children}
+          </View>
+          {(props.tags || props.note) && <Divider key="divider" />}
+          {props.tags && (
+            <View key="tags" style={{ marginHorizontal: 0, marginTop: 1 }}>
+              {props.tags}
+            </View>
+          )}
+          {props.note && (
+            <View key="note" style={{ marginHorizontal: 5 }}>
+              {props.note}
+            </View>
+          )}
+        </Pressable>
+      </Animated.View>
+    </GestureDetector>
   );
 }
 
@@ -206,7 +253,7 @@ export const DataPointCard = (
       });
     }
     return (
-      <DataPointCardMultiContainer onPress={editDataPoint} tags={tags} note={note} theme={theme}>
+      <DataPointCardMultiContainer onPress={editDataPoint} onDelete={() => console.log("deleting")} tags={tags} note={note} theme={theme}>
         {renderedValues}
       </DataPointCardMultiContainer>
     );

@@ -1,11 +1,10 @@
 import React, { Fragment, useRef, useState, useEffect } from "react";
-import { View, Text, Platform, useWindowDimensions, FlatList, LayoutChangeEvent, LayoutRectangle } from "react-native";
+import { View, Platform, useWindowDimensions, LayoutChangeEvent, LayoutRectangle } from "react-native";
 import { Canvas, matchFont, Text as SkiaText, vec, Line, Skia, Path, rect, Group } from "@shopify/react-native-skia";
 import { SubUnit } from "../../Model/StoreTypes";
 import { renderShortFormValue } from "../../Model/Unit";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import { useAnimatedReaction, useSharedValue, runOnJS, SharedValue, useDerivedValue, makeMutable } from "react-native-reanimated";
-import { BoundingBox, cmpMajorTicks, boundingBoxToRange } from "./Common";
+import { useAnimatedReaction, useSharedValue, SharedValue } from "react-native-reanimated";
+import { cmpMajorTicks } from "./Common";
 
 const fontFamily = Platform.select({ default: "sans-serif" });
 
