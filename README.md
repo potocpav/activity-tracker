@@ -65,8 +65,12 @@ Track your performance metrics and their progress over time. With custom statist
   - [x] Add a swipe-up data log
   - [x] Add nice animations
   - [x] Add last pull stats
-  - [ ] Horizontal screen support
-- [ ] New data point list design
+  - [x] Horizontal screen support
+
+### 3.3.0
+
+- [ ] Polish Bluetooth integration with Tindeq Progressor and other scales
+- [ ] New data point list design 
 
 ### 3.2.0
 

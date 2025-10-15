@@ -89,6 +89,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   const stopMeasurement = useStore((state: any) => state.stopMeasurement);
   const tareScale = useStore((state: any) => state.tareScale);
   const dimensions = useWindowDimensions();
+  const isPortrait = dimensions.width < dimensions.height;
 
   const requestPermissions = useStore((state: any) => state.requestPermissions);
   const scanForPeripherals = useStore((state: any) => state.scanForPeripherals);
@@ -398,7 +399,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
 
   React.useEffect(() => {
     actionSheetRef.current?.show();
-  }, []);
+  }, [isPortrait]);
 
   React.useEffect(() => {
     navigation.setOptions({
@@ -432,194 +433,219 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
     })
   }, [theme, activityName, navigation, connecting, connectedDevice]);
 
-  return (
+  const buttonsAndChart = (
     <>
-      <SafeAreaView style={[styles.container]} edges={["left", "right", "bottom"]}>
-        <SystemBars style={{ statusBar: "light", navigationBar: themeVariant == 'light' ? "dark" : "light" }} />
-        <>
-          {/* Control Buttons Section */}
-          <View style={styles.buttonRow}>
-            {workoutState === null ? (
-              <PaperButton
-                style={{ flex: 1 }}
-                mode="outlined"
-                icon="play"
-                onPress={onPlay}>
-                <Text>Start</Text>
-              </PaperButton>
-            ) : (
-              <PaperButton
-                style={{ flex: 1 }}
-                mode="outlined"
-                icon="refresh"
-                onPress={onReset}>
-                <Text>Reset</Text>
-              </PaperButton>
-            )}
-            {recordingState === "stopped" ? (
-              <PaperButton
-                style={{ flex: 1 }}
-                mode="outlined"
-                icon="record"
-                disabled={connectionStatus() !== "connected"}
-                onPress={onRecord}>
-                <Text>Record</Text>
-              </PaperButton>
-            ) : (
-              <PaperButton
-                style={{ flex: 1 }}
-                mode="outlined"
-                icon="pause"
-                disabled={connectionStatus() !== "connected"}
-                onPress={onPause}>
-                <Text>Pause</Text>
-              </PaperButton>
-            )}
-            <PaperButton
-              style={{ flex: 1 }}
-              mode="outlined"
-              icon="scale-balance"
-              disabled={connectionStatus() !== "connected" || recordingState === "recording"}
-              onPress={() => {
-                tareScale();
-              }}>
-              <Text>Tare</Text>
-            </PaperButton>
-          </View>
+      {/* Control Buttons Section */}
+      <View style={styles.buttonRow}>
+        {workoutState === null ? (
+          <PaperButton
+            style={{ flex: 1 }}
+            mode="outlined"
+            icon="play"
+            onPress={onPlay}>
+            <Text>Start</Text>
+          </PaperButton>
+        ) : (
+          <PaperButton
+            style={{ flex: 1 }}
+            mode="outlined"
+            icon="refresh"
+            onPress={onReset}>
+            <Text>Reset</Text>
+          </PaperButton>
+        )}
+        {recordingState === "stopped" ? (
+          <PaperButton
+            style={{ flex: 1 }}
+            mode="outlined"
+            icon="record"
+            disabled={connectionStatus() !== "connected"}
+            onPress={onRecord}>
+            <Text>Record</Text>
+          </PaperButton>
+        ) : (
+          <PaperButton
+            style={{ flex: 1 }}
+            mode="outlined"
+            icon="pause"
+            disabled={connectionStatus() !== "connected"}
+            onPress={onPause}>
+            <Text>Pause</Text>
+          </PaperButton>
+        )}
+        <PaperButton
+          style={{ flex: 1 }}
+          mode="outlined"
+          icon="scale-balance"
+          disabled={connectionStatus() !== "connected" || recordingState === "recording"}
+          onPress={() => {
+            tareScale();
+          }}>
+          <Text>Tare</Text>
+        </PaperButton>
+      </View>
 
-          <View style={{ padding: 8 }}>
-            <TagSelector
-              justifyContent="center"
-              activity={activity}
-              inputTags={inputTags}
-              toggleInputTag={toggleInputTag}
-              palette={palette}
-              theme={theme}
-            />
-          </View>
-
-          <View style={{ flex: 1, marginRight: 8 }}>
-            <SkiaChart
-              gridLineColor={theme.colors.outline}
-              view={view}
-              viewportShared={viewport}
-            >
-              <Points
-                mode="polygon"
-                points={linePoints}
-                color={theme.colors.primary}
-                strokeWidth={1}
-              />
-              <Points
-                mode="polygon"
-                points={currentPullPoints}
-                color={theme.colors.secondary}
-                strokeWidth={2}
-              />
-              <Points
-                mode="polygon"
-                points={pastPullsPoints}
-                color={theme.colors.secondary}
-                strokeWidth={2}
-              />
-            </SkiaChart>
-
-            {/* Weight and Time Display Section */}
-            <View style={styles.measurementRow}>
-              <View style={styles.measurementColumn}>
-                <Text style={styles.measurementLabel}>Weight</Text>
-                <CenteredAnimatedText longestText="000.00 kg" text={currentWeight} font={largeFont} color={theme.colors.primary} />
-              </View>
-              <View style={styles.measurementColumn}>
-                <Text style={styles.measurementLabel}>Time</Text>
-                <CenteredAnimatedText longestText="0:00:00" text={totalTime} font={largeFont} color={theme.colors.primary} />
-              </View>
-              <View style={styles.measurementColumn}>
-                <Text style={styles.measurementLabel}>Rest</Text>
-                <CenteredAnimatedText longestText="00:00" text={restTime} font={largeFont} color={theme.colors.primary} />
-              </View>
-            </View>
-
-          </View>
-        </>
-      </SafeAreaView>
-      <ActionSheet
-        ref={actionSheetRef}
-        isModal={false}
-        backgroundInteractionEnabled
-        snapPoints={[30, 100]}
-        gestureEnabled
-        headerAlwaysVisible
-        closable={false}
-        useBottomSafeAreaPadding
-        disableDragBeyondMinimumSnapPoint
-        safeAreaInsets={insets}
-        indicatorStyle={{ backgroundColor: theme.colors.outline }}
-        containerStyle={{
-          backgroundColor: theme.colors.elevation.level1,
-          paddingLeft: insets.left,
-          paddingRight: insets.right,
-        }}
-      >
-        <FlatList
-          data={pastDataPoints}
-          ListFooterComponent={() => (
-            <View style={{ height: Math.max(0, dimensions.height - 100 - 50 * pastDataPoints.length) }} />
-          )}
-          keyExtractor={(item, index) => (pastDataPoints.length - index).toString()}
-          renderItem={({ item, index }) => {
-            if (item.dataPoint === null) {
-              const tags = activity.tags.filter((t: Tag) => inputTags.includes(t.name));
-              return (
-                <Animated.View entering={FadeIn}>
-                  <DataPointCardMultiContainer
-                    tags={tags.length == 0 ? undefined :
-                      <RenderTags
-                        key="tags"
-                        tags={tags}
-                        theme={theme}
-                        palette={palette}
-                        wrap={false}
-                      />
-                    }
-                    // tags={undefined}
-                    note={undefined}
-                    theme={theme}
-                    onPress={undefined}
-                    style={{ flex: 1, borderWidth: 1, borderColor: theme.colors.primary }}
-                  >
-                    <LabeledValue label="Rep" theme={theme}>
-                      <CenteredAnimatedText longestText="000" text={`${pastDataPoints.length - index}`} font={largeFont} color={theme.colors.primary} />
-                    </LabeledValue>
-                    <LabeledValue label="Weight" theme={theme}>
-                      <CenteredAnimatedText longestText="000.00 kg" text={pullWeight} font={largeFont} color={theme.colors.primary} />
-                    </LabeledValue>
-                    <LabeledValue label="Time" theme={theme}>
-                      <CenteredAnimatedText longestText="00:00" text={pullTime} font={largeFont} color={theme.colors.primary} />
-                    </LabeledValue>
-                  </DataPointCardMultiContainer>
-                </Animated.View>
-              );
-            } else {
-              return (
-                <Animated.View layout={LinearTransition}>
-                  <DataPointCard
-                    activity={activity}
-                    i={item.index}
-                    repNumber={pastDataPoints.length - index}
-                    theme={theme}
-                    palette={palette}
-                    navigation={navigation}
-                  />
-                </Animated.View>
-              );
-            }
-          }
-          }
+      <View style={{ paddingTop: 8, paddingBottom: 4 }}>
+        <TagSelector
+          justifyContent="center"
+          activity={activity}
+          inputTags={inputTags}
+          toggleInputTag={toggleInputTag}
+          palette={palette}
+          theme={theme}
         />
-      </ActionSheet>
+      </View>
+
+      <View style={{ flex: 1, marginRight: 8 }}>
+        <SkiaChart
+          gridLineColor={theme.colors.outline}
+          view={view}
+          viewportShared={viewport}
+        >
+          <Points
+            mode="polygon"
+            points={linePoints}
+            color={theme.colors.primary}
+            strokeWidth={1}
+          />
+          <Points
+            mode="polygon"
+            points={currentPullPoints}
+            color={theme.colors.secondary}
+            strokeWidth={2}
+          />
+          <Points
+            mode="polygon"
+            points={pastPullsPoints}
+            color={theme.colors.secondary}
+            strokeWidth={2}
+          />
+        </SkiaChart>
+      </View>
     </>
   );
+
+  const statusDisplay = (
+    <View style={styles.measurementRow}>
+      <View style={styles.measurementColumn}>
+        <Text style={styles.measurementLabel}>Weight</Text>
+        <CenteredAnimatedText longestText="000.00 kg" text={currentWeight} font={largeFont} color={theme.colors.primary} />
+      </View>
+      <View style={styles.measurementColumn}>
+        <Text style={styles.measurementLabel}>Time</Text>
+        <CenteredAnimatedText longestText="0:00:00" text={totalTime} font={largeFont} color={theme.colors.primary} />
+      </View>
+      <View style={styles.measurementColumn}>
+        <Text style={styles.measurementLabel}>Rest</Text>
+        <CenteredAnimatedText longestText="00:00" text={restTime} font={largeFont} color={theme.colors.primary} />
+      </View>
+    </View>
+  );
+
+  const dataPointList = (
+    <FlatList
+      data={pastDataPoints}
+      ListFooterComponent={() => (
+        <View style={{ height: Math.max(0, dimensions.height - 100 - 50 * pastDataPoints.length) }} />
+      )}
+      keyExtractor={(item, index) => (pastDataPoints.length - index).toString()}
+      renderItem={({ item, index }) => {
+        if (item.dataPoint === null) {
+          const tags = activity.tags.filter((t: Tag) => inputTags.includes(t.name));
+          return (
+            <Animated.View entering={FadeIn}>
+              <DataPointCardMultiContainer
+                tags={tags.length == 0 ? undefined :
+                  <RenderTags
+                    key="tags"
+                    tags={tags}
+                    theme={theme}
+                    palette={palette}
+                    wrap={false}
+                  />
+                }
+                // tags={undefined}
+                note={undefined}
+                theme={theme}
+                onPress={undefined}
+                style={{ flex: 1, borderWidth: 1, borderColor: theme.colors.primary }}
+              >
+                <LabeledValue label="Rep" theme={theme}>
+                  <CenteredAnimatedText longestText="000" text={`${pastDataPoints.length - index}`} font={largeFont} color={theme.colors.primary} />
+                </LabeledValue>
+                <LabeledValue label="Weight" theme={theme}>
+                  <CenteredAnimatedText longestText="000.00 kg" text={pullWeight} font={largeFont} color={theme.colors.primary} />
+                </LabeledValue>
+                <LabeledValue label="Time" theme={theme}>
+                  <CenteredAnimatedText longestText="00:00" text={pullTime} font={largeFont} color={theme.colors.primary} />
+                </LabeledValue>
+              </DataPointCardMultiContainer>
+            </Animated.View>
+          );
+        } else {
+          return (
+            <Animated.View layout={LinearTransition}>
+              <DataPointCard
+                activity={activity}
+                i={item.index}
+                repNumber={pastDataPoints.length - index}
+                theme={theme}
+                palette={palette}
+                navigation={navigation}
+              />
+            </Animated.View>
+          );
+        }
+      }
+      }
+    />);
+
+  if (isPortrait) {
+    return (
+      <>
+        <SafeAreaView key="portrait" style={{ marginTop: 8, height: '70%' }} edges={["left", "right", "bottom"]}>
+          <SystemBars style={{ statusBar: "light", navigationBar: themeVariant == 'light' ? "dark" : "light" }} />
+          {buttonsAndChart}
+          {statusDisplay}
+        </SafeAreaView>
+        <ActionSheet
+          ref={actionSheetRef}
+          isModal={false}
+          backgroundInteractionEnabled
+          snapPoints={[30, 100]}
+          gestureEnabled
+          headerAlwaysVisible
+          closable={false}
+          useBottomSafeAreaPadding
+          disableDragBeyondMinimumSnapPoint
+          safeAreaInsets={insets}
+          indicatorStyle={{ backgroundColor: theme.colors.outline }}
+          containerStyle={{
+            backgroundColor: theme.colors.elevation.level1,
+            paddingLeft: insets.left,
+            paddingRight: insets.right,
+          }}
+        >
+          {dataPointList}
+        </ActionSheet>
+      </>
+    );
+  } else {
+    return (
+      <>
+        <SafeAreaView key="landscape" style={{ paddingTop: 8, flexDirection: 'row', height: '100%' }} edges={["left", "right", "bottom"]}>
+          <SystemBars style={{ statusBar: "light", navigationBar: themeVariant == 'light' ? "dark" : "light" }} />
+          <View style={{ flex: 1, paddingBottom: 4 }}>
+            {buttonsAndChart}
+          </View>
+          <View style={{ flex: 1 }}>
+            {statusDisplay}
+            {dataPointList}
+          </View>
+        </SafeAreaView>
+      </>
+    );
+  }
 };
 
 const getStyles = (theme: MD3Theme) => StyleSheet.create({
