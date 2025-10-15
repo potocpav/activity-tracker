@@ -43,6 +43,7 @@ const MD3BlackTheme = {
     elevation: {
       ...MD3DarkTheme.colors.elevation,
       level1: "#000000",
+      level2: "#222222",
     },
   },
 };

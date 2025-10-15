@@ -53,7 +53,7 @@ export const DataPointCardMultiContainer = (props: {
         justifyContent: 'center',
       }, props.style]}
     >
-      <View key="children" style={{ flexDirection: 'row', gap: 6, alignItems: 'center', justifyContent: 'space-between' }}>
+      <View key="children" style={{ flexDirection: 'row', gap: 6, alignItems: 'flex-start', justifyContent: 'space-between' }}>
         {props.children}
       </View>
       {(props.tags || props.note) && <Divider key="divider" />}
@@ -95,7 +95,7 @@ export const DataPointCardSingleContainer = (props: {
         flexDirection: 'row',
       }, props.style]}
     >
-      <View key="children" style={{ width: ITEM_HEIGHT * 1.5, flexDirection: 'row', gap: 6, alignItems: 'center', justifyContent: 'space-between' }}>
+      <View key="children" style={{ width: ITEM_HEIGHT * 1.5, flexDirection: 'row', gap: 6, alignItems: 'flex-start', justifyContent: 'space-between' }}>
         {props.children}
       </View>
       <View key="divider" style={{ width: 0.5, height: '100%', backgroundColor: props.theme.colors.outline }} />
@@ -187,7 +187,7 @@ export const DataPointCard = (
 
     if (repNumber !== undefined) {
       renderedValues.push(
-        <LabeledValue label="Rep" theme={theme}>
+        <LabeledValue key="__rep__" label="Rep" theme={theme}>
           <TextValue theme={theme}>{repNumber.toString()}</TextValue>
         </LabeledValue>
       );
@@ -197,7 +197,7 @@ export const DataPointCard = (
         const value = (dataPoint.value as any)[name];
         const renderedValue = value !== undefined ? renderLongFormValue(value, unit) : "-";
         renderedValues.push(
-          <LabeledValue label={name} theme={theme}>
+          <LabeledValue key={name} label={name} theme={theme}>
             <TextValue theme={theme}>
               {renderedValue}
             </TextValue>

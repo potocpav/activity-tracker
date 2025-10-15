@@ -179,7 +179,7 @@ export const hintDependencyChains : HintType[][] = [
 
 export const allHints : HintType[] = [...new Set(hintDependencyChains.flat(Infinity))] as HintType[];
 
-export type BleScaleWorkoutState = { state: "playing", t0: number, date: DateList };
+export type BleScaleWorkoutState = { state: "playing", t0: number, t0Rest: number, date: DateList };
 
 export type State = {
   // Device related state

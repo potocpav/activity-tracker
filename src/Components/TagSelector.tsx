@@ -6,16 +6,17 @@ import {
 import { Chip, MD3Theme } from 'react-native-paper';
 import { ActivityType } from "../Model/StoreTypes";
 
-export const TagSelector = ({ activity, inputTags, toggleInputTag, palette, theme }:
+export const TagSelector = ({ activity, inputTags, toggleInputTag, palette, justifyContent, theme }:
   {
     activity: ActivityType,
     inputTags: string[],
     toggleInputTag: (tag: string) => void,
     palette: string[],
+    justifyContent: 'flex-start' | 'center' | 'flex-end',
     theme: MD3Theme,
   }) => {
   return (activity.tags.length > 0 && (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: justifyContent ?? 'flex-start' }}>
       {activity.tags.map((tag: any, index: number) => (
         <Chip
           key={tag.name}

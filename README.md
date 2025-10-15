@@ -42,18 +42,17 @@ Track your performance metrics and their progress over time. With custom statist
 
 ## Planned features
 
-- [ ] Handle large number of activities. This feature should work well with data imports from different apps, and from other users of Activity Tracker. Options include:
+- [ ] Multiple acitivity lists
     - Allow duplicate activity names
-    - Activity archive to hide old activities without deleting them
-    - Activity groups
-    - Activity tabs
-    - Search activities by name
+    - Import into a new tab from Habit Tracker
+    - Drag and drop activities between tabs
 - [ ]  Handle large number of data points
   - [ ]  Bulk selection
   - [ ]  Bulk editing
 - [ ] Unit conversions: kg <-> lbs, etc. This could include the ability to input values in different units - useful for climbing grades.
 - [ ] Tag groups to support mutually exclusive tags. This is blocked by drag-drop not working across multiple tab rows.
 - [ ] Keyboard avoidance in Edit Activity and other screens
+- [ ] Persistent timers with notifications
 
 ## Changelog
 

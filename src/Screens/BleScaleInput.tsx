@@ -9,10 +9,10 @@ import {
 import useStore from "../Model/Store";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { getTheme, getThemePalette, getThemeVariant } from "../Model/Theme";
-import { ActivityType, BleScaleWorkoutState, DataPoint, dateToDateList } from "../Model/StoreTypes";
-import { Button as PaperButton } from "react-native-paper";
-import { matchFont, Points, Text as SkiaText, vec, Canvas, interpolateColors } from "@shopify/react-native-skia";
-import Animated, { useSharedValue, useFrameCallback, useDerivedValue, interpolate, Extrapolation, LinearTransition, useAnimatedReaction, useAnimatedStyle, withSpring, FadeIn } from "react-native-reanimated";
+import { ActivityType, BleScaleWorkoutState, DataPoint, dateToDateList, Tag } from "../Model/StoreTypes";
+import { MD3Theme, Button as PaperButton } from "react-native-paper";
+import { matchFont, Points, Text as SkiaText, vec, Canvas, interpolateColors, Color, SkFont } from "@shopify/react-native-skia";
+import Animated, { useSharedValue, useFrameCallback, useDerivedValue, interpolate, Extrapolation, LinearTransition, useAnimatedReaction, useAnimatedStyle, withSpring, FadeIn, SharedValue } from "react-native-reanimated";
 import { renderLongFormValue } from "../Model/Unit";
 import TagSelector from "../Components/TagSelector";
 import SkiaChart, { xToCanvas, yToCanvas, Viewport } from "../Components/Chart/SkiaChart";
@@ -23,6 +23,8 @@ import ActionSheet, { ActionSheetRef, FlatList } from "react-native-actions-shee
 import { DataPointCard, DataPointCardMultiContainer, LabeledValue, TextValue } from "./ActivityData";
 import { dayCmp, findZeroSlice } from "../Model/Activity";
 import { useFocusEffect } from "@react-navigation/native";
+import { RenderTags } from "../Components/Tags";
+
 
 const fontFamily = Platform.select({ default: "sans-serif" });
 const largeFont = matchFont({ fontFamily: fontFamily, fontSize: 24, fontWeight: "bold" });
@@ -48,6 +50,27 @@ type CurrentPull = { t0: number, wSum: number, wCount: number, wMax: number, wMi
 type PastPull = { t0: number, t1: number, wAvg: number };
 
 
+const CenteredAnimatedText = ({ longestText, text, font, color }: { longestText: string, text: SharedValue<string> | string, font: SkFont, color: Color }) => {
+  const largeTextBox = font.measureText(longestText);
+  const padding = 2;
+
+  const textOffsetX = useDerivedValue(() => {
+    return (largeTextBox.width - font.measureText(typeof text === "string" ? text : text.value).width) / 2 + padding;
+  });
+
+  return (
+    <Canvas style={{ width: largeTextBox.width + padding * 2, height: largeTextBox.height + padding * 2 }}>
+      <SkiaText
+        text={text}
+        font={font}
+        color={color}
+        x={textOffsetX}
+        y={-largeTextBox.y + padding}
+      />
+    </Canvas>
+  );
+};
+
 const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   const { activityName } = route.params;
   const activities = useStore((state: any) => state.activities);
@@ -58,6 +81,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   const palette = getThemePalette();
   const today = dateToDateList(new Date());
 
+  const styles = getStyles(theme);
   const connectedDevice = useStore((state: any) => state.connectedDevice);
   const connecting = useStore((state: any) => state.connecting);
   const connectionStatus = useStore((state: any) => state.connectionStatus);
@@ -93,7 +117,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   let pastDataPoints = activity.dataPoints
     .map((dp: DataPoint, i: number) => ({ dataPoint: dp, index: i }))
     .slice(...findZeroSlice(activity.dataPoints, (dp) => dayCmp(dp, today)))
-  pastDataPoints.push({dataPoint: null, index: NaN});
+  pastDataPoints.push({ dataPoint: null, index: NaN });
   pastDataPoints.reverse();
   // pastDataPoints = pastDataPoints.slice(0, 55);
 
@@ -104,7 +128,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
     setInputTags(inputTags.includes(tag) ? inputTags.filter((t: string) => t !== tag) : [...inputTags, tag]);
   }
 
-  const largeFontBox = largeFont.measureText("00.00 kg");
+  const largeTextBox = largeFont.measureText("00.00 kg");
 
   const weightInLb = activity.unit.values?.[0]?.unit?.unit === "lb";
   const minPullWeight = activity.special?.minWeight ?? NaN;
@@ -127,8 +151,6 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
       return { pullActive: false, pullWeight: 0, pullT0: 0, pullTime: 0 };
     }
   });
-
-  const pullCardHeight = 80;
 
   const openConnectionModal = async () => {
     scanForDevices();
@@ -215,6 +237,9 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
           // publish the pull
           pastPulls.set((pastPulls) => [...pastPulls, newPull].slice(-3));
           // pullCardVisibility.value = withSpring(1);
+          if (workoutState) {
+            setWorkoutState({ ...workoutState, t0Rest: newPull.t1 });
+          }
           setNewDataPoint({
             date: today,
             value: {
@@ -257,7 +282,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   });
 
   const onPlay = () => {
-    setWorkoutState({ state: "playing", t0: t.value, date: today });
+    setWorkoutState({ state: "playing", t0: t.value, t0Rest: 0, date: today });
   }
 
   const onReset = () => {
@@ -286,7 +311,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
       currentPull: { t0: 0, wSum: 0, wCount: 0, wMin: 0, wMax: 0, active: false },
     };
     if (workoutState?.state !== "playing") {
-      setWorkoutState({ state: "playing", t0: t.value, date: today });
+      setWorkoutState({ state: "playing", t0: t.value, t0Rest: 0, date: today });
     }
     setRecordingState("recording");
     startMeasurement(onDataUpdate);
@@ -333,7 +358,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
       const w = pullIndicators.value.pullWeight;
       return w.toFixed(w >= 100 ? 1 : 2) + " " + weightUnit.unit;
     } else {
-      return "      -";
+      return "-";
     }
   });
 
@@ -341,7 +366,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
     if (pullIndicators.value.pullActive) {
       return pullIndicators.value.pullTime.toFixed(1) + " s";
     } else {
-      return "       -";
+      return "-";
     }
   });
 
@@ -350,7 +375,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   );
 
   const restTime = useDerivedValue(() =>
-    renderLongFormValue(Math.max(0, Math.floor(tx.value - (pastPulls.value[pastPulls.value.length - 1]?.t1 ?? 0))), timeUnit)
+    renderLongFormValue(Math.max(0, Math.floor(tx.value - (workoutState?.t0Rest ?? 0))), timeUnit)
   );
 
   const currentPullPoints = useDerivedValue(() => {
@@ -412,16 +437,6 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
       <SafeAreaView style={[styles.container]} edges={["left", "right", "bottom"]}>
         <SystemBars style={{ statusBar: "light", navigationBar: themeVariant == 'light' ? "dark" : "light" }} />
         <>
-          <View style={{ padding: 8 }}>
-            <TagSelector
-              activity={activity}
-              inputTags={inputTags}
-              toggleInputTag={toggleInputTag}
-              palette={palette}
-              theme={theme}
-            />
-          </View>
-
           {/* Control Buttons Section */}
           <View style={styles.buttonRow}>
             {workoutState === null ? (
@@ -460,7 +475,6 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                 <Text>Pause</Text>
               </PaperButton>
             )}
-
             <PaperButton
               style={{ flex: 1 }}
               mode="outlined"
@@ -473,53 +487,18 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
             </PaperButton>
           </View>
 
-          {/* Weight and Time Display Section */}
-          <View style={styles.measurementRow}>
-            <View style={styles.measurementColumn}>
-              <Text style={[styles.measurementLabel, { color: theme.colors.onSurface, width: largeFontBox.width }]}>Weight</Text>
-              <Canvas
-                style={{ width: largeFontBox.width, height: largeFontBox.height }}
-              >
-                <SkiaText
-                  text={currentWeight}
-                  font={largeFont}
-                  color={theme.colors.primary}
-                  x={0}
-                  y={-largeFontBox.y}
-                />
-              </Canvas>
-            </View>
-            <View style={styles.measurementColumn}>
-              <Text style={[styles.measurementLabel, { color: theme.colors.onSurface, width: largeFontBox.width }]}>Time</Text>
-              <Canvas
-                style={{ width: largeFontBox.width, height: largeFontBox.height }}
-              >
-                <SkiaText
-                  text={totalTime}
-                  font={largeFont}
-                  color={theme.colors.primary}
-                  x={0}
-                  y={-largeFontBox.y}
-                />
-              </Canvas>
-            </View>
-            <View style={styles.measurementColumn}>
-              <Text style={[styles.measurementLabel, { color: theme.colors.onSurface, width: largeFontBox.width }]}>Rest</Text>
-              <Canvas
-                style={{ width: largeFontBox.width, height: largeFontBox.height }}
-              >
-                <SkiaText
-                  text={restTime}
-                  font={largeFont}
-                  color={theme.colors.primary}
-                  x={0}
-                  y={-largeFontBox.y}
-                />
-              </Canvas>
-            </View>
+          <View style={{ padding: 8 }}>
+            <TagSelector
+              justifyContent="center"
+              activity={activity}
+              inputTags={inputTags}
+              toggleInputTag={toggleInputTag}
+              palette={palette}
+              theme={theme}
+            />
           </View>
 
-          <View style={{ flex: 1, marginHorizontal: 5 }}>
+          <View style={{ flex: 1, marginRight: 8 }}>
             <SkiaChart
               gridLineColor={theme.colors.outline}
               view={view}
@@ -544,6 +523,23 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                 strokeWidth={2}
               />
             </SkiaChart>
+
+            {/* Weight and Time Display Section */}
+            <View style={styles.measurementRow}>
+              <View style={styles.measurementColumn}>
+                <Text style={styles.measurementLabel}>Weight</Text>
+                <CenteredAnimatedText longestText="000.00 kg" text={currentWeight} font={largeFont} color={theme.colors.primary} />
+              </View>
+              <View style={styles.measurementColumn}>
+                <Text style={styles.measurementLabel}>Time</Text>
+                <CenteredAnimatedText longestText="0:00:00" text={totalTime} font={largeFont} color={theme.colors.primary} />
+              </View>
+              <View style={styles.measurementColumn}>
+                <Text style={styles.measurementLabel}>Rest</Text>
+                <CenteredAnimatedText longestText="00:00" text={restTime} font={largeFont} color={theme.colors.primary} />
+              </View>
+            </View>
+
           </View>
         </>
       </SafeAreaView>
@@ -573,43 +569,37 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
           keyExtractor={(item, index) => (pastDataPoints.length - index).toString()}
           renderItem={({ item, index }) => {
             if (item.dataPoint === null) {
+              const tags = activity.tags.filter((t: Tag) => inputTags.includes(t.name));
               return (
-                  <Animated.View entering={FadeIn} style={{ height: pullCardHeight }}>
-                    <DataPointCardMultiContainer
-                      tags={undefined}
-                      note={undefined}
-                      theme={theme}
-                      onPress={undefined}
-                      style={{ flex: 1, borderWidth: 1, borderColor: theme.colors.primary }}
-                    >
-                      <LabeledValue label="Rep" theme={theme}>
-                        <Text style={{ color: theme.colors.primary, fontWeight: "bold", fontSize: 24 }}>{`${pastDataPoints.length - index}`}</Text>
-                      </LabeledValue>
-                      <LabeledValue label="Weight" theme={theme}>
-                        <Canvas style={{ width: largeFontBox.width, height: largeFontBox.height }}>
-                          <SkiaText
-                            text={pullWeight}
-                            font={largeFont}
-                            color={theme.colors.primary}
-                            x={0}
-                            y={-largeFontBox.y}
-                          />
-                        </Canvas>
-                      </LabeledValue>
-                      <LabeledValue label="Time" theme={theme}>
-                        <Canvas style={{ width: largeFontBox.width, height: largeFontBox.height }}>
-                          <SkiaText
-                            text={pullTime}
-                            font={largeFont}
-                            color={theme.colors.primary}
-                            x={0}
-                            y={-largeFontBox.y}
-                          />
-                        </Canvas>
-                      </LabeledValue>
-                    </DataPointCardMultiContainer>
-                  </Animated.View>
-                );
+                <Animated.View entering={FadeIn}>
+                  <DataPointCardMultiContainer
+                    tags={tags.length == 0 ? undefined :
+                      <RenderTags
+                        key="tags"
+                        tags={tags}
+                        theme={theme}
+                        palette={palette}
+                        wrap={false}
+                      />
+                    }
+                    // tags={undefined}
+                    note={undefined}
+                    theme={theme}
+                    onPress={undefined}
+                    style={{ flex: 1, borderWidth: 1, borderColor: theme.colors.primary }}
+                  >
+                    <LabeledValue label="Rep" theme={theme}>
+                      <CenteredAnimatedText longestText="000" text={`${pastDataPoints.length - index}`} font={largeFont} color={theme.colors.primary} />
+                    </LabeledValue>
+                    <LabeledValue label="Weight" theme={theme}>
+                      <CenteredAnimatedText longestText="000.00 kg" text={pullWeight} font={largeFont} color={theme.colors.primary} />
+                    </LabeledValue>
+                    <LabeledValue label="Time" theme={theme}>
+                      <CenteredAnimatedText longestText="00:00" text={pullTime} font={largeFont} color={theme.colors.primary} />
+                    </LabeledValue>
+                  </DataPointCardMultiContainer>
+                </Animated.View>
+              );
             } else {
               return (
                 <Animated.View layout={LinearTransition}>
@@ -632,10 +622,10 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: MD3Theme) => StyleSheet.create({
   container: {
     height: '70%',
-
+    marginTop: 8,
   },
   buttonRow: {
     flexDirection: 'row',
@@ -654,6 +644,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
+    marginVertical: 10,
   },
   measurementColumn: {
     alignItems: 'center',
@@ -663,7 +654,9 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   measurementLabel: {
+    textAlign: "center",
     fontSize: 16,
+    color: theme.colors.outline,
   },
 });
 
