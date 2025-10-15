@@ -42,7 +42,7 @@ export const DataPointCardMultiContainer = (props: {
   return (
     <Pressable
       onPress={props.onPress}
-      android_ripple={{ color: props.theme.colors.outline, foreground: false }}
+      android_ripple={{ color: props.theme.colors.onSurfaceVariant, foreground: true }}
       style={[{
         padding: 6,
         backgroundColor: props.theme.colors.elevation.level2,
@@ -83,7 +83,7 @@ export const DataPointCardSingleContainer = (props: {
   return (
     <Pressable
       onPress={props.onPress}
-      android_ripple={{ color: props.theme.colors.outline, foreground: false }}
+      android_ripple={{ color: props.theme.colors.onSurfaceVariant, foreground: true }}
       style={[{
         padding: 6,
         backgroundColor: props.theme.colors.elevation.level2,
