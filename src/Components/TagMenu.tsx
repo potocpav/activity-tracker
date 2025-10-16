@@ -1,5 +1,4 @@
 import React from "react";
-import { View, Text } from "react-native";
 import { Menu } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Tag, ActivityType } from "../Model/StoreTypes";

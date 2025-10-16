@@ -4,7 +4,6 @@ import {
   Text,
   View,
   NativeModules,
-  Pressable,
   ToastAndroid,
 } from "react-native";
 import useStore from "../../Model/Store";

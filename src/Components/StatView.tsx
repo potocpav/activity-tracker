@@ -2,7 +2,6 @@ import React from "react";
 import { Text, View, Pressable, StyleSheet } from "react-native";
 import { ActivityType, Stat } from "../Model/StoreTypes";
 import { renderStatValue } from "../Model/Activity";
-import { calcStatValue } from "../Model/Activity";
 import useStore from "../Model/Store";
 import { getTheme } from "../Model/Theme";
 import Animated, { LinearTransition, FadeIn, FadeOut } from "react-native-reanimated";

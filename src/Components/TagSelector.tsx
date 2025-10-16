@@ -1,8 +1,5 @@
 import React from "react";
-import {
-  View,
-  Text,
-} from "react-native";
+import { View } from "react-native";
 import { Chip, MD3Theme } from 'react-native-paper';
 import { ActivityType } from "../Model/StoreTypes";
 
@@ -17,7 +14,7 @@ export const TagSelector = ({ activity, inputTags, toggleInputTag, palette, just
   }) => {
   return (activity.tags.length > 0 && (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: justifyContent ?? 'flex-start' }}>
-      {activity.tags.map((tag: any, index: number) => (
+      {activity.tags.map((tag: any) => (
         <Chip
           key={tag.name}
           onPress={() => { toggleInputTag(tag.name); }}

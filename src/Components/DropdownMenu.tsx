@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { Text } from "react-native";
 import { Menu } from 'react-native-paper';
 import { ChevronDownIcon, Button } from "./Element";
 

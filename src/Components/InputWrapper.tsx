@@ -1,6 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { View, Text } from "react-native";
-import Animated, { useSharedValue, withSequence, withTiming, withRepeat, useAnimatedStyle, FadeIn, FadeOut, FadeInUp, FadeOutUp } from "react-native-reanimated";
+import Animated, { useSharedValue, withSequence, withTiming, withRepeat, useAnimatedStyle } from "react-native-reanimated";
 import { getTheme } from "../Model/Theme";
 
 type InputWrapperProps = {

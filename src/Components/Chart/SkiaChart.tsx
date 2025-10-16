@@ -81,7 +81,7 @@ const SkiaChart = (
 
   const viewportClip = rect(viewport.left, viewport.top, viewport.right - viewport.left, viewport.bottom - viewport.top);
 
-  const xTickLine = [...Array(xNumTicks * 2).keys()].map((i) => ({
+  const xTickLine = [...Array(xNumTicks * 2).keys()].map(() => ({
     x: useSharedValue(NaN),
     p1: useSharedValue(vec(NaN, NaN)),
     p2: useSharedValue(vec(NaN, NaN)),
@@ -90,7 +90,7 @@ const SkiaChart = (
     label: useSharedValue("")
   }));
 
-  const yTickLine = [...Array(yNumTicks * 2).keys()].map((i) => ({
+  const yTickLine = [...Array(yNumTicks * 2).keys()].map(() => ({
     y: useSharedValue(NaN),
     p1: useSharedValue(vec(NaN, NaN)),
     p2: useSharedValue(vec(NaN, NaN)),

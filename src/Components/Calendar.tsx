@@ -2,7 +2,6 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, useWindowDimensions } from "react-native";
 import { 
   DataPoint, 
-  dateListToTime, 
   dateToDateList,
   normalizeDateList, 
   DateList, 
