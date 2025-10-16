@@ -179,6 +179,16 @@ export const hintDependencyChains : HintType[][] = [
 
 export const allHints : HintType[] = [...new Set(hintDependencyChains.flat(Infinity))] as HintType[];
 
+export type ActivityTab = {
+  tabName: string;
+  activities: ActivityType[];
+}
+
+export type ActivityPath = {
+  tabId: number;
+  activityId: number;
+}
+
 export type BleScaleWorkoutState = { state: "playing", t0: number, t0Rest: number, date: DateList };
 
 export type State = {
@@ -189,7 +199,7 @@ export type State = {
   subscription: Subscription | null;
   bleScaleWorkoutState: BleScaleWorkoutState | null;
 
-  activities: ActivityType[];
+  activities: ActivityTab[];
   theme: "system" | "light" | "dark";
   blackBackground: boolean;
   weekStart: WeekStart;

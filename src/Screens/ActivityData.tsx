@@ -7,7 +7,7 @@ import {
   Alert,
 } from "react-native";
 import useStore from "../Model/Store";
-import { DataPoint, ActivityType, Tag, DateList, dateListToDate } from "../Model/StoreTypes";
+import { DataPoint, ActivityType, Tag, DateList, dateListToDate, ActivityPath, State } from "../Model/StoreTypes";
 import { cmpDateList, dayCmp, findZeroSlice, formatDate } from "../Model/Activity";
 import { RenderTags } from "../Components/Tags";
 import TagMenu from "../Components/TagMenu";
@@ -189,8 +189,8 @@ export const TextValue = (props: {
 }
 
 export const DataPointCard = (
-  { activity, i, repNumber = undefined, theme, palette, navigation }:
-    { activity: ActivityType, i: number, repNumber?: number, theme: any, palette: any, navigation: any }
+  { activity, activityPath, i, repNumber = undefined, theme, palette, navigation }:
+    { activity: ActivityType, activityPath: ActivityPath, i: number, repNumber?: number, theme: any, palette: any, navigation: any }
 ) => {
   const dataPoint = activity.dataPoints[i];
 
@@ -207,7 +207,7 @@ export const DataPointCard = (
     <Text style={{ color: theme.colors.onSurface }}>{dataPoint.note}</Text>
   );
 
-  const editDataPoint = () => navigation.navigate("EditDataPoint", { activityName: activity.name, dataPointIndex: i });
+  const editDataPoint = () => navigation.navigate("EditDataPoint", { activityPath, dataPointIndex: i });
 
   const renderValueless = () => (
     <DataPointCardSingleContainer onPress={editDataPoint} tags={tags} note={note} theme={theme}>
@@ -253,7 +253,7 @@ export const DataPointCard = (
       });
     }
     return (
-      <DataPointCardMultiContainer onPress={editDataPoint} onDelete={() => console.log("deleting")} tags={tags} note={note} theme={theme}>
+      <DataPointCardMultiContainer onPress={editDataPoint} onDelete={() => console.log("TODO: delete data point")} tags={tags} note={note} theme={theme}>
         {renderedValues}
       </DataPointCardMultiContainer>
     );
@@ -270,9 +270,8 @@ export const DataPointCard = (
 }
 
 const ActivityData = ({ navigation, route }: ActivityDataProps) => {
-  const { activityName, day } = route.params;
-  const activities = useStore((state: any) => state.activities);
-  const activity = activities.find((a: ActivityType) => a.name === activityName);
+  const { activityPath, day } = route.params;
+  const activity: ActivityType = useStore((state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId]);
   const deleteActivityDataPoints = useStore((state: any) => state.deleteActivityDataPoints);
   const theme = getTheme(activity.color);
   const themeVariant = getThemeVariant();
@@ -339,7 +338,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
                 text: "Delete",
                 style: "destructive",
                 onPress: () => {
-                  deleteActivityDataPoints(activityName, filteredDataPoints.map(([_, i]) => i));
+                  deleteActivityDataPoints(activityPath, filteredDataPoints.map(([_, i]) => i));
                 }
               }
             ])
@@ -362,7 +361,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
             />
           )}
           <Button
-            onPress={() => navigation.navigate("EditDataPoint", { activityName: activity.name, newDataPoint: true, newDataPointDate: day, tags: requiredTags })}>
+            onPress={() => navigation.navigate("EditDataPoint", { activityPath, newDataPoint: true, newDataPointDate: day, tags: requiredTags })}>
             <MaterialCommunityIcons name="plus" size={26} color={"#ffffff"} />
           </Button>
         </ButtonRow>
@@ -393,6 +392,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
             <DataPointCard
               key={i.toString()}
               activity={activity}
+              activityPath={activityPath}
               i={i}
               theme={theme}
               palette={palette}

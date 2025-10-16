@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, Text, useWindowDimensions, StyleSheet, ToastAndroid, Pressable } from "react-native";
 import { Menu, Portal, Dialog, TextInput } from 'react-native-paper';
 import useStore from "../../Model/Store";
-import { DataPoint, dateListToTime, ActivityType, GraphType, WeekStart, DateList, SubUnit, GraphProps, Unit, BinSize, BinnableSize } from "../../Model/StoreTypes";
+import { DataPoint, dateListToTime, ActivityType, GraphType, WeekStart, DateList, SubUnit, GraphProps, Unit, BinSize, BinnableSize, ActivityPath, State } from "../../Model/StoreTypes";
 import { binTime, binTimeSeries, cmpDateList, extractValue } from "../../Model/Activity";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import TagMenu from "../TagMenu";
@@ -16,9 +16,8 @@ import { Canvas, Line, vec } from "@shopify/react-native-skia";
 import { ChevronDownIcon, DeleteButton, ButtonRow, CopyButton, CheckButton, Button } from "../Element";
 
 
-const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, graphIndex: number }) => {
-  const activities = useStore((state: any) => state.activities);
-  const activity: ActivityType = activities.find((a: ActivityType) => a.name === activityName);
+const ActivityGraph = ({ activityPath, graphIndex }: { activityPath: ActivityPath, graphIndex: number }) => {
+  const activity: ActivityType = useStore((state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId]);
   const graph = activity.graphs[graphIndex];
   const weekStart = useStore((state: any) => state.weekStart);
   const theme = getTheme(activity.color);
@@ -125,7 +124,7 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
           options={binningOptions}
           selectedKey={graph.binSize}
           onSelect={(key) => {
-            setActivityGraph(activityName, graphIndex, { ...graph, binSize: key as BinSize });
+            setActivityGraph(activityPath, graphIndex, { ...graph, binSize: key as BinSize });
           }}
           visible={binMenuVisible}
           setVisible={setBinMenuVisible}
@@ -135,7 +134,7 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
         <SubUnitMenu
           subUnitNames={subUnitNames}
           subUnitName={graph.subUnit}
-          setSubUnitName={(name) => setActivityGraph(activityName, graphIndex, { ...graph, subUnit: name })}
+          setSubUnitName={(name) => setActivityGraph(activityPath, graphIndex, { ...graph, subUnit: name })}
           menuVisible={subUnitMenuVisible}
           setMenuVisible={setSubUnitMenuVisible}
           themeColors={theme.colors}
@@ -143,7 +142,7 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
         {/* Tags menu */}
         <TagMenu
           tags={graph.tagFilters}
-          onChange={(tags) => setActivityGraph(activityName, graphIndex, { ...graph, tagFilters: tags })}
+          onChange={(tags) => setActivityGraph(activityPath, graphIndex, { ...graph, tagFilters: tags })}
           menuVisible={tagsMenuVisible}
           setMenuVisible={setTagsMenuVisible}
           activityTags={activity.tags}
@@ -168,7 +167,7 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
               key={type}
               onPress={() => {
                 setGraphTypeMenuVisible(false);
-                setActivityGraph(activityName, graphIndex, { ...graph, graphType: type as GraphType });
+                setActivityGraph(activityPath, graphIndex, { ...graph, graphType: type as GraphType });
               }}
               title={<View style={{ flexDirection: 'row', alignItems: 'center' }}>{graphLabel(type)}</View>}
               trailingIcon={graph.graphType === type ? "check" : undefined}
@@ -189,18 +188,18 @@ const ActivityGraph = ({ activityName, graphIndex }: { activityName: string, gra
             <ButtonRow>
               {activity.graphs.length > 1 && (
                 <DeleteButton onPress={() => {
-                  deleteActivityGraph(activityName, graphIndex);
+                  deleteActivityGraph(activityPath, graphIndex);
                   setGraphDialogVisible(false);
                   ToastAndroid.show('Graph deleted', ToastAndroid.SHORT);
                 }} color={theme.colors.onSurface} />
               )}
               <CopyButton onPress={() => {
-                cloneActivityGraph(activityName, graphIndex);
+                cloneActivityGraph(activityPath, graphIndex);
                 setGraphDialogVisible(false);
                 ToastAndroid.show('Graph cloned', ToastAndroid.SHORT);
               }} color={theme.colors.onSurface} />
               <CheckButton onPress={() => {
-                setActivityGraph(activityName, graphIndex, { ...graph, label: graphDialogNameInput });
+                setActivityGraph(activityPath, graphIndex, { ...graph, label: graphDialogNameInput });
                 setGraphDialogVisible(false);
               }} color={theme.colors.onSurface} />
             </ButtonRow>

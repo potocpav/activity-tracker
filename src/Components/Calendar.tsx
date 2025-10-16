@@ -9,7 +9,10 @@ import {
   TagFilter, 
   dateListToDate, 
   SubUnit, 
-  statValueUnit 
+  statValueUnit,
+  ActivityPath,
+  State,
+  CalendarProps
 } from "../Model/StoreTypes";
 import { findZeroSlice, dayCmp, cmpDateList, extractStatValue, extractValue, binTime } from "../Model/Activity";
 import useStore from "../Model/Store";
@@ -18,15 +21,14 @@ import { renderShortFormValue } from "../Model/Unit";
 
 type CalendarComponentProps = {
   navigation: any;
-  activityName: string;
+  activityPath: ActivityPath;
   calendarIndex: number;
 };
 
 const ITEM_MARGIN = 2;
 
-const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName, calendarIndex }) => {
-  const activities = useStore((state: any) => state.activities);
-  const activity = activities.find((a: ActivityType) => a.name === activityName);
+const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, calendarIndex }) => {
+  const activity: ActivityType = useStore((state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId]);
   const calendar = activity.calendars[calendarIndex];
   const theme = getTheme(activity.color);
   const dayBackground = theme.colors.primary;
@@ -61,7 +63,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName, 
       subUnit = statValueUnit(calendar.value, activity.unit.unit);
       break;
     case "multiple":
-      subUnit = statValueUnit(calendar.value, activity.unit.values.find((u: { name: string, unit: SubUnit }) => u.name === calendar.subUnit)?.unit);
+      subUnit = statValueUnit(calendar.value, (activity.unit.values as any).find((u: { name: string, unit: SubUnit }) => u.name === calendar.subUnit)?.unit);
       break;
   }
 
@@ -94,7 +96,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName, 
                 return;
               }
               const daySlice = findZeroSlice(activity.dataPoints, (dp) => dayCmp(dp, day));
-              const dayDataAndIndexUnfiltered: [DataPoint, number][] = 
+              const dayDataAndIndexUnfiltered: [DateList, number, number | null][] = 
                 activity.dataPoints
                   .map((dp: DataPoint, i: number): [DataPoint, number] => [dp, i])
                   .slice(...daySlice)
@@ -102,7 +104,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName, 
                     [dp.date, i, extractValue(dp, calendar.tagFilters, calendar.subUnit)]);
               const dayDataAndIndex = dayDataAndIndexUnfiltered
                   .filter((v: any) => v[2] !== null);
-              const value = extractStatValue(dayDataAndIndex.map((v: any) => [v[0], v[2]]), calendar.value, calendar.period, weekStart);
+              const value = extractStatValue(dayDataAndIndex.map((v: any) => [v[0], v[2]]), calendar.value, "today", weekStart);
               const hasData = dayDataAndIndexUnfiltered.length > 0;
               const hasFilteredData = dayDataAndIndex.length > 0;
               const isWeekend = [0, 6].includes((itemWeekStart.getDay() + dayIdx) % 7)
@@ -113,17 +115,17 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityName, 
                     if (activity.unit.type === "none") {
                       dismissHint("quick_check_daily_activity");
                       if (hasFilteredData) {
-                        deleteActivityDataPoint(activityName, dayDataAndIndex[0][1]);
+                        deleteActivityDataPoint(activityPath, dayDataAndIndex[0][1]);
                       } else {
-                        updateActivityDataPoint(activityName, undefined, { date: day, tags: positiveTags });
+                        updateActivityDataPoint(activityPath, undefined, { date: day, tags: positiveTags });
                       }
                     }
                   }}
                   onPress={() => {
                     if (hasData) {
-                      navigation.navigate("ActivityData", { activityName, day });
+                      navigation.navigate("ActivityData", { activityPath, day });
                     } else {
-                      navigation.navigate("EditDataPoint", { activityName, newDataPoint: true, newDataPointDate: day, tags: positiveTags });
+                      navigation.navigate("EditDataPoint", { activityPath, newDataPoint: true, newDataPointDate: day, tags: positiveTags });
                     }
                   }}
                   activeOpacity={0.3}

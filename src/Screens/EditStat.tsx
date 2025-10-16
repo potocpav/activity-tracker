@@ -2,7 +2,7 @@ import React, { Fragment } from "react";
 import { ScrollView, ToastAndroid, View } from "react-native";
 import {  TextInput } from 'react-native-paper';
 import useStore from "../Model/Store";
-import { ActivityType, Stat, StatPeriod, StatValue, TagFilter, allStatPeriods, unaryStatValues, numericStatValues } from "../Model/StoreTypes";
+import { ActivityType, StatPeriod, StatValue, TagFilter, allStatPeriods, unaryStatValues, numericStatValues, State } from "../Model/StoreTypes";
 import { valueToLabel, periodToLabel } from "../Model/Activity";
 import TagMenu from "../Components/TagMenu";
 import SubUnitMenu from "../Components/SubUnitMenu";
@@ -20,10 +20,9 @@ export const EditStat = (
       navigation: any,
       route: any,
     }) => {
-  const activities = useStore((state: any) => state.activities);
-  const { activityName, statId } = route.params;
-  const activity: ActivityType = activities.find((a: ActivityType) => a.name === activityName);
-  const stat = activity?.stats[statId];
+  const { activityPath, statId } = route.params;
+  const activity: ActivityType = useStore((state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId]);
+  const stat = activity.stats[statId];
   const theme = getTheme(activity.color);
   const themeVariant = getThemeVariant();
   const cloneActivityStat = useStore((state: any) => state.cloneActivityStat);
@@ -73,14 +72,14 @@ export const EditStat = (
 
   const handleApply = () => {
     if (dialogStat !== null) {
-      setActivityStat(activityName, statId, dialogStat);
+      setActivityStat(activityPath, statId, dialogStat);
     }
     navigation.goBack();
   };
 
   const handleDuplicate = () => {
     if (statId !== null) {
-      cloneActivityStat(activityName, statId);
+      cloneActivityStat(activityPath, statId);
       ToastAndroid.show('Stat cloned', ToastAndroid.SHORT);
     }
     navigation.goBack();
@@ -88,7 +87,7 @@ export const EditStat = (
 
   const handleDelete = () => {
     if (statId !== null) {
-      deleteActivityStat(activityName, statId);
+      deleteActivityStat(activityPath, statId);
       ToastAndroid.show('Stat deleted', ToastAndroid.SHORT);
     }
     navigation.goBack();
@@ -111,7 +110,7 @@ export const EditStat = (
         </ButtonRow>
       ),
     });
-  }, [activityName, navigation, theme, activity]);
+  }, [activityPath, navigation, theme, activity]);
 
 
   return (

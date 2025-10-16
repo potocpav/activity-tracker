@@ -2,7 +2,7 @@ import React, { Fragment } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { Divider } from 'react-native-paper';
 import useStore from "../Model/Store";
-import { ActivityType, CalendarProps, GraphProps, Stat } from "../Model/StoreTypes";
+import { ActivityPath, ActivityType, CalendarProps, GraphProps, Stat, State } from "../Model/StoreTypes";
 import { RenderTags } from "../Components/Tags";
 import ActivityGraph from "../Components/Activity/ActivityGraph";
 import ActivityCalendar from "../Components/Activity/ActivityCalendar";
@@ -12,21 +12,12 @@ import Animated, { LinearTransition } from "react-native-reanimated";
 import Hint from "../Components/Hint";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const ActivitySummary = ({ navigation, activityName }: { navigation: any, activityName: string }) => {
-  const activities = useStore((state: any) => state.activities);
-  const activity = activities.find((a: ActivityType) => a.name === activityName);
+const ActivitySummary = ({ navigation, activityPath }: { navigation: any, activityPath: ActivityPath }) => {
+  const activity: ActivityType = useStore((state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId]);
   const dismissHint = useStore((state: any) => state.dismissHint);
   const theme = getTheme(activity.color);
   const palette = getThemePalette();
   const styles = getStyles(theme);
-
-  const newStat: Stat = {
-    label: "Last Value",
-    value: activity.unit.type === "none" ? "n_points" : "mean",
-    subUnit: activity.unit.type === "multiple" ? activity.unit.values[0].name : null,
-    period: "last_active_day",
-    tagFilters: [],
-  };
 
   return (
     <View style={styles.container}>
@@ -60,15 +51,12 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
                 <StatView key={index} stat={stat} activity={activity} onPress={() =>
                   {
                     dismissHint("overview_edit_hint");
-                    navigation.navigate("EditStat", {
-                      activityName: activityName,
-                      statId: index,
-                    })
+                    navigation.navigate("EditStat", {activityPath, statId: index})
                   }
                 } sharedTransitionTag={index == 0 ? "tag" : undefined} />
               ))}
             </Animated.View>
-            {activities.length > 2 && activity.dataPoints.length > 20 && activity.stats.length > 0 && 
+            {activity.dataPoints.length > 20 && activity.stats.length > 0 && 
             <Hint hint="overview_edit_hint" />}
           </View>
           <Divider />
@@ -77,14 +65,14 @@ const ActivitySummary = ({ navigation, activityName }: { navigation: any, activi
         <Fragment>
           {activity.calendars.map((_: CalendarProps, index: number) => (
             <Fragment key={`calendar-${index}`}>
-              <ActivityCalendar navigation={navigation} activityName={activityName} calendarIndex={index} />
+              <ActivityCalendar navigation={navigation} activityPath={activityPath} calendarIndex={index} />
               <Divider />
             </Fragment>
           ))}
 
           {activity.graphs.map((_: GraphProps, index: number) => (
             <Fragment key={`graph-${index}`}>
-              <ActivityGraph activityName={activityName} graphIndex={index} />
+              <ActivityGraph activityPath={activityPath} graphIndex={index} />
               <Divider />
             </Fragment>
           ))}

@@ -7,7 +7,7 @@ import {
 } from "react-native";
 import { Menu } from 'react-native-paper';
 import useStore from "../Model/Store";
-import { DataPoint, ActivityType, Tag, dateListToDate } from "../Model/StoreTypes";
+import { DataPoint, ActivityType, Tag, dateListToDate, State, ActivityPath } from "../Model/StoreTypes";
 import ActivitySummary from "./ActivitySummary";
 import { File, Paths } from "expo-file-system/next";
 import * as Sharing from 'expo-sharing';
@@ -25,12 +25,11 @@ type ActivityProps = {
 
 
 const Activity: React.FC<ActivityProps> = ({ navigation, route }) => {
-  const { activityName } = route.params;
-  const activities = useStore((state: any) => state.activities);
-  const activity = activities.find((a: ActivityType) => a.name === activityName);
+  const { activityPath } = route.params;
+  const activity: ActivityType = useStore((state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId]);
 
   return activity ? (
-    <ActivityInner activity={activity} navigation={navigation} />
+    <ActivityInner activity={activity} activityPath={activityPath} navigation={navigation} />
   ) : (
     <Text></Text>
   )
@@ -56,8 +55,7 @@ const renderCsv = (data: (string | number | null)[][]) => {
   }).join("\r\n");
 }
 
-const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ activity, navigation }) => {
-  const activityName = activity.name;
+const ActivityInner: React.FC<{ activity: ActivityType, activityPath: ActivityPath, navigation: any }> = ({ activity, activityPath, navigation }) => {
   const theme = getTheme(activity.color);
   const themeVariant = getThemeVariant();
   const [menuVisible, setMenuVisible] = React.useState(false);
@@ -88,7 +86,7 @@ const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ 
           text: "Delete",
           style: "destructive",
           onPress: () => {
-            deleteActivity(activity.name);
+            deleteActivity(activityPath);
             navigation.reset({
               index: 0,
               routes: [{ name: 'Activities' }],
@@ -165,7 +163,7 @@ const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ 
                 return (
                   <Button onPress={() => {
                     dismissHint("add_data_point");
-                    navigation.navigate("BleScaleInput", { activityName });
+                    navigation.navigate("BleScaleInput", { activityPath });
                   }}>
                     <BleScaleIcon color="white" />
                   </Button>
@@ -173,11 +171,11 @@ const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ 
               case null:
                 return (<PlusIconButton onPress={() => {
                   dismissHint("add_data_point");
-                  navigation.navigate("EditDataPoint", { activityName, newDataPoint: true });
+                  navigation.navigate("EditDataPoint", { activityPath, newDataPoint: true });
                 }} color="white" />);
             }
           })()}
-          <Button onPress={() => navigation.navigate("ActivityData", { activityName })}>
+          <Button onPress={() => navigation.navigate("ActivityData", { activityPath })}>
             <MaterialCommunityIcons name="text" size={24} color="white" />
           </Button>
           <DotsIconButton onPress={() => setMenuVisible(!menuVisible)} color="white" />
@@ -196,18 +194,18 @@ const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ 
           onDismiss={() => setMenuVisible(false)}
           anchor={<View style={{ width: 1, height: 1 }} />}
         >
-          <Menu.Item onPress={() => { setMenuVisible(false); navigation.navigate("EditActivity", { activityName })}} leadingIcon="pencil" title="Edit" />
+          <Menu.Item onPress={() => { setMenuVisible(false); navigation.navigate("EditActivity", { activityPath })}} leadingIcon="pencil" title="Edit" />
           <Menu.Item onPress={() => { setMenuVisible(false); exportActivityCsv() }} leadingIcon="file-export" title="Export" />
           <Menu.Item onPress={() => {
             setMenuVisible(false);
-            duplicateActivity(activity.name);
+            duplicateActivity(activityPath);
             navigation.reset({ index: 0, routes: [{ name: 'Activities' }] });
           }} leadingIcon="content-copy" title="Duplicate" />
           <Menu.Item onPress={() => { setMenuVisible(false); deleteActivityWrapper() }} leadingIcon="delete" title="Delete" />
         </Menu>
       </View>
       {activity.dataPoints.length === 0 && <Hint hint="add_data_point" />}
-      <ActivitySummary activityName={activityName} navigation={navigation} />
+      <ActivitySummary activityPath={activityPath} navigation={navigation} />
     </View>
   );
 };

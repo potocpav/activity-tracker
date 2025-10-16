@@ -33,6 +33,10 @@ import {
   HintType,
   allHints,
   BleScaleWorkoutState,
+  ActivityPath,
+  ActivityTab,
+  StatValue,
+  GraphType,
 } from "./StoreTypes";
 import { areUnitsEqual } from "./Unit";
 import { persist, createJSONStorage } from "zustand/middleware";
@@ -51,6 +55,19 @@ export const partialize = (state: State) => ({
   showHints: state.showHints,
   experimentalFeatures: state.experimentalFeatures,
 });
+
+const mapActivity = (state: State, activityPath: ActivityPath, f: (activity: ActivityType) => ActivityType) : {} | { activities: ActivityTab[] } => {
+  const oldActivity = state.activities[activityPath.tabId]?.activities[activityPath.activityId];
+  if (!oldActivity) {
+    return {};
+  }
+  const newActivity = f(oldActivity);
+  const newScreen = state.activities[activityPath.tabId].activities.slice(0);
+  newScreen[activityPath.activityId] = newActivity;
+  const newActivities = state.activities.slice(0);
+  newActivities[activityPath.tabId].activities = newScreen;
+  return { activities: newActivities };
+};
 
 const useStore = create<State>()(
   persist(
@@ -108,144 +125,137 @@ const useStore = create<State>()(
         set({ weekStart: weekStart });
       },
 
-      setActivities: (activities: ActivityType[]) => {
-        set({ activities: activities });
+      setActivities: (tabId: number, activities: ActivityType[]) => {
+        set((state: any) => ({ 
+          activities: state.activities.map(
+            (tab: ActivityTab, i: number) => i === tabId ? { ...tab, activities } : tab
+          ) 
+        }));
       },
 
-      duplicateActivity: (activityName: string) => {
+      duplicateActivity: (activityPath: ActivityPath) => {
         set((state: any) => {
-          const activityIx = state.activities.findIndex((a: ActivityType) => a.name === activityName);
-          if (activityIx === -1) {
-            console.error("Activity not found");
-            return {};
-          }
-          const newName = uniqueName((n: string) => state.activities.find((a: ActivityType) => a.name == n), state.activities[activityIx].name);
-          const newActivity = { ...state.activities[activityIx], name: newName };
-          const activities = [...state.activities.slice(0, activityIx + 1), newActivity, ...state.activities.slice(activityIx + 1)];
-          return { activities };
+          const oldScreenActivities = state.activities[activityPath.tabId].activities;
+          const newScreenActivities = [
+            ...oldScreenActivities.slice(0, activityPath.activityId + 1), 
+            oldScreenActivities[activityPath.activityId], 
+            ...oldScreenActivities.slice(activityPath.activityId + 1)
+          ];
+
+          const newActivities = state.activities.slice(0);
+          newActivities[activityPath.tabId].activities = newScreenActivities;
+          return { activities: newActivities };
         });
       },
 
-      deleteActivity: (activityName: string) => {
+      deleteActivity: (activityPath: ActivityPath) => {
         set((state: any) => {
-          const activities = state.activities.filter((activity: ActivityType) => activity.name !== activityName);
-          return { activities };
+          const newActivities = state.activities.slice(0);
+          newActivities[activityPath.tabId].activities.splice(activityPath.activityId, 1);
+          return { activities: newActivities };
         });
       },
 
-      updateActivity: (activityName: string | null, activity: ActivityType) => {
+      createActivity: (tabId: number, activity: ActivityType) => {
+        let newActivityPath: ActivityPath;
         set((state: any) => {
-          const activityExists = state.activities.find((a: ActivityType) => a.name === activityName);
-          if (activityExists) {
-            const activities = state.activities.map((a: ActivityType) => activityName === a.name ? activity : a);
-            return { activities };
-          } else {
+          const newActivities = state.activities.slice(0);
+          newActivities[tabId].activities.push(activity);
+          newActivityPath = { tabId, activityId: newActivities[tabId].activities.length - 1 };  
+          return { activities: newActivities };
+        });
+        return newActivityPath!;
+      },
+
+      updateActivity: (activityPath: ActivityPath | null, activity: ActivityType) => {
+        set((state: any) => {
+          if (activityPath === null) {
             return { activities: [...state.activities, activity] };
+          } else {
+            return mapActivity(state, activityPath, (_: ActivityType) =>  activity);
           }
         });
       },
 
-      setActivityCalendar: (activityName: string, calendarIndex: number, calendar: CalendarProps) => {
-        set((state: any) => {
-          const activities = state.activities.map((a: ActivityType) => activityName === a.name ? { ...a, calendars: a.calendars.map((c: CalendarProps, i: number) => i === calendarIndex ? calendar : c) } : a);
-          return { activities };
-        });
+      setActivityCalendar: (activityPath: ActivityPath, calendarIndex: number, calendar: CalendarProps) => {
+        set((state: any) => 
+          mapActivity(state, activityPath, (activity: ActivityType) => {
+            return { ...activity, calendars: activity.calendars.map((c: CalendarProps, i: number) => i === calendarIndex ? calendar : c) };
+          })
+        );
       },
 
-      cloneActivityCalendar: (activityName: string, calendarIndex: number) => {
-        set((state: any) => {
-          const activities = state.activities.map((a: ActivityType) => activityName === a.name ? {
-            ...a, calendars:
-              [...a.calendars.slice(0, calendarIndex + 1), a.calendars[calendarIndex], ...a.calendars.slice(calendarIndex + 1)]
-          } : a);
-          return { activities };
-        });
+      cloneActivityCalendar: (activityPath: ActivityPath, calendarIndex: number) => {
+        set((state: any) => 
+          mapActivity(state, activityPath, (activity: ActivityType) => {
+            return { ...activity, calendars: [...activity.calendars.slice(0, calendarIndex + 1), activity.calendars[calendarIndex], ...activity.calendars.slice(calendarIndex + 1)] };
+          })
+        );
       },
 
-      deleteActivityCalendar: (activityName: string, calendarIndex: number) => {
-        set((state: any) => {
-          const activities = state.activities.map((a: ActivityType) => activityName === a.name ? { ...a, calendars: [...a.calendars.slice(0, calendarIndex), ...a.calendars.slice(calendarIndex + 1)] } : a);
-          return { activities };
-        });
+      deleteActivityCalendar: (activityPath: ActivityPath, calendarIndex: number) => {
+        set((state: any) => 
+          mapActivity(state, activityPath, (activity: ActivityType) => {
+            return { ...activity, calendars: [...activity.calendars.slice(0, calendarIndex), ...activity.calendars.slice(calendarIndex + 1)] };
+          })
+        );
       },
 
-      setActivityGraph: (activityName: string, graphIndex: number, graph: GraphProps) => {
-        set((state: any) => {
-          const activities = state.activities.map((a: ActivityType) => activityName === a.name ? { ...a, graphs: a.graphs.map((g: GraphProps, i: number) => i === graphIndex ? graph : g) } : a);
-          return { activities };
-        });
+      setActivityGraph: (activityPath: ActivityPath, graphIndex: number, graph: GraphProps) => {
+        set((state: any) => 
+          mapActivity(state, activityPath, (activity: ActivityType) => {
+            return { ...activity, graphs: activity.graphs.map((g: GraphProps, i: number) => i === graphIndex ? graph : g) };
+          })
+        );
       },
 
-      cloneActivityGraph: (activityName: string, graphIndex: number) => {
-        set((state: any) => {
-          const activities = state.activities.map((a: ActivityType) => activityName === a.name ? {
-            ...a, graphs:
-              [...a.graphs.slice(0, graphIndex + 1), a.graphs[graphIndex], ...a.graphs.slice(graphIndex + 1)]
-          } : a);
-          return { activities };
-        });
+      cloneActivityGraph: (activityPath: ActivityPath, graphIndex: number) => {
+        set((state: any) => 
+          mapActivity(state, activityPath, (activity: ActivityType) => {
+            return { ...activity, graphs: [...activity.graphs.slice(0, graphIndex + 1), activity.graphs[graphIndex], ...activity.graphs.slice(graphIndex + 1)] };
+          })
+        );
       },
 
-      deleteActivityGraph: (activityName: string, graphIndex: number) => {
-        set((state: any) => {
-          const activities = state.activities.map((a: ActivityType) => activityName === a.name ? { ...a, graphs: [...a.graphs.slice(0, graphIndex), ...a.graphs.slice(graphIndex + 1)] } : a);
-          return { activities };
-        });
+      deleteActivityGraph: (activityPath: ActivityPath, graphIndex: number) => {
+        set((state: any) => 
+          mapActivity(state, activityPath, (activity: ActivityType) => {
+            return { ...activity, graphs: [...activity.graphs.slice(0, graphIndex), ...activity.graphs.slice(graphIndex + 1)] };
+          })
+        );
       },
 
-      setActivityStat: (activityName: string, statId: number, stat: Stat) => {
-        set((state: any) => {
-          const activities = state.activities.map((a: ActivityType) =>
-            activityName === a.name
-              ? {
-                ...a,
-                stats: a.stats.map((s: Stat, i: number) =>
-                  i === statId ? stat : s
-                )
-              }
-              : a
-          );
-          return { activities };
-        });
+      setActivityStat: (activityPath: ActivityPath, statId: number, stat: Stat) => {
+        set((state: any) => 
+          mapActivity(state, activityPath, (activity: ActivityType) => {
+            return { ...activity, stats: activity.stats.map((s: Stat, i: number) => i === statId ? stat : s) };
+          })
+        );
       },
 
-      cloneActivityStat: (activityName: string, statId: number) => {
-        set((state: any) => {
-          const activities = state.activities.map((a: ActivityType) =>
-            activityName === a.name
-              ? {
-                ...a,
-                stats: [...a.stats.slice(0, statId + 1), a.stats[statId], ...a.stats.slice(statId + 1)]
-              }
-              : a);
-          return { activities };
-        });
+      cloneActivityStat: (activityPath: ActivityPath, statId: number) => {
+        set((state: any) => 
+          mapActivity(state, activityPath, (activity: ActivityType) => {
+            return { ...activity, stats: [...activity.stats.slice(0, statId + 1), activity.stats[statId], ...activity.stats.slice(statId + 1)] };
+          })
+        );
       },
 
-      deleteActivityStat: (activityName: string, statId: number) => {
-        set((state: any) => {
-          const activities = state.activities.map((a: ActivityType) =>
-            activityName === a.name
-              ? {
-                ...a,
-                stats: a.stats.filter((s: Stat, i: number) => i !== statId)
-              }
-              : a);
-          return { activities };
-        });
+      deleteActivityStat: (activityPath: ActivityPath, statId: number) => {
+        set((state: any) => 
+          mapActivity(state, activityPath, (activity: ActivityType) => {
+            return { ...activity, stats: activity.stats.filter((s: Stat, i: number) => i !== statId) };
+          })
+        );
       },
 
-      setUnit: (activityName: string, unit: Unit, unitMap: { oldName: string | null, newName: string }[]) => {
-        set((state: any) => {
-          const activity = state.activities.find((a: ActivityType) => a.name === activityName);
-          if (!activity) {
-            console.error("Activity not found");
-            return {};
-          }
-          // don't update unit if it's the same
-          if (areUnitsEqual(activity.unit, unit)) {
-            return {};
-          }
+      setUnit: (activityPath: ActivityPath, unit: Unit, unitMap: { oldName: string | null, newName: string }[]) => {
+        set((state: any) => 
+          mapActivity(state, activityPath, (activity: ActivityType) => {
+            // don't update unit if it's the same
+            if (areUnitsEqual(activity.unit, unit)) {
+              return activity;
+            }
 
           const setSubUnitName = (oldName: string | null) => {
             switch (unit.type) {
@@ -331,7 +341,7 @@ const useStore = create<State>()(
           // update calendars, graphs, and stats
 
           const newCalendars = activity.calendars.map((calendar: CalendarProps) => {
-            let newCalendarValue;
+            let newCalendarValue: StatValue;
             if (unit.type === "none") {
               newCalendarValue = "n_points";
             } else {
@@ -346,7 +356,7 @@ const useStore = create<State>()(
           });
 
           const newGraphs = activity.graphs.map((graph: GraphProps) => {
-            let newGraphType;
+            let newGraphType: GraphType;
             let newBinSize = graph.binSize;
             if (unit.type === "none" && activity.unit.type !== "none") {
               newGraphType = "bar-count";
@@ -372,7 +382,7 @@ const useStore = create<State>()(
             subUnit: setSubUnitName(stat.subUnit)
           }));
 
-          const newActivity = {
+          const newActivity: ActivityType = {
             ...activity,
             unit,
             dataPoints: newDataPoints,
@@ -380,11 +390,12 @@ const useStore = create<State>()(
             graphs: newGraphs,
             stats: newStats
           };
-          return { activities: state.activities.map((a: ActivityType) => a.name === activityName ? newActivity : a) };
-        });
+          return newActivity;
+          })
+        );
       },
 
-      setTags: (activityName: string, tags: SetTag[]) => {
+      setTags: (activityPath: ActivityPath, tags: SetTag[]) => {
         const newTagNames = tags.map((t: SetTag) => t.name);
         const oldTagNames = tags.map((t: SetTag) => t.oldTagName).filter((t: TagName | null) => t !== null);
         if (new Set(newTagNames).size !== newTagNames.length) {
@@ -411,92 +422,93 @@ const useStore = create<State>()(
             }
           }
         };
-        const updateTagFilters = (tagFilters: TagFilter[]) =>
+        const updateTagFilters = (tagFilters: TagFilter[]) : TagFilter[] =>
           tagFilters.map((tf: TagFilter) => ({
             ...tf,
             name: updateTag(tf.name)
-          })).filter((tf: any) => tf.name !== null);
+          })).filter((tf: any) => tf.name !== null) as TagFilter[];
 
-        set((state: any) => {
-          const activities = state.activities.map((activity: ActivityType) => activity.name === activityName ? {
-            ...activity,
-            tags: newTags,
-            stats: activity.stats.map((stat: Stat) => ({
-              ...stat,
-              tagFilters: updateTagFilters(stat.tagFilters)
-            })),
-            calendars: activity.calendars.map((calendar: CalendarProps) => ({
-              ...calendar,
-              tagFilters: updateTagFilters(calendar.tagFilters)
-            })),
-            graphs: activity.graphs.map((graph: GraphProps) => ({
-              ...graph,
-              tagFilters: updateTagFilters(graph.tagFilters)
-            })),
-            dataPoints: activity.dataPoints.map((dp: DataPoint) => {
-              const newTags = updateTags(dp.tags);
-              if (newTags === undefined) {
-                return dp;
-              } else {
-                return {
-                  ...dp,
-                  tags: newTags
-                }
-              }
-            })
-          } : activity);
-          return { activities };
-        });
-      },
-
-      findTag: (activityName: string, tagName: string) => {
-        return get().activities.find((a: ActivityType) => a.name === activityName)?.tags.find((t: Tag) => t.name === tagName);
-      },
-
-      addTag: (activityName: string, tag: Tag) => {
-        set((state: any) => {
-          const existingTags = state.activities.find((a: ActivityType) => a.name === activityName)?.tags;
-          if (!existingTags.find((t: Tag) => t.name === tag.name)) {
-            const activities = state.activities.map((activity: ActivityType) => activity.name === activityName ? { ...activity, tags: [...activity.tags, tag] } : activity);
-            return { activities };
-          } else {
-            console.error("Tag already exists");
-            return {};
-          }
-        });
-      },
-
-      deleteTag: (activityName: string, tagName: string) => {
-        set((state: any) => {
-          const updateDataPoints = (dataPoints: DataPoint[]) => {
-            return dataPoints.map((dataPoint: DataPoint) => {
-              if (dataPoint.tags == undefined) {
-                return dataPoint;
-              } else {
-                const newTags = dataPoint.tags.filter((t: string) => t !== tagName);
-                if (newTags.length > 0) {
-                  return { ...dataPoint, tags: newTags };
-                } else {
-                  return dataPoint;
-                }
-              }
-            });
-          }
-          const updateTags = (tags: Tag[]) => {
-            return tags.filter((t: Tag) => t.name !== tagName);
-          }
-          const activities = state.activities.map((activity: ActivityType) => activity.name === activityName ?
-            {
+        set((state: any) => 
+          mapActivity(state, activityPath, (activity: ActivityType) => {
+            const newActivity: ActivityType = {
               ...activity,
-              tags: updateTags(activity.tags),
-              dataPoints: updateDataPoints(activity.dataPoints)
-            } : activity);
-          return { activities };
-        });
+              tags: newTags,
+              stats: activity.stats.map((stat: Stat) => ({
+                ...stat,
+                tagFilters: updateTagFilters(stat.tagFilters)
+              })),
+              calendars: activity.calendars.map((calendar: CalendarProps) => ({
+                ...calendar,
+                tagFilters: updateTagFilters(calendar.tagFilters)
+              })),
+              graphs: activity.graphs.map((graph: GraphProps) => ({
+                ...graph,
+                tagFilters: updateTagFilters(graph.tagFilters)
+              })),
+              dataPoints: activity.dataPoints.map((dp: DataPoint) => {
+                const newTags = updateTags(dp.tags);
+                if (newTags === undefined) {
+                  return dp;
+                } else {
+                  return {
+                    ...dp,
+                    tags: newTags
+                  }
+                }
+              })
+            };
+            return newActivity;
+          })
+        );
       },
 
-      renameTag: (activityName: string, tagName: string, newTagName: string) => {
-        set((state: any) => {
+      findTag: (activityPath: ActivityPath, tagName: string) => {
+        return get().activities[activityPath.tabId].activities[activityPath.activityId].tags.find((t: Tag) => t.name === tagName);
+      },
+
+      addTag: (activityPath: ActivityPath, tag: Tag) => {
+        set((state: any) => 
+          mapActivity(state, activityPath, (activity: ActivityType) => ({ 
+            ...activity, 
+            tags: [...activity.tags, tag] 
+          }))
+        );
+      },
+
+      deleteTag: (activityPath: ActivityPath, tagName: string) => {
+        set((state: any) => 
+          mapActivity(state, activityPath, (activity: ActivityType) => {
+            const updateDataPoints = (dataPoints: DataPoint[]) => {
+              return dataPoints.map((dataPoint: DataPoint) => {
+                if (dataPoint.tags == undefined) {
+                  return dataPoint;
+                } else {
+                  const newTags = dataPoint.tags.filter((t: string) => t !== tagName);
+                  if (newTags.length > 0) {
+                    return { ...dataPoint, tags: newTags };
+                  } else {
+                    return dataPoint;
+                  }
+                }
+              });
+            }
+            const updateTags = (tags: Tag[]) => {
+              return tags.filter((t: Tag) => t.name !== tagName);
+            }
+            const newActivity: ActivityType =
+              {
+                ...activity,
+                tags: updateTags(activity.tags),
+                dataPoints: updateDataPoints(activity.dataPoints)
+              };
+            return newActivity;
+          })
+        );
+      },
+
+      renameTag: (activityPath: ActivityPath, tagName: string, newTagName: string) => {
+        set((state: any) => 
+          mapActivity(state, activityPath, (activity: ActivityType) => {
           const updateTags = (tags: Tag[], oldTagName: string, newTagName: string) => {
             return tags.map((tag: Tag) => tag.name === oldTagName ? { ...tag, name: newTagName } : tag);
           }
@@ -509,87 +521,73 @@ const useStore = create<State>()(
               }
             });
           }
-          const activities = state.activities.map((activity: ActivityType) => activity.name === activityName ? {
+          const newActivity: ActivityType = {
             ...activity,
             tags: updateTags(activity.tags, tagName, newTagName),
             dataPoints: updateDataPoints(activity.dataPoints, tagName, newTagName)
-          } : activity);
+          };
+          return newActivity;
+          })
+        );
+      },  
 
-          return { activities };
-        });
-      },
-
-      updateActivityDataPoint: (activityName: string, dataPointIndex: number | undefined, updatedDataPoint: DataPoint) => {
+      updateActivityDataPoint: (activityPath: ActivityPath, dataPointIndex: number | undefined, updatedDataPoint: DataPoint) => {
         var insertIndex: number = NaN;
-        set((state: any) => {
-          if (updatedDataPoint.tags?.length === 0) {
-            delete updatedDataPoint.tags;
-          }
-          const activities = state.activities.map((activity: ActivityType) => {
-            if (activity.name === activityName) {
-              const updatedDataPoints = [...activity.dataPoints];
-              if (dataPointIndex !== undefined) {
-                if (dayCmp(updatedDataPoint, updatedDataPoints[dataPointIndex].date) == 0) {
-                  // if date is the same, update in place
-                  updatedDataPoints[dataPointIndex] = updatedDataPoint;
-                  insertIndex = dataPointIndex;
-                } else {
-                  // if date is different, remove the old data point and insert the new one as the last element in the new day
-                  updatedDataPoints.splice(dataPointIndex, 1);
-                  insertIndex = findZeroSlice(updatedDataPoints, (dp: DataPoint) => dayCmp(dp, updatedDataPoint.date))[1];
-                  updatedDataPoints.splice(insertIndex, 0, updatedDataPoint);
-                }
+        set((state: any) => 
+          mapActivity(state, activityPath, (activity: ActivityType) => {
+            if (updatedDataPoint.tags?.length === 0) {
+              delete updatedDataPoint.tags;
+            }
+            const updatedDataPoints = [...activity.dataPoints];
+            if (dataPointIndex !== undefined) {
+              if (dayCmp(updatedDataPoint, updatedDataPoints[dataPointIndex].date) == 0) {
+                // if date is the same, update in place
+                updatedDataPoints[dataPointIndex] = updatedDataPoint;
+                insertIndex = dataPointIndex;
               } else {
-                // if data point index is undefined, insert the new data point as the last element in the new day
+                // if date is different, remove the old data point and insert the new one as the last element in the new day
+                updatedDataPoints.splice(dataPointIndex, 1);
                 insertIndex = findZeroSlice(updatedDataPoints, (dp: DataPoint) => dayCmp(dp, updatedDataPoint.date))[1];
                 updatedDataPoints.splice(insertIndex, 0, updatedDataPoint);
               }
-              return { ...activity, dataPoints: updatedDataPoints };
+            } else {
+              // if data point index is undefined, insert the new data point as the last element in the new day
+              insertIndex = findZeroSlice(updatedDataPoints, (dp: DataPoint) => dayCmp(dp, updatedDataPoint.date))[1];
+              updatedDataPoints.splice(insertIndex, 0, updatedDataPoint);
             }
-            return activity;
-          });
-          return { activities };
-        });
+            return { ...activity, dataPoints: updatedDataPoints };
+          })
+        );
         return insertIndex;
       },
 
       // users need to make sure that the date is monotonic
       // TODO: double check it
-      appendActivityDataPoint: (activityName: string, dataPoint: DataPoint) => {
-        set((state: any) => {
-          const activities = state.activities.map((activity: ActivityType) => activity.name === activityName ? { 
-            ...activity, 
-            dataPoints: [...activity.dataPoints, dataPoint] 
-          } : activity);
-          return { activities };
-        });
+      appendActivityDataPoint: (activityPath: ActivityPath, dataPoint: DataPoint) => {
+        set((state: State) => 
+          mapActivity(state, activityPath, (activity: ActivityType) => {
+            return { ...activity, dataPoints: [...activity.dataPoints, dataPoint] };
+          })
+        );
       },
 
-      deleteActivityDataPoint: (activityName: string, dataPointIndex: number) => {
-        set((state: any) => {
-          const activities = state.activities.map((activity: ActivityType) => {
-            if (activity.name === activityName) {
-              const updatedDataPoints = [...activity.dataPoints];
-              updatedDataPoints.splice(dataPointIndex, 1);
-              return { ...activity, dataPoints: updatedDataPoints };
-            }
-            return activity;
-          });
-          return { activities };
-        });
+      deleteActivityDataPoint: (activityPath: ActivityPath, dataPointIndex: number) => {
+        set((state: State) => 
+          mapActivity(state, activityPath, (activity: ActivityType) => {
+            const updatedDataPoints = [...activity.dataPoints];
+            updatedDataPoints.splice(dataPointIndex, 1);
+            return { ...activity, dataPoints: updatedDataPoints };
+          })
+        );
       },
 
-      deleteActivityDataPoints: (activityName: string, dpIndices: number[]) => {
-        set((state: any) => {
-          const activities = state.activities.map((activity: ActivityType) => {
-            if (activity.name === activityName) {
-              const updatedDataPoints = activity.dataPoints.filter((_, index) => !dpIndices.includes(index));
-              return { ...activity, dataPoints: updatedDataPoints };
-            }
-            return activity;
-          });
-          return { activities };
-        });
+      deleteActivityDataPoints: (activityPath: ActivityPath, dpIndices: number[]) => {
+        set((state: State) => 
+          mapActivity(state, activityPath, (activity: ActivityType) => {
+            const updatedDataPoints = activity.dataPoints.filter((_, index) => !dpIndices.includes(index));
+            return { ...activity, dataPoints: updatedDataPoints };
+          })
+        );
       },
 
       requestPermissions: requestPermissions,

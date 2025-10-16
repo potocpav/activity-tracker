@@ -9,7 +9,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as Sharing from 'expo-sharing';
 import { getTheme, getThemeVariant } from '../Model/Theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { allHints, ActivityType, DateList, Unit } from '../Model/StoreTypes';
+import { allHints, ActivityType, DateList, Unit, ActivityTab } from '../Model/StoreTypes';
 import { cmpDateList, uniqueName } from '../Model/Activity';
 import { SystemBars } from 'react-native-edge-to-edge';
 import * as SQLite from 'expo-sqlite';
@@ -43,7 +43,6 @@ const Settings = () => {
     const data = JSON.stringify({ ...partialize(state), version: version }, null, 2);
     const date = new Date();
     const dateStr = date.toISOString().split('T')[0];
-
 
     const file = new File(Paths.cache, `activities-${dateStr}.json`);
     try {
@@ -89,9 +88,12 @@ const Settings = () => {
 
         migrated = {
           ...migrated,
-          activities: migrated.activities.map((activity: ActivityType) => ({
-            ...activity,
-            dataPoints: [...activity.dataPoints].sort((a, b) => cmpDateList(a.date, b.date))
+          activities: migrated.activities.map((tab: ActivityTab) => ({
+            ...tab,
+            activities: tab.activities.map((activity: ActivityType) => ({
+              ...activity,
+              dataPoints: [...activity.dataPoints].sort((a, b) => cmpDateList(a.date, b.date))
+            }))
           })),
         };
 
@@ -159,7 +161,7 @@ const Settings = () => {
           };
           activities.push(activity);
         }
-        setActivities([...state.activities, ...activities]);
+        setActivities(0, [...state.activities[0].activities, ...activities]);
         ToastAndroid.show("Data imported successfully", ToastAndroid.SHORT);
       } catch (error) {
         console.error(error);

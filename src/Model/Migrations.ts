@@ -7,7 +7,7 @@ import {
   allHints
 } from "./StoreTypes";
 
-export const version = 27;
+export const version = 28;
 
 export const migrate = (persisted: any, version: number) => {
   if (version < 6) {
@@ -119,6 +119,13 @@ export const migrate = (persisted: any, version: number) => {
   if (version < 27) {
     persisted.bleScaleWorkoutState = null;
     delete persisted.workoutState;
+  }
+  if (version < 28) {
+    persisted.activities = 
+    [{
+      tabName: "Activities",
+      activities: persisted.activities
+    }];
   }
   return persisted
 };

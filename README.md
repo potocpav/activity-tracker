@@ -43,7 +43,7 @@ Track your performance metrics and their progress over time. With custom statist
 ## Planned features
 
 - [ ] Multiple acitivity screens
-  - [ ] Allow duplicate activity names
+  - [x] Allow duplicate activity names
   - [ ] Import into a new tab from Habit Tracker
   - [ ] Drag and drop activities between tabs
   - [ ] Multiple activity selection
@@ -58,6 +58,8 @@ Track your performance metrics and their progress over time. With custom statist
 - [ ] Persistent timers as notifications
   - [ ] Show running timers on activity screen
 - [ ] Minor features
+  - [ ] BLE Input on tiny screens
+  - [ ] BLE Input font size debugging
   - [ ] Unit conversions: kg <-> lbs, etc. This could include the ability to input values in different units - useful for climbing grades.
   - [ ] Slash grades for French and Font climbing grades
   - [ ] Scroll climbing grade picker to the selected grade more reliably

@@ -3,7 +3,7 @@ import {StyleSheet, Text, Platform, View, useWindowDimensions} from "react-nativ
 import useStore from "../Model/Store";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { getTheme, getThemePalette, getThemeVariant } from "../Model/Theme";
-import { ActivityType, BleScaleWorkoutState, DataPoint, dateToDateList, Tag } from "../Model/StoreTypes";
+import { ActivityType, BleScaleWorkoutState, DataPoint, dateToDateList, State, Tag } from "../Model/StoreTypes";
 import { MD3Theme, Button as PaperButton } from "react-native-paper";
 import { matchFont, Points, Text as SkiaText, vec, Canvas, Color, SkFont } from "@shopify/react-native-skia";
 import Animated, { useSharedValue, useFrameCallback, useDerivedValue, LinearTransition, FadeIn, SharedValue } from "react-native-reanimated";
@@ -66,9 +66,8 @@ const CenteredAnimatedText = ({ longestText, text, font, color }: { longestText:
 };
 
 const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
-  const { activityName } = route.params;
-  const activities = useStore((state: any) => state.activities);
-  const activity = activities.find((a: ActivityType) => a.name === activityName);
+  const { activityPath } = route.params;
+  const activity: ActivityType = useStore((state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId]);
   const appendActivityDataPoint = useStore((state: any) => state.appendActivityDataPoint);
   const theme = getTheme(activity.color);
   const themeVariant = getThemeVariant();
@@ -89,8 +88,20 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   const scanForPeripherals = useStore((state: any) => state.scanForPeripherals);
   const disconnectDevice = useStore((state: any) => state.disconnectDevice);
 
+  if (activity.unit.type !== "multiple") {
+    navigation.goBack();
+    console.error("BleScaleInput: Activity unit type is not multiple");
+    return;
+  }
+
   const weightUnit = activity.unit.values.find((u: any) => u.name === "Weight")?.unit;
   const timeUnit = activity.unit.values.find((u: any) => u.name === "Time")?.unit;
+
+  if (weightUnit === undefined || timeUnit === undefined || weightUnit.type !== "weight" || timeUnit.type !== "time") {
+    navigation.goBack();
+    console.error("BleScaleInput: Weight or time unit is wrong");
+    return;
+  }
 
   const workoutState: BleScaleWorkoutState | null = useStore((state: any) => state.bleScaleWorkoutState);
   const setWorkoutState: (workoutState: BleScaleWorkoutState | null) => void = useStore((state: any) => state.setBleScaleWorkoutState);
@@ -109,7 +120,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
     currentPull: { t0: 0, wSum: 0, wCount: 0, wMax: 0, wMin: 0, active: false },
   });
   const [newDataPoint, setNewDataPoint] = useState<DataPoint | null>(null);
-  let pastDataPoints = activity.dataPoints
+  let pastDataPoints : { dataPoint: DataPoint | null, index: number }[] = activity.dataPoints
     .map((dp: DataPoint, i: number) => ({ dataPoint: dp, index: i }))
     .slice(...findZeroSlice(activity.dataPoints, (dp) => dayCmp(dp, today)))
   pastDataPoints.push({ dataPoint: null, index: NaN });
@@ -123,9 +134,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
     setInputTags(inputTags.includes(tag) ? inputTags.filter((t: string) => t !== tag) : [...inputTags, tag]);
   }
 
-  const largeTextBox = largeFont.measureText("00.00 kg");
-
-  const weightInLb = activity.unit.values?.[0]?.unit?.unit === "lb";
+  const weightInLb = (activity.unit.values[0] as any).unit?.unit === "lb";
   const minPullWeight = activity.special?.minWeight ?? NaN;
   const minPullDuration = 2.5;
   const showAbovePullWeight = minPullWeight;
@@ -166,7 +175,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   useEffect(() => {
     // indirection is necessary, because we can't set Zustand state in `setScaleInput` directly
     if (newDataPoint) {
-      appendActivityDataPoint(activityName, {
+      appendActivityDataPoint(activityPath, {
         ...newDataPoint,
         ...(inputTags.length > 0 ? { tags: inputTags } : {})
       });
@@ -425,7 +434,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
         }
       }
     })
-  }, [theme, activityName, navigation, connecting, connectedDevice]);
+  }, [theme, activityPath, navigation, connecting, connectedDevice]);
 
   const buttonsAndChart = (
     <>
@@ -581,6 +590,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
             <Animated.View layout={LinearTransition}>
               <DataPointCard
                 activity={activity}
+                activityPath={activityPath}
                 i={item.index}
                 repNumber={pastDataPoints.length - index}
                 theme={theme}

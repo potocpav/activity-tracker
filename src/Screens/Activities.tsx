@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -39,14 +39,15 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
   const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);
 
+  const [revision, setRevision] = useState(0);
+
   React.useEffect(() => {
     navigation.setOptions({
-      // title: activity.name,
       headerRight: () => (
         <ButtonRow>
           <PlusIconButton onPress={() => {
             dismissHint("hello");
-            navigation.navigate('EditActivity', { activityName: null });
+            navigation.navigate('EditActivity', { activityPath: null });
           }} color={theme.colors.onSurface} />
           <Button onPress={() => {
             dismissHint("hello");
@@ -59,8 +60,9 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
     });
   }, [navigation, theme]);
 
-  const renderActivity = ({ item, drag }: { item: ActivityType, drag: () => void }) => {
+  const renderActivity = ({ item, getIndex, drag }: { item: ActivityType, getIndex: () => number | undefined, drag: () => void }) => {
     const activity = item;
+    const activityPath = { tabId: 0, activityId: getIndex() };
 
     let stats;
     if (wideDisplay) {
@@ -81,7 +83,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
     return (
       <View style={styles.activityCard}>
         <Pressable
-          onPress={() => navigation.navigate('Activity', { activityName: activity.name })}
+          onPress={() => navigation.navigate('Activity', { activityPath })}
           onLongPress={drag}
           android_ripple={{ foreground: true }}
           style={({ pressed }) => [styles.activityRow,
@@ -106,17 +108,17 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
             dismissHint("quickly_add_point");
             if (activity.unit.type === "none") {
               if (todayPointIndices.length > 0) {
-                navigation.navigate('EditDataPoint', { activityName: activity.name, dataPointIndex: todayPointIndices[todayPointIndices.length - 1] });
+                navigation.navigate('EditDataPoint', { activityPath, dataPointIndex: todayPointIndices[todayPointIndices.length - 1] });
               } else {
-                navigation.navigate('EditDataPoint', { activityName: activity.name, newDataPoint: true });
+                navigation.navigate('EditDataPoint', { activityPath, newDataPoint: true });
               }
             } else {
               switch (activity.special?.type ?? null) {
                 case "ble_scale":
-                  navigation.navigate("BleScaleInput", { activityName: activity.name });
+                  navigation.navigate("BleScaleInput", { activityPath });
                   break;
                 case null:
-                  navigation.navigate('EditDataPoint', { activityName: activity.name, newDataPoint: true });
+                  navigation.navigate('EditDataPoint', { activityPath, newDataPoint: true });
                   break;
               }
             }
@@ -124,9 +126,9 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
           onLongPress={() => {
             if (activity.unit.type === "none") {
               if (todayPointIndices.length > 0) {
-                deleteActivityDataPoint(activity.name, todayPointIndices[0]);
+                deleteActivityDataPoint(activityPath, todayPointIndices[0]);
               } else {
-                updateActivityDataPoint(activity.name, undefined, { date: today });
+                updateActivityDataPoint(activityPath, undefined, { date: today });
               }
             }
           }}
@@ -175,11 +177,11 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
         <EmptyPagePlaceholder title="No activities" subtext="Tap the + button to create an activity" />
       ) : (
         <DraggableFlatList
-          data={activities}
+          data={activities[0].activities}
           onDragBegin={() => dismissHint("reorder_activities")}
-          onDragEnd={({ data }) => setActivities(data)}
+          onDragEnd={({ data }) => { setActivities(0, data); setRevision(revision + 1); }}
           renderItem={renderActivity}
-          keyExtractor={(item) => item.name}
+          keyExtractor={(item, index) => (index.toString() + revision.toString())}
           contentContainerStyle={styles.listContainer}
           ListFooterComponent={() => <Inset type="bottom" />}
         />

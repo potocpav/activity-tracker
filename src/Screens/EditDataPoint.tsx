@@ -8,7 +8,7 @@ import {
   Pressable,
 } from "react-native";
 import { TextInput, MD3Theme } from 'react-native-paper';
-import { ActivityType, dateToDateList, DataPoint, dateListToDate, SubUnit, DateList } from "../Model/StoreTypes";
+import { ActivityType, dateToDateList, DataPoint, dateListToDate, SubUnit, DateList, State } from "../Model/StoreTypes";
 import useStore from "../Model/Store";
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { CheckButton, CheckPlusButton, DeleteButton, ButtonRow, Button } from "../Components/Element";
@@ -29,14 +29,12 @@ type EditDataPointProps = {
 };
 
 const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
-  const { activityName, dataPointIndex, newDataPoint, newDataPointDate, tags } = route.params;
-  const activities = useStore((state: any) => state.activities);
-  const activity: ActivityType = activities.find((a: ActivityType) => a.name === activityName);
+  const { activityPath, dataPointIndex, newDataPoint, newDataPointDate, tags } = route.params;
+  const activity: ActivityType = useStore((state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId]);
   const theme = getTheme(activity.color);
   const styles = getStyles(theme);
   const themeVariant = getThemeVariant();
   const palette = getThemePalette();
-  const [datePickerVisible, setDatePickerVisible] = useState(false);
   const locale = Intl.DateTimeFormat().resolvedOptions().locale;
   const weekStart = useStore((state: any) => state.weekStart);
   const dismissHint = useStore((state: any) => state.dismissHint);
@@ -130,7 +128,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   }
 
   const deleteDataPointWrapper = () => {
-    deleteActivityDataPoint(activityName, dataPointIndex);
+    deleteActivityDataPoint(activityPath, dataPointIndex);
     navigation.goBack();
   };
 
@@ -192,7 +190,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
     }
 
     const note = noteInput === "" ? {} : { "note": noteInput };
-    const newIndex = updateActivityDataPoint(activityName, newDataPoint ? undefined : dataPointIndex, {
+    const newIndex = updateActivityDataPoint(activityPath, newDataPoint ? undefined : dataPointIndex, {
       date: inputDateList,
       ...(newValue === undefined ? {} : { value: newValue }),
       ...(inputTags.length > 0 ? { tags: inputTags } : {}),
@@ -205,7 +203,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   const duplicateDataPointWrapper = () => {
     const newIndex = saveDataPointWrapper();
     ToastAndroid.show('Data point saved', ToastAndroid.SHORT);
-    navigation.navigate("EditDataPoint", { activityName, dataPointIndex: newIndex, newDataPoint: true });
+    navigation.navigate("EditDataPoint", { activityPath, dataPointIndex: newIndex, newDataPoint: true });
   };
 
   const showDatePicker = () => {

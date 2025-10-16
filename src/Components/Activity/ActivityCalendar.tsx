@@ -7,7 +7,7 @@ import {
   ToastAndroid,
 } from "react-native";
 import useStore from "../../Model/Store";
-import { ActivityType, StatValue } from "../../Model/StoreTypes";
+import { ActivityPath, ActivityType, StatValue, State} from "../../Model/StoreTypes";
 import TagMenu from "../TagMenu";
 import Calendar from "../Calendar";
 import ValueMenu from "../ValueMenu";
@@ -21,7 +21,7 @@ const locale = NativeModules.I18nManager.localeIdentifier;
 
 type ActivityCalendarProps = {
   navigation: any;
-  activityName: string;
+  activityPath: ActivityPath;
   calendarIndex: number;
 };
 
@@ -29,9 +29,8 @@ export const formatDate = (date: Date) => {
   return date.toLocaleDateString(locale, { year: "numeric", month: "short", day: "numeric" });
 };
 
-const ActivityCalendar = ({ navigation, activityName, calendarIndex }: ActivityCalendarProps) => {
-  const activities = useStore((state: any) => state.activities);
-  const activity: ActivityType = activities.find((a: ActivityType) => a.name === activityName);
+const ActivityCalendar = ({ navigation, activityPath, calendarIndex }: ActivityCalendarProps) => {
+  const activity = useStore((state: State) => state.activities[activityPath.tabId].activities[activityPath.activityId]);
   const calendar = activity.calendars[calendarIndex];
   const theme = getTheme(activity.color);
 
@@ -67,7 +66,7 @@ const ActivityCalendar = ({ navigation, activityName, calendarIndex }: ActivityC
       <View style={{ marginVertical: 5 }}>
         {calendarIndex === 0 && activity.dataPoints.length > 20 &&
           <Hint hint="rename_calendar" />}
-        <Calendar navigation={navigation} activityName={activityName} calendarIndex={calendarIndex} />
+        <Calendar navigation={navigation} activityPath={activityPath} calendarIndex={calendarIndex} />
       </View>
       {calendarIndex === 0 && activity.dataPoints.length > 0 && <Hint hint="calendar_introduction" />}
       {calendarIndex === 0 && activity.unit.type === "none" && activity.dataPoints.length > 10 &&
@@ -78,7 +77,7 @@ const ActivityCalendar = ({ navigation, activityName, calendarIndex }: ActivityC
             tags={calendar.tagFilters}
             activity={activity}
             onChange={(tags) => {
-              setActivityCalendar(activityName, calendarIndex, { ...calendar, tagFilters: tags });
+              setActivityCalendar(activityPath, calendarIndex, { ...calendar, tagFilters: tags });
             }}
             menuVisible={tagsMenuVisible}
             setMenuVisible={setTagsMenuVisible}
@@ -89,14 +88,14 @@ const ActivityCalendar = ({ navigation, activityName, calendarIndex }: ActivityC
         <SubUnitMenu
           subUnitNames={subUnitNames}
           subUnitName={calendar.subUnit}
-          setSubUnitName={(name) => setActivityCalendar(activityName, calendarIndex, { ...calendar, subUnit: name })}
+          setSubUnitName={(name) => setActivityCalendar(activityPath, calendarIndex, { ...calendar, subUnit: name })}
           menuVisible={subUnitMenuVisible}
           setMenuVisible={setSubUnitMenuVisible}
           themeColors={theme.colors}
         />
         {activity.unit !== null && <ValueMenu
           value={calendar.value}
-          onChange={(v: StatValue) => setActivityCalendar(activityName, calendarIndex, { ...calendar, value: v })}
+          onChange={(v: StatValue) => setActivityCalendar(activityPath, calendarIndex, { ...calendar, value: v })}
           menuVisible={valueMenuVisible}
           setMenuVisible={setValueMenuVisible}
           themeColors={theme.colors}
@@ -116,7 +115,7 @@ const ActivityCalendar = ({ navigation, activityName, calendarIndex }: ActivityC
             <ButtonRow>
               {activity.calendars.length > 1 && (
                 <Button onPress={() => {
-                  deleteActivityCalendar(activityName, calendarIndex);
+                  deleteActivityCalendar(activityPath, calendarIndex);
                   setCalendarDialogVisible(false);
                   ToastAndroid.show('Calendar deleted', ToastAndroid.SHORT);
                 }}>
@@ -124,12 +123,12 @@ const ActivityCalendar = ({ navigation, activityName, calendarIndex }: ActivityC
                 </Button>
               )}
               <CopyButton onPress={() => {
-                cloneActivityCalendar(activityName, calendarIndex);
+                cloneActivityCalendar(activityPath, calendarIndex);
                 setCalendarDialogVisible(false);
                 ToastAndroid.show('Calendar cloned', ToastAndroid.SHORT);
               }} color={theme.colors.onSurface} />
               <CheckButton onPress={() => {
-                setActivityCalendar(activityName, calendarIndex, { ...calendar, label: calendarDialogNameInput });
+                setActivityCalendar(activityPath, calendarIndex, { ...calendar, label: calendarDialogNameInput });
                 setCalendarDialogVisible(false);
               }} color={theme.colors.onSurface} />
             </ButtonRow>

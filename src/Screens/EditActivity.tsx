@@ -7,7 +7,7 @@ import {
   Alert,
 } from "react-native";
 import { Dialog, Portal, SegmentedButtons, MD3Theme, Menu } from 'react-native-paper';
-import { ActivityType, SetTag, Tag, SubUnit, Unit, WeightUnit } from "../Model/StoreTypes";
+import { ActivityType, SetTag, Tag, SubUnit, Unit, WeightUnit, State, ActivityPath } from "../Model/StoreTypes";
 import { TextInput, Chip } from "react-native-paper";
 import { stringToNumber } from "../Model/Unit";
 import useStore from "../Model/Store";
@@ -48,12 +48,12 @@ const ColorButton = ({ color, onPress }: { color: number, onPress: () => void })
 };
 
 const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
-  const { activityName } = route.params;
-  const activities = useStore((state: any) => state.activities);
-  const activity: ActivityType | null = activities.find((a: ActivityType) => a.name === activityName) ?? null;
+  const activityPath : ActivityPath | null = route.params.activityPath;
+  const activity: ActivityType | null = activityPath ? useStore((state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId]) : null;
   const themeVariant = getThemeVariant();
   const palette = getThemePalette();
   const updateActivity = useStore((state: any) => state.updateActivity);
+  const createActivity = useStore((state: any) => state.createActivity);
   const setTags = useStore((state: any) => state.setTags);
   const setUnit = useStore((state: any) => state.setUnit);
 
@@ -80,8 +80,6 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   let activityNameError: string | null = null;
   if (activityNameInput === "") {
     activityNameError = "Enter activity name";
-  } else if ((activity === null || activityNameInput !== activity.name) && activities.find((a: ActivityType) => a.name === activityNameInput)) {
-    activityNameError = "An activity with this name already exists";
   }
 
   let unitModeError = null;
@@ -265,9 +263,13 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
         // don't update tags, they will be updated in the setTags call
       };
     }
-    const currentActivityName = activity === null ? updatedActivity.name : activity.name;
-    updateActivity(currentActivityName, updatedActivity);
-    setTags(updatedActivity.name, tagState);
+    let newActivityPath: ActivityPath | null = activityPath;
+    if (activityPath === null) {
+      newActivityPath = createActivity(0, updatedActivity);
+    } else {
+      updateActivity(activityPath, updatedActivity);
+    }
+    setTags(newActivityPath, tagState);
     let unitMap;
     switch (newUnit.type) {
       case "none":
@@ -280,10 +282,10 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
         unitMap = oldUnitMap.map((u) => ({ oldName: u.oldName, newName: multiUnitInput[u.newIndex].name }));
         break;
     }
-    setUnit(updatedActivity.name, newUnit, unitMap);
+    setUnit(newActivityPath, newUnit, unitMap);
     navigation.reset({
       index: 0,
-      routes: [{ name: 'Activities' }, { name: 'Activity', params: { activityName: updatedActivity.name } }],
+      routes: [{ name: 'Activities' }, { name: 'Activity', params: { activityPath: newActivityPath } }],
     });
   };
 
@@ -376,7 +378,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
         </ButtonRow>
       ),
     });
-  }, [activityName, navigation, theme, activity, activityNameInput, activityDescriptionInput, singleUnitInput, selectedColor, tagState, multiUnitInput, unitMode, specialType, bleMinWeight]);
+  }, [activityPath, navigation, theme, activity, activityNameInput, activityDescriptionInput, singleUnitInput, selectedColor, tagState, multiUnitInput, unitMode, specialType, bleMinWeight]);
 
   const onUpdateTag = (action: "delete" | "update") => {
     let hasError = false;
