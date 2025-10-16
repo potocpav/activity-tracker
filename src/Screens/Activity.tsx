@@ -16,6 +16,7 @@ import { SystemBars } from "react-native-edge-to-edge";
 import Hint from "../Components/Hint";
 import { BleScaleIcon, ButtonRow, DotsIconButton, EditIconButton, PlusIconButton, Button } from "../Components/Element";
 import { EncodingType } from "expo-file-system/src/ExpoFileSystem.types";
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 type ActivityProps = {
   navigation: any;
@@ -176,7 +177,9 @@ const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ 
                 }} color="white" />);
             }
           })()}
-          <EditIconButton onPress={() => navigation.navigate("EditActivity", { activityName })} color="white" />
+          <Button onPress={() => navigation.navigate("ActivityData", { activityName })}>
+            <MaterialCommunityIcons name="text" size={24} color="white" />
+          </Button>
           <DotsIconButton onPress={() => setMenuVisible(!menuVisible)} color="white" />
         </ButtonRow>
       ),
@@ -193,17 +196,14 @@ const ActivityInner: React.FC<{ activity: ActivityType, navigation: any }> = ({ 
           onDismiss={() => setMenuVisible(false)}
           anchor={<View style={{ width: 1, height: 1 }} />}
         >
-          <Menu.Item onPress={() => { setMenuVisible(false); navigation.navigate("ActivityData", { activityName }) }} title="Data" />
-          <Menu.Item onPress={() => { setMenuVisible(false); exportActivityCsv() }} title="Export" />
+          <Menu.Item onPress={() => { setMenuVisible(false); navigation.navigate("EditActivity", { activityName })}} leadingIcon="pencil" title="Edit" />
+          <Menu.Item onPress={() => { setMenuVisible(false); exportActivityCsv() }} leadingIcon="file-export" title="Export" />
           <Menu.Item onPress={() => {
             setMenuVisible(false);
             duplicateActivity(activity.name);
-            navigation.reset({
-              index: 0,
-              routes: [{ name: 'Activities' }],
-            });
-          }} title="Duplicate" />
-          <Menu.Item onPress={() => { setMenuVisible(false); deleteActivityWrapper() }} title="Delete" />
+            navigation.reset({ index: 0, routes: [{ name: 'Activities' }] });
+          }} leadingIcon="content-copy" title="Duplicate" />
+          <Menu.Item onPress={() => { setMenuVisible(false); deleteActivityWrapper() }} leadingIcon="delete" title="Delete" />
         </Menu>
       </View>
       {activity.dataPoints.length === 0 && <Hint hint="add_data_point" />}

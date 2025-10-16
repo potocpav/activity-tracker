@@ -42,35 +42,36 @@ Track your performance metrics and their progress over time. With custom statist
 
 ## Planned features
 
-- [ ] Multiple acitivity lists
-    - Allow duplicate activity names
-    - Import into a new tab from Habit Tracker
-    - Drag and drop activities between tabs
-- [ ]  Handle large number of data points
-  - [ ]  Bulk selection
-  - [ ]  Bulk editing
-- [ ] Unit conversions: kg <-> lbs, etc. This could include the ability to input values in different units - useful for climbing grades.
-- [ ] Tag groups to support mutually exclusive tags. This is blocked by drag-drop not working across multiple tab rows.
-- [ ] Keyboard avoidance in Edit Activity and other screens
-- [ ] Persistent timers with notifications
+- [ ] Multiple acitivity screens
+  - [ ] Allow duplicate activity names
+  - [ ] Import into a new tab from Habit Tracker
+  - [ ] Drag and drop activities between tabs
+  - [ ] Multiple activity selection
+- [ ] Handle large number of data points
+  - [ ] Bulk selection
+  - [ ] Bulk editing
+  - [ ] Bulk deletion
+- [ ] Tag groups to support mutually exclusive tags. 
+  - [ ] Drag-drop across multiple tab rows.
+  - [ ] Drag-drop the tag rows themeslves.
+  - [ ] Merge tag row buttons visually
+- [ ] Persistent timers as notifications
+  - [ ] Show running timers on activity screen
+- [ ] Minor features
+  - [ ] Unit conversions: kg <-> lbs, etc. This could include the ability to input values in different units - useful for climbing grades.
+  - [ ] Slash grades for French and Font climbing grades
+  - [ ] Scroll climbing grade picker to the selected grade more reliably
+  - [ ] Keyboard avoidance in Edit Activity and other screens
+  - [ ] Remember last tags for each activity
+  - [x] Switch Edit Activity and Data icons
 
 ## Changelog
 
-### 4.0.0 (In progress)
+### 3.3.0  (In progress)
 
-- [ ] Polish Bluetooth integration with Tindeq Progressor and other scales
-  - [x] Smooth endless scrolling
-  - [x] Lbs support
-  - [x] Min weight configuration
-  - [x] Add a swipe-up data log
-  - [x] Add nice animations
-  - [x] Add last pull stats
-  - [x] Horizontal screen support
-
-### 3.3.0
-
-- [ ] Polish Bluetooth integration with Tindeq Progressor and other scales
-- [ ] New data point list design 
+- [x] Polish Bluetooth integration with Tindeq Progressor and other scales
+- [x] New data point list design 
+- [ ] Swipe to delete data points
 
 ### 3.2.0
 
