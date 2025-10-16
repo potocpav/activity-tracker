@@ -1,18 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  StyleSheet,
-  Text,
-  Platform,
-  View,
-  useWindowDimensions,
-} from "react-native";
+import {StyleSheet, Text, Platform, View, useWindowDimensions} from "react-native";
 import useStore from "../Model/Store";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { getTheme, getThemePalette, getThemeVariant } from "../Model/Theme";
 import { ActivityType, BleScaleWorkoutState, DataPoint, dateToDateList, Tag } from "../Model/StoreTypes";
 import { MD3Theme, Button as PaperButton } from "react-native-paper";
-import { matchFont, Points, Text as SkiaText, vec, Canvas, interpolateColors, Color, SkFont } from "@shopify/react-native-skia";
-import Animated, { useSharedValue, useFrameCallback, useDerivedValue, interpolate, Extrapolation, LinearTransition, useAnimatedReaction, useAnimatedStyle, withSpring, FadeIn, SharedValue } from "react-native-reanimated";
+import { matchFont, Points, Text as SkiaText, vec, Canvas, Color, SkFont } from "@shopify/react-native-skia";
+import Animated, { useSharedValue, useFrameCallback, useDerivedValue, LinearTransition, FadeIn, SharedValue } from "react-native-reanimated";
 import { renderLongFormValue } from "../Model/Unit";
 import TagSelector from "../Components/TagSelector";
 import SkiaChart, { xToCanvas, yToCanvas, Viewport } from "../Components/Chart/SkiaChart";

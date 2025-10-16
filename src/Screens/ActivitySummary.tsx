@@ -1,5 +1,5 @@
-import React, { Fragment, useLayoutEffect } from "react";
-import { ScrollView, StyleSheet, Text, View, Pressable } from "react-native";
+import React, { Fragment } from "react";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { Divider } from 'react-native-paper';
 import useStore from "../Model/Store";
 import { ActivityType, CalendarProps, GraphProps, Stat } from "../Model/StoreTypes";

@@ -1,7 +1,6 @@
 import { useTheme } from 'react-native-paper';
 import useStore from './Store';
 import { darkPalette, lightPalette } from './Color';
-import { ActivityType } from './StoreTypes';
 import { useColorScheme, useWindowDimensions } from 'react-native';
 import { MD3Theme } from 'react-native-paper/lib/typescript/types';
 

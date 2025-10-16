@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  Alert,
   ToastAndroid,
   Pressable,
 } from "react-native";
@@ -288,6 +287,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
             toggleInputTag={toggleInputTag}
             palette={palette}
             theme={theme}
+            justifyContent="flex-start"
           />
           </View>}
 

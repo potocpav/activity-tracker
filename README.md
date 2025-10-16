@@ -64,6 +64,9 @@ Track your performance metrics and their progress over time. With custom statist
   - [ ] Keyboard avoidance in Edit Activity and other screens
   - [ ] Remember last tags for each activity
   - [x] Switch Edit Activity and Data icons
+- [ ] Performance improvements
+  - [ ] Debug BLE Input performance
+  - [ ] Debug Activity Summary performance
 
 ## Changelog
 

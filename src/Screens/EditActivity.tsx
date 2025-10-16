@@ -20,7 +20,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
 import { UnitEditor } from "../Components/UnitView";
 import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
-import Hint from "../Components/Hint";
 import { CheckButton, DeleteButton, ButtonRow, Button, PlusIcon } from "../Components/Element";
 
 type SpecialType = "ble_scale" | null;

@@ -1,4 +1,4 @@
-import { CalendarProps, GraphProps, Stat, Unit, BinSize } from "./StoreTypes";
+import { CalendarProps, GraphProps, Stat, Unit } from "./StoreTypes";
 
 const firstSubUnitName = (unit: Unit): string | null => {
   if (unit.type === "none" || unit.type === "single") {

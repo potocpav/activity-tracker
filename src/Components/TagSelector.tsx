@@ -13,7 +13,7 @@ export const TagSelector = ({ activity, inputTags, toggleInputTag, palette, just
     theme: MD3Theme,
   }) => {
   return (activity.tags.length > 0 && (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: justifyContent ?? 'flex-start' }}>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: justifyContent }}>
       {activity.tags.map((tag: any) => (
         <Chip
           key={tag.name}

@@ -7,11 +7,11 @@ import {
   Alert,
 } from "react-native";
 import useStore from "../Model/Store";
-import { DataPoint, ActivityType, Tag, DateList, dateListToDate, Unit, SubUnit } from "../Model/StoreTypes";
+import { DataPoint, ActivityType, Tag, DateList, dateListToDate } from "../Model/StoreTypes";
 import { cmpDateList, dayCmp, findZeroSlice, formatDate } from "../Model/Activity";
 import { RenderTags } from "../Components/Tags";
 import TagMenu from "../Components/TagMenu";
-import { renderLongFormNumber, renderLongFormValue } from "../Model/Unit";
+import { renderLongFormValue } from "../Model/Unit";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { getThemePalette, getThemeVariant } from "../Model/Theme";
 import { getTheme } from "../Model/Theme";
@@ -21,7 +21,7 @@ import EmptyPagePlaceholder from "../Components/EmptyPagePlaceholder";
 import Inset from "../Components/SafeAreaInset";
 import { ButtonRow, DeleteIcon, Button } from "../Components/Element";
 import { Divider } from "react-native-paper";
-import { Directions, Gesture, GestureDetector, Pressable } from "react-native-gesture-handler";
+import { Gesture, GestureDetector, Pressable } from "react-native-gesture-handler";
 import Animated, { useAnimatedReaction, useAnimatedStyle, useSharedValue, withDecay, withSpring, cancelAnimation, ReduceMotion } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
 

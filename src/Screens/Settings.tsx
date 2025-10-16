@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
-import { StyleSheet, ScrollView, ToastAndroid, Alert, View, Linking } from 'react-native';
-import { List, Divider, Switch } from 'react-native-paper';
+import { ScrollView, ToastAndroid, Alert, Linking } from 'react-native';
+import { List, Switch } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import useStore, { partialize } from '../Model/Store';
 import { version, migrate } from '../Model/Migrations';
