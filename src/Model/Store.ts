@@ -41,7 +41,7 @@ import {
 import { areUnitsEqual } from "./Unit";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { findZeroSlice, dayCmp, uniqueName } from "./Activity";
+import { findZeroSlice, dayCmp } from "./Activity";
 import { version, migrate } from "./Migrations";
 
 // Save only the state that is needed to be saved

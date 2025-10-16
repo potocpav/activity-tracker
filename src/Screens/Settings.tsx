@@ -10,7 +10,7 @@ import * as Sharing from 'expo-sharing';
 import { getTheme, getThemeVariant } from '../Model/Theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { allHints, ActivityType, DateList, Unit, ActivityTab } from '../Model/StoreTypes';
-import { cmpDateList, uniqueName } from '../Model/Activity';
+import { cmpDateList } from '../Model/Activity';
 import { SystemBars } from 'react-native-edge-to-edge';
 import * as SQLite from 'expo-sqlite';
 import { defaultGraphs, defaultCalendar, defaultStats } from '../Model/DefaultActivity';
@@ -148,7 +148,7 @@ const Settings = () => {
 
           const unit: Unit = isNumeric ? { type: "single", unit: { type: "number", symbol: habit.unit } } : { type: "none" };
           const activity: ActivityType = {
-            name: uniqueName((n: string) => activities.find((a: ActivityType) => a.name == n) || state.activities.find((a: ActivityType) => a.name == n), habit.name),
+            name: habit.name,
             description: habit.question,
             unit: unit,
             dataPoints: dataPoints,
