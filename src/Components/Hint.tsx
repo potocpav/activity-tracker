@@ -55,13 +55,6 @@ const hintInfo = (hint: HintType) => {
         ],
         arrowPos: 0.5,
       };
-    case "quickly_add_point":
-      return {
-        text: [
-          "You can quickly add data by clicking the button on the right.",
-        ],
-        arrowPos: 1.0,
-      };
     case "reorder_activities":
       return {
         text: [

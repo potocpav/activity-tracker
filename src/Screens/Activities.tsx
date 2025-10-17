@@ -8,8 +8,7 @@ import {
   FlatList,
 } from "react-native";
 import useStore from "../Model/Store";
-import { ActivityType, DataPoint, dateToDateList, Stat } from "../Model/StoreTypes";
-import DraggableFlatList from 'react-native-draggable-flatlist'
+import { ActivityType, DataPoint, dateToDateList, Stat, WeekStart, DateList } from "../Model/StoreTypes";
 import { dayCmp, findZeroSlice, renderStatValue } from "../Model/Activity";
 import { getTheme, getThemePalette, getThemeVariant, useWideDisplay } from "../Model/Theme";
 import { SystemBars } from "react-native-edge-to-edge";
@@ -20,67 +19,93 @@ import Inset from "../Components/SafeAreaInset";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { ButtonRow, CheckIcon, CloseIcon, DoubleCheckIcon, PlusIcon, PlusIconButton, Button, BleScaleIcon } from "../Components/Element";
 import PagerView from 'react-native-pager-view';
+import Animated, { ReduceMotion, useAnimatedReaction, useAnimatedStyle, useDerivedValue, useSharedValue, withDecay } from "react-native-reanimated";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 
 type ActivitiesProps = {
   navigation: any;
 };
 
-const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
-  const theme = getTheme();
-  const themeVariant = getThemeVariant();
-  const activities = useStore((state: any) => state.activities);
-  const weekStart = useStore((state: any) => state.weekStart);
-  const dismissHint = useStore((state: any) => state.dismissHint);
+// TODO: make this dynamic based on the font size
+const ITEM_HEIGHT = 40;
 
-  const palette = getThemePalette();
-  const wideDisplay = useWideDisplay();
-  const dimensions = useWindowDimensions();
-  const styles = getStyles(theme, wideDisplay, dimensions);
-  const today = dateToDateList(new Date());
+const ActivityCard = ({
+  activity,
+  index,
+  wideDisplay,
+  weekStart,
+  today,
+  navigation,
+  styles,
+  palette
+}: {
+  activity: ActivityType,
+  index: number,
+  wideDisplay: boolean,
+  weekStart: WeekStart,
+  today: DateList,
+  navigation: any,
+  styles: any,
+  palette: any
+}) => {
   const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
   const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);
 
-  React.useEffect(() => {
-    navigation.setOptions({
-      headerRight: () => (
-        <ButtonRow>
-          <PlusIconButton onPress={() => {
-            dismissHint("hello");
-            navigation.navigate('EditActivity', { activityPath: null });
-          }} color={theme.colors.onSurface} />
-          <Button onPress={() => {
-            dismissHint("hello");
-            navigation.navigate('Settings');
-          }}>
-            <MaterialCommunityIcons name="cog" size={24} color={theme.colors.onSurface} />
-          </Button>
-        </ButtonRow>
-      ),
+  const activityPath = { tabId: 0, activityId: index };
+
+  let stats;
+  if (wideDisplay) {
+    stats = activity.stats.slice(0, 3);
+  } else {
+    stats = activity.stats.slice(0, 1);
+  }
+  const statValues = stats.map((stat: Stat) => renderStatValue(stat, activity, weekStart));
+
+  // for none unit type, we need to count the number of data points for today
+  let todayPointIndices: number[] = [];
+  if (activity.unit.type === "none") {
+    todayPointIndices = activity.dataPoints
+      .map((_: DataPoint, i: number) => i)
+      .slice(...findZeroSlice(activity.dataPoints, (dp) => dayCmp(dp, today)))
+  }
+
+  const TOLERANCE = 10;
+  const position = useSharedValue(0);
+  const isPanning = useSharedValue(false);
+  const panGesture = Gesture
+    .Pan()
+    .activateAfterLongPress(300)
+    .activeOffsetY([-TOLERANCE, TOLERANCE])
+    .failOffsetX([-TOLERANCE, TOLERANCE])
+    .onStart((e) => {
+      position.value = e.translationY;
+      isPanning.value = true;
+    })
+    .onUpdate((e) => {
+      position.value = e.translationY;
+    })
+    .onEnd((event) => {
+      position.value = withDecay({
+        velocity: event.velocityY,
+        rubberBandEffect: true,
+        reduceMotion: ReduceMotion.Never,
+        clamp: [0, 0],
+      });
+      isPanning.value = false;
     });
-  }, [navigation, theme]);
 
-  const renderActivity = ({ item, index }: { item: ActivityType, index: number }) => {
-    const activity = item;
-    const activityPath = { tabId: 0, activityId: index };
+  const positionIndex = useDerivedValue(() => {
+    const index = Math.round(position.value / ITEM_HEIGHT);
+    return index;
+  });
 
-    let stats;
-    if (wideDisplay) {
-      stats = activity.stats.slice(0, 3);
-    } else {
-      stats = activity.stats.slice(0, 1);
-    }
-    const statValues = stats.map((stat: Stat) => renderStatValue(stat, activity, weekStart));
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: position.value }],
+  }));
 
-    // for none unit type, we need to count the number of data points for today
-    let todayPointIndices: number[] = [];
-    if (activity.unit.type === "none") {
-      todayPointIndices = activity.dataPoints
-        .map((_: DataPoint, i: number) => i)
-        .slice(...findZeroSlice(activity.dataPoints, (dp) => dayCmp(dp, today)))
-    }
-
-    return (
-      <View style={styles.activityCard}>
+  return (
+    <GestureDetector gesture={panGesture}>
+      <Animated.View style={[styles.activityCard, animatedStyle]}>
         <Pressable
           onPress={() => navigation.navigate('Activity', { activityPath })}
           // onLongPress={drag}
@@ -104,7 +129,6 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
         </Pressable>
         <Pressable
           onPress={() => {
-            dismissHint("quickly_add_point");
             if (activity.unit.type === "none") {
               if (todayPointIndices.length > 0) {
                 navigation.navigate('EditDataPoint', { activityPath, dataPointIndex: todayPointIndices[todayPointIndices.length - 1] });
@@ -156,18 +180,57 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
             })()}
           </View>
         </Pressable>
-      </View>
-    );
-  };
+      </Animated.View>
+    </GestureDetector>
+  );
+}
+
+const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
+  const theme = getTheme();
+  const themeVariant = getThemeVariant();
+  const activities = useStore((state: any) => state.activities);
+  const weekStart = useStore((state: any) => state.weekStart);
+  const dismissHint = useStore((state: any) => state.dismissHint);
+
+  const palette = getThemePalette();
+  const wideDisplay = useWideDisplay();
+  const dimensions = useWindowDimensions();
+  const styles = getStyles(theme, wideDisplay, dimensions);
+  const today = dateToDateList(new Date());
+  const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
+  const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);
+
+  const scrollY = useSharedValue(0);
+
+  useAnimatedReaction(() => scrollY.value, (value) => {
+    console.log("scrollY", value);
+  });
+
+  React.useEffect(() => {
+    navigation.setOptions({
+      title: "Activities",
+      headerRight: () => (
+        <ButtonRow>
+          <PlusIconButton onPress={() => {
+            dismissHint("hello");
+            navigation.navigate('EditActivity', { activityPath: null });
+          }} color={theme.colors.onSurface} />
+          <Button onPress={() => {
+            dismissHint("hello");
+            navigation.navigate('Settings');
+          }}>
+            <MaterialCommunityIcons name="cog" size={24} color={theme.colors.onSurface} />
+          </Button>
+        </ButtonRow>
+      ),
+    });
+  }, [navigation, theme]);
 
   return (
     <SafeAreaView style={[styles.container]} edges={["left", "right"]}>
       <SystemBars style={themeVariant == 'light' ? "dark" : "light"} />
       <Hint hint="hello" />
       <View style={{ position: 'absolute', top: 100, left: 0, right: 0 }}>
-        {activities.length >= 4 && (
-          <Hint hint="quickly_add_point" />
-        )}
         {activities.length >= 6 && (
           <Hint hint="reorder_activities" />
         )}
@@ -182,9 +245,20 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
           ) : (
             <FlatList
               data={activities[0].activities}
-              // onDragBegin={() => dismissHint("reorder_activities")}
-              // onDragEnd={({ data }) => setActivities(0, data)}
-              renderItem={renderActivity}
+              onScroll={(event) => {
+                scrollY.value = event.nativeEvent.contentOffset.y;
+              }}
+              renderItem={({ item, index }) =>
+                <ActivityCard
+                  activity={item}
+                  index={index}
+                  wideDisplay={wideDisplay}
+                  weekStart={weekStart}
+                  today={today}
+                  navigation={navigation}
+                  styles={styles}
+                  palette={palette}
+                />}
               keyExtractor={(item, index) => item.uuid}
               contentContainerStyle={styles.listContainer}
               ListFooterComponent={() => <Inset type="bottom" />}
@@ -214,6 +288,7 @@ const getStyles = (theme: any, wideDisplay: boolean, dimensions: any) => StyleSh
     padding: 2,
   },
   activityCard: {
+    height: ITEM_HEIGHT,
     backgroundColor: theme.colors.elevation.level1,
     elevation: 1,
     margin: 2,

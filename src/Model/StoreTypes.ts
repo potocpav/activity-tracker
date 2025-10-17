@@ -162,14 +162,14 @@ export type SpecialActivity = { type: "ble_scale", minWeight: number };
 export type WeekStart = "sunday" | "monday";
 
 export type HintType = 
-  "hello" | "quickly_add_point" | "reorder_activities" | 
+  "hello" | "reorder_activities" | 
   "add_data_point" | "overview_edit_hint" | "rename_calendar" | "calendar_introduction" | "quick_check_daily_activity" |
   "save_data_point"
 
 // hint sequencing. Must contain all hints.
 export const hintDependencyChains : HintType[][] = [
   // Activities screen
-  ["hello", "quickly_add_point", "reorder_activities"],
+  ["hello", "reorder_activities"],
   // Activity screen
   ["add_data_point", "calendar_introduction", "overview_edit_hint", "quick_check_daily_activity", "rename_calendar"],
   // Edit activity screen
