@@ -5,6 +5,7 @@ import {
   View,
   useWindowDimensions,
   Pressable,
+  FlatList,
 } from "react-native";
 import useStore from "../Model/Store";
 import { ActivityType, DataPoint, dateToDateList, Stat } from "../Model/StoreTypes";
@@ -28,7 +29,6 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   const theme = getTheme();
   const themeVariant = getThemeVariant();
   const activities = useStore((state: any) => state.activities);
-  const setActivities = useStore((state: any) => state.setActivities);
   const weekStart = useStore((state: any) => state.weekStart);
   const dismissHint = useStore((state: any) => state.dismissHint);
 
@@ -59,9 +59,9 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
     });
   }, [navigation, theme]);
 
-  const renderActivity = ({ item, getIndex, drag }: { item: ActivityType, getIndex: () => number | undefined, drag: () => void }) => {
+  const renderActivity = ({ item, index }: { item: ActivityType, index: number }) => {
     const activity = item;
-    const activityPath = { tabId: 0, activityId: getIndex() };
+    const activityPath = { tabId: 0, activityId: index };
 
     let stats;
     if (wideDisplay) {
@@ -83,7 +83,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
       <View style={styles.activityCard}>
         <Pressable
           onPress={() => navigation.navigate('Activity', { activityPath })}
-          onLongPress={drag}
+          // onLongPress={drag}
           android_ripple={{ foreground: true }}
           style={({ pressed }) => [styles.activityRow,
           {
@@ -172,15 +172,18 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
           <Hint hint="reorder_activities" />
         )}
       </View>
-      {/* <PagerView style={{ flex: 1 }} initialPage={0}> */}
+      <PagerView style={{ flex: 1 }} initialPage={1}>
+        <View key="0" collapsable={false}>
+          <EmptyPagePlaceholder title="No activities" subtext="Tap the + button to create an activity" />
+        </View>
         <View key="1" collapsable={false}>
           {activities.length === 0 ? (
             <EmptyPagePlaceholder title="No activities" subtext="Tap the + button to create an activity" />
           ) : (
-            <DraggableFlatList
+            <FlatList
               data={activities[0].activities}
-              onDragBegin={() => dismissHint("reorder_activities")}
-              onDragEnd={({ data }) => setActivities(0, data)}
+              // onDragBegin={() => dismissHint("reorder_activities")}
+              // onDragEnd={({ data }) => setActivities(0, data)}
               renderItem={renderActivity}
               keyExtractor={(item, index) => item.uuid}
               contentContainerStyle={styles.listContainer}
@@ -189,21 +192,9 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
           )}
         </View>
         <View key="2" collapsable={false}>
-          {activities.length === 0 ? (
-            <EmptyPagePlaceholder title="No activities" subtext="Tap the + button to create an activity" />
-          ) : (
-            <DraggableFlatList
-              data={activities[0].activities}
-              onDragBegin={() => dismissHint("reorder_activities")}
-              onDragEnd={({ data }) => setActivities(0, data)}
-              renderItem={renderActivity}
-              keyExtractor={(item, index) => item.uuid}
-              contentContainerStyle={styles.listContainer}
-              ListFooterComponent={() => <Inset type="bottom" />}
-            />
-          )}
+          <EmptyPagePlaceholder title="No activities" subtext="Tap the + button to create an activity" />
         </View>
-      {/* </PagerView> */}
+      </PagerView>
     </SafeAreaView>
   );
 };
