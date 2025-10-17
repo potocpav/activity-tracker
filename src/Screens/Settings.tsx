@@ -9,12 +9,13 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as Sharing from 'expo-sharing';
 import { getTheme, getThemeVariant } from '../Model/Theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { allHints, ActivityType, DateList, Unit, ActivityTab } from '../Model/StoreTypes';
+import { allHints, ActivityType, DateList, Unit, ActivityTab, stripUuids, generateUuids } from '../Model/StoreTypes';
 import { cmpDateList } from '../Model/Activity';
 import { SystemBars } from 'react-native-edge-to-edge';
 import * as SQLite from 'expo-sqlite';
 import { defaultGraphs, defaultCalendar, defaultStats } from '../Model/DefaultActivity';
 import { EncodingType } from 'expo-file-system/src/ExpoFileSystem.types';
+import * as Crypto from "expo-crypto";
 
 const Settings = () => {
   const theme = getTheme();
@@ -39,8 +40,10 @@ const Settings = () => {
     (navigation as any).navigate('ThemeSelection', { currentTheme: themeState });
   };
 
+  
   const exportData = async () => {
-    const data = JSON.stringify({ ...partialize(state), version: version }, null, 2);
+    const stateWithoutUuids = stripUuids({...state});
+    const data = JSON.stringify({ ...partialize(stateWithoutUuids), version: version }, null, 2);
     const date = new Date();
     const dateStr = date.toISOString().split('T')[0];
 
@@ -97,6 +100,7 @@ const Settings = () => {
           })),
         };
 
+        generateUuids(migrated);
         setState(migrated);
         ToastAndroid.show("Data imported successfully", ToastAndroid.SHORT);
       } catch (error) {
@@ -134,12 +138,14 @@ const Settings = () => {
               const note = r.notes === "" ? {} : { note: r.notes };
               if (isNumeric) {
                 return {
+                  uuid: Crypto.randomUUID(),
                   date: date,
                   value: r.value / 1000,
                   ...note,
                 };
               } else {
                 return {
+                  uuid: Crypto.randomUUID(),
                   date: date,
                   ...note,
                 };
@@ -148,6 +154,7 @@ const Settings = () => {
 
           const unit: Unit = isNumeric ? { type: "single", unit: { type: "number", symbol: habit.unit } } : { type: "none" };
           const activity: ActivityType = {
+            uuid: Crypto.randomUUID(),
             name: habit.name,
             description: habit.question,
             unit: unit,

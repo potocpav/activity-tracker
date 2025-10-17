@@ -22,6 +22,7 @@ import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
 import Hint from "../Components/Hint";
 import TagSelector from "../Components/TagSelector";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import * as Crypto from "expo-crypto";
 
 type EditDataPointProps = {
   navigation: any;
@@ -43,6 +44,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
     dataPointIndex !== undefined ?
       activity?.dataPoints[dataPointIndex] :
       {
+        uuid: Crypto.randomUUID(),
         date: dateToDateList(newDataPointDate ? dateListToDate(newDataPointDate) : new Date()),
       };
 
@@ -191,6 +193,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
 
     const note = noteInput === "" ? {} : { "note": noteInput };
     const newIndex = updateActivityDataPoint(activityPath, newDataPoint ? undefined : dataPointIndex, {
+      uuid: Crypto.randomUUID(),
       date: inputDateList,
       ...(newValue === undefined ? {} : { value: newValue }),
       ...(inputTags.length > 0 ? { tags: inputTags } : {}),

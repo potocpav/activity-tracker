@@ -18,6 +18,7 @@ import Hint from "../Components/Hint";
 import Inset from "../Components/SafeAreaInset";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { ButtonRow, CheckIcon, CloseIcon, DoubleCheckIcon, PlusIcon, PlusIconButton, Button, BleScaleIcon } from "../Components/Element";
+import PagerView from 'react-native-pager-view';
 
 type ActivitiesProps = {
   navigation: any;
@@ -39,8 +40,6 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
   const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);
 
-  const [revision, setRevision] = useState(0);
-
   React.useEffect(() => {
     navigation.setOptions({
       headerRight: () => (
@@ -53,7 +52,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
             dismissHint("hello");
             navigation.navigate('Settings');
           }}>
-              <MaterialCommunityIcons name="cog" size={24} color={theme.colors.onSurface} />
+            <MaterialCommunityIcons name="cog" size={24} color={theme.colors.onSurface} />
           </Button>
         </ButtonRow>
       ),
@@ -173,19 +172,38 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
           <Hint hint="reorder_activities" />
         )}
       </View>
-      {activities.length === 0 ? (
-        <EmptyPagePlaceholder title="No activities" subtext="Tap the + button to create an activity" />
-      ) : (
-        <DraggableFlatList
-          data={activities[0].activities}
-          onDragBegin={() => dismissHint("reorder_activities")}
-          onDragEnd={({ data }) => { setActivities(0, data); setRevision(revision + 1); }}
-          renderItem={renderActivity}
-          keyExtractor={(item, index) => (index.toString() + revision.toString())}
-          contentContainerStyle={styles.listContainer}
-          ListFooterComponent={() => <Inset type="bottom" />}
-        />
-      )}
+      {/* <PagerView style={{ flex: 1 }} initialPage={0}> */}
+        <View key="1" collapsable={false}>
+          {activities.length === 0 ? (
+            <EmptyPagePlaceholder title="No activities" subtext="Tap the + button to create an activity" />
+          ) : (
+            <DraggableFlatList
+              data={activities[0].activities}
+              onDragBegin={() => dismissHint("reorder_activities")}
+              onDragEnd={({ data }) => setActivities(0, data)}
+              renderItem={renderActivity}
+              keyExtractor={(item, index) => item.uuid}
+              contentContainerStyle={styles.listContainer}
+              ListFooterComponent={() => <Inset type="bottom" />}
+            />
+          )}
+        </View>
+        <View key="2" collapsable={false}>
+          {activities.length === 0 ? (
+            <EmptyPagePlaceholder title="No activities" subtext="Tap the + button to create an activity" />
+          ) : (
+            <DraggableFlatList
+              data={activities[0].activities}
+              onDragBegin={() => dismissHint("reorder_activities")}
+              onDragEnd={({ data }) => setActivities(0, data)}
+              renderItem={renderActivity}
+              keyExtractor={(item, index) => item.uuid}
+              contentContainerStyle={styles.listContainer}
+              ListFooterComponent={() => <Inset type="bottom" />}
+            />
+          )}
+        </View>
+      {/* </PagerView> */}
     </SafeAreaView>
   );
 };

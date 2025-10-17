@@ -12,11 +12,7 @@ import {
   startMeasurement as startMeasurementCommand
 } from "./Ble";
 
-import {
-  BleError,
-  Characteristic,
-  Device,
-} from "react-native-ble-plx";
+import {Device} from "react-native-ble-plx";
 import { create } from "zustand";
 import {
   CalendarProps,
@@ -43,6 +39,7 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { findZeroSlice, dayCmp } from "./Activity";
 import { version, migrate } from "./Migrations";
+import * as Crypto from "expo-crypto";
 
 // Save only the state that is needed to be saved
 export const partialize = (state: State) => ({
@@ -138,7 +135,7 @@ const useStore = create<State>()(
           const oldScreenActivities = state.activities[activityPath.tabId].activities;
           const newScreenActivities = [
             ...oldScreenActivities.slice(0, activityPath.activityId + 1), 
-            oldScreenActivities[activityPath.activityId], 
+            {...oldScreenActivities[activityPath.activityId], uuid: Crypto.randomUUID()}, 
             ...oldScreenActivities.slice(activityPath.activityId + 1)
           ];
 

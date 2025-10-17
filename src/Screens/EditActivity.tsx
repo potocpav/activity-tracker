@@ -21,6 +21,7 @@ import { SystemBars } from "react-native-edge-to-edge";
 import { UnitEditor } from "../Components/UnitView";
 import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
 import { CheckButton, DeleteButton, ButtonRow, Button, PlusIcon } from "../Components/Element";
+import * as Crypto from "expo-crypto";
 
 type SpecialType = "ble_scale" | null;
 
@@ -241,6 +242,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
     let updatedActivity: ActivityType;
     if (activity === null) {
       updatedActivity = {
+        uuid: Crypto.randomUUID(),
         name: activityNameInput,
         description: activityDescriptionInput,
         unit: newUnit,

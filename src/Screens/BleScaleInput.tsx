@@ -18,6 +18,7 @@ import { DataPointCard, DataPointCardMultiContainer, LabeledValue, TextValue } f
 import { dayCmp, findZeroSlice } from "../Model/Activity";
 import { useFocusEffect } from "@react-navigation/native";
 import { RenderTags } from "../Components/Tags";
+import * as Crypto from "expo-crypto";
 
 
 const fontFamily = Platform.select({ default: "sans-serif" });
@@ -250,6 +251,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
             setWorkoutState({ ...workoutState, t0Rest: newPull.t1 });
           }
           setNewDataPoint({
+            uuid: Crypto.randomUUID(),
             date: today,
             value: {
               Weight: Math.round(newPull.wAvg * 100) / 100,
@@ -556,7 +558,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
       ListFooterComponent={() => (
         <View style={{ height: Math.max(0, dimensions.height - 100 - 50 * pastDataPoints.length) }} />
       )}
-      keyExtractor={(item, index) => (item.dataPoint === null ? "new" : (JSON.stringify(item.dataPoint)))} // TODO: create proper unique keys for data points
+      keyExtractor={(item, _) => (item.dataPoint === null ? "new" : item.dataPoint.uuid)}
       renderItem={({ item, index }) => {
         if (item.dataPoint === null) {
           const tags = activity.tags.filter((t: Tag) => inputTags.includes(t.name));

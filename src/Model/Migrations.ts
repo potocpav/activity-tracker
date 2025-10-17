@@ -4,10 +4,12 @@ import {
   DataPoint,
   GraphProps,
   HintType,
-  allHints
+  allHints,
+  ActivityTab,
+  generateUuids
 } from "./StoreTypes";
 
-export const version = 28;
+export const version = 30;
 
 export const migrate = (persisted: any, version: number) => {
   if (version < 6) {
@@ -126,6 +128,9 @@ export const migrate = (persisted: any, version: number) => {
       tabName: "Activities",
       activities: persisted.activities
     }];
+  }
+  if (version < 30) {
+    generateUuids(persisted);
   }
   return persisted
 };

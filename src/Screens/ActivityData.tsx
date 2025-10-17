@@ -384,7 +384,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
         <SectionList
           style={styles.scrollView}
           sections={sections}
-          keyExtractor={([dataPoint, i]) => JSON.stringify(dataPoint) + i.toString()} // TODO: create proper unique keys for data points
+          keyExtractor={([dataPoint, i]) => dataPoint.uuid}
           windowSize={11}
           ListFooterComponent={() => (
             <Inset type="bottom" />

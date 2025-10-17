@@ -61,13 +61,13 @@ Track your performance metrics and their progress over time. With custom statist
   - [x] BLE Input on tiny screens
   - [x] Fix BLE choppy time calculations
   - [x] Swap Edit Activity and Data icons
+  - [x] Add UUIDs to activities and data points, fix list rendering with them
   - [ ] Remember last tags for each activity
   - [ ] BLE Input font size debugging
   - [ ] Unit conversions: kg <-> lbs, etc. This could include the ability to input values in different units - useful for climbing grades.
   - [ ] Slash grades for French and Font climbing grades
   - [ ] Scroll climbing grade picker to the selected grade more reliably
   - [ ] Keyboard avoidance in Edit Activity and other screens
-  - [ ] Make proper unique keys for data points and activities
 - [ ] Performance improvements
   - [ ] Debug BLE Input performance
   - [ ] Debug Activity Summary performance

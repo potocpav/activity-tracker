@@ -2,6 +2,7 @@ import {
     Device,
     Subscription,
   } from "react-native-ble-plx";
+import * as Crypto from "expo-crypto";
 
 
 export type Unit = 
@@ -65,6 +66,7 @@ export type TagName = string;
 export type DateList = [number, number, number];
 
 export type DataPoint = {
+  uuid: string;
   date: DateList;
   value?: number | Record<string, number>;
   note?: string;
@@ -142,6 +144,7 @@ export type GraphProps = {
 };
 
 export type ActivityType = {
+  uuid: string;
   name: string;
   description: string;
   unit: Unit;
@@ -244,3 +247,26 @@ export const timeToDateList = (time: number): DateList => {
 export const dateListToTime = (dateList: DateList): number => {
     return dateListToDate(dateList).getTime();
 };
+
+export const generateUuids = (state: State) => {
+  state.activities.forEach((tab: ActivityTab, tabId: number) => {
+    tab.activities.forEach((activity: ActivityType, activityId: number) => {
+      state.activities[tabId].activities[activityId].uuid = Crypto.randomUUID();
+      activity.dataPoints.forEach((dp: DataPoint, dpId: number) => {
+        state.activities[tabId].activities[activityId].dataPoints[dpId].uuid = Crypto.randomUUID();
+      });
+    });
+  });
+}
+
+export const stripUuids = (state: any): any => {
+  state.activities.forEach((tab: ActivityTab, tabId: number) => {
+    tab.activities.forEach((activity: any, activityId: number) => {
+      delete state.activities[tabId].activities[activityId].uuid;
+      activity.dataPoints.forEach((dp: any, dpId: number) => {
+        delete state.activities[tabId].activities[activityId].dataPoints[dpId].uuid;
+      });
+    });
+  });
+  return state;
+}
