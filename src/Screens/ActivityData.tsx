@@ -22,7 +22,7 @@ import Inset from "../Components/SafeAreaInset";
 import { ButtonRow, DeleteIcon, Button } from "../Components/Element";
 import { Divider } from "react-native-paper";
 import { Gesture, GestureDetector, Pressable } from "react-native-gesture-handler";
-import Animated, { useAnimatedReaction, useAnimatedStyle, useSharedValue, withDecay, withSpring, cancelAnimation, ReduceMotion } from "react-native-reanimated";
+import Animated, { useAnimatedReaction, useAnimatedStyle, useSharedValue, withDecay, withSpring, cancelAnimation, ReduceMotion, LinearTransition } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
 
 
@@ -33,14 +33,13 @@ type ActivityDataProps = {
 
 const ITEM_HEIGHT = 60;
 
-export const DataPointCardMultiContainer = (props: {
-  children: React.ReactNode[],
-  tags: ReactElement<any, any> | undefined,
-  note: React.ReactNode | undefined,
-  theme: any,
-  onPress?: () => void,
+const DataPointContainer = (props: {
+  children: React.ReactNode,
+  // theme: any,
   onDelete?: () => void,
+  onPress?: () => void,
   style?: any,
+  theme: any,
 }) => {
   const position = useSharedValue(0);
   const isPanning = useSharedValue(false);
@@ -82,71 +81,51 @@ export const DataPointCardMultiContainer = (props: {
     transform: [{ translateX: position.value }],
   }));
 
-  return (
-    <GestureDetector gesture={panGesture}>
-      <Animated.View style={animatedStyle}>
-        <Pressable
-          onPress={props.onPress}
-          android_ripple={{ color: props.theme.colors.onSurfaceVariant, foreground: true }}
-          style={[{
-            padding: 6,
-            backgroundColor: props.theme.colors.elevation.level2,
-            margin: 4,
-            borderRadius: 15,
-            elevation: 2,
-            gap: 4,
-            justifyContent: 'center',
-          }, props.style]}
-        >
-          <View key="children" style={{ flexDirection: 'row', gap: 6, alignItems: 'flex-start', justifyContent: 'space-between' }}>
-            {props.children}
-          </View>
-          {(props.tags || props.note) && <Divider key="divider" />}
-          {props.tags && (
-            <View key="tags" style={{ marginHorizontal: 0, marginTop: 1 }}>
-              {props.tags}
-            </View>
-          )}
-          {props.note && (
-            <View key="note" style={{ marginHorizontal: 5 }}>
-              {props.note}
-            </View>
-          )}
-        </Pressable>
-      </Animated.View>
-    </GestureDetector>
-  );
-}
-
-
-export const DataPointCardSingleContainer = (props: {
-  children: React.ReactNode,
-  tags: ReactElement<any, any> | undefined,
-  note: React.ReactNode | undefined,
-  theme: any,
-  onPress?: () => void,
-  style?: any,
-}) => {
-  return (
+  const pressableChildren = (
     <Pressable
       onPress={props.onPress}
-      android_ripple={{ color: props.theme.colors.onSurfaceVariant, foreground: true }}
+      android_ripple={{ color: "888888", foreground: true }}
       style={[{
         padding: 6,
         backgroundColor: props.theme.colors.elevation.level2,
         margin: 4,
         borderRadius: 15,
         elevation: 2,
-        gap: 4,
-        justifyContent: 'center',
-        flexDirection: 'row',
       }, props.style]}
     >
-      <View key="children" style={{ width: ITEM_HEIGHT * 1.5, flexDirection: 'row', gap: 6, alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        {props.children}
-      </View>
-      <View key="divider" style={{ width: 0.5, height: '100%', backgroundColor: props.theme.colors.outline }} />
-      <View key="content" style={{ flex: 1, gap: 6, justifyContent: 'space-between' }}>
+      {props.children}
+    </Pressable>
+  );
+
+  if (props.onDelete) {
+    return (
+      <GestureDetector gesture={panGesture}>
+        <Animated.View style={animatedStyle} layout={LinearTransition}>
+          {pressableChildren}
+        </Animated.View>
+      </GestureDetector>
+    );
+  } else {
+    return pressableChildren;
+  }
+}
+
+export const DataPointCardMultiContainer = (props: {
+  children: React.ReactNode[],
+  tags: ReactElement<any, any> | undefined,
+  note: React.ReactNode | undefined,
+  theme: any,
+  onPress?: () => void,
+  onDelete?: () => void,
+  style?: any,
+}) => {
+  return (
+    <DataPointContainer onPress={props.onPress} onDelete={props.onDelete} theme={props.theme} style={props.style}>
+      <View style={{ gap: 4 }}>
+        <View key="children" style={{ flexDirection: 'row', gap: 6, alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          {props.children}
+        </View>
+        {(props.tags || props.note) && <Divider key="divider" />}
         {props.tags && (
           <View key="tags" style={{ marginHorizontal: 0, marginTop: 1 }}>
             {props.tags}
@@ -158,7 +137,41 @@ export const DataPointCardSingleContainer = (props: {
           </View>
         )}
       </View>
-    </Pressable>
+    </DataPointContainer>
+  );
+}
+
+
+export const DataPointCardSingleContainer = (props: {
+  children: React.ReactNode,
+  tags: ReactElement<any, any> | undefined,
+  note: React.ReactNode | undefined,
+  theme: any,
+  onPress?: () => void,
+  onDelete?: () => void,
+  style?: any,
+}) => {
+  return (
+    <DataPointContainer onPress={props.onPress} onDelete={props.onDelete} theme={props.theme} style={props.style}>
+      <View style={{ flexDirection: 'row', gap: 6, alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <View key="children" style={{ width: ITEM_HEIGHT * 1.5, flexDirection: 'row', gap: 6, alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          {props.children}
+        </View>
+        <View key="divider" style={{ width: 0.5, height: '100%', backgroundColor: props.theme.colors.outline }} />
+        <View key="content" style={{ flex: 1, gap: 6, justifyContent: 'space-between' }}>
+          {props.tags && (
+            <View key="tags" style={{ marginHorizontal: 0, marginTop: 1 }}>
+              {props.tags}
+            </View>
+          )}
+          {props.note && (
+            <View key="note" style={{ marginHorizontal: 5 }}>
+              {props.note}
+            </View>
+          )}
+        </View>
+      </View>
+    </DataPointContainer>
   );
 }
 
@@ -193,6 +206,7 @@ export const DataPointCard = (
     { activity: ActivityType, activityPath: ActivityPath, i: number, repNumber?: number, theme: any, palette: any, navigation: any }
 ) => {
   const dataPoint = activity.dataPoints[i];
+  const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
 
   const tags = dataPoint.tags && (
     <RenderTags
@@ -209,21 +223,13 @@ export const DataPointCard = (
 
   const editDataPoint = () => navigation.navigate("EditDataPoint", { activityPath, dataPointIndex: i });
 
-  const renderValueless = () => (
-    <DataPointCardSingleContainer onPress={editDataPoint} tags={tags} note={note} theme={theme}>
-      <LabeledValue label="Value" theme={theme}>
-        <TextValue theme={theme}>
-          {"✓"}
-        </TextValue>
-      </LabeledValue>
-    </DataPointCardSingleContainer>
-  );
+  const deleteDataPoint = () => deleteActivityDataPoint(activityPath, i);
 
   const renderSingleValue = () => (
-    <DataPointCardSingleContainer onPress={editDataPoint} tags={tags} note={note} theme={theme}>
+    <DataPointCardSingleContainer onPress={editDataPoint} onDelete={deleteDataPoint} tags={tags} note={note} theme={theme}>
       <LabeledValue label="Value" theme={theme}>
         <TextValue theme={theme}>
-          {typeof dataPoint.value === "number" && activity.unit.type === "single" ? renderLongFormValue(dataPoint.value, activity.unit.unit) : "-"}
+          {typeof dataPoint.value === "number" && activity.unit.type === "single" ? renderLongFormValue(dataPoint.value, activity.unit.unit) : "✓"}
         </TextValue>
       </LabeledValue>
     </DataPointCardSingleContainer>
@@ -253,7 +259,7 @@ export const DataPointCard = (
       });
     }
     return (
-      <DataPointCardMultiContainer onPress={editDataPoint} onDelete={() => console.log("TODO: delete data point")} tags={tags} note={note} theme={theme}>
+      <DataPointCardMultiContainer onPress={editDataPoint} onDelete={deleteDataPoint} tags={tags} note={note} theme={theme}>
         {renderedValues}
       </DataPointCardMultiContainer>
     );
@@ -261,7 +267,7 @@ export const DataPointCard = (
 
   switch (activity.unit.type) {
     case "none":
-      return renderValueless();
+      return renderSingleValue();
     case "single":
       return renderSingleValue();
     case "multiple":
@@ -378,7 +384,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
         <SectionList
           style={styles.scrollView}
           sections={sections}
-          keyExtractor={([_, i]) => i.toString()}
+          keyExtractor={([dataPoint, i]) => JSON.stringify(dataPoint) + i.toString()} // TODO: create proper unique keys for data points
           windowSize={11}
           ListFooterComponent={() => (
             <Inset type="bottom" />
@@ -390,7 +396,6 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
           )}
           renderItem={({ item: [dataPoint, i] }) =>
             <DataPointCard
-              key={i.toString()}
               activity={activity}
               activityPath={activityPath}
               i={i}

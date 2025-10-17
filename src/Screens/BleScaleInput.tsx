@@ -141,11 +141,16 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   const showAfterDuration = 0.1;
   const thresholdWeight = 0.6; // % of peak maximum
 
+  const t = useSharedValue(0);
+  const tx = useSharedValue(0);
+  const viewport = useSharedValue<Viewport>({ left: 0, right: 0, top: 0, bottom: 0 });
+
   const pullIndicators = useDerivedValue(() => {
-    const state = scaleInput.get();
+    const state = scaleInput.value;
     if (state.currentPull.active) {
       const w = state.currentPull.wSum / state.currentPull.wCount;
-      const t = state.dataPoints[state.dataPoints.length - 1].t - state.currentPull.t0;
+      const t = tx.value - state.currentPull.t0 - (state.t0 ?? 0);
+      // const t = state.dataPoints[state.dataPoints.length - 1].t - state.currentPull.t0;
       if (w > showAbovePullWeight && t > showAfterDuration) {
         return { pullActive: true, pullWeight: w, pullT0: state.currentPull.t0 + (state.t0 ?? 0), pullTime: t };
       } else {
@@ -274,10 +279,6 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
     });
   };
 
-  const t = useSharedValue(0);
-  const tx = useSharedValue(0);
-  const viewport = useSharedValue<Viewport>({ left: 0, right: 0, top: 0, bottom: 0 });
-
   useFrameCallback((frameInfo) => {
     t.set(frameInfo.timestamp / 1000);
     if (workoutState?.state === "playing") {
@@ -378,9 +379,13 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
     renderLongFormValue(Math.floor(tx.value), timeUnit)
   );
 
-  const restTime = useDerivedValue(() =>
-    renderLongFormValue(Math.max(0, Math.floor(tx.value - (workoutState?.t0Rest ?? 0))), timeUnit)
-  );
+  const restTime = useDerivedValue(() => {
+    if (pullIndicators.value.pullActive) {
+      return "-";
+    } else {
+      return renderLongFormValue(Math.max(0, Math.floor(tx.value - Math.max(pastPulls.value[pastPulls.value.length - 1]?.t1 ?? 0, workoutState?.t0Rest ?? 0))), timeUnit)
+    }
+  });
 
   const currentPullPoints = useDerivedValue(() => {
     const ret = pullIndicators.value.pullWeight > 0 ? [
@@ -551,7 +556,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
       ListFooterComponent={() => (
         <View style={{ height: Math.max(0, dimensions.height - 100 - 50 * pastDataPoints.length) }} />
       )}
-      keyExtractor={(item, index) => (pastDataPoints.length - index).toString()}
+      keyExtractor={(item, index) => (item.dataPoint === null ? "new" : (JSON.stringify(item.dataPoint)))} // TODO: create proper unique keys for data points
       renderItem={({ item, index }) => {
         if (item.dataPoint === null) {
           const tags = activity.tags.filter((t: Tag) => inputTags.includes(t.name));
@@ -570,7 +575,6 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                 // tags={undefined}
                 note={undefined}
                 theme={theme}
-                onPress={undefined}
                 style={{ flex: 1, borderWidth: 1, borderColor: theme.colors.primary }}
               >
                 <LabeledValue label="Rep" theme={theme}>
@@ -587,7 +591,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
           );
         } else {
           return (
-            <Animated.View layout={LinearTransition}>
+            <Animated.View>
               <DataPointCard
                 activity={activity}
                 activityPath={activityPath}

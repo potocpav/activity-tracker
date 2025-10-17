@@ -58,14 +58,16 @@ Track your performance metrics and their progress over time. With custom statist
 - [ ] Persistent timers as notifications
   - [ ] Show running timers on activity screen
 - [ ] Minor features
-  - [ ] BLE Input on tiny screens
+  - [x] BLE Input on tiny screens
+  - [x] Fix BLE choppy time calculations
+  - [x] Swap Edit Activity and Data icons
+  - [ ] Remember last tags for each activity
   - [ ] BLE Input font size debugging
   - [ ] Unit conversions: kg <-> lbs, etc. This could include the ability to input values in different units - useful for climbing grades.
   - [ ] Slash grades for French and Font climbing grades
   - [ ] Scroll climbing grade picker to the selected grade more reliably
   - [ ] Keyboard avoidance in Edit Activity and other screens
-  - [ ] Remember last tags for each activity
-  - [x] Switch Edit Activity and Data icons
+  - [ ] Make proper unique keys for data points and activities
 - [ ] Performance improvements
   - [ ] Debug BLE Input performance
   - [ ] Debug Activity Summary performance
@@ -74,9 +76,10 @@ Track your performance metrics and their progress over time. With custom statist
 
 ### 3.3.0  (In progress)
 
-- [x] Polish Bluetooth integration with Tindeq Progressor and other scales
-- [x] New data point list design 
-- [ ] Swipe to delete data points
+- Polish Bluetooth integration with Tindeq Progressor and other scales
+- New data point list design 
+- Swipe to delete data points
+- Allow duplicate activity names
 
 ### 3.2.0
 
