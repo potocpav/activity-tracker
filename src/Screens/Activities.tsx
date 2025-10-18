@@ -18,7 +18,7 @@ import Inset from "../Components/SafeAreaInset";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { ButtonRow, CheckIcon, CloseIcon, DoubleCheckIcon, PlusIcon, PlusIconButton, Button, BleScaleIcon } from "../Components/Element";
 import PagerView from 'react-native-pager-view';
-import Animated, { SharedValue, useAnimatedReaction, useAnimatedStyle, useDerivedValue, useSharedValue, withSpring } from "react-native-reanimated";
+import Animated, { FadeOut, FadeIn, SharedValue, useAnimatedReaction, useAnimatedStyle, useDerivedValue, useSharedValue, withSpring } from "react-native-reanimated";
 import { Gesture, GestureDetector, Pressable } from "react-native-gesture-handler";
 import { scheduleOnRN } from "react-native-worklets";
 
@@ -26,9 +26,11 @@ type ActivitiesProps = {
   navigation: any;
 };
 
-const DraggableCard = ({ children, draggedCardIx, moveActivity, index, itemHeight, numberOfItems }: {
+const DraggableCard = ({ children, draggedCardIx, moveActivity, index, itemHeight, numberOfItems, selectedActivities, setSelectedActivities }: {
   children: React.ReactNode,
   draggedCardIx: SharedValue<{ from: number, to: number } | null>,
+  selectedActivities: number[],
+  setSelectedActivities: (activities: (activities: number[]) => number[]) => void,
   moveActivity: (from: number, to: number) => void,
   index: number
   itemHeight: number
@@ -52,13 +54,35 @@ const DraggableCard = ({ children, draggedCardIx, moveActivity, index, itemHeigh
       position.value = e.translationY;
       draggedCardIx.value = { from: index, to: Math.max(0, Math.min(numberOfItems - 1, Math.round(e.translationY / itemHeight) + index)) };
     })
-    .onEnd((event) => {
+    .onEnd(() => {
       isPanning.value = false;
     });
 
+  const toggleSelected = () => {
+    setSelectedActivities((selected) => {
+      if (selected.includes(index)) {
+        return selected.filter((ix) => ix !== index);
+      } else {
+        return [...selected, index];
+      }
+    });
+  }
+
+  const longPressGesture = Gesture.LongPress().onStart((e) => {
+    scheduleOnRN(toggleSelected);
+  });
+
+  const tapGesture = Gesture.Tap().onEnd((e) => {
+    if (selectedActivities.length > 0) {
+      scheduleOnRN(toggleSelected);
+    }
+  });
+
+  const gesture = Gesture.Simultaneous(panGesture, longPressGesture, tapGesture);
+
   const animatedStyle = useAnimatedStyle(() => {
     if (isPanning.value) {
-      
+
     } else if (draggedCardIx.value?.from == index) {
       // dropped
       if (draggedCardIx.value && !alreadyMoved.value) {
@@ -95,7 +119,7 @@ const DraggableCard = ({ children, draggedCardIx, moveActivity, index, itemHeigh
   });
 
   return (
-    <GestureDetector gesture={panGesture}>
+    <GestureDetector gesture={gesture}>
       <Animated.View style={[animatedStyle, { height: itemHeight }]}>
         {children}
       </Animated.View>
@@ -111,7 +135,8 @@ const ActivityCard = ({
   today,
   navigation,
   styles,
-  palette
+  palette,
+  selectedActivities
 }: {
   activity: ActivityType,
   activityPath: ActivityPath,
@@ -121,9 +146,11 @@ const ActivityCard = ({
   navigation: any,
   styles: any,
   palette: any
+  selectedActivities: number[]
 }) => {
   const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
   const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);
+
 
   let stats;
   if (wideDisplay) {
@@ -141,18 +168,16 @@ const ActivityCard = ({
       .slice(...findZeroSlice(activity.dataPoints, (dp) => dayCmp(dp, today)))
   }
 
+  const isSelected = selectedActivities.includes(activityPath.activityId);
+
   return (
-    <View style={styles.activityCard}>
-      <Pressable
-        onPress={() => navigation.navigate('Activity', { activityPath })}
-        // onLongPress={drag}
-        android_ripple={{ foreground: true }}
-        style={({ pressed }) => [styles.activityRow,
-        {
-          opacity: pressed ? 0.5 : 1,
-        },
-        ]}
-      >
+    <Animated.View style={[styles.activityCard, { borderWidth: isSelected ? 2 : 0, borderColor: palette[activity.color] }]}>
+      <Pressable onPress={() => {
+        if (selectedActivities.length > 0) {
+          return;
+        }
+        navigation.navigate('Activity', { activityPath });
+      }} android_ripple={{ foreground: true }} style={styles.activityRow}>
         <View style={styles.activityTitleContainer}>
           <Text numberOfLines={1} style={[styles.activityTitle, { color: palette[activity.color] }]}>{activity.name}</Text>
         </View>
@@ -166,6 +191,9 @@ const ActivityCard = ({
       </Pressable>
       <Pressable
         onPress={() => {
+          if (selectedActivities.length > 0) {
+            return;
+          }
           if (activity.unit.type === "none") {
             if (todayPointIndices.length > 0) {
               navigation.navigate('EditDataPoint', { activityPath, dataPointIndex: todayPointIndices[todayPointIndices.length - 1] });
@@ -185,6 +213,9 @@ const ActivityCard = ({
         }}
         delayLongPress={300}
         onLongPress={() => {
+          if (selectedActivities.length > 0) {
+            return;
+          }
           if (activity.unit.type === "none") {
             if (todayPointIndices.length > 0) {
               deleteActivityDataPoint(activityPath, todayPointIndices[0]);
@@ -218,7 +249,7 @@ const ActivityCard = ({
           })()}
         </View>
       </Pressable>
-    </View>
+    </Animated.View>
   );
 }
 
@@ -240,31 +271,60 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   // First page corresponds to zeroth index in the activities array.
   const currentTabId = useStore((state: any) => state.currentTabId);
   const setCurrentTabId = useStore((state: any) => state.setCurrentTabId);
+  const moveActivitiesToTab = useStore((state: any) => state.moveActivitiesToTab);
+
+  const [selectedActivities, setSelectedActivities] = useState<number[]>([]);
 
   const scrollY = useSharedValue(0);
   const draggedCardIx = useSharedValue<{ from: number, to: number } | null>(null);
-
   const itemHeight = 40 * dimensions.fontScale;
 
   React.useEffect(() => {
     navigation.setOptions({
       title: "Activities",
-      headerRight: () => (
-        <ButtonRow>
-          <PlusIconButton onPress={() => {
-            dismissHint("hello");
-            navigation.navigate('EditActivity', { activityPath: { tabId: currentTabId, activityId: activities[currentTabId]?.activities?.length ?? 0 } });
-          }} color={theme.colors.onSurface} />
-          <Button onPress={() => {
-            dismissHint("hello");
-            navigation.navigate('Settings');
-          }}>
-            <MaterialCommunityIcons name="cog" size={24} color={theme.colors.onSurface} />
-          </Button>
-        </ButtonRow>
-      ),
+      headerTitle: selectedActivities.length > 0 ? () => (
+        <Animated.View entering={FadeIn} exiting={FadeOut} style={{ flexDirection: 'row' }}>
+          <ButtonRow>
+            <Button onPress={() => setSelectedActivities([])}>
+              <MaterialCommunityIcons name="close" size={24} color="white" />
+            </Button>
+            {(currentTabId > 0 || selectedActivities.length < activities[currentTabId].activities.length) && (
+              <Button onPress={() => {
+                moveActivitiesToTab(currentTabId, selectedActivities, currentTabId - 1);
+                setSelectedActivities([]);
+              }}>
+                <MaterialCommunityIcons name="arrow-left" size={24} color="white" />
+              </Button>
+            )}
+            {(currentTabId < activities.length - 1 || selectedActivities.length < activities[currentTabId].activities.length) && (
+              <Button onPress={() => {
+                moveActivitiesToTab(currentTabId, selectedActivities, currentTabId + 1);
+                setSelectedActivities([]);
+              }}>
+                <MaterialCommunityIcons name="arrow-right" size={24} color="white" />
+              </Button>
+            )}
+          </ButtonRow>
+        </Animated.View>
+      ) : undefined,
+      headerRight: selectedActivities.length === 0 ? () => (
+        <Animated.View key="unselected" entering={FadeIn} exiting={FadeOut}>
+          <ButtonRow>
+            <PlusIconButton onPress={() => {
+              dismissHint("hello");
+              navigation.navigate('EditActivity', { activityPath: { tabId: currentTabId, activityId: activities[currentTabId]?.activities?.length ?? 0 } });
+            }} color={theme.colors.onSurface} />
+            <Button onPress={() => {
+              dismissHint("hello");
+              navigation.navigate('Settings');
+            }}>
+              <MaterialCommunityIcons name="cog" size={24} color={theme.colors.onSurface} />
+            </Button>
+          </ButtonRow>
+        </Animated.View>
+      ) : undefined,
     });
-  }, [navigation, currentTabId, theme]);
+  }, [navigation, currentTabId, theme, selectedActivities]);
 
   const moveActivity = (from: number, to: number) => {
     // swap activity into the new place
@@ -276,7 +336,8 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
       newActivities = [...as.slice(0, to), as[from], ...as.slice(to, from), ...as.slice(from + 1)];
     }
     setActivities(currentTabId, newActivities);
-  }; 
+    setSelectedActivities([]);
+  };
 
   useAnimatedReaction(() => {
   }, () => {
@@ -292,11 +353,15 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
           <Hint hint="reorder_activities" />
         )}
       </View>
+      <View style={{ position: 'absolute', top: -20, left: 0, right: 0, zIndex: 20 }}>
+        <Text style={{ color: 'white' }}>Hello, world!</Text>
+      </View>
       <PagerView
         style={{ flex: 1 }}
         initialPage={currentTabId + 1}
         onPageSelected={(event) => {
           setCurrentTabId(event.nativeEvent.position - 1);
+          setSelectedActivities([]);
         }}
       >
         <View key="-1" collapsable={false}>
@@ -304,40 +369,43 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
         </View>
         {activities.map((activityTab: ActivityTab, tabId: number) => (
           <View key={tabId} collapsable={false}>
-          {activityTab.activities.length === 0 ? (
-            <EmptyPagePlaceholder title="No activities" subtext="Tap the + button to create an activity" />
-          ) : (
-            <FlatList
-              data={activityTab.activities}
-              onScroll={(event) => {
-                scrollY.value = event.nativeEvent.contentOffset.y;
-              }}
-              renderItem={({ item, index }) =>
-                <DraggableCard
-                  draggedCardIx={draggedCardIx}
-                  index={index}
-                  moveActivity={moveActivity}
-                  itemHeight={itemHeight}
-                  numberOfItems={activityTab.activities.length}
-                >
-                  <ActivityCard
-                    activity={item}
-                    activityPath={{ tabId, activityId: index }}
-                    wideDisplay={wideDisplay}
-                    weekStart={weekStart}
-                    today={today}
-                    navigation={navigation}
-                    styles={styles}
-                    palette={palette}
-                  />
-                </DraggableCard>
-              }
-              keyExtractor={(item) => item.uuid}
-              contentContainerStyle={styles.listContainer}
-              ListFooterComponent={() => <Inset type="bottom" />}
-            />
-          )}
-        </View>
+            {activityTab.activities.length === 0 ? (
+              <EmptyPagePlaceholder title="No activities" subtext="Tap the + button to create an activity" />
+            ) : (
+              <FlatList
+                data={activityTab.activities}
+                onScroll={(event) => {
+                  scrollY.value = event.nativeEvent.contentOffset.y;
+                }}
+                renderItem={({ item, index }) =>
+                  <DraggableCard
+                    draggedCardIx={draggedCardIx}
+                    selectedActivities={selectedActivities}
+                    setSelectedActivities={setSelectedActivities}
+                    index={index}
+                    moveActivity={moveActivity}
+                    itemHeight={itemHeight}
+                    numberOfItems={activityTab.activities.length}
+                  >
+                    <ActivityCard
+                      activity={item}
+                      activityPath={{ tabId, activityId: index }}
+                      wideDisplay={wideDisplay}
+                      weekStart={weekStart}
+                      today={today}
+                      selectedActivities={selectedActivities}
+                      navigation={navigation}
+                      styles={styles}
+                      palette={palette}
+                    />
+                  </DraggableCard>
+                }
+                keyExtractor={(item) => item.uuid}
+                contentContainerStyle={styles.listContainer}
+                ListFooterComponent={() => <Inset type="bottom" />}
+              />
+            )}
+          </View>
         ))}
         <View key={activities.length} collapsable={false}>
           <EmptyPagePlaceholder title="No activities" subtext="Tap the + button to create an activity" />

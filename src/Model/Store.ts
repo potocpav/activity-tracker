@@ -188,6 +188,32 @@ const useStore = create<State>()(
         return newActivityPath!;
       },
 
+      moveActivitiesToTab: (tabId: number, activityIds: number[], toTabId: number) => {
+        set((state: any) => {
+          let newActivities;
+          // add a new tab if necessary
+          if (toTabId < 0) {
+            newActivities = [{ tabName: "Activities", activities: [] }, ...state.activities];
+            toTabId = 0;
+            tabId += 1;
+          } else if (toTabId >= state.activities.length) {
+            newActivities = [...state.activities, { tabName: "Activities", activities: [] }];
+            toTabId = state.activities.length - 1;
+          } else {
+            newActivities = state.activities.slice(0);
+          }
+          const selectedActivities = newActivities[tabId].activities.filter((activity: ActivityType, index: number) => activityIds.includes(index));
+          const unselectedActivities = newActivities[tabId].activities.filter((activity: ActivityType, index: number) => !activityIds.includes(index));
+          newActivities[tabId].activities = unselectedActivities;
+          newActivities[toTabId].activities = [...newActivities[toTabId].activities, ...selectedActivities];
+          // remove a tab if necessary
+          if (unselectedActivities.length === 0) {
+            newActivities.splice(tabId, 1);
+          }
+          return { activities: newActivities, currentTabId: Math.max(0, Math.min( newActivities.length - 1, state.currentTabId)) };
+        });
+      },
+
       updateActivity: (activityPath: ActivityPath, activity: ActivityType) => {
         set((state: any) => {
             return mapActivity(state, activityPath, (_: ActivityType) =>  activity);
