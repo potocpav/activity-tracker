@@ -202,6 +202,7 @@ export type State = {
   subscription: Subscription | null;
   bleScaleWorkoutState: BleScaleWorkoutState | null;
 
+  currentTabId: number;
   activities: ActivityTab[];
   theme: "system" | "light" | "dark";
   blackBackground: boolean;

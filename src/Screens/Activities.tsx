@@ -4,11 +4,10 @@ import {
   Text,
   View,
   useWindowDimensions,
-  Pressable,
   FlatList,
 } from "react-native";
 import useStore from "../Model/Store";
-import { ActivityType, DataPoint, dateToDateList, Stat, WeekStart, DateList } from "../Model/StoreTypes";
+import { ActivityType, DataPoint, dateToDateList, Stat, WeekStart, DateList, ActivityTab, ActivityPath } from "../Model/StoreTypes";
 import { dayCmp, findZeroSlice, renderStatValue } from "../Model/Activity";
 import { getTheme, getThemePalette, getThemeVariant, useWideDisplay } from "../Model/Theme";
 import { SystemBars } from "react-native-edge-to-edge";
@@ -20,52 +19,52 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { ButtonRow, CheckIcon, CloseIcon, DoubleCheckIcon, PlusIcon, PlusIconButton, Button, BleScaleIcon } from "../Components/Element";
 import PagerView from 'react-native-pager-view';
 import Animated, { SharedValue, useAnimatedReaction, useAnimatedStyle, useDerivedValue, useSharedValue, withSpring } from "react-native-reanimated";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { Gesture, GestureDetector, Pressable } from "react-native-gesture-handler";
 import { scheduleOnRN } from "react-native-worklets";
 
 type ActivitiesProps = {
   navigation: any;
 };
 
-// TODO: make this dynamic based on the font size
-const ITEM_HEIGHT = 40;
-
-const DraggableCard = ({ children, draggedCardIx, moveActivity, index }: {
+const DraggableCard = ({ children, draggedCardIx, moveActivity, index, itemHeight, numberOfItems }: {
   children: React.ReactNode,
   draggedCardIx: SharedValue<{ from: number, to: number } | null>,
   moveActivity: (from: number, to: number) => void,
   index: number
+  itemHeight: number
+  numberOfItems: number
 }) => {
-  const TOLERANCE = 10;
+  const TOLERANCE = 100;
   const position = useSharedValue(0);
   const isPanning = useSharedValue(false);
+  const alreadyMoved = useSharedValue(false);
   const panGesture = Gesture
     .Pan()
-    .activateAfterLongPress(300)
+    .activateAfterLongPress(400)
     .activeOffsetY([-TOLERANCE, TOLERANCE])
     .failOffsetX([-TOLERANCE, TOLERANCE])
     .onStart((e) => {
       position.value = e.translationY;
       isPanning.value = true;
+      alreadyMoved.value = false;
     })
     .onUpdate((e) => {
       position.value = e.translationY;
-      draggedCardIx.value = { from: index, to: Math.round(e.translationY / ITEM_HEIGHT) + index };
+      draggedCardIx.value = { from: index, to: Math.max(0, Math.min(numberOfItems - 1, Math.round(e.translationY / itemHeight) + index)) };
     })
     .onEnd((event) => {
       isPanning.value = false;
     });
 
   const animatedStyle = useAnimatedStyle(() => {
-    let translateY = 0;
     if (isPanning.value) {
-      // dragging
-      translateY = position.value;
+      
     } else if (draggedCardIx.value?.from == index) {
       // dropped
-      if (draggedCardIx.value) {
-        translateY = withSpring(
-          (draggedCardIx.value.to - index) * ITEM_HEIGHT, { stiffness: 10000, damping: 1000 },
+      if (draggedCardIx.value && !alreadyMoved.value) {
+        alreadyMoved.value = true;
+        position.value = withSpring(
+          (draggedCardIx.value.to - index) * itemHeight, { stiffness: 10000, damping: 1000 },
           () => {
             if (draggedCardIx.value && draggedCardIx.value.from !== draggedCardIx.value.to) {
               scheduleOnRN(
@@ -80,24 +79,24 @@ const DraggableCard = ({ children, draggedCardIx, moveActivity, index }: {
     } else if (draggedCardIx.value !== null) {
       // drag in progress, but I am a non-dragged card
       if (index < draggedCardIx.value.from && index >= draggedCardIx.value.to) {
-        translateY = withSpring(ITEM_HEIGHT);
+        position.value = withSpring(itemHeight);
       } else if (index > draggedCardIx.value.from && index <= draggedCardIx.value.to) {
-        translateY = withSpring(-ITEM_HEIGHT);
+        position.value = withSpring(-itemHeight);
       } else {
-        translateY = withSpring(0);
+        position.value = withSpring(0);
       }
     } else {
-      translateY = 0;
+      position.value = 0;
     }
     return {
-      transform: [{ translateY }],
+      transform: [{ translateY: position.value }],
       zIndex: isPanning.value ? 1000 : 0,
     };
   });
 
   return (
     <GestureDetector gesture={panGesture}>
-      <Animated.View style={[animatedStyle, { height: ITEM_HEIGHT }]}>
+      <Animated.View style={[animatedStyle, { height: itemHeight }]}>
         {children}
       </Animated.View>
     </GestureDetector>
@@ -106,7 +105,7 @@ const DraggableCard = ({ children, draggedCardIx, moveActivity, index }: {
 
 const ActivityCard = ({
   activity,
-  index,
+  activityPath,
   wideDisplay,
   weekStart,
   today,
@@ -115,7 +114,7 @@ const ActivityCard = ({
   palette
 }: {
   activity: ActivityType,
-  index: number,
+  activityPath: ActivityPath,
   wideDisplay: boolean,
   weekStart: WeekStart,
   today: DateList,
@@ -125,8 +124,6 @@ const ActivityCard = ({
 }) => {
   const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
   const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);
-
-  const activityPath = { tabId: 0, activityId: index };
 
   let stats;
   if (wideDisplay) {
@@ -186,6 +183,7 @@ const ActivityCard = ({
             }
           }
         }}
+        delayLongPress={300}
         onLongPress={() => {
           if (activity.unit.type === "none") {
             if (todayPointIndices.length > 0) {
@@ -240,11 +238,13 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
 
   // First page and last page are empty, with no data backing them up in the model.
   // First page corresponds to zeroth index in the activities array.
-  const [selectedPage, setSelectedPage] = useState(1);
-  const tabId = selectedPage - 1;
+  const currentTabId = useStore((state: any) => state.currentTabId);
+  const setCurrentTabId = useStore((state: any) => state.setCurrentTabId);
 
   const scrollY = useSharedValue(0);
   const draggedCardIx = useSharedValue<{ from: number, to: number } | null>(null);
+
+  const itemHeight = 40 * dimensions.fontScale;
 
   React.useEffect(() => {
     navigation.setOptions({
@@ -253,7 +253,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
         <ButtonRow>
           <PlusIconButton onPress={() => {
             dismissHint("hello");
-            navigation.navigate('EditActivity', { activityPath: { tabId: tabId, activityId: activities[tabId].activities.length } });
+            navigation.navigate('EditActivity', { activityPath: { tabId: currentTabId, activityId: activities[currentTabId]?.activities?.length ?? 0 } });
           }} color={theme.colors.onSurface} />
           <Button onPress={() => {
             dismissHint("hello");
@@ -264,20 +264,18 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
         </ButtonRow>
       ),
     });
-  }, [navigation, selectedPage, theme]);
+  }, [navigation, currentTabId, theme]);
 
-  const moveActivity = (fromRaw: number, toRaw: number) => {
-    const from = Math.max(0, Math.min(activities[tabId].activities.length - 1, fromRaw));
-    const to = Math.max(0, Math.min(activities[tabId].activities.length - 1, toRaw));
-    // swap activities
-    const as = activities[tabId].activities;
+  const moveActivity = (from: number, to: number) => {
+    // swap activity into the new place
+    const as = activities[currentTabId].activities;
     let newActivities: ActivityType[];
     if (from < to) {
       newActivities = [...as.slice(0, from), ...as.slice(from + 1, to + 1), as[from], ...as.slice(to + 1)];
     } else {
       newActivities = [...as.slice(0, to), as[from], ...as.slice(to, from), ...as.slice(from + 1)];
     }
-    setActivities(tabId, newActivities);
+    setActivities(currentTabId, newActivities);
   }; 
 
   useAnimatedReaction(() => {
@@ -296,18 +294,21 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
       </View>
       <PagerView
         style={{ flex: 1 }}
-        initialPage={1}
-        onPageSelected={(event) => setSelectedPage(event.nativeEvent.position)}
+        initialPage={currentTabId + 1}
+        onPageSelected={(event) => {
+          setCurrentTabId(event.nativeEvent.position - 1);
+        }}
       >
-        <View key="0" collapsable={false}>
+        <View key="-1" collapsable={false}>
           <EmptyPagePlaceholder title="No activities" subtext="Tap the + button to create an activity" />
         </View>
-        <View key="1" collapsable={false}>
-          {activities.length === 0 ? (
+        {activities.map((activityTab: ActivityTab, tabId: number) => (
+          <View key={tabId} collapsable={false}>
+          {activityTab.activities.length === 0 ? (
             <EmptyPagePlaceholder title="No activities" subtext="Tap the + button to create an activity" />
           ) : (
             <FlatList
-              data={activities[0].activities}
+              data={activityTab.activities}
               onScroll={(event) => {
                 scrollY.value = event.nativeEvent.contentOffset.y;
               }}
@@ -316,10 +317,12 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
                   draggedCardIx={draggedCardIx}
                   index={index}
                   moveActivity={moveActivity}
+                  itemHeight={itemHeight}
+                  numberOfItems={activityTab.activities.length}
                 >
                   <ActivityCard
                     activity={item}
-                    index={index}
+                    activityPath={{ tabId, activityId: index }}
                     wideDisplay={wideDisplay}
                     weekStart={weekStart}
                     today={today}
@@ -335,7 +338,8 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
             />
           )}
         </View>
-        <View key="2" collapsable={false}>
+        ))}
+        <View key={activities.length} collapsable={false}>
           <EmptyPagePlaceholder title="No activities" subtext="Tap the + button to create an activity" />
         </View>
       </PagerView>

@@ -44,6 +44,7 @@ import * as Crypto from "expo-crypto";
 // Save only the state that is needed to be saved
 export const partialize = (state: State) => ({
   bleScaleWorkoutState: state.bleScaleWorkoutState,
+  currentTabId: state.currentTabId,
   activities: state.activities,
   theme: state.theme,
   blackBackground: state.blackBackground,
@@ -78,6 +79,7 @@ const useStore = create<State>()(
       bleScaleWorkoutState: null,
 
       // Activities related state
+      currentTabId: 0,
       activities: [],
       theme: "system",
       blackBackground: false,
@@ -122,6 +124,10 @@ const useStore = create<State>()(
         set({ weekStart: weekStart });
       },
 
+      setCurrentTabId: (currentTabId: number) => {
+        set({ currentTabId: currentTabId });
+      },
+
       setActivities: (tabId: number, activities: ActivityType[]) => {
         set((state: any) => ({ 
           activities: state.activities.map(
@@ -149,28 +155,42 @@ const useStore = create<State>()(
         set((state: any) => {
           const newActivities = state.activities.slice(0);
           newActivities[activityPath.tabId].activities.splice(activityPath.activityId, 1);
-          return { activities: newActivities };
+
+          // delete the tab if it's empty
+          if (newActivities[activityPath.tabId].activities.length === 0) {
+            newActivities.splice(activityPath.tabId, 1);
+          }
+          return { 
+            activities: newActivities, 
+            currentTabId: Math.max(0, Math.min( newActivities.length - 1, state.currentTabId))
+          };
         });
       },
 
       createActivity: (tabId: number, activity: ActivityType) => {
         let newActivityPath: ActivityPath;
         set((state: any) => {
-          const newActivities = state.activities.slice(0);
-          newActivities[tabId].activities.push(activity);
-          newActivityPath = { tabId, activityId: newActivities[tabId].activities.length - 1 };  
-          return { activities: newActivities };
+          let newActivities;
+          // add a tab if necessary.
+          if (tabId < 0) {
+            newActivities = [{ tabName: "Activities", activities: [activity] }, ...state.activities];
+            newActivityPath = { tabId: 0, activityId: 0 };
+          } else if (tabId >= state.activities.length) {
+            newActivities = [...state.activities, { tabName: "Activities", activities: [activity] }];
+            newActivityPath = { tabId: state.activities.length, activityId: 0 };
+          } else {
+            newActivities = state.activities.slice(0);
+            newActivities[tabId].activities.push(activity);
+            newActivityPath = { tabId, activityId: newActivities[tabId].activities.length - 1 };
+          }
+          return { activities: newActivities, currentTabId: tabId };
         });
         return newActivityPath!;
       },
 
-      updateActivity: (activityPath: ActivityPath | null, activity: ActivityType) => {
+      updateActivity: (activityPath: ActivityPath, activity: ActivityType) => {
         set((state: any) => {
-          if (activityPath === null) {
-            return { activities: [...state.activities, activity] };
-          } else {
             return mapActivity(state, activityPath, (_: ActivityType) =>  activity);
-          }
         });
       },
 

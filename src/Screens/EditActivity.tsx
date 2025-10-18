@@ -49,8 +49,8 @@ const ColorButton = ({ color, onPress }: { color: number, onPress: () => void })
 };
 
 const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
-  const activityPath : ActivityPath | null = route.params.activityPath;
-  const activity: ActivityType | null = activityPath ? useStore((state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId]) : null;
+  const activityPath : ActivityPath = route.params.activityPath;
+  const activity: ActivityType | null = useStore((state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId]) ?? null;
   const themeVariant = getThemeVariant();
   const palette = getThemePalette();
   const updateActivity = useStore((state: any) => state.updateActivity);
@@ -239,9 +239,9 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       return;
     }
 
-    let updatedActivity: ActivityType;
+    let newActivityPath: ActivityPath = activityPath;
     if (activity === null) {
-      updatedActivity = {
+      const updatedActivity : ActivityType = {
         uuid: Crypto.randomUUID(),
         name: activityNameInput,
         description: activityDescriptionInput,
@@ -254,8 +254,9 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
         graphs: specialType === "ble_scale" ? defaultBleScaleGraphs(newUnit) : defaultGraphs(newUnit),
         special: specialType === "ble_scale" ? { type: "ble_scale", minWeight: bleMinWeightNumber } : null,
       };
+      newActivityPath = createActivity(activityPath.tabId, updatedActivity);
     } else {
-      updatedActivity = {
+      const updatedActivity : ActivityType = {
         ...activity,
         name: activityNameInput,
         description: activityDescriptionInput,
@@ -264,13 +265,9 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
         // don't update unit, it will be updated in the setUnit call
         // don't update tags, they will be updated in the setTags call
       };
-    }
-    let newActivityPath: ActivityPath | null = activityPath;
-    if (activityPath === null) {
-      newActivityPath = createActivity(0, updatedActivity);
-    } else {
       updateActivity(activityPath, updatedActivity);
     }
+    
     setTags(newActivityPath, tagState);
     let unitMap;
     switch (newUnit.type) {

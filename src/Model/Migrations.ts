@@ -9,7 +9,7 @@ import {
   generateUuids
 } from "./StoreTypes";
 
-export const version = 31;
+export const version = 32;
 
 export const migrate = (persisted: any, version: number) => {
   if (version < 6) {
@@ -134,6 +134,9 @@ export const migrate = (persisted: any, version: number) => {
   }
   if (version < 31) {
     persisted.activeHints = persisted.activeHints.filter((h: HintType | "quickly_add_point") => h !== "quickly_add_point");
+  }
+  if (version < 32) {
+    persisted.currentTabId = 0;
   }
   return persisted
 };
