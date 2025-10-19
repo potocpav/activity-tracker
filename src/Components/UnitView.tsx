@@ -379,13 +379,13 @@ export const ValueEditor = ({
     DateTimePickerAndroid.open({
       mode: "time",
       is24Hour: true,
-      value: valueHours ? new Date(0, 0, 0, Math.floor((valueHours ?? 0) + 1/120), Math.floor(((valueHours ?? 0) + 1/120) % 1 * 60)) : new Date(),
+      value: valueHours ? new Date(0, 0, 0, Math.floor((valueHours ?? 0) + 1 / 120), Math.floor(((valueHours ?? 0) + 1 / 120) % 1 * 60)) : new Date(),
       onChange: (event, selectedDate) => {
         if (selectedDate !== undefined) {
           const newValue = selectedDate.getHours() + selectedDate.getMinutes() / 60;
           onChange(numberToString(newValue, unit));
         }
-        
+
       },
     });
   }
@@ -400,21 +400,13 @@ export const ValueEditor = ({
                 case "hours":
                   return (
                     <>
-                      <Pressable onPress={showTimePicker}
-                        style={({ pressed }) => [
-                          {
-                            flex: 1,
-                            opacity: pressed ? 0.7 : 1,
-                          },
-                        ]}>
-                        <TextInput
-                          style={{ flex: 1 }}
-                          label={label}
-                          editable={false}
-                          value={value}
-                          mode="outlined"
-                        />
-                      </Pressable>
+                      <TextInput
+                        style={{ flex: 1 }}
+                        label={label}
+                        value={value}
+                        onChangeText={onChange}
+                        mode="outlined"
+                      />
                       <Button onPress={() => showTimePicker()}>
                         <MaterialCommunityIcons name="timer" size={22} color={theme.colors.onSurface} />
                       </Button>
@@ -428,7 +420,7 @@ export const ValueEditor = ({
                         label={label}
                         value={timerActive ? addTimerToValue(value) : value}
                         editable={!timerActive}
-                        onChangeText={text => onChange(text)}
+                        onChangeText={onChange}
                         mode="outlined"
                       />
                       <Button onPress={() => resetTimer()}>
