@@ -67,6 +67,23 @@ const mapActivity = (state: State, activityPath: ActivityPath, f: (activity: Act
   return { activities: newActivities };
 };
 
+const trimEmptyTabs = (activities: ActivityTab[], currentTabId: number) : { activities: ActivityTab[], currentTabId: number } => {
+  if (activities.length <= 1) {
+    return { activities: activities, currentTabId: currentTabId };
+  }
+  let newActivities = activities.slice(0);
+  let newCurrentTabId = currentTabId;
+  while (newActivities[0].activities.length === 0 && newActivities.length > 1) {
+    newActivities.splice(0, 1);
+    newCurrentTabId = Math.max(-1, newCurrentTabId - 1);
+  }
+  while (newActivities[newActivities.length - 1].activities.length === 0 && newActivities.length > 1) {
+    newActivities.splice(newActivities.length - 1, 1);
+    newCurrentTabId = Math.min(newActivities.length, newCurrentTabId);
+  }
+  return { activities: newActivities, currentTabId: newCurrentTabId };
+}
+
 const useStore = create<State>()(
   persist(
     (set, get) => ({
@@ -155,37 +172,32 @@ const useStore = create<State>()(
         set((state: any) => {
           const newActivities = state.activities.slice(0);
           newActivities[activityPath.tabId].activities.splice(activityPath.activityId, 1);
-
-          // delete the tab if it's empty
-          if (newActivities[activityPath.tabId].activities.length === 0) {
-            newActivities.splice(activityPath.tabId, 1);
-          }
-          return { 
-            activities: newActivities, 
-            currentTabId: Math.max(0, Math.min( newActivities.length - 1, state.currentTabId))
-          };
+          return trimEmptyTabs(newActivities, state.currentTabId);
         });
       },
 
       createActivity: (tabId: number, activity: ActivityType) => {
         let newActivityPath: ActivityPath;
+        let activityId: number;
         set((state: any) => {
           let newActivities;
           // add a tab if necessary.
           if (tabId < 0) {
             newActivities = [{ tabName: "Activities", activities: [activity] }, ...state.activities];
-            newActivityPath = { tabId: 0, activityId: 0 };
+            tabId = 0;
           } else if (tabId >= state.activities.length) {
             newActivities = [...state.activities, { tabName: "Activities", activities: [activity] }];
-            newActivityPath = { tabId: state.activities.length, activityId: 0 };
+            tabId = state.activities.length;
           } else {
             newActivities = state.activities.slice(0);
             newActivities[tabId].activities.push(activity);
-            newActivityPath = { tabId, activityId: newActivities[tabId].activities.length - 1 };
           }
-          return { activities: newActivities, currentTabId: tabId };
+          const {activities, currentTabId} = trimEmptyTabs(newActivities, tabId);
+          tabId = currentTabId;
+          activityId = activities[tabId].activities.length - 1;
+          return { activities, currentTabId, activityId };
         });
-        return newActivityPath!;
+        return { tabId, activityId: activityId! };
       },
 
       moveActivitiesToTab: (tabId: number, activityIds: number[], toTabId: number) => {
@@ -198,7 +210,7 @@ const useStore = create<State>()(
             tabId += 1;
           } else if (toTabId >= state.activities.length) {
             newActivities = [...state.activities, { tabName: "Activities", activities: [] }];
-            toTabId = state.activities.length - 1;
+            toTabId = newActivities.length - 1;
           } else {
             newActivities = state.activities.slice(0);
           }
@@ -206,11 +218,7 @@ const useStore = create<State>()(
           const unselectedActivities = newActivities[tabId].activities.filter((activity: ActivityType, index: number) => !activityIds.includes(index));
           newActivities[tabId].activities = unselectedActivities;
           newActivities[toTabId].activities = [...newActivities[toTabId].activities, ...selectedActivities];
-          // remove a tab if necessary
-          if (unselectedActivities.length === 0) {
-            newActivities.splice(tabId, 1);
-          }
-          return { activities: newActivities, currentTabId: Math.max(0, Math.min( newActivities.length - 1, state.currentTabId)) };
+          return trimEmptyTabs(newActivities, tabId);
         });
       },
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   StyleSheet,
   Text,
@@ -274,10 +274,15 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   const moveActivitiesToTab = useStore((state: any) => state.moveActivitiesToTab);
 
   const [selectedActivities, setSelectedActivities] = useState<number[]>([]);
+  const pagerViewRef = useRef<PagerView>(null);
 
   const scrollY = useSharedValue(0);
   const draggedCardIx = useSharedValue<{ from: number, to: number } | null>(null);
   const itemHeight = 40 * dimensions.fontScale;
+
+  // React.useEffect(() => {
+  //   pagerViewRef.current?.setPageWithoutAnimation(currentTabId + 1);
+  // }, [currentTabId]);
 
   React.useEffect(() => {
     navigation.setOptions({
@@ -357,6 +362,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
         <Text style={{ color: 'white' }}>Hello, world!</Text>
       </View>
       <PagerView
+        ref={pagerViewRef}
         style={{ flex: 1 }}
         initialPage={currentTabId + 1}
         onPageSelected={(event) => {

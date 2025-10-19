@@ -42,11 +42,13 @@ Track your performance metrics and their progress over time. With custom statist
 
 ## Planned features
 
-- [ ] Multiple acitivity screens
+- [x] Multiple acitivity screens
   - [x] Allow duplicate activity names
+  - [x] Move activities between tabs
+  - [x] Multiple activity selection
+  - [ ] Remove wing tabs when no activities exist
+  - [ ] Gracefully navigate between tabs on tab changes
   - [ ] Import into a new tab from Habit Tracker
-  - [ ] Drag and drop activities between tabs
-  - [ ] Multiple activity selection
 - [ ] Handle large number of data points
   - [ ] Bulk selection
   - [ ] Bulk editing
