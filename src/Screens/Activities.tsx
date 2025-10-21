@@ -291,14 +291,14 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
         <Animated.View entering={FadeIn} exiting={FadeOut} style={{ flexDirection: 'row' }}>
           <ButtonRow>
             <Button onPress={() => setSelectedActivities([])}>
-              <MaterialCommunityIcons name="close" size={24} color="white" />
+              <MaterialCommunityIcons name="close" size={24} color={theme.colors.onSurface} />
             </Button>
             {(currentTabId > 0 || selectedActivities.length < activities[currentTabId].activities.length) && (
               <Button onPress={() => {
                 moveActivitiesToTab(currentTabId, selectedActivities, currentTabId - 1);
                 setSelectedActivities([]);
               }}>
-                <MaterialCommunityIcons name="arrow-left" size={24} color="white" />
+                <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onSurface} />
               </Button>
             )}
             {(currentTabId < activities.length - 1 || selectedActivities.length < activities[currentTabId].activities.length) && (
@@ -306,7 +306,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
                 moveActivitiesToTab(currentTabId, selectedActivities, currentTabId + 1);
                 setSelectedActivities([]);
               }}>
-                <MaterialCommunityIcons name="arrow-right" size={24} color="white" />
+                <MaterialCommunityIcons name="arrow-right" size={24} color={theme.colors.onSurface} />
               </Button>
             )}
           </ButtonRow>
