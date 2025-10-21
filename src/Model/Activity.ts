@@ -59,13 +59,10 @@ export const statPeriodCmp = (
   if (period === "today") {
     lo = hi = today;
   } else if (period === "this_week") {
-    let dayOfWeek = dateListToDate(today).getDay();
-    const firstDayOfWeek = weekStart === "sunday" ? 0 : 1;
-    if (dayOfWeek < firstDayOfWeek) {
-      dayOfWeek += 7;
-    }
-    lo = [today[0], today[1], today[2] - dayOfWeek + firstDayOfWeek];
-    hi = [today[0], today[1], today[2] - dayOfWeek + firstDayOfWeek + 6];
+    const startDay = weekStart === "sunday" ? 0 : 1;
+    const dayOfWeek = (dateListToDate(today).getDay() - startDay + 7) % 7;
+    lo = [today[0], today[1], today[2] - dayOfWeek];
+    hi = [today[0], today[1], today[2] - dayOfWeek + 6];
   } else if (period === "this_month") {
     lo = [today[0], today[1], 1];
     hi = [today[0], today[1] + 1, 0];
