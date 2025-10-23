@@ -76,11 +76,12 @@ Track your performance metrics and their progress over time. With custom statist
 
 ## Changelog
 
-### 3.3.0  (In progress)
+### 3.3.0
 
-- Polish Bluetooth integration with Tindeq Progressor and other scales
+- Activity tabs
 - New data point list design 
 - Swipe to delete data points
+- Polish Bluetooth integration with Tindeq Progressor
 - Allow duplicate activity names
 
 ### 3.2.0
