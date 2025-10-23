@@ -26,11 +26,9 @@ type ActivitiesProps = {
   navigation: any;
 };
 
-const DraggableCard = ({ children, draggedCardIx, moveActivity, index, itemHeight, numberOfItems, selectedActivities, setSelectedActivities }: {
+const DraggableCard = ({ children, draggedCardIx, moveActivity, index, itemHeight, numberOfItems }: {
   children: React.ReactNode,
   draggedCardIx: SharedValue<{ from: number, to: number } | null>,
-  selectedActivities: number[],
-  setSelectedActivities: (activities: (activities: number[]) => number[]) => void,
   moveActivity: (from: number, to: number) => void,
   index: number
   itemHeight: number
@@ -57,28 +55,6 @@ const DraggableCard = ({ children, draggedCardIx, moveActivity, index, itemHeigh
     .onEnd(() => {
       isPanning.value = false;
     });
-
-  const toggleSelected = () => {
-    setSelectedActivities((selected) => {
-      if (selected.includes(index)) {
-        return selected.filter((ix) => ix !== index);
-      } else {
-        return [...selected, index];
-      }
-    });
-  }
-
-  const longPressGesture = Gesture.LongPress().onStart((e) => {
-    scheduleOnRN(toggleSelected);
-  });
-
-  const tapGesture = Gesture.Tap().onEnd((e) => {
-    if (selectedActivities.length > 0) {
-      scheduleOnRN(toggleSelected);
-    }
-  });
-
-  const gesture = Gesture.Simultaneous(panGesture, longPressGesture, tapGesture);
 
   const animatedStyle = useAnimatedStyle(() => {
     if (isPanning.value) {
@@ -119,7 +95,7 @@ const DraggableCard = ({ children, draggedCardIx, moveActivity, index, itemHeigh
   });
 
   return (
-    <GestureDetector gesture={gesture}>
+    <GestureDetector gesture={panGesture}>
       <Animated.View style={[animatedStyle, { height: itemHeight }]}>
         {children}
       </Animated.View>
@@ -136,7 +112,8 @@ const ActivityCard = ({
   navigation,
   styles,
   palette,
-  selectedActivities
+  selectedActivities,
+  setSelectedActivities
 }: {
   activity: ActivityType,
   activityPath: ActivityPath,
@@ -147,10 +124,11 @@ const ActivityCard = ({
   styles: any,
   palette: any
   selectedActivities: number[]
+  setSelectedActivities: (activities: (activities: number[]) => number[]) => void
 }) => {
+  const index = activityPath.activityId;
   const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
   const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);
-
 
   let stats;
   if (wideDisplay) {
@@ -170,14 +148,33 @@ const ActivityCard = ({
 
   const isSelected = selectedActivities.includes(activityPath.activityId);
 
+  const toggleSelected = () => {
+    setSelectedActivities((selected) => {
+      if (selected.includes(index)) {
+        return selected.filter((ix) => ix !== index);
+      } else {
+        return [...selected, index];
+      }
+    });
+  }
+
   return (
     <Animated.View style={[styles.activityCard, { borderWidth: isSelected ? 2 : 0, borderColor: palette[activity.color] }]}>
-      <Pressable onPress={() => {
-        if (selectedActivities.length > 0) {
-          return;
-        }
-        navigation.navigate('Activity', { activityPath });
-      }} android_ripple={{ foreground: true }} style={styles.activityRow}>
+      <Pressable
+        onLongPress={() => {
+          toggleSelected();
+        }}
+        delayLongPress={300}
+        onPress={() => {
+          if (selectedActivities.length === 0) {
+            navigation.navigate('Activity', { activityPath });
+          } else {
+            toggleSelected();
+          }
+        }}
+        android_ripple={{ foreground: true }}
+        style={styles.activityRow}
+      >
         <View style={styles.activityTitleContainer}>
           <Text numberOfLines={1} style={[styles.activityTitle, { color: palette[activity.color] }]}>{activity.name}</Text>
         </View>
@@ -191,24 +188,25 @@ const ActivityCard = ({
       </Pressable>
       <Pressable
         onPress={() => {
-          if (selectedActivities.length > 0) {
-            return;
-          }
-          if (activity.unit.type === "none") {
-            if (todayPointIndices.length > 0) {
-              navigation.navigate('EditDataPoint', { activityPath, dataPointIndex: todayPointIndices[todayPointIndices.length - 1] });
+          if (selectedActivities.length === 0) {
+            if (activity.unit.type === "none") {
+              if (todayPointIndices.length > 0) {
+                navigation.navigate('EditDataPoint', { activityPath, dataPointIndex: todayPointIndices[todayPointIndices.length - 1] });
+              } else {
+                navigation.navigate('EditDataPoint', { activityPath, newDataPoint: true });
+              }
             } else {
-              navigation.navigate('EditDataPoint', { activityPath, newDataPoint: true });
+              switch (activity.special?.type ?? null) {
+                case "ble_scale":
+                  navigation.navigate("BleScaleInput", { activityPath });
+                  break;
+                case null:
+                  navigation.navigate('EditDataPoint', { activityPath, newDataPoint: true });
+                  break;
+              }
             }
           } else {
-            switch (activity.special?.type ?? null) {
-              case "ble_scale":
-                navigation.navigate("BleScaleInput", { activityPath });
-                break;
-              case null:
-                navigation.navigate('EditDataPoint', { activityPath, newDataPoint: true });
-                break;
-            }
+            toggleSelected();
           }
         }}
         delayLongPress={300}
@@ -386,8 +384,6 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
                 renderItem={({ item, index }) =>
                   <DraggableCard
                     draggedCardIx={draggedCardIx}
-                    selectedActivities={selectedActivities}
-                    setSelectedActivities={setSelectedActivities}
                     index={index}
                     moveActivity={moveActivity}
                     itemHeight={itemHeight}
@@ -400,6 +396,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
                       weekStart={weekStart}
                       today={today}
                       selectedActivities={selectedActivities}
+                      setSelectedActivities={setSelectedActivities}
                       navigation={navigation}
                       styles={styles}
                       palette={palette}
