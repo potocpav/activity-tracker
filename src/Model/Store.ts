@@ -97,7 +97,7 @@ const useStore = create<State>()(
 
       // Activities related state
       currentTabId: 0,
-      activities: [],
+      activities: [{ tabName: "Activities", activities: [] }],
       theme: "system",
       blackBackground: false,
       weekStart: "monday",

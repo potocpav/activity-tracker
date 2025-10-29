@@ -9,7 +9,7 @@ import {
   generateUuids
 } from "./StoreTypes";
 
-export const version = 32;
+export const version = 33;
 
 export const migrate = (persisted: any, version: number) => {
   if (version < 6) {
@@ -137,6 +137,11 @@ export const migrate = (persisted: any, version: number) => {
   }
   if (version < 32) {
     persisted.currentTabId = 0;
+  }
+  if (version < 33) {
+    if (persisted.activities.length === 0) {
+      persisted.activities = [{ tabName: "Activities", activities: [] }];
+    }
   }
   return persisted
 };

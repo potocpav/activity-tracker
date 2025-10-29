@@ -357,7 +357,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
         )}
       </View>
       <View style={{ position: 'absolute', top: -20, left: 0, right: 0, zIndex: 20 }}>
-        <Text style={{ color: 'white' }}>Hello, world!</Text>
+        <Text style={{ color: 'black' }}>Hello, world!</Text>
       </View>
       <PagerView
         ref={pagerViewRef}
