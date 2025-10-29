@@ -16,11 +16,12 @@ import EmptyPagePlaceholder from "../Components/EmptyPagePlaceholder";
 import Hint from "../Components/Hint";
 import Inset from "../Components/SafeAreaInset";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { ButtonRow, CheckIcon, CloseIcon, DoubleCheckIcon, PlusIcon, PlusIconButton, Button, BleScaleIcon } from "../Components/Element";
+import { ButtonRow, CheckIcon, CloseIcon, DoubleCheckIcon, PlusIcon, PlusIconButton, Button, BleScaleIcon, CheckButton, CloseButton } from "../Components/Element";
 import PagerView from 'react-native-pager-view';
 import Animated, { FadeOut, FadeIn, SharedValue, useAnimatedReaction, useAnimatedStyle, useDerivedValue, useSharedValue, withSpring } from "react-native-reanimated";
 import { Gesture, GestureDetector, Pressable } from "react-native-gesture-handler";
 import { scheduleOnRN } from "react-native-worklets";
+import { Dialog, Portal, TextInput } from "react-native-paper";
 
 type ActivitiesProps = {
   navigation: any;
@@ -258,6 +259,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   const weekStart = useStore((state: any) => state.weekStart);
   const dismissHint = useStore((state: any) => state.dismissHint);
   const setActivities = useStore((state: any) => state.setActivities);
+  const setActivityTabName = useStore((state: any) => state.setActivityTabName);
 
   const palette = getThemePalette();
   const wideDisplay = useWideDisplay();
@@ -270,6 +272,8 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   const currentTabId = useStore((state: any) => state.currentTabId);
   const setCurrentTabId = useStore((state: any) => state.setCurrentTabId);
   const moveActivitiesToTab = useStore((state: any) => state.moveActivitiesToTab);
+  const [activityTabDialogVisible, setActivityTabDialogVisible] = useState(false);
+  const [activityTabDialogNameInput, setActivityTabDialogNameInput] = useState(activities[currentTabId]?.tabName ?? "Activities");
 
   const [selectedActivities, setSelectedActivities] = useState<number[]>([]);
   const pagerViewRef = useRef<PagerView>(null);
@@ -284,7 +288,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
 
   React.useEffect(() => {
     navigation.setOptions({
-      title: "Activities",
+      title: "Activitiesx",
       headerTitle: selectedActivities.length > 0 ? () => (
         <Animated.View entering={FadeIn} exiting={FadeOut} style={{ flexDirection: 'row' }}>
           <ButtonRow>
@@ -309,7 +313,21 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
             )}
           </ButtonRow>
         </Animated.View>
-      ) : undefined,
+      ) : () => (
+        <Animated.View entering={FadeIn} exiting={FadeOut} style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Button 
+            onPress={() => {
+              if (activities[currentTabId] !== undefined) {
+                setActivityTabDialogVisible(true);
+              }
+            }}
+            >
+              <Text style={{ color: theme.colors.onSurface, fontSize: 20 }}>
+                {activities[currentTabId]?.tabName ?? "Activities"}
+              </Text>
+            </Button>
+        </Animated.View>
+      ),
       headerRight: selectedActivities.length === 0 ? () => (
         <Animated.View key="unselected" entering={FadeIn} exiting={FadeOut}>
           <ButtonRow>
@@ -327,7 +345,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
         </Animated.View>
       ) : undefined,
     });
-  }, [navigation, currentTabId, theme, selectedActivities]);
+  }, [navigation, currentTabId, theme, activities, selectedActivities]);
 
   const moveActivity = (from: number, to: number) => {
     // swap activity into the new place
@@ -414,6 +432,26 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
           <EmptyPagePlaceholder title="No activities" subtext="Tap the + button to create an activity" />
         </View>
       </PagerView>
+      <Portal>
+        <Dialog visible={activityTabDialogVisible} onDismiss={() => setActivityTabDialogVisible(false)}>
+          <Dialog.Content>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={{ flex: 1 }}>
+                <TextInput label="Tab Name" defaultValue={activityTabDialogNameInput} onChangeText={setActivityTabDialogNameInput} mode="outlined" />
+              </View>
+            </View>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <ButtonRow>
+              <CloseButton onPress={() => setActivityTabDialogVisible(false)} color={theme.colors.onSurface} />
+              <CheckButton onPress={() => {
+                setActivityTabName(currentTabId, activityTabDialogNameInput);
+                setActivityTabDialogVisible(false);
+              }} color={theme.colors.onSurface} />
+            </ButtonRow>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </SafeAreaView>
   );
 };

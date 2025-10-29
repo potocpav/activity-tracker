@@ -145,6 +145,14 @@ const useStore = create<State>()(
         set({ currentTabId: currentTabId });
       },
 
+      setActivityTabName: (tabId: number, tabName: string) => {
+        set((state: any) => ({
+          activities: state.activities.map(
+            (tab: ActivityTab, i: number) => i === tabId ? { ...tab, tabName } : tab
+          )
+        }));
+      },
+
       setActivities: (tabId: number, activities: ActivityType[]) => {
         set((state: any) => ({ 
           activities: state.activities.map(
