@@ -73,8 +73,14 @@ Track your performance metrics and their progress over time. With custom statist
 - [ ] Performance improvements
   - [ ] Debug BLE Input performance
   - [ ] Debug Activity Summary performance
+- [ ] Optimize for tablets
 
 ## Changelog
+
+### 3.3.1
+
+- Renaming activity tabs
+- Fix a screen navigation bug
 
 ### 3.3.0
 
@@ -169,7 +175,7 @@ eas build --platform android --profile development --local
 Install the APK on your device with ADB. Then, run the Expo app and scan the QR code on your device:
 
 ```bash
-npx expo start --tunnel
+npx expo
 ```
 
 ### Preview build
