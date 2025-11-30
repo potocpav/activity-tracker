@@ -188,13 +188,6 @@ eas build --platform android --profile preview --local
 
 Install the APK on your device, and use the app normally.
 
-## Dependencies
-
-- expo-sqlite: for Loop Habit Tracker import
-- victory-native-xl: for Tindeq graphs
-- ble: for Tindeq graphs
-- react-native-svg: for hint bubbles
-
 ### Data sharing
 
 You can transfer data among different app builds with the import & export feature. Data should never be imported from a newer app version into an older one - that way, data migrations would not work.
