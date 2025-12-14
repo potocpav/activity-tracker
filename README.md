@@ -77,6 +77,10 @@ Track your performance metrics and their progress over time. With custom statist
 
 ## Changelog
 
+### 3.4.0
+
+- Multiline notes
+
 ### 3.3.2
 
 - Fix a bug with the last month of the year being excluded from statistics

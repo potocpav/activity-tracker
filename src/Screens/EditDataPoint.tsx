@@ -275,6 +275,9 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
               label="Note (optional)"
               value={noteInput}
               onChangeText={setNoteInput}
+              multiline
+              numberOfLines={2}
+              style={{ height: 80 }}
               mode="outlined"
             />
           </InputWrapper>
