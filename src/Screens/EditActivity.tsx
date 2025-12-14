@@ -188,7 +188,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
 
   const bleMinWeightUnit = multiUnitInput[0]?.unit?.type === "weight" ?
     multiUnitInput[0]?.unit?.unit ?? "kg" : "kg";
-  const [bleMinWeight, setBleMinWeight] = useState<string>("" + (activity?.special?.minWeight ?? 2));
+  const [bleMinWeight, setBleMinWeight] = useState<string>("" + (activity?.special?.minWeight ?? (bleMinWeightUnit === "kg" ? 10 : 22)));
   let bleMinWeightError: string | null = null;
   const bleMinWeightNumber = stringToNumber(bleMinWeight, { type: "weight", unit: bleMinWeightUnit });
   if (bleMinWeightUnit === 'kg' && (bleMinWeightNumber ?? 0) < 1) {
@@ -614,9 +614,15 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
                 <SegmentedButtons
                   value={bleMinWeightUnit}
                   onValueChange={value => {
+                    const conversionFactor = 
+                      value === "kg" && bleMinWeightUnit === "lb" ? 
+                        0.453592 : 
+                        value === "lb" && bleMinWeightUnit === "kg" ? 
+                        2.20462 : 1;
+                    setBleMinWeight((old: string) => "" + Math.round(Number(old) * conversionFactor));
                     setMultiUnitInput(multiUnitInput.map((u, idx) => idx === 0 ? {
                       ...u,
-                      unit: { type: "weight", unit: value as WeightUnit }
+                      unit: { type: "weight", unit: value as WeightUnit },
                     } :
                       u))
                   }}
