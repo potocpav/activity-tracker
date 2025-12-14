@@ -66,6 +66,10 @@ export const statPeriodCmp = (
   } else if (period === "this_month") {
     lo = [today[0], today[1], 1];
     hi = [today[0], today[1] + 1, 0];
+  } else if (period === "this_quarter") {
+    const thisQuarter = Math.floor((today[1] - 1) / 3);
+    lo = [today[0], thisQuarter * 3 + 1, 1];
+    hi = [today[0], thisQuarter * 3 + 4, 0];
   } else if (period === "this_year") {
     lo = [today[0], 1, 1];
     hi = [today[0] + 1, 1, 0];
@@ -279,12 +283,22 @@ export const statPeriodDays = (period: StatPeriod, weekStart: WeekStart) => {
   switch (period) {
     case "today":
       return 1;
-    case "this_week":
+    case "this_week": {
       const startDay = weekStart === "sunday" ? 0 : 1;
-      return (today.getDay() - startDay + 8) % 7;
-    case "this_month":
+      const dayOfWeek = (today.getDay() - startDay + 7) % 7;
+      return dayOfWeek + 1;
+    }
+    case "this_month": {
       return today.getDate();
-    case "this_year":
+    }
+    case "this_quarter": {
+      const startDay = new Date(today.getFullYear(), Math.floor(today.getMonth() / 3) * 3, 1);
+      return Math.floor((today.getTime() - startDay.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    }
+    case "this_year": {
+      const startDay = new Date(today.getFullYear(), 0, 1);
+      return Math.floor((today.getTime() - startDay.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    }
       return 365;
     case "last_7_days":
       return 7;
@@ -334,6 +348,8 @@ export const periodToLabel = (period: StatPeriod): string => {
       return "This Week";
     case "this_month":
       return "This Month";
+    case "this_quarter":
+      return "This Quarter";
     case "this_year":
       return "This Year";
     case "last_7_days":

@@ -80,6 +80,8 @@ Track your performance metrics and their progress over time. With custom statist
 ### 3.4.0
 
 - Multiline notes
+- Add "This Quarter" time period to statistics
+- Fix a bug in "Daily %" calculations 
 
 ### 3.3.2
 

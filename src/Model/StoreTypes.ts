@@ -92,12 +92,12 @@ export const unaryStatValues : StatValue[] = [
 ]
 
 export type StatPeriod = 
-  "today" | "last_active_day" | "this_week" | "this_month" | "this_year" |
+  "today" | "last_active_day" | "this_week" | "this_month" | "this_quarter" | "this_year" |
   "last_7_days" | "last_30_days" | "last_90_days" | "last_365_days" |
   "all_time";
 
 export const allStatPeriods : StatPeriod[] = [
-  "today", "last_active_day", "this_week", "this_month", "this_year",
+  "today", "last_active_day", "this_week", "this_month", "this_quarter", "this_year",
   "last_7_days", "last_30_days", "last_90_days", "last_365_days",
   "all_time"
 ];
