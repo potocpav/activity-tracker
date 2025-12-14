@@ -67,8 +67,8 @@ export const statPeriodCmp = (
     lo = [today[0], today[1], 1];
     hi = [today[0], today[1] + 1, 0];
   } else if (period === "this_year") {
-    lo = [today[0], 0, 1];
-    hi = [today[0] + 1, 0, 0];
+    lo = [today[0], 1, 1];
+    hi = [today[0] + 1, 1, 0];
   } else if (period === "last_7_days") {
     lo = [today[0], today[1], today[2] - 6];
     hi = today;

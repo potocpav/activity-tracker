@@ -77,6 +77,10 @@ Track your performance metrics and their progress over time. With custom statist
 
 ## Changelog
 
+### 3.3.2
+
+- Fix a bug with the last month of the year being excluded from statistics
+
 ### 3.3.1
 
 - Renaming activity tabs
