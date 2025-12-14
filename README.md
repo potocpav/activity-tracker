@@ -79,6 +79,10 @@ Track your performance metrics and their progress over time. With custom statist
 
 ### 3.4.0
 
+- [ ] Implement French slash grades
+- [ ] Test French slash grades
+- [ ] Implement Font slash grades
+- [ ] Test Font slash grades
 - Multiline notes
 - Add "This Quarter" time period to statistics
 - Fix a bug in "Daily %" calculations 

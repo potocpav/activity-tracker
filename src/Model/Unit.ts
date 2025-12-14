@@ -17,14 +17,13 @@ export const isSummable = (unit: SubUnit): boolean => {
     case "climbing_grade":
       return false;
   }
-}
-
+};
 
 // Convert a numerical value to an editable value.
 // Function `reencode` must be idempotent over n, where:
 //   reencode(n, u) = stringToNumber(numberToString(n, u), u)
 export const numberToString = (value: number | null, unit: SubUnit): string => {
-  'worklet'
+  "worklet";
   if (value === null) {
     return "";
   }
@@ -48,9 +47,11 @@ export const numberToString = (value: number | null, unit: SubUnit): string => {
           const minutes = Math.floor((v - hours) * 60);
           const seconds = Math.floor(((v - hours) * 60 - minutes) * 60);
           if (seconds == 0) {
-            return `${sign}${hours}:${minutes.toString().padStart(2, '0')}`;
+            return `${sign}${hours}:${minutes.toString().padStart(2, "0")}`;
           } else {
-            return `${sign}${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            return `${sign}${hours}:${minutes
+              .toString()
+              .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
           }
         }
         case "seconds": {
@@ -60,11 +61,20 @@ export const numberToString = (value: number | null, unit: SubUnit): string => {
           const minutes = Math.floor((v - hours * 3600) / 60);
           const seconds = Math.floor(v - hours * 3600 - minutes * 60);
 
-          const fractionalPart = Math.abs(value % 1) < 0.005 ? "" : `.${(value % 1).toFixed(2).split('.')[1]}`;
+          const fractionalPart =
+            Math.abs(value % 1) < 0.005
+              ? ""
+              : `.${(value % 1).toFixed(2).split(".")[1]}`;
           if (hours == 0) {
-            return `${sign}${minutes.toString()}:${seconds.toString().padStart(2, '0')}${fractionalPart}`;
+            return `${sign}${minutes.toString()}:${seconds
+              .toString()
+              .padStart(2, "0")}${fractionalPart}`;
           } else {
-            return `${sign}${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}${fractionalPart}`;
+            return `${sign}${hours}:${minutes
+              .toString()
+              .padStart(2, "0")}:${seconds
+              .toString()
+              .padStart(2, "0")}${fractionalPart}`;
           }
         }
       }
@@ -104,11 +114,25 @@ export const numberToString = (value: number | null, unit: SubUnit): string => {
             return `${Math.floor(w)}${w % 1 < 0.5 ? "" : "+"}`;
           } else if (value < 4.92) {
             let w = value + 0.17;
-            return `${Math.floor(w)}${w % 1 < 0.33 ? "a" : w % 1 < 0.67 ? "b" : "c"}`;
+            return `${Math.floor(w)}${
+              w % 1 < 0.33 ? "a" : w % 1 < 0.67 ? "b" : "c"
+            }`;
           } else if (value < 9.92) {
             let w = value + 0.08;
             let r = w % 1;
-            return `${Math.floor(w)}${r < 0.16 ? "a" : r < 0.33 ? "a+" : r < 0.5 ? "b" : r < 0.67 ? "b+" : r < 0.84 ? "c" : "c+"}`;
+            return `${Math.floor(w)}${
+              r < 0.16
+                ? "a"
+                : r < 0.33
+                ? "a+"
+                : r < 0.5
+                ? "b"
+                : r < 0.67
+                ? "b+"
+                : r < 0.84
+                ? "c"
+                : "c+"
+            }`;
           } else {
             return "≥10a";
           }
@@ -121,7 +145,19 @@ export const numberToString = (value: number | null, unit: SubUnit): string => {
           } else if (value < 9.17) {
             let w = value + 0.08;
             let r = w % 1;
-            return `${Math.floor(w)}${r < 0.16 ? "A" : r < 0.33 ? "A+" : r < 0.5 ? "B" : r < 0.67 ? "B+" : r < 0.84 ? "C" : "C+"}`;
+            return `${Math.floor(w)}${
+              r < 0.16
+                ? "A"
+                : r < 0.33
+                ? "A+"
+                : r < 0.5
+                ? "B"
+                : r < 0.67
+                ? "B+"
+                : r < 0.84
+                ? "C"
+                : "C+"
+            }`;
           } else {
             return ">9A";
           }
@@ -131,10 +167,12 @@ export const numberToString = (value: number | null, unit: SubUnit): string => {
           } else if (value < -0.5) {
             return "VB";
           } else if (value > 17.5) {
-            return "V17+"
+            return "V17+";
           }
-          if (Math.abs(value % 1 - 0.5) < 0.1) {
-            return `V${Math.round(value - 1).toString()}/V${Math.round(value).toString()}`;
+          if (Math.abs((value % 1) - 0.5) < 0.1) {
+            return `V${Math.round(value - 1).toString()}/V${Math.round(
+              value
+            ).toString()}`;
           } else {
             return `V${Math.round(value).toString()}`;
           }
@@ -162,8 +200,7 @@ export const numberToString = (value: number | null, unit: SubUnit): string => {
           }
       }
   }
-}
-
+};
 
 // Convert an editable value to a numerical value.
 // Function `reencode` must be idempotent over n, where:
@@ -188,10 +225,10 @@ export const stringToNumber = (value: string, unit: SubUnit): number | null => {
       switch (unit.unit) {
         case "hours": {
           if (value.match(/^\d+:\d+$/)) {
-            const [hours, minutes] = value.split(':').map(Number);
+            const [hours, minutes] = value.split(":").map(Number);
             n = hours + minutes / 60;
           } else if (value.match(/^\d+:\d+:\d+$/)) {
-            const [hours, minutes, seconds] = value.split(':').map(Number);
+            const [hours, minutes, seconds] = value.split(":").map(Number);
             n = hours + minutes / 60 + seconds / 3600;
           } else if (value.match(/^\d+(\.\d+)?$/)) {
             n = parseFloat(value);
@@ -206,10 +243,10 @@ export const stringToNumber = (value: string, unit: SubUnit): number | null => {
         }
         case "seconds": {
           if (value.match(/^\d+:\d+(\.\d+)?$/)) {
-            const [minutes, seconds] = value.split(':').map(Number);
+            const [minutes, seconds] = value.split(":").map(Number);
             n = minutes * 60 + seconds;
           } else if (value.match(/^\d+:\d+:\d+(\.\d+)?$/)) {
-            const [hours, minutes, seconds] = value.split(':').map(Number);
+            const [hours, minutes, seconds] = value.split(":").map(Number);
             n = hours * 3600 + minutes * 60 + seconds;
           } else if (value.match(/^\d+(\.\d+)?$/)) {
             n = parseFloat(value);
@@ -226,41 +263,78 @@ export const stringToNumber = (value: string, unit: SubUnit): number | null => {
     }
     case "climbing_grade": {
       switch (unit.grade) {
-        case "uiaa":
+        case "uiaa": {
           let makeUiaa = (num: string, sign: string) => {
-            return parseFloat(num) + (sign === "+" ? 0.33 : sign === "-" ? -0.33 : 0);
-          }
+            return (
+              parseFloat(num) + (sign === "+" ? 0.33 : sign === "-" ? -0.33 : 0)
+            );
+          };
           let match;
-          if (match = value.match(/^([0-9]+)([+-]?)$/)) {
+          if ((match = value.match(/^([0-9]+)([+-]?)$/))) {
             return makeUiaa(match[1], match[2]);
-          } else if (match = value.match(/^([0-9]+)([+-]?)\/([0-9]+)([+-]?)$/)) {
-            return (makeUiaa(match[1], match[2]) + makeUiaa(match[3], match[4])) / 2;
+          } else if (
+            (match = value.match(/^([0-9]+)([+-]?)\/([0-9]+)([+-]?)$/))
+          ) {
+            return (
+              (makeUiaa(match[1], match[2]) + makeUiaa(match[3], match[4])) / 2
+            );
           } else {
             return null;
           }
-        case "french":
+        }
+        case "french": {
+          const makeFrench = (num: string, letter: string, sign: string) => {
+            return (
+              parseFloat(num) +
+              (letter === "a"
+                ? 0
+                : letter === "b"
+                ? 0.33
+                : letter === "c"
+                ? 0.67
+                : 0) +
+              (sign === "/+" ? 0.08 : sign === "+" ? 0.17 : 0)
+            );
+          };
+          let match;
           if (value.match(/^[1234]$/)) {
             return parseFloat(value);
           } else if (value.match(/^[1234]\+$/)) {
             return parseFloat(value) + 0.5;
-          } else if (value.match(/^[3456789][abc]$/)) {
-            let num = parseFloat(value.slice(0, -1));
-            let letter = value.slice(-1);
-            return num + (letter === "a" ? 0 : letter === "b" ? 0.33 : letter === "c" ? 0.67 : 0);
-          } else if (value.match(/^[3456789][abc]\+$/)) {
-            let num = parseFloat(value.slice(0, -2));
-            let letter = value.slice(-2, -1);
-            return num + 0.17 + (letter === "a" ? 0 : letter === "b" ? 0.33 : letter === "c" ? 0.67 : 0);
+          } else if ((match = value.match(/^([3456789])([abc])(\/?\+)?$/))) {
+            return makeFrench(match[1], match[2], match[3]);
+          } else if (
+            (match = value.match(
+              /^([3456789])([abc])(\/?\+)?\/([3456789])([abc])(\/?\+)?$/
+            ))
+          ) {
+            return (
+              (makeFrench(match[1], match[2], match[3]) +
+                makeFrench(match[4], match[5], match[6])) /
+              2
+            );
           } else {
             return null;
           }
+        }
         case "yds":
           if (value.match(/^5\.[0-9]$/)) {
             return parseFloat(value.slice(2));
           } else if (value.match(/^5\.1[0-5][abcd]?$/)) {
             let num = parseFloat(value.slice(2, -1));
             let letter = value.slice(-1);
-            return num + (letter === "a" ? 0 : letter === "b" ? 0.25 : letter === "c" ? 0.5 : letter === "d" ? 0.75 : 0);
+            return (
+              num +
+              (letter === "a"
+                ? 0
+                : letter === "b"
+                ? 0.25
+                : letter === "c"
+                ? 0.5
+                : letter === "d"
+                ? 0.75
+                : 0)
+            );
           } else {
             return null;
           }
@@ -272,19 +346,40 @@ export const stringToNumber = (value: string, unit: SubUnit): number | null => {
           } else if (value.match(/^[6789][ABC]$/)) {
             let num = parseFloat(value.slice(0, -1));
             let letter = value.slice(-1);
-            return num + (letter === "A" ? 0 : letter === "B" ? 0.33 : letter === "C" ? 0.67 : 0);
+            return (
+              num +
+              (letter === "A"
+                ? 0
+                : letter === "B"
+                ? 0.33
+                : letter === "C"
+                ? 0.67
+                : 0)
+            );
           } else if (value.match(/^[6789][ABC]\+$/)) {
             let num = parseFloat(value.slice(0, -2));
             let letter = value.slice(-2, -1);
-            return num + 0.17 + (letter === "A" ? 0 : letter === "B" ? 0.33 : letter === "C" ? 0.67 : 0);
+            return (
+              num +
+              0.17 +
+              (letter === "A"
+                ? 0
+                : letter === "B"
+                ? 0.33
+                : letter === "C"
+                ? 0.67
+                : 0)
+            );
           } else {
             return null;
           }
         case "v-scale":
           if (value.match(/^[Vv]\d+$/)) {
-            return parseFloat(value.replace(/^[vV]/, ''));
+            return parseFloat(value.replace(/^[vV]/, ""));
           } else if (value.match(/^[Vv]\d+\/[Vv]\d+$/)) {
-            const [v1, v2] = value.split('/').map(s => (Number(s.replace(/^[vV]/, ''))));
+            const [v1, v2] = value
+              .split("/")
+              .map((s) => Number(s.replace(/^[vV]/, "")));
             return (v1 + v2) / 2;
           } else {
             console.error("Invalid value: " + value);
@@ -293,10 +388,10 @@ export const stringToNumber = (value: string, unit: SubUnit): number | null => {
       }
     }
   }
-}
+};
 
 export const renderLongFormNumber = (value: number): string => {
-  'worklet'
+  "worklet";
   let a = Math.abs(value);
   let e = Math.max(0, Math.floor(Math.log10(a) / 3 + 1e-10));
   let ab = a / Math.pow(1000, e);
@@ -316,17 +411,17 @@ export const renderLongFormNumber = (value: number): string => {
   } else {
     return value.toPrecision(3);
   }
-}
+};
 
 export const renderShortFormNumber = (value: number): string => {
-  'worklet'
+  "worklet";
   return renderLongFormNumber(value);
-}
+};
 
 // Render a short form value. It should be at most ~5 characters long, and should not contain the unit.
 // It is used in the calendar view, and in the graph view.
 export const renderShortFormValue = (value: number, unit: SubUnit): string => {
-  'worklet'
+  "worklet";
   switch (unit.type) {
     case "number":
       return renderShortFormNumber(value);
@@ -356,7 +451,9 @@ export const renderShortFormValue = (value: number, unit: SubUnit): string => {
           if (value >= 10 * 3600) {
             return renderShortFormNumber(Math.round(value / 3600)) + "h";
           } else if (value >= 3600) {
-            return renderShortFormNumber(Math.round(value / 3600 * 10) / 10) + "h";
+            return (
+              renderShortFormNumber(Math.round((value / 3600) * 10) / 10) + "h"
+            );
           } else if (value >= 60) {
             return numberToString(Math.round(value), unit);
           } else {
@@ -366,12 +463,12 @@ export const renderShortFormValue = (value: number, unit: SubUnit): string => {
     case "climbing_grade":
       return numberToString(value, unit);
   }
-}
+};
 
 // Render a long form value. It should contain the unit.
 // It is used in the summary views, and in the data view.
 export const renderLongFormValue = (value: number, unit: SubUnit): string => {
-  'worklet'
+  "worklet";
   switch (unit.type) {
     case "number": {
       let suffix = unit.symbol === "" ? "" : " " + unit.symbol;
@@ -407,7 +504,7 @@ export const renderLongFormValue = (value: number, unit: SubUnit): string => {
     case "climbing_grade":
       return renderShortFormValue(value, unit);
   }
-}
+};
 
 export const renderUnit = (unit: SubUnit): string => {
   switch (unit.type) {
@@ -442,73 +539,70 @@ export const renderUnit = (unit: SubUnit): string => {
           return "Climbing Grade (YDS)";
       }
   }
-}
+};
 
-export const uiaaGrades = [...Array(12).keys()].map((n) => {
-  let g = n + 1;
-  return [
-    `${g}-`,
-    `${g}-/${g}`,
-    `${g}`,
-    `${g}/${g}+`,
-    `${g}+`,
-    `${g}+/${g + 1}-`,
-  ];
-}).flat(Infinity) as string[];
+export const uiaaGrades = [...Array(12).keys()]
+  .map((n) => {
+    let g = n + 1;
+    return [
+      `${g}-`,
+      `${g}-/${g}`,
+      `${g}`,
+      `${g}/${g}+`,
+      `${g}+`,
+      `${g}+/${g + 1}-`,
+    ];
+  })
+  .flat(Infinity) as string[];
 
-export const frenchGrades =
-  [
-    [1, 2, 3].map((n) => ([`${n}`, `${n}+`])),
-    [4, 5, 6, 7, 8, 9].map((n) => ([
-      `${n}a`,
-      `${n}a+`,
-      `${n}b`,
-      `${n}b+`,
-      `${n}c`,
-      `${n}c+`,
-    ])),
-  ].flat(Infinity) as string[];
+export const frenchGrades = [
+  [1, 2, 3].map((n) => [`${n}`, `${n}+`]),
+  [4, 5, 6, 7, 8, 9].map((n) => [
+    `${n}a`,
+    `${n}a+`,
+    `${n}b`,
+    `${n}b+`,
+    `${n}c`,
+    `${n}c+`,
+  ]),
+].flat(Infinity) as string[];
 
+export const fontGrades = [
+  [3, 4, 5].map((n) => [`${n}`, `${n}+`]),
+  [6, 7, 8].map((n) => [
+    `${n}A`,
+    `${n}A+`,
+    `${n}B`,
+    `${n}B+`,
+    `${n}C`,
+    `${n}C+`,
+  ]),
+  [["9A", "9A+"]],
+].flat(Infinity) as string[];
 
-export const fontGrades =
-  [
-    [3, 4, 5].map((n) => ([
-      `${n}`,
-      `${n}+`,
-    ])),
-    [6, 7, 8].map((n) => ([
-      `${n}A`,
-      `${n}A+`,
-      `${n}B`,
-      `${n}B+`,
-      `${n}C`,
-      `${n}C+`,
-    ])),
-    [["9A", "9A+"]],
-  ].flat(Infinity) as string[];
+export const ydsGrades = [
+  [...Array(10).keys()].map((n) => [`5.${n}`]),
+  [...Array(6).keys()].map((n) => [
+    `5.1${n}a`,
+    `5.1${n}b`,
+    `5.1${n}c`,
+    `5.1${n}d`,
+  ]),
+].flat(Infinity) as string[];
 
-export const ydsGrades =
-  [
-    [...Array(10).keys()].map((n) => ([`5.${n}`])),
-    [...Array(6).keys()].map((n) => ([
-      `5.1${n}a`,
-      `5.1${n}b`,
-      `5.1${n}c`,
-      `5.1${n}d`,
-    ])),
-  ].flat(Infinity) as string[];
+export const vScaleGrades = [...Array(17).keys()]
+  .map((g) => {
+    return [`V${g}`, `V${g}/V${g + 1}`];
+  })
+  .flat(Infinity) as string[];
 
-export const vScaleGrades = [...Array(17).keys()].map((g) => {
-  return [
-    `V${g}`,
-    `V${g}/V${g + 1}`,
-  ];
-}).flat(Infinity) as string[];
-
-export const mapStringValue = (unit: SubUnit, value: string, fn: (value: number) => number): string => {
+export const mapStringValue = (
+  unit: SubUnit,
+  value: string,
+  fn: (value: number) => number
+): string => {
   return numberToString(fn(stringToNumber(value, unit) ?? 0), unit);
-}
-
+};
 
 export const areUnitsEqual = (unit1: Unit, unit2: Unit): boolean => {
   if (unit1.type === "none" && unit2.type === "none") {
@@ -516,14 +610,23 @@ export const areUnitsEqual = (unit1: Unit, unit2: Unit): boolean => {
   } else if (unit1.type === "single" && unit2.type === "single") {
     return areSubUnitsEqual(unit1.unit, unit2.unit);
   } else if (unit1.type === "multiple" && unit2.type === "multiple") {
-    return unit1.values.length === unit2.values.length && unit1.values.every(
-      (u1, i) => u1.name === unit2.values[i].name && areSubUnitsEqual(u1.unit, unit2.values[i].unit));
+    return (
+      unit1.values.length === unit2.values.length &&
+      unit1.values.every(
+        (u1, i) =>
+          u1.name === unit2.values[i].name &&
+          areSubUnitsEqual(u1.unit, unit2.values[i].unit)
+      )
+    );
   } else {
     return false;
   }
-}
+};
 
-export const areSubUnitsEqual = (subUnit1: SubUnit, subUnit2: SubUnit): boolean => {
+export const areSubUnitsEqual = (
+  subUnit1: SubUnit,
+  subUnit2: SubUnit
+): boolean => {
   if (subUnit1.type === subUnit2.type) {
     let subUnit2Copy: any = subUnit2; // we know the constructor is the same as subUnit1 here.
     switch (subUnit1.type) {
@@ -545,4 +648,4 @@ export const areSubUnitsEqual = (subUnit1: SubUnit, subUnit2: SubUnit): boolean 
   } else {
     return false;
   }
-}
+};
