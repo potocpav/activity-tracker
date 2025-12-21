@@ -79,6 +79,13 @@ export const numberToString = (value: number | null, unit: SubUnit): string => {
         }
       }
     case "climbing_grade":
+      let distribute = (value: number, list: (n: number) => string[]) => {
+        let n = list(value).length;
+        let w = value + 1 / 2 / n;
+        let l = Math.floor(w);
+        let i = Math.floor((w % 1) * n);
+        return list(l)[i];
+      };
       switch (unit.grade) {
         case "uiaa": {
           let rem = value % 1;
@@ -107,59 +114,72 @@ export const numberToString = (value: number | null, unit: SubUnit): string => {
           }
         }
         case "french":
-          if (value < 0.75) {
+          if (value < 1 - 1 / 4) {
             return "<1";
-          } else if (value < 2.82) {
-            let w = value + 0.25;
-            return `${Math.floor(w)}${w % 1 < 0.5 ? "" : "+"}`;
-          } else if (value < 4.92) {
-            let w = value + 0.17;
-            return `${Math.floor(w)}${
-              w % 1 < 0.33 ? "a" : w % 1 < 0.67 ? "b" : "c"
-            }`;
-          } else if (value < 9.92) {
-            let w = value + 0.08;
-            let r = w % 1;
-            return `${Math.floor(w)}${
-              r < 0.16
-                ? "a"
-                : r < 0.33
-                ? "a+"
-                : r < 0.5
-                ? "b"
-                : r < 0.67
-                ? "b+"
-                : r < 0.84
-                ? "c"
-                : "c+"
-            }`;
+          } else if (value < 4 - 1 / 6) {
+            return distribute(value, (n) => [`${n}`, `${n}+`]);
+          } else if (value < 5 - 1 / 3) {
+            return distribute(value, (n) => [`${n}a`, `${n}b`, `${n}c`]);
+          } else if (value < 6 - 1 / 12) {
+            return distribute(value, (n) => [
+              `${n}a`,
+              `${n}a+`,
+              `${n}b`,
+              `${n}b+`,
+              `${n}c`,
+              `${n}c+`,
+            ]);
+          } else if (value < 10 - 1 / 24) {
+            return distribute(value, (n) => [
+              `${n}a`,
+              `${n}a/${n}a+`,
+              `${n}a+`,
+              `${n}a+/${n}b`,
+              `${n}b`,
+              `${n}b/${n}b+`,
+              `${n}b+`,
+              `${n}b+/${n}c`,
+              `${n}c`,
+              `${n}c/${n}c+`,
+              `${n}c+`,
+              `${n}c+/${n + 1}a`,
+            ]);
           } else {
             return "≥10a";
           }
         case "font":
-          if (value < 2.75) {
+          if (value < 3 - 1 / 4) {
             return "<3";
-          } else if (value < 5.75) {
-            let w = value + 0.25;
-            return `${Math.floor(w)}${w % 1 < 0.5 ? "" : "+"}`;
-          } else if (value < 9.17) {
-            let w = value + 0.08;
-            let r = w % 1;
-            return `${Math.floor(w)}${
-              r < 0.16
-                ? "A"
-                : r < 0.33
-                ? "A+"
-                : r < 0.5
-                ? "B"
-                : r < 0.67
-                ? "B+"
-                : r < 0.84
-                ? "C"
-                : "C+"
-            }`;
+          } else if (value < 4 - 1 / 6) {
+            return distribute(value, (n) => [`${n}`, `${n}+`]);
+          } else if (value < 5 - 1 / 3) {
+            return distribute(value, (n) => [`${n}A`, `${n}B`, `${n}C`]);
+          } else if (value < 6 - 1 / 12) {
+            return distribute(value, (n) => [
+              `${n}A`,
+              `${n}A+`,
+              `${n}B`,
+              `${n}B+`,
+              `${n}C`,
+              `${n}C+`,
+            ]);
+          } else if (value < 9 + 1 / 6 + 1 / 24) {
+            return distribute(value, (n) => [
+              `${n}A`,
+              `${n}A/${n}A+`,
+              `${n}A+`,
+              `${n}A+/${n}B`,
+              `${n}B`,
+              `${n}B/${n}B+`,
+              `${n}B+`,
+              `${n}B+/${n}C`,
+              `${n}C`,
+              `${n}C/${n}C+`,
+              `${n}C+`,
+              `${n}C+/${n + 1}A`,
+            ]);
           } else {
-            return ">9A";
+            return ">9A+";
           }
         case "v-scale":
           if (value < -1.5) {
@@ -291,9 +311,9 @@ export const stringToNumber = (value: string, unit: SubUnit): number | null => {
                 : letter === "b"
                 ? 0.33
                 : letter === "c"
-                ? 0.67
+                ? 0.66
                 : 0) +
-              (sign === "/+" ? 0.08 : sign === "+" ? 0.17 : 0)
+              (sign === "+" ? 0.17 : 0)
             );
           };
           let match;
@@ -301,11 +321,11 @@ export const stringToNumber = (value: string, unit: SubUnit): number | null => {
             return parseFloat(value);
           } else if (value.match(/^[1234]\+$/)) {
             return parseFloat(value) + 0.5;
-          } else if ((match = value.match(/^([3456789])([abc])(\/?\+)?$/))) {
+          } else if ((match = value.match(/^([3456789])([abc])(\+?)$/))) {
             return makeFrench(match[1], match[2], match[3]);
           } else if (
             (match = value.match(
-              /^([3456789])([abc])(\/?\+)?\/([3456789])([abc])(\/?\+)?$/
+              /^([3456789])([abc])(\+?)\/([3456789])([abc])(\+?)$/
             ))
           ) {
             return (
@@ -339,36 +359,35 @@ export const stringToNumber = (value: string, unit: SubUnit): number | null => {
             return null;
           }
         case "font":
-          if (value.match(/^[345]$/)) {
-            return parseFloat(value);
-          } else if (value.match(/^[345]\+$/)) {
-            return parseFloat(value) + 0.5;
-          } else if (value.match(/^[6789][ABC]$/)) {
-            let num = parseFloat(value.slice(0, -1));
-            let letter = value.slice(-1);
+          const makeFont = (num: string, letter: string, sign: string) => {
             return (
-              num +
+              parseFloat(num) +
               (letter === "A"
                 ? 0
                 : letter === "B"
                 ? 0.33
                 : letter === "C"
-                ? 0.67
-                : 0)
+                ? 0.66
+                : 0) +
+              (sign === "+" ? 0.17 : 0)
             );
-          } else if (value.match(/^[6789][ABC]\+$/)) {
-            let num = parseFloat(value.slice(0, -2));
-            let letter = value.slice(-2, -1);
+          };
+          let match;
+          if (value.match(/^[1234]$/)) {
+            return parseFloat(value);
+          } else if (value.match(/^[1234]\+$/)) {
+            return parseFloat(value) + 0.5;
+          } else if ((match = value.match(/^([3456789])([ABC])(\+?)$/))) {
+            return makeFont(match[1], match[2], match[3]);
+          } else if (
+            (match = value.match(
+              /^([3456789])([ABC])(\+?)\/([3456789])([ABC])(\+?)$/
+            ))
+          ) {
             return (
-              num +
-              0.17 +
-              (letter === "A"
-                ? 0
-                : letter === "B"
-                ? 0.33
-                : letter === "C"
-                ? 0.67
-                : 0)
+              (makeFont(match[1], match[2], match[3]) +
+                makeFont(match[4], match[5], match[6])) /
+              2
             );
           } else {
             return null;
@@ -557,27 +576,43 @@ export const uiaaGrades = [...Array(12).keys()]
 
 export const frenchGrades = [
   [1, 2, 3].map((n) => [`${n}`, `${n}+`]),
-  [4, 5, 6, 7, 8, 9].map((n) => [
+  [4].map((n) => [`${n}a`, `${n}b`, `${n}c`, `${n}c+`]),
+  [5].map((n) => [`${n}a`, `${n}a+`, `${n}b`, `${n}b+`, `${n}c`, `${n}c+`]),
+  [6, 7, 8, 9].map((n) => [
     `${n}a`,
+    `${n}a/${n}a+`,
     `${n}a+`,
+    `${n}a+/${n}b`,
     `${n}b`,
+    `${n}b/${n}b+`,
     `${n}b+`,
+    `${n}b+/${n}c`,
     `${n}c`,
+    `${n}c/${n}c+`,
     `${n}c+`,
+    `${n}c+/${n + 1}a`,
   ]),
 ].flat(Infinity) as string[];
 
 export const fontGrades = [
-  [3, 4, 5].map((n) => [`${n}`, `${n}+`]),
+  [3].map((n) => [`${n}`, `${n}+`]),
+  [4].map((n) => [`${n}A`, `${n}B`, `${n}C`, `${n}C+`]),
+  [5].map((n) => [`${n}A`, `${n}A+`, `${n}B`, `${n}B+`, `${n}C`, `${n}C+`]),
   [6, 7, 8].map((n) => [
     `${n}A`,
+    `${n}A/${n}A+`,
     `${n}A+`,
+    `${n}A+/${n}B`,
     `${n}B`,
+    `${n}B/${n}B+`,
     `${n}B+`,
+    `${n}B+/${n + 1}C`,
     `${n}C`,
+    `${n}C/${n}C+`,
     `${n}C+`,
+    `${n}C+/${n + 1}A`,
   ]),
-  [["9A", "9A+"]],
+  [["9A", "9A/9A+"]],
 ].flat(Infinity) as string[];
 
 export const ydsGrades = [

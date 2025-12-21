@@ -47,7 +47,7 @@ Track your performance metrics and their progress over time. With custom statist
   - [x] Move activities between tabs
   - [x] Multiple activity selection
   - [ ] Remove wing tabs when no activities exist
-  - [ ] Gracefully navigate between tabs on tab changes
+  - [ ] Animate title on tab changes
   - [ ] Import into a new tab from Habit Tracker
 - [ ] Handle large number of data points
   - [ ] Bulk selection
@@ -67,7 +67,7 @@ Track your performance metrics and their progress over time. With custom statist
   - [ ] Remember last tags for each activity
   - [ ] BLE Input font size debugging
   - [ ] Unit conversions: kg <-> lbs, etc. This could include the ability to input values in different units - useful for climbing grades.
-  - [ ] Slash grades for French and Font climbing grades
+  - [x] Slash grades for French and Font climbing grades
   - [ ] Scroll climbing grade picker to the selected grade more reliably
   - [ ] Keyboard avoidance in Edit Activity and other screens
 - [ ] Performance improvements
