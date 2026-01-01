@@ -26,13 +26,12 @@ Track your performance metrics and their progress over time. With custom statist
 ## Links
 
 - [FAQ](https://potocpav.github.io/activity-tracker/faq)
-- [Changelog](CHANGELOG.md)
+- [Change Log](CHANGELOG.md)
 - [Privacy Policy](https://potocpav.github.io/activity-tracker/privacy)
 - [APK Downloads](https://github.com/potocpav/activity-tracker/releases)
 - [Google Play](https://play.google.com/store/apps/details?id=com.pavelpotocek.activitytracker)
 
 ## Screenshots
-
 
 [![Screenshot 1](screenshots/sshot-1.thumb.jpg)](screenshots/sshot-1.jpg)
 [![Screenshot 2](screenshots/sshot-2.thumb.jpg)](screenshots/sshot-2.jpg)
@@ -40,6 +39,24 @@ Track your performance metrics and their progress over time. With custom statist
 [![Screenshot 4](screenshots/sshot-4.thumb.jpg)](screenshots/sshot-4.jpg)
 [![Screenshot 5](screenshots/sshot-5.thumb.jpg)](screenshots/sshot-5.jpg)
 [![Screenshot 6](screenshots/sshot-6.thumb.jpg)](screenshots/sshot-6.jpg)
+
+## Tindeq Progressor
+
+Activity Tracker can record data from Tindeq Progressor. See the [FAQ for a quick guide](https://potocpav.github.io/activity-tracker/faq#q2). 
+
+**Features:**
+
+- **Automatic pull detection** instead of following a strict workout schedule. You can pull whenever you want.
+- Average force and time-under-tension calculation
+- Tracking multiple grips, edges and workout plans with Activities and Tags
+- Track your progress over time with graphs, statistics and tagging
+- Smooth graph scrolling 😀
+
+**Features currently missing:**
+
+- Critical force calculation
+- Bulk data point editing
+- Bluetooth connection is a bit unreliable
 
 ## Development
 
