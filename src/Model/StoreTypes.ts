@@ -211,6 +211,8 @@ export type State = {
   activeHints: HintType[];
   showHints: boolean;
 
+  // Currently unused
+  // It used to be needed for BLE scales
   experimentalFeatures: boolean;
 
   // Bluetooth device related state

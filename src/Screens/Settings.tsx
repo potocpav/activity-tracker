@@ -27,8 +27,6 @@ const Settings = () => {
   const weekStart = useStore((state: any) => state.weekStart);
   const setWeekStart = useStore((state: any) => state.setWeekStart);
   const state = useStore((state: any) => state);
-  const experimentalFeatures = useStore((state: any) => state.experimentalFeatures);
-  const setExperimentalFeatures = useStore((state: any) => state.setExperimentalFeatures);
   const setState = useStore((state: any) => state.setState);
   const setActivities = useStore((state: any) => state.setActivities);
   const activeHints = useStore((state: any) => state.activeHints);
@@ -209,18 +207,6 @@ const Settings = () => {
               description={weekStart == 'sunday' ? 'Sunday' : 'Monday'}
               onPress={() => setWeekStart(weekStart == 'sunday' ? 'monday' : 'sunday')}
               left={(props) => <List.Icon {...props} icon="calendar" />}
-            />
-            <List.Item
-              title="Bluetooth scale support"
-              description="This feature is experimental and may not work as expected."
-              onPress={() => setExperimentalFeatures(!experimentalFeatures)}
-              right={() => (
-                <Switch
-                  value={experimentalFeatures}
-                  onValueChange={() => setExperimentalFeatures(!experimentalFeatures)}
-                />
-              )}
-              left={(props) => <List.Icon {...props} icon="bluetooth" />}
             />
           </List.Section>
 

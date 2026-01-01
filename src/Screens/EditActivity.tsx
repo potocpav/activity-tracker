@@ -167,7 +167,6 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
     setMultiUnitInputInternal(computeMultiUnitInputErrors(vals));
   };
 
-  const experimentalFeatures = useStore((state: any) => state.experimentalFeatures);
   const [tagDialogVisible, setTagDialogVisible] = useState(false);
   const [tagState, setTagState] = useState<SetTag[]>(activity?.tags.map((t: Tag) => ({ oldTagName: t.name, ...t })) ?? []);
   const [tagDialogName, setTagDialogName] = useState("");
@@ -368,11 +367,11 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       headerTintColor: "#ffffff",
       headerRight: () => (
         <ButtonRow>
-          {experimentalFeatures && (
+          {
             <Button onPress={() => setSpecialMenuVisible(true)}>
               <MaterialCommunityIcons name={specialType ? specialIcon(specialType) as any : "star-outline"} size={24} color={"#ffffff"} />
             </Button>
-          )}
+          }
           <CheckButton onPress={saveActivityWrapper} color={"white"} />
         </ButtonRow>
       ),
