@@ -11,15 +11,10 @@
       border: 2px solid #888;
     }
 
-    .screenshot-container {
-      display: flex;
-      flex-direction: row;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      justify-content: center;
-    }
-    .screenshot-container > * {
+    .screenshot {
       max-width: 22rem;
+      display: block;
+      margin: 0 auto;
     }
   </style>
   <title>Frequently Asked Questions</title>
@@ -52,25 +47,26 @@
 
     <h3 id="q2">How to connect to Tindeq Progressor?</h3>
 
-    <div class="screenshot-container">
-    <div>
-      <b>Step 1: Add a BLE Scale activity</b>
-      <br>
-      <img src="faq/2-new-activity.png" alt="New activity screenshot">
-    </div>
+    <p>
+      Create an activity. In the activity creation dialog, choose the BLE scale acitivity type:
+    </p>
 
-    <div>
-      <b>Step 2: Navigate to the recording screen</b>
-      <br>
-     <img src="faq/3-activity-screen.png" alt="Activity screen screenshot">
-    </div>
+    <img class="screenshot" src="faq/2-new-activity.png" alt="New activity screenshot">
 
-    <div>
-      <b>Step 3: Connect, start recording and do reps</b>
-      <br>
-      <img src="faq/4-recording.png" alt="Record data points screenshot">
-    </div>
-    </div>
+    <p>
+      Customize the activity with name, description and tags, and confirm.
+    </p>
+    <p>  
+      Navigate to the recording screen by tapping the Bluetooth icon:
+    </p>
+
+    <img class="screenshot" src="faq/3-activity-screen.png" alt="Activity screen screenshot">
+
+    <p>
+      Connect, start recording and do reps:
+    </p>
+
+    <img class="screenshot" src="faq/4-recording.png" alt="Record data points screenshot">
 
     <h3 id="q3">How to import data from another app?</h3>
 
