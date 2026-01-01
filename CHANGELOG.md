@@ -40,6 +40,10 @@
 
 # Changelog
 
+### 3.4.1
+
+- Remove Tindeq Progressor from experimental features
+
 ### 3.4.0
 
 - Add French and Font slash grades
