@@ -48,12 +48,13 @@ Activity Tracker can record data from Tindeq Progressor. See the [FAQ for a quic
 
 - **Automatic pull detection** instead of following a strict workout schedule. You can pull whenever you want.
 - Average force and time-under-tension calculation
-- Tracking multiple grips, edges and workout plans with Activities and Tags
+- Track multiple grips, edges and workout plans with Activities and Tags
 - Track your progress over time with graphs, statistics and tagging
 - Smooth graph scrolling 😀
 
-**Features currently missing:**
+**Non-features:**
 
+- Workout plans or schedules
 - Critical force calculation
 - Bulk data point editing
 - Bluetooth connection is a bit unreliable
