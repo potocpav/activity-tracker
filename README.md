@@ -63,7 +63,6 @@ Activity Tracker can record data from Tindeq Progressor. See the [FAQ for a quic
 
 Prerequisites:
 
-- Expo CLI
 - EAS CLI
 
 This app can not be run in Expo Go. To run the app, compile a development APK with EAS:
@@ -75,6 +74,7 @@ eas build --platform android --profile development --local
 Install the APK on your device with ADB. Then, run the Expo app and scan the QR code on your device:
 
 ```bash
+npm install expo
 npx expo
 ```
 
