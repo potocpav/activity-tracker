@@ -288,7 +288,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
 
   React.useEffect(() => {
     navigation.setOptions({
-      title: "Activitiesx",
+      title: "Activities",
       headerTitle: selectedActivities.length > 0 ? () => (
         <Animated.View entering={FadeIn} exiting={FadeOut} style={{ flexDirection: 'row' }}>
           <ButtonRow>
@@ -382,7 +382,9 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
         style={{ flex: 1 }}
         initialPage={currentTabId + 1}
         onPageSelected={(event) => {
-          setCurrentTabId(event.nativeEvent.position - 1);
+          const selectedId = event.nativeEvent.position - 1;
+          setCurrentTabId(selectedId);
+          setActivityTabDialogNameInput(activities[selectedId]?.tabName ?? "Activities");
           setSelectedActivities([]);
         }}
       >

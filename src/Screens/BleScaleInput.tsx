@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import {StyleSheet, Text, Platform, View, useWindowDimensions} from "react-native";
+import {StyleSheet, Text, Platform, View, AppState, useWindowDimensions} from "react-native";
 import useStore from "../Model/Store";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { getTheme, getThemePalette, getThemeVariant } from "../Model/Theme";
@@ -339,6 +339,22 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
       };
     }, [recordingState])
   );
+
+  // when the app is sent to the background, pause the recording
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      console.log("Changed state to", nextAppState);
+      if (nextAppState == "background" || nextAppState == "inactive") {
+        if (recordingState === "recording") {
+          onPause();
+        }
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   const view = useDerivedValue(() => {
     return {
