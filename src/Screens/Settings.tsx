@@ -28,7 +28,7 @@ const Settings = () => {
   const setWeekStart = useStore((state: any) => state.setWeekStart);
   const state = useStore((state: any) => state);
   const setState = useStore((state: any) => state.setState);
-  const setActivities = useStore((state: any) => state.setActivities);
+  const addActivityTab = useStore((state: any) => state.addActivityTab);
   const activeHints = useStore((state: any) => state.activeHints);
   const showHints = useStore((state: any) => state.showHints);
   const setShowHints = useStore((state: any) => state.setShowHints);
@@ -166,8 +166,8 @@ const Settings = () => {
           };
           activities.push(activity);
         }
-        setActivities(0, [...state.activities[0].activities, ...activities]);
-        ToastAndroid.show("Data imported successfully", ToastAndroid.SHORT);
+        addActivityTab("Loop Habits", activities);
+        ToastAndroid.show("Imported habits into a new tab", ToastAndroid.SHORT);
       } catch (error) {
         console.error(error);
         Alert.alert((error as Error).name, (error as Error).message);

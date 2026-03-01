@@ -161,6 +161,12 @@ const useStore = create<State>()(
         }));
       },
 
+      addActivityTab: (tabName: string, activities: ActivityType[]) => {
+        set((state: any) => ({
+          activities: [...state.activities, { tabName, activities: activities }],
+        }));
+      },
+
       duplicateActivity: (activityPath: ActivityPath) => {
         set((state: any) => {
           const oldScreenActivities = state.activities[activityPath.tabId].activities;

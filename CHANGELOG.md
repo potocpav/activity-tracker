@@ -1,13 +1,10 @@
 
 # Planned features
 
-- [x] Multiple acitivity screens
-  - [x] Allow duplicate activity names
-  - [x] Move activities between tabs
-  - [x] Multiple activity selection
+- [ ] Multiple acitivity screens
   - [ ] Remove wing tabs when no activities exist
   - [ ] Animate title on tab changes
-  - [ ] Import into a new tab from Habit Tracker
+  - [ ] Navigate to the new tab on Loop Habits import
 - [ ] Handle large number of data points
   - [ ] Bulk selection
   - [ ] Bulk editing
@@ -38,6 +35,7 @@
 ### 3.5.0
 
 - Upgrade to Expo SDK 55
+- Import Loop Habit Tracker data into a new tab
 
 ### 3.4.1
 
