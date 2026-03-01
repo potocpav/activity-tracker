@@ -19,14 +19,9 @@
 - [ ] Persistent timers as notifications
   - [ ] Show running timers on activity screen
 - [ ] Minor features
-  - [x] BLE Input on tiny screens
-  - [x] Fix BLE choppy time calculations
-  - [x] Swap Edit Activity and Data icons
-  - [x] Add UUIDs to activities and data points, fix list rendering with them
   - [ ] Remember last tags for each activity
   - [ ] BLE Input font size debugging
   - [ ] Unit conversions: kg <-> lbs, etc. This could include the ability to input values in different units - useful for climbing grades.
-  - [x] Slash grades for French and Font climbing grades
   - [ ] Scroll climbing grade picker to the selected grade more reliably
   - [ ] Keyboard avoidance in Edit Activity and other screens
 - [ ] Performance improvements
@@ -39,6 +34,10 @@
   - [ ] 1-10 points
 
 # Changelog
+
+### 3.5.0
+
+- Upgrade to Expo SDK 55
 
 ### 3.4.1
 

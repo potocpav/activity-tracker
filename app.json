@@ -18,7 +18,6 @@
       "bundleIdentifier": "com.pavelpotocek.activitytracker"
     },
     "android": {
-      "edgeToEdgeEnabled": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon-fg.png",
         "backgroundColor": "#7166ff"

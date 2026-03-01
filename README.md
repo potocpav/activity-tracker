@@ -63,7 +63,8 @@ Activity Tracker can record data from Tindeq Progressor. See the [FAQ for a quic
 
 Prerequisites:
 
-- EAS CLI
+- [EAS CLI](https://docs.expo.dev/eas/cli/)
+- Local EAS [build environment setup](https://docs.expo.dev/get-started/set-up-your-environment/?mode=development-build&buildEnv=local)
 
 This app can not be run in Expo Go. To run the app, compile a development APK with EAS:
 
