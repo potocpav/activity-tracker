@@ -38,6 +38,9 @@ const DataPointContainer = (props: {
   // theme: any,
   onDelete?: () => void,
   onPress?: () => void,
+  onLongPress?: () => void,
+  selected?: boolean,
+  selectMode?: boolean,
   style?: any,
   theme: any,
 }) => {
@@ -46,7 +49,10 @@ const DataPointContainer = (props: {
   const THRESHOLD = 200;
   const TOLERANCE = 10;
 
-  const panGesture = Gesture.Pan().activeOffsetX([-TOLERANCE, TOLERANCE]).failOffsetY([-TOLERANCE, TOLERANCE])
+  const panGesture = Gesture.Pan()
+    .enabled(props.selectMode !== true)
+    .activeOffsetX([-TOLERANCE, TOLERANCE])
+    .failOffsetY([-TOLERANCE, TOLERANCE])
     .onStart((e) => {
       position.value = e.translationX;
       isPanning.value = true;
@@ -84,13 +90,16 @@ const DataPointContainer = (props: {
   const pressableChildren = (
     <Pressable
       onPress={props.onPress}
-      android_ripple={{ color: "888888", foreground: true }}
+      onLongPress={props.onLongPress}
+      android_ripple={{ color: props.theme.colors.primary, foreground: true }}
       style={[{
         padding: 6,
         backgroundColor: props.theme.colors.elevation.level2,
         margin: 4,
         borderRadius: 15,
         elevation: 2,
+        borderWidth: 2,
+        borderColor: props.selected ? props.theme.colors.primary : "transparent",
       }, props.style]}
     >
       {props.children}
@@ -117,10 +126,21 @@ export const DataPointCardMultiContainer = (props: {
   theme: any,
   onPress?: () => void,
   onDelete?: () => void,
+  onLongPress?: () => void,
   style?: any,
+  selected?: boolean,
+  selectMode?: boolean,
 }) => {
   return (
-    <DataPointContainer onPress={props.onPress} onDelete={props.onDelete} theme={props.theme} style={props.style}>
+    <DataPointContainer
+      onPress={props.onPress}
+      onLongPress={props.onLongPress}
+      onDelete={props.onDelete}
+      theme={props.theme}
+      style={props.style}
+      selected={props.selected}
+      selectMode={props.selectMode}
+    >
       <View style={{ gap: 4 }}>
         <View key="children" style={{ flexDirection: 'row', gap: 6, alignItems: 'flex-start', justifyContent: 'space-between' }}>
           {props.children}
@@ -148,11 +168,22 @@ export const DataPointCardSingleContainer = (props: {
   note: React.ReactNode | undefined,
   theme: any,
   onPress?: () => void,
+  onLongPress?: () => void,
   onDelete?: () => void,
   style?: any,
+  selected?: boolean,
+  selectMode?: boolean,
 }) => {
   return (
-    <DataPointContainer onPress={props.onPress} onDelete={props.onDelete} theme={props.theme} style={props.style}>
+    <DataPointContainer
+      onPress={props.onPress}
+      onLongPress={props.onLongPress}
+      onDelete={props.onDelete}
+      theme={props.theme}
+      style={props.style}
+      selected={props.selected}
+      selectMode={props.selectMode}
+    >
       <View style={{ flexDirection: 'row', gap: 6, alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <View key="children" style={{ width: ITEM_HEIGHT * 1.5, flexDirection: 'row', gap: 6, alignItems: 'flex-start', justifyContent: 'space-between' }}>
           {props.children}
@@ -202,12 +233,32 @@ export const TextValue = (props: {
 }
 
 export const DataPointCard = (
-  { activity, activityPath, i, repNumber = undefined, theme, palette, navigation }:
-    { activity: ActivityType, activityPath: ActivityPath, i: number, repNumber?: number, theme: any, palette: any, navigation: any }
+  { activity,
+    activityPath,
+    i,
+    repNumber = undefined,
+    theme,
+    palette,
+    navigation,
+    selectedPointUuids,
+    setSelectedPointUuids }:
+    {
+      activity: ActivityType,
+      activityPath: ActivityPath,
+      i: number,
+      repNumber?: number,
+      theme: any,
+      palette: any,
+      navigation: any,
+      selectedPointUuids: string[],
+      setSelectedPointUuids: (pointUuids: (pointUuids: string[]) => string[]) => void
+    }
 ) => {
   const dataPoint = activity.dataPoints[i];
   const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
 
+  const isSelected = selectedPointUuids.includes(dataPoint.uuid);
+  const selectMode = selectedPointUuids.length > 0;
   const tags = dataPoint.tags && (
     <RenderTags
       tags={activity.tags.filter((t: Tag) => (dataPoint.tags ?? []).includes(t.name))}
@@ -221,12 +272,37 @@ export const DataPointCard = (
     <Text style={{ color: theme.colors.onSurface }}>{dataPoint.note}</Text>
   );
 
-  const editDataPoint = () => navigation.navigate("EditDataPoint", { activityPath, dataPointIndex: i });
+  const onPress = () => {
+    if (selectMode) {
+      toggleSelected();
+    } else {
+      navigation.navigate("EditDataPoint", { activityPath, dataPointIndex: i });
+    }
+  };
 
   const deleteDataPoint = () => deleteActivityDataPoint(activityPath, i);
 
+  const toggleSelected = () => {
+    setSelectedPointUuids((selectedPointUuids: string[]): string[] => {
+      if (selectedPointUuids.includes(dataPoint.uuid)) {
+        return selectedPointUuids.filter((uuid) => uuid !== dataPoint.uuid);
+      } else {
+        return [...selectedPointUuids, dataPoint.uuid];
+      }
+    });
+  };
+
   const renderSingleValue = () => (
-    <DataPointCardSingleContainer onPress={editDataPoint} onDelete={deleteDataPoint} tags={tags} note={note} theme={theme}>
+    <DataPointCardSingleContainer
+      onPress={onPress}
+      onLongPress={toggleSelected}
+      onDelete={deleteDataPoint}
+      tags={tags}
+      note={note}
+      theme={theme}
+      selected={isSelected}
+      selectMode={selectMode}
+    >
       <LabeledValue label="Value" theme={theme}>
         <TextValue theme={theme}>
           {typeof dataPoint.value === "number" && activity.unit.type === "single" ? renderLongFormValue(dataPoint.value, activity.unit.unit) : "✓"}
@@ -259,7 +335,16 @@ export const DataPointCard = (
       });
     }
     return (
-      <DataPointCardMultiContainer onPress={editDataPoint} onDelete={deleteDataPoint} tags={tags} note={note} theme={theme}>
+      <DataPointCardMultiContainer
+        onPress={onPress}
+        onLongPress={toggleSelected}
+        onDelete={deleteDataPoint}
+        tags={tags}
+        note={note}
+        theme={theme}
+        selected={isSelected}
+        selectMode={selectMode}
+      >
         {renderedValues}
       </DataPointCardMultiContainer>
     );
@@ -281,6 +366,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
   const deleteActivityDataPoints = useStore((state: any) => state.deleteActivityDataPoints);
   const theme = getTheme(activity.color);
   const themeVariant = getThemeVariant();
+  const [selectedPointUuids, setSelectedPointUuids] = useState<string[]>([]);
 
   const palette = getThemePalette();
   const styles = getStyles(theme);
@@ -402,6 +488,8 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
               theme={theme}
               palette={palette}
               navigation={navigation}
+              selectedPointUuids={selectedPointUuids}
+              setSelectedPointUuids={setSelectedPointUuids}
             />
           }
         />

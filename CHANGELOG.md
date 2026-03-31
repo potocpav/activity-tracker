@@ -32,7 +32,7 @@
 
 # Changelog
 
-### 3.5.0
+### 3.5.0 (In progress)
 
 - Upgrade to Expo SDK 55
 - Import Loop Habit Tracker data into a new tab
