@@ -5,7 +5,9 @@ import {
   View,
   SectionList,
   Alert,
+  BackHandler
 } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import useStore from "../Model/Store";
 import { DataPoint, ActivityType, Tag, DateList, dateListToDate, ActivityPath, State } from "../Model/StoreTypes";
 import { cmpDateList, dayCmp, findZeroSlice, formatDate } from "../Model/Activity";
@@ -39,8 +41,8 @@ const DataPointContainer = (props: {
   onDelete?: () => void,
   onPress?: () => void,
   onLongPress?: () => void,
-  selected?: boolean,
-  selectMode?: boolean,
+  selected: boolean,
+  selectModeActive: boolean,
   style?: any,
   theme: any,
 }) => {
@@ -50,7 +52,7 @@ const DataPointContainer = (props: {
   const TOLERANCE = 10;
 
   const panGesture = Gesture.Pan()
-    .enabled(props.selectMode !== true)
+    .enabled(props.selectModeActive !== true)
     .activeOffsetX([-TOLERANCE, TOLERANCE])
     .failOffsetY([-TOLERANCE, TOLERANCE])
     .onStart((e) => {
@@ -128,8 +130,8 @@ export const DataPointCardMultiContainer = (props: {
   onDelete?: () => void,
   onLongPress?: () => void,
   style?: any,
-  selected?: boolean,
-  selectMode?: boolean,
+  selected: boolean,
+  selectModeActive: boolean,
 }) => {
   return (
     <DataPointContainer
@@ -139,7 +141,7 @@ export const DataPointCardMultiContainer = (props: {
       theme={props.theme}
       style={props.style}
       selected={props.selected}
-      selectMode={props.selectMode}
+      selectModeActive={props.selectModeActive}
     >
       <View style={{ gap: 4 }}>
         <View key="children" style={{ flexDirection: 'row', gap: 6, alignItems: 'flex-start', justifyContent: 'space-between' }}>
@@ -171,8 +173,8 @@ export const DataPointCardSingleContainer = (props: {
   onLongPress?: () => void,
   onDelete?: () => void,
   style?: any,
-  selected?: boolean,
-  selectMode?: boolean,
+  selected: boolean,
+  selectModeActive: boolean,
 }) => {
   return (
     <DataPointContainer
@@ -182,7 +184,7 @@ export const DataPointCardSingleContainer = (props: {
       theme={props.theme}
       style={props.style}
       selected={props.selected}
-      selectMode={props.selectMode}
+      selectModeActive={props.selectModeActive}
     >
       <View style={{ flexDirection: 'row', gap: 6, alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <View key="children" style={{ width: ITEM_HEIGHT * 1.5, flexDirection: 'row', gap: 6, alignItems: 'flex-start', justifyContent: 'space-between' }}>
@@ -240,8 +242,10 @@ export const DataPointCard = (
     theme,
     palette,
     navigation,
-    selectedPointUuids,
-    setSelectedPointUuids }:
+    selectModeActive,
+    isSelected,
+    toggleSelection 
+  }:
     {
       activity: ActivityType,
       activityPath: ActivityPath,
@@ -250,15 +254,14 @@ export const DataPointCard = (
       theme: any,
       palette: any,
       navigation: any,
-      selectedPointUuids: string[],
-      setSelectedPointUuids: (pointUuids: (pointUuids: string[]) => string[]) => void
+      selectModeActive: boolean,
+      isSelected: boolean,
+      toggleSelection: () => void
     }
 ) => {
   const dataPoint = activity.dataPoints[i];
   const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
 
-  const isSelected = selectedPointUuids.includes(dataPoint.uuid);
-  const selectMode = selectedPointUuids.length > 0;
   const tags = dataPoint.tags && (
     <RenderTags
       tags={activity.tags.filter((t: Tag) => (dataPoint.tags ?? []).includes(t.name))}
@@ -273,8 +276,8 @@ export const DataPointCard = (
   );
 
   const onPress = () => {
-    if (selectMode) {
-      toggleSelected();
+    if (selectModeActive) {
+      toggleSelection();
     } else {
       navigation.navigate("EditDataPoint", { activityPath, dataPointIndex: i });
     }
@@ -282,26 +285,16 @@ export const DataPointCard = (
 
   const deleteDataPoint = () => deleteActivityDataPoint(activityPath, i);
 
-  const toggleSelected = () => {
-    setSelectedPointUuids((selectedPointUuids: string[]): string[] => {
-      if (selectedPointUuids.includes(dataPoint.uuid)) {
-        return selectedPointUuids.filter((uuid) => uuid !== dataPoint.uuid);
-      } else {
-        return [...selectedPointUuids, dataPoint.uuid];
-      }
-    });
-  };
-
   const renderSingleValue = () => (
     <DataPointCardSingleContainer
       onPress={onPress}
-      onLongPress={toggleSelected}
+      onLongPress={toggleSelection}
       onDelete={deleteDataPoint}
       tags={tags}
       note={note}
       theme={theme}
       selected={isSelected}
-      selectMode={selectMode}
+      selectModeActive={selectModeActive}
     >
       <LabeledValue label="Value" theme={theme}>
         <TextValue theme={theme}>
@@ -337,13 +330,13 @@ export const DataPointCard = (
     return (
       <DataPointCardMultiContainer
         onPress={onPress}
-        onLongPress={toggleSelected}
+        onLongPress={toggleSelection}
         onDelete={deleteDataPoint}
         tags={tags}
         note={note}
         theme={theme}
         selected={isSelected}
-        selectMode={selectMode}
+        selectModeActive={selectModeActive}
       >
         {renderedValues}
       </DataPointCardMultiContainer>
@@ -367,6 +360,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
   const theme = getTheme(activity.color);
   const themeVariant = getThemeVariant();
   const [selectedPointUuids, setSelectedPointUuids] = useState<string[]>([]);
+  const selectModeActive = selectedPointUuids.length > 0;
 
   const palette = getThemePalette();
   const styles = getStyles(theme);
@@ -400,66 +394,131 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
     .slice()
     .reverse()
 
-  const sections = filteredDataPoints.reduce((acc: any, [dataPoint, i]) => {
+  const toggleSelection = (uuids: string[]) => {
+    // If no `uuids` are selected, select all of them
+    // Otherwise, deselect all of them
+    setSelectedPointUuids((selectedPointUuids: string[]): string[] => {
+      const selectedUuids = uuids.filter((uuid) => selectedPointUuids.includes(uuid));
+      if (selectedUuids.length === 0) {
+        return [...selectedPointUuids, ...uuids];
+      } else {
+        return selectedPointUuids.filter((u) => !uuids.includes(u));
+      }
+    });
+  }
+
+  let sections = filteredDataPoints.reduce((acc: any, [dataPoint, i]) => {
     const lastDate = acc[acc.length - 1]?.date ?? null;
+    const newPoint = { 
+      dataPoint, 
+      index: i, 
+      selected: selectModeActive ? selectedPointUuids.includes(dataPoint.uuid) : false 
+    };
     if (lastDate && cmpDateList(dataPoint.date, lastDate) == 0) {
-      acc[acc.length - 1].data.push([dataPoint, i]);
+      acc[acc.length - 1].data.push(newPoint);
     } else {
       acc.push({
         date: dataPoint.date,
-        data: [[dataPoint, i]],
+        toggleStatus: "none",
+        data: [newPoint],
       });
     }
     return acc;
   }, []);
 
+  // update selected section selection status
+  if (selectModeActive) {
+    sections.forEach((section: any) => {
+      console.log(section.data);
+      let numSelected = section.data.filter((item: any) => item.selected).length;
+      section.toggleStatus = numSelected === section.data.length ? "all" : numSelected > 0 ? "some" : "none";
+    });
+  }
+
+  // Android back button behavior with selection active
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        if (selectModeActive) {
+          setSelectedPointUuids([]);
+          return true;
+        } else {
+          return false;
+        }
+      };
+
+      const subscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress
+      );
+
+      return () => subscription.remove();
+    }, [selectModeActive])
+  );
+
   React.useEffect(() => {
+    const normalButtons = () => (
+      <ButtonRow>
+        {filteredDataPoints.length > 0 && day && <Button onPress={() => {
+          Alert.alert("Delete all listed data?", "This action cannot be undone.", [
+            {
+              text: "Cancel",
+              style: "cancel"
+            },
+            {
+              text: "Delete",
+              style: "destructive",
+              onPress: () => {
+                deleteActivityDataPoints(activityPath, filteredDataPoints.map(([_, i]) => i));
+              }
+            }
+          ])
+        }}>
+          <DeleteIcon color="white" />
+        </Button>}
+        {activity.tags.length > 0 && (
+          <TagMenu
+            activity={activity}
+            tags={tags}
+            onChange={(tags) => setTags(tags)}
+            menuVisible={tagsMenuVisible}
+            setMenuVisible={setTagsMenuVisible}
+            activityTags={activity.tags}
+            button={(setMenuVisible) =>
+              <Button onPress={() => setMenuVisible()}>
+                <MaterialCommunityIcons name="filter" size={24} color="white" />
+              </Button>
+            }
+          />
+        )}
+        <Button
+          onPress={() => navigation.navigate("EditDataPoint", { activityPath, newDataPoint: true, newDataPointDate: day, tags: requiredTags })}>
+          <MaterialCommunityIcons name="plus" size={26} color={"#ffffff"} />
+        </Button>
+      </ButtonRow>
+    )
+
+    const selectModeButtons = () => (
+      <ButtonRow>
+        {filteredDataPoints.length > selectedPointUuids.length && (
+        <Button onPress={() => setSelectedPointUuids(filteredDataPoints.map(([_, i]) => activity.dataPoints[i].uuid))}>
+          <MaterialCommunityIcons name="all-inclusive" size={24} color={theme.colors.onSurfaceVariant} />
+        </Button>
+        )}
+        <Button onPress={() => setSelectedPointUuids([])}>
+          <MaterialCommunityIcons name="close" size={24} color={theme.colors.onSurfaceVariant} />
+        </Button>
+      </ButtonRow>
+    )
+
     navigation.setOptions({
-      title: day ? formatDate(dateListToDate(day)) : "All data",
+      title: day ? formatDate(dateListToDate(day)) : selectModeActive ? selectedPointUuids.length + " selected" : "All data",
       headerStyle: themeVariant == 'light' ? { backgroundColor: theme.colors.primary } : undefined,
       headerTintColor: "#ffffff",
-      headerRight: () => (
-        <ButtonRow>
-          {filteredDataPoints.length > 0 && day && <Button onPress={() => {
-            Alert.alert("Delete all listed data?", "This action cannot be undone.", [
-              {
-                text: "Cancel",
-                style: "cancel"
-              },
-              {
-                text: "Delete",
-                style: "destructive",
-                onPress: () => {
-                  deleteActivityDataPoints(activityPath, filteredDataPoints.map(([_, i]) => i));
-                }
-              }
-            ])
-          }}>
-            <DeleteIcon color="white" />
-          </Button>}
-          {activity.tags.length > 0 && (
-            <TagMenu
-              activity={activity}
-              tags={tags}
-              onChange={(tags) => setTags(tags)}
-              menuVisible={tagsMenuVisible}
-              setMenuVisible={setTagsMenuVisible}
-              activityTags={activity.tags}
-              button={(setMenuVisible) =>
-                <Button onPress={() => setMenuVisible()}>
-                  <MaterialCommunityIcons name="filter" size={24} color="white" />
-                </Button>
-              }
-            />
-          )}
-          <Button
-            onPress={() => navigation.navigate("EditDataPoint", { activityPath, newDataPoint: true, newDataPointDate: day, tags: requiredTags })}>
-            <MaterialCommunityIcons name="plus" size={26} color={"#ffffff"} />
-          </Button>
-        </ButtonRow>
-      ),
+      headerBackVisible: !selectModeActive,
+      headerRight: selectModeActive ? selectModeButtons : normalButtons,
     });
-  }, [navigation, theme, tagsMenuVisible, tags, activity]);
+  }, [navigation, theme, tagsMenuVisible, tags, activity, selectModeActive, selectedPointUuids]);
 
   return (
     <SafeAreaView style={[styles.container]} edges={["left", "right"]}>
@@ -470,26 +529,39 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
         <SectionList
           style={styles.scrollView}
           sections={sections}
-          keyExtractor={([dataPoint, i]) => dataPoint.uuid}
+          keyExtractor={(item) => item.dataPoint.uuid}
           windowSize={11}
           ListFooterComponent={() => (
             <Inset type="bottom" />
           )}
-          renderSectionHeader={({ section: { date } }) => (
+          renderSectionHeader={({ section: { date, toggleStatus, data } }) => {
+            let toggleIcon: keyof typeof MaterialCommunityIcons.glyphMap;
+            if (toggleStatus === "none") {
+              toggleIcon = "checkbox-blank-outline";
+            } else if (toggleStatus === "all") {
+              toggleIcon = "checkbox-intermediate";
+            } else {
+              toggleIcon = "checkbox-intermediate-variant";
+            }
+            return (
             <View style={styles.sectionHeader}>
               <Text style={{ color: theme.colors.onSurface }}>{formatDate(dateListToDate(date as DateList))}</Text>
+              <Button onPress={() => {toggleSelection(data.map((item: any) => item.dataPoint.uuid))}}>
+                <MaterialCommunityIcons name={toggleIcon} size={24} color={theme.colors.onSurfaceVariant} />
+              </Button>
             </View>
-          )}
-          renderItem={({ item: [dataPoint, i] }) =>
+          )}}
+          renderItem={({ item: item }) =>
             <DataPointCard
               activity={activity}
               activityPath={activityPath}
-              i={i}
+              i={item.index}
               theme={theme}
               palette={palette}
               navigation={navigation}
-              selectedPointUuids={selectedPointUuids}
-              setSelectedPointUuids={setSelectedPointUuids}
+              selectModeActive={selectModeActive}
+              isSelected={item.selected}
+              toggleSelection={() => toggleSelection([item.dataPoint.uuid])}
             />
           }
         />
@@ -505,6 +577,9 @@ const getStyles = (theme: any) => StyleSheet.create({
   },
   sectionHeader: {
     padding: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   headerMenu: {
     paddingHorizontal: 10,
