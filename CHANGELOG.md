@@ -6,7 +6,7 @@
   - [ ] Animate title on tab changes
   - [ ] Navigate to the new tab on Loop Habits import
 - [ ] Handle large number of data points
-  - [ ] Bulk selection
+  - [x] Bulk selection
   - [ ] Bulk editing
   - [ ] Bulk deletion
 - [ ] Tag groups to support mutually exclusive tags. 
