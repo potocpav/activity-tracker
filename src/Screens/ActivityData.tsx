@@ -193,7 +193,7 @@ export const DataPointCardSingleContainer = (props: {
         <View key="divider" style={{ width: 0.5, height: '100%', backgroundColor: props.theme.colors.outline }} />
         <View key="content" style={{ flex: 1, gap: 6, justifyContent: 'space-between' }}>
           {props.tags && (
-            <View key="tags" style={{ marginHorizontal: 0, marginTop: 1 }}>
+            <View key="tags" style={{}}>
               {props.tags}
             </View>
           )}
@@ -244,7 +244,7 @@ export const DataPointCard = (
     navigation,
     selectModeActive,
     isSelected,
-    toggleSelection 
+    toggleSelection
   }:
     {
       activity: ActivityType,
@@ -267,7 +267,6 @@ export const DataPointCard = (
       tags={activity.tags.filter((t: Tag) => (dataPoint.tags ?? []).includes(t.name))}
       theme={theme}
       palette={palette}
-      wrap={false}
     />
   );
 
@@ -409,10 +408,10 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
 
   let sections = filteredDataPoints.reduce((acc: any, [dataPoint, i]) => {
     const lastDate = acc[acc.length - 1]?.date ?? null;
-    const newPoint = { 
-      dataPoint, 
-      index: i, 
-      selected: selectModeActive ? selectedPointUuids.includes(dataPoint.uuid) : false 
+    const newPoint = {
+      dataPoint,
+      index: i,
+      selected: selectModeActive ? selectedPointUuids.includes(dataPoint.uuid) : false
     };
     if (lastDate && cmpDateList(dataPoint.date, lastDate) == 0) {
       acc[acc.length - 1].data.push(newPoint);
@@ -501,12 +500,12 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
     const selectModeButtons = () => (
       <ButtonRow>
         {filteredDataPoints.length > selectedPointUuids.length && (
-        <Button onPress={() => setSelectedPointUuids(filteredDataPoints.map(([_, i]) => activity.dataPoints[i].uuid))}>
-          <MaterialCommunityIcons name="all-inclusive" size={24} color={theme.colors.onSurfaceVariant} />
-        </Button>
+          <Button onPress={() => setSelectedPointUuids(filteredDataPoints.map(([_, i]) => activity.dataPoints[i].uuid))}>
+            <MaterialCommunityIcons name="all-inclusive" size={24} color="white" />
+          </Button>
         )}
         <Button onPress={() => setSelectedPointUuids([])}>
-          <MaterialCommunityIcons name="close" size={24} color={theme.colors.onSurfaceVariant} />
+          <MaterialCommunityIcons name="close" size={24} color="white" />
         </Button>
       </ButtonRow>
     )
@@ -544,13 +543,14 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
               toggleIcon = "checkbox-intermediate-variant";
             }
             return (
-            <View style={styles.sectionHeader}>
-              <Text style={{ color: theme.colors.onSurface }}>{formatDate(dateListToDate(date as DateList))}</Text>
-              <Button onPress={() => {toggleSelection(data.map((item: any) => item.dataPoint.uuid))}}>
-                <MaterialCommunityIcons name={toggleIcon} size={24} color={theme.colors.onSurfaceVariant} />
-              </Button>
-            </View>
-          )}}
+              <View style={styles.sectionHeader}>
+                <Text style={{ color: theme.colors.onSurface }}>{formatDate(dateListToDate(date as DateList))}</Text>
+                <Button onPress={() => { toggleSelection(data.map((item: any) => item.dataPoint.uuid)) }}>
+                  <MaterialCommunityIcons name={toggleIcon} size={24} color={theme.colors.onSurfaceVariant} />
+                </Button>
+              </View>
+            )
+          }}
           renderItem={({ item: item }) =>
             <DataPointCard
               activity={activity}

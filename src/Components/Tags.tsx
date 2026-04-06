@@ -3,10 +3,10 @@ import { View, Text, StyleSheet } from "react-native";
 
 
 // TODO: make into a component
-export const RenderTags = ({ tags, theme, palette, wrap }: { tags: Tag[], theme: any, palette: string[], wrap: boolean }) => {
+export const RenderTags = ({ tags, theme, palette }: { tags: Tag[], theme: any, palette: string[] }) => {
     if (tags.length === 0) return null;
     return (
-      <View style={[styles.tagsContainer, { flexWrap: wrap ? 'wrap' : 'nowrap' }]}>
+      <View style={styles.tagsContainer}>
         {tags.map((tag, index) => (
           <View key={index} style={[styles.tag, { backgroundColor: palette[tag.color], borderColor: theme.colors.surface }]}>
             <Text style={[styles.tagText, { color: theme.colors.surface }]}>{tag.name}</Text>
@@ -20,6 +20,7 @@ export const RenderTags = ({ tags, theme, palette, wrap }: { tags: Tag[], theme:
 const styles = StyleSheet.create({
 tagsContainer: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 4,
 },
 tag: {
