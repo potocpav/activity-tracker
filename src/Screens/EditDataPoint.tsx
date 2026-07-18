@@ -30,7 +30,7 @@ type EditDataPointProps = {
 };
 
 const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
-  const { activityPath, dataPointIndex, newDataPoint, newDataPointDate, tags } = route.params;
+  const { activityPath, dataPointIndex, newDataPoint, newDataPointDate, tags, newValue, newNote } = route.params;
   const activity: ActivityType = useStore((state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId]);
   const theme = getTheme(activity.color);
   const styles = getStyles(theme);
@@ -44,8 +44,13 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
     dataPointIndex !== undefined ?
       activity?.dataPoints[dataPointIndex] :
       {
-        uuid: Crypto.randomUUID(),
-        date: dateToDateList(newDataPointDate ? dateListToDate(newDataPointDate) : new Date()),
+        ...{
+          uuid: Crypto.randomUUID(),
+          date: dateToDateList(newDataPointDate ? dateListToDate(newDataPointDate) : new Date()),
+          tags: tags ?? [],
+        },
+        ...(newValue !== undefined ? { value: newValue } : {}),
+        ...(newNote !== undefined ? { note: newNote } : {})
       };
 
   if (!dataPoint) {
@@ -60,14 +65,13 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);
   const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
   const [inputDate, setInputDate] = useState<Date>(dateTime);
-  const [noteInput, setNoteInput] = useState<string>(dataPoint.note ?? "");
+  const [inputNote, setInputNote] = useState<string>(dataPoint.note ?? "");
+  const [inputTags, setInputTags] = useState<string[]>(dataPoint.tags ?? tags ?? []);
 
   const dateInputRef = useRef<InputWrapperRef>(undefined);
   let dateError: string | null = null;
-  let inputDateList: DateList | undefined = inputDate ? dateToDateList(inputDate) : undefined;
-  if (inputDateList === undefined) {
-    dateError = "Date is required";
-  } else if (cmpDateList(inputDateList, dateToDateList(today)) > 0) {
+  let inputDateList: DateList = dateToDateList(inputDate);
+  if (cmpDateList(inputDateList, dateToDateList(today)) > 0) {
     dateError = "Date cannot be in the future";
   } else if (cmpDateList(inputDateList, [2000, 1, 1]) < 0) {
     dateError = "Date must be from this millenium";
@@ -122,8 +126,6 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
       emptyValueError = "Enter at least one value";
     }
   }
-
-  const [inputTags, setInputTags] = useState<string[]>(dataPoint.tags ?? tags ?? []);
 
   const toggleInputTag = (tag: string) => {
     setInputTags(inputTags.includes(tag) ? inputTags.filter((t: string) => t !== tag) : [...inputTags, tag]);
@@ -191,24 +193,31 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
         break;
     }
 
-    const note = noteInput === "" ? {} : { "note": noteInput };
-    const newIndex = updateActivityDataPoint(activityPath, newDataPoint ? undefined : dataPointIndex, {
+    const note = inputNote === "" ? {} : { "note": inputNote };
+    const newDataPoint: DataPoint = {
       uuid: Crypto.randomUUID(),
       date: inputDateList,
       ...(newValue === undefined ? {} : { value: newValue }),
       ...(inputTags.length > 0 ? { tags: inputTags } : {}),
       ...note,
-    });
+    };
+    const newIndex = updateActivityDataPoint(activityPath, newDataPoint ? undefined : dataPointIndex, newDataPoint);
     navigation.goBack();
-    return newIndex;
+    return { index: newIndex, dataPoint: newDataPoint };
   };
 
   const duplicateDataPointWrapper = () => {
-    const newIndex = saveDataPointWrapper();
-    const newDate = inputDateList ? dateListToDate(inputDateList) : new Date();
-    if (newIndex !== undefined) {
+    const res = saveDataPointWrapper();
+    if (res !== undefined) {
       ToastAndroid.show('Data point saved', ToastAndroid.SHORT);
-      navigation.navigate("EditDataPoint", { activityPath, newDataPoint: true, newDataPointDate: newDate, tags: inputTags });
+      navigation.navigate("EditDataPoint", {
+        activityPath,
+        newDataPoint: true,
+        newDataPointDate: res.dataPoint.date,
+        tags: res.dataPoint.tags,
+        newValue: res.dataPoint.value,
+        newNote: res.dataPoint.note,
+      });
     }
   };
 
@@ -241,12 +250,12 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
         </ButtonRow>
       ),
     });
-  }, [navigation, theme, activity, inputDate, ...inputValues.map((inputValue: any) => inputValue.value[0]), inputTags, noteInput]);
+  }, [navigation, theme, activity, inputDate, ...inputValues.map((inputValue: any) => inputValue.value[0]), inputTags, inputNote]);
 
   return (
     <Fragment>
       <Hint hint="save_data_point" />
-      <SystemBars style={{statusBar: "light", navigationBar: themeVariant == 'light' ? "dark" : "light"}} />
+      <SystemBars style={{ statusBar: "light", navigationBar: themeVariant == 'light' ? "dark" : "light" }} />
       <ScrollView>
         <SafeAreaView style={{ gap: 10, padding: 10 }} edges={["left", "right", "bottom"]}>
           <InputWrapper error={showErrors ? dateError : null} ref={dateInputRef}>
@@ -268,7 +277,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
                 />
               </Pressable>
               <Button onPress={showDatePicker}>
-                  <MaterialCommunityIcons name="calendar" size={24} color={theme.colors.onSurface} />
+                <MaterialCommunityIcons name="calendar" size={24} color={theme.colors.onSurface} />
               </Button>
             </View>
           </InputWrapper>
@@ -276,8 +285,8 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
           <InputWrapper>
             <TextInput
               label="Note (optional)"
-              value={noteInput}
-              onChangeText={setNoteInput}
+              value={inputNote}
+              onChangeText={setInputNote}
               multiline
               numberOfLines={2}
               style={{ height: 80 }}
@@ -287,15 +296,15 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
 
 
           {activity.tags.length > 0 && <View style={{ gap: 5 }}>
-          <Text style={{ color: theme.colors.onSurfaceVariant, fontSize: 16 }}>Tags:</Text>
-          <TagSelector
-            activity={activity}
-            inputTags={inputTags}
-            toggleInputTag={toggleInputTag}
-            palette={palette}
-            theme={theme}
-            justifyContent="flex-start"
-          />
+            <Text style={{ color: theme.colors.onSurfaceVariant, fontSize: 16 }}>Tags:</Text>
+            <TagSelector
+              activity={activity}
+              inputTags={inputTags}
+              toggleInputTag={toggleInputTag}
+              palette={palette}
+              theme={theme}
+              justifyContent="flex-start"
+            />
           </View>}
 
           {activity.unit.type !== "none" && (
