@@ -10,6 +10,7 @@ import useStore from "../Model/Store";
 import { ActivityType, DataPoint, dateToDateList, Stat, WeekStart, DateList, ActivityTab, ActivityPath } from "../Model/StoreTypes";
 import { dayCmp, findZeroSlice, renderStatValue } from "../Model/Activity";
 import { useAppTheme, useThemePalette, useThemeVariant, useWideDisplay } from "../Model/Theme";
+import { useToday } from "../Model/useToday";
 import { SystemBars } from "react-native-edge-to-edge";
 import { SafeAreaView } from "react-native-safe-area-context";
 import EmptyPagePlaceholder from "../Components/EmptyPagePlaceholder";
@@ -265,7 +266,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   const wideDisplay = useWideDisplay();
   const dimensions = useWindowDimensions();
   const styles = getStyles(theme, wideDisplay, dimensions);
-  const today = dateToDateList(new Date());
+  const today = dateToDateList(useToday());
 
   // First page and last page are empty, with no data backing them up in the model.
   // First page corresponds to zeroth index in the activities array.

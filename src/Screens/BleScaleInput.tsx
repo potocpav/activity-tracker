@@ -3,6 +3,7 @@ import {StyleSheet, Text, Platform, View, AppState, useWindowDimensions} from "r
 import useStore from "../Model/Store";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAppTheme, useThemePalette, useThemeVariant } from "../Model/Theme";
+import { useToday } from "../Model/useToday";
 import { ActivityType, BleScaleWorkoutState, DataPoint, dateToDateList, State, Tag } from "../Model/StoreTypes";
 import { MD3Theme, Button as PaperButton } from "react-native-paper";
 import { matchFont, Points, Text as SkiaText, vec, Canvas, Color, SkFont } from "@shopify/react-native-skia";
@@ -73,7 +74,7 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   const theme = useAppTheme(activity.color);
   const themeVariant = useThemeVariant();
   const palette = useThemePalette();
-  const today = dateToDateList(new Date());
+  const today = dateToDateList(useToday());
 
   const styles = getStyles(theme);
   const connectedDevice = useStore((state: any) => state.connectedDevice);

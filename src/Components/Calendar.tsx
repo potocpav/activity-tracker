@@ -17,6 +17,7 @@ import {
 import { findZeroSlice, dayCmp, cmpDateList, extractStatValue, extractValue, binTime } from "../Model/Activity";
 import useStore from "../Model/Store";
 import { useAppTheme } from "../Model/Theme";
+import { useToday } from "../Model/useToday";
 import { renderShortFormValue } from "../Model/Unit";
 
 type CalendarComponentProps = {
@@ -43,7 +44,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, 
   const maxWeekCount = 52 * 10;
   
   const styles = getStyles(itemWidth, dimensions);
-  const now = new Date();
+  const now = useToday();
   const pastWeekStart = (date: Date, i: number) => binTime("week", date.getTime(), -i, weekStart);
 
   const firstDpDate: DateList | null = activity.dataPoints[0]?.date || null;
