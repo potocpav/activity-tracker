@@ -269,7 +269,7 @@ export const ValueEditor = ({
   const [timerStartTime, setTimerStartTime] = useState<number | null>(null);
   const [now, setNow] = useState<number | null>(null);
 
-  const [timerInterval, setTimerInterval] = useState<NodeJS.Timeout | null>(null);
+  const [timerInterval, setTimerInterval] = useState<ReturnType<typeof setInterval> | null>(null);
 
   const resetTimer = () => {
     setTimerActive(false);

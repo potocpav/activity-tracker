@@ -33,7 +33,7 @@ const ActivitySummary = ({ navigation, activityPath }: { navigation: any, activi
 
             {activity.tags.length > 0 && (
               <View key="activity-tags" style={styles.tagsRow}>
-                <RenderTags tags={activity.tags} theme={theme} palette={palette} wrap />
+                <RenderTags tags={activity.tags} theme={theme} palette={palette} />
               </View>
             )}
           </View>

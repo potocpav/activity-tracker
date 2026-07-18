@@ -343,7 +343,6 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   // when the app is sent to the background, pause the recording
   useEffect(() => {
     const subscription = AppState.addEventListener('change', nextAppState => {
-      console.log("Changed state to", nextAppState);
       if (nextAppState == "background" || nextAppState == "inactive") {
         if (recordingState === "recording") {
           onPause();
@@ -587,13 +586,14 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                     tags={tags}
                     theme={theme}
                     palette={palette}
-                    wrap={false}
                   />
                 }
                 // tags={undefined}
                 note={undefined}
                 theme={theme}
                 style={{ flex: 1, borderWidth: 1, borderColor: theme.colors.primary }}
+                selected={false}
+                selectModeActive={false}
               >
                 <LabeledValue label="Rep" theme={theme}>
                   <CenteredAnimatedText longestText="000" text={`${pastDataPoints.length - index}`} font={largeFont} color={theme.colors.primary} />
@@ -618,6 +618,9 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
                 theme={theme}
                 palette={palette}
                 navigation={navigation}
+                selectModeActive={false}
+                isSelected={false}
+                toggleSelection={() => {}}
               />
             </Animated.View>
           );
