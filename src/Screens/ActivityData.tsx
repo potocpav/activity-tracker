@@ -428,7 +428,6 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
   // update selected section selection status
   if (selectModeActive) {
     sections.forEach((section: any) => {
-      console.log(section.data);
       let numSelected = section.data.filter((item: any) => item.selected).length;
       section.toggleStatus = numSelected === section.data.length ? "all" : numSelected > 0 ? "some" : "none";
     });
