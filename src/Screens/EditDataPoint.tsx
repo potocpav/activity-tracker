@@ -53,11 +53,6 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
         ...(newNote !== undefined ? { note: newNote } : {})
       };
 
-  if (!dataPoint) {
-    console.error("Data point not found", dataPointIndex, dataPoint);
-    return <Text style={{ color: theme.colors.error }}>Data point not found</Text>;
-  }
-
   const dateTime = dateListToDate(dataPoint.date);
   const today = new Date();
   const [showErrors, setShowErrors] = useState(false);
