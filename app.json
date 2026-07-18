@@ -4,6 +4,9 @@
     "slug": "activity-tracker",
     "version": "3.4.1",
     "icon": "./assets/icon.png",
+    "experiments": {
+      "reactCompiler": true
+    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.pavelpotocek.activitytracker"
