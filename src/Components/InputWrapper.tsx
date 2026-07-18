@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useImperativeHandle } from "react";
 import { View, Text } from "react-native";
 import Animated, { useSharedValue, withSequence, withTiming, withRepeat, useAnimatedStyle } from "react-native-reanimated";
 import { useAppTheme } from "../Model/Theme";
@@ -23,25 +23,18 @@ export const InputWrapper = ({ children, key, error, hint, ref }: InputWrapperPr
   const offset = useSharedValue<number>(0);
   
   
-  if (ref !== undefined) {
-    const el = {
-      highlightError: () => {
-        offset.value = withSequence(
-          // start from -OFFSET
-          withTiming(-OFFSET, { duration: TIME / 2 }),
-          // shake between -OFFSET and OFFSET 5 times
-          withRepeat(withTiming(OFFSET, { duration: TIME }), 3, true),
-          // go back to 0 at the end
-          withTiming(0, { duration: TIME / 2 })
-        );
-      },
-    };
-    if (typeof ref === 'function') {
-      ref(el);
-    } else {
-      ref.current = el;
-    }
-  }
+  useImperativeHandle(ref, () => ({
+    highlightError: () => {
+      offset.set(withSequence(
+        // start from -OFFSET
+        withTiming(-OFFSET, { duration: TIME / 2 }),
+        // shake between -OFFSET and OFFSET 5 times
+        withRepeat(withTiming(OFFSET, { duration: TIME }), 3, true),
+        // go back to 0 at the end
+        withTiming(0, { duration: TIME / 2 })
+      ));
+    },
+  }), [offset]);
 
 
 
