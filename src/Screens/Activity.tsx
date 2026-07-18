@@ -9,13 +9,12 @@ import { Menu } from 'react-native-paper';
 import useStore from "../Model/Store";
 import { DataPoint, ActivityType, Tag, dateListToDate, State, ActivityPath } from "../Model/StoreTypes";
 import ActivitySummary from "./ActivitySummary";
-import { File, Paths } from "expo-file-system/next";
+import { File, Paths, EncodingType } from "expo-file-system";
 import * as Sharing from 'expo-sharing';
 import { getTheme, getThemeVariant } from "../Model/Theme";
 import { SystemBars } from "react-native-edge-to-edge";
 import Hint from "../Components/Hint";
 import { BleScaleIcon, ButtonRow, DotsIconButton, EditIconButton, PlusIconButton, Button } from "../Components/Element";
-import { EncodingType } from "expo-file-system/src/ExpoFileSystem.types";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 type ActivityProps = {

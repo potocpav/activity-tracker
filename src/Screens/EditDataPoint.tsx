@@ -205,9 +205,10 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
 
   const duplicateDataPointWrapper = () => {
     const newIndex = saveDataPointWrapper();
+    const newDate = inputDateList ? dateListToDate(inputDateList) : new Date();
     if (newIndex !== undefined) {
       ToastAndroid.show('Data point saved', ToastAndroid.SHORT);
-      navigation.navigate("EditDataPoint", { activityPath, dataPointIndex: newIndex, newDataPoint: true });
+      navigation.navigate("EditDataPoint", { activityPath, newDataPoint: true, newDataPointDate: newDate, tags: inputTags });
     }
   };
 

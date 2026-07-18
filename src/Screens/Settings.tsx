@@ -4,7 +4,7 @@ import { List, Switch } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import useStore, { partialize } from '../Model/Store';
 import { version, migrate } from '../Model/Migrations';
-import { File, Paths } from 'expo-file-system/next';
+import { File, Paths, EncodingType } from 'expo-file-system';
 import * as DocumentPicker from 'expo-document-picker';
 import * as Sharing from 'expo-sharing';
 import { getTheme, getThemeVariant } from '../Model/Theme';
@@ -14,7 +14,6 @@ import { cmpDateList } from '../Model/Activity';
 import { SystemBars } from 'react-native-edge-to-edge';
 import * as SQLite from 'expo-sqlite';
 import { defaultGraphs, defaultCalendar, defaultStats } from '../Model/DefaultActivity';
-import { EncodingType } from 'expo-file-system/src/ExpoFileSystem.types';
 import * as Crypto from "expo-crypto";
 
 const Settings = () => {
