@@ -51,7 +51,11 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, 
 
   const firstVisibleWeek = firstDpDate ? pastWeekStart(dateListToDate(firstDpDate), 0) : lastVisibleWeek;
 
-  const weekCount = Math.min(maxWeekCount, Math.max(minWeekCount, 1 + Math.round((lastVisibleWeek.getTime() - firstVisibleWeek.getTime()) / (7 * 24 * 60 * 60 * 1000))));
+  // Hoist .getTime() into locals: two .getTime() calls inline here crash the React Compiler
+  // (babel-plugin-react-compiler@1.0.0 codegen bug), making it bail out of the whole component.
+  const lastMs = lastVisibleWeek.getTime();
+  const firstMs = firstVisibleWeek.getTime();
+  const weekCount = Math.min(maxWeekCount, Math.max(minWeekCount, 1 + Math.round((lastMs - firstMs) / (7 * 24 * 60 * 60 * 1000))));
   const positiveTags = calendar.tagFilters.filter((t: TagFilter) => t.state === "yes").map((t: TagFilter) => t.name);
   
   let subUnit: SubUnit;
