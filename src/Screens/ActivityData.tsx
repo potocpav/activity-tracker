@@ -368,10 +368,6 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
   const [tags, setTags] = useState<{ name: string; state: "yes" | "no" }[]>([]);
   const [tagsMenuVisible, setTagsMenuVisible] = useState(false);
 
-  if (!activity) {
-    return <Text>Activity not found</Text>;
-  }
-
   // Filtering logic
   const requiredTags = tags.filter((t) => t.state === "yes").map(t => t.name);
   const negativeTags = tags.filter((t) => t.state === "no").map(t => t.name);
