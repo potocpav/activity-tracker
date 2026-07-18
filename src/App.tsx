@@ -25,7 +25,13 @@ import { useAppTheme, useThemeVariant } from "./Model/Theme";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import EditStat from "./Screens/EditStat";
 import BleConnectionModal from "./Components/BleConnectionModal";
+import { enableFreeze } from 'react-native-screens';
 import "expo-font";
+
+// Suspend re-rendering of unfocused (mounted but not visible) screens until
+// they are focused again. They re-render from current store state on refocus,
+// so data stays correct while avoiding wasted work behind modals / other tabs.
+enableFreeze(true);
 
 const { LightTheme, DarkTheme: PaperDarkTheme } = adaptNavigationTheme({
   reactNavigationLight: DefaultTheme,

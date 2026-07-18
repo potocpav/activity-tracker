@@ -202,7 +202,6 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
       ...note,
     };
     const newIndex = updateActivityDataPoint(activityPath, newDataPoint ? undefined : dataPointIndex, newDataPoint);
-    navigation.goBack();
     return { index: newIndex, dataPoint: newDataPoint };
   };
 
@@ -246,7 +245,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
             <DeleteButton onPress={deleteDataPointWrapper} color="white" />
           )}
           <CheckPlusButton onPress={duplicateDataPointWrapper} color="white" />
-          <CheckButton onPress={saveDataPointWrapper} color="white" />
+          <CheckButton onPress={() => { saveDataPointWrapper() && navigation.goBack(); }} color="white" />
         </ButtonRow>
       ),
     });
