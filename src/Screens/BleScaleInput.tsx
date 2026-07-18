@@ -245,7 +245,6 @@ const BleScaleInputInner: React.FC<BleScaleInputInnerProps> = ({ route, navigati
         if (newPull.wAvg > minPullWeight && duration > minPullDuration) {
           // publish the pull
           pastPulls.set((pastPulls) => [...pastPulls, newPull].slice(-3));
-          // pullCardVisibility.value = withSpring(1);
           if (workoutState) {
             setWorkoutState({ ...workoutState, t0Rest: newPull.t1 });
           }

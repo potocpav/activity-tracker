@@ -56,20 +56,20 @@ const DataPointContainer = (props: {
     .activeOffsetX([-TOLERANCE, TOLERANCE])
     .failOffsetY([-TOLERANCE, TOLERANCE])
     .onStart((e) => {
-      position.value = e.translationX;
-      isPanning.value = true;
+      position.set(e.translationX);
+      isPanning.set(true);
     })
     .onUpdate((e) => {
-      position.value = e.translationX;
+      position.set(e.translationX);
     })
     .onEnd((event) => {
-      position.value = withDecay({
+      position.set(withDecay({
         velocity: event.velocityX,
         rubberBandEffect: true,
         reduceMotion: ReduceMotion.Never,
         clamp: [0, 0],
-      });
-      isPanning.value = false;
+      }));
+      isPanning.set(false);
     });
 
   useAnimatedReaction(() => ({
@@ -79,7 +79,7 @@ const DataPointContainer = (props: {
     if (Math.abs(value.position) > THRESHOLD && ((Math.abs(oldValue?.position ?? 0) <= THRESHOLD && !value.isPanning) || (!value.isPanning && oldValue?.isPanning))) {
       if (props.onDelete) {
         cancelAnimation(position);
-        position.value = withSpring(1000 * Math.sign(value.position));
+        position.set(withSpring(1000 * Math.sign(value.position)));
         scheduleOnRN(props.onDelete);
       }
     }

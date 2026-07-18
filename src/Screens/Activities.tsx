@@ -46,16 +46,16 @@ const DraggableCard = ({ children, draggedCardIx, moveActivity, index, itemHeigh
     .activeOffsetY([-TOLERANCE, TOLERANCE])
     .failOffsetX([-TOLERANCE, TOLERANCE])
     .onStart((e) => {
-      position.value = e.translationY;
-      isPanning.value = true;
-      alreadyMoved.value = false;
+      position.set(e.translationY);
+      isPanning.set(true);
+      alreadyMoved.set(false);
     })
     .onUpdate((e) => {
-      position.value = e.translationY;
+      position.set(e.translationY);
       draggedCardIx.set({ from: index, to: Math.max(0, Math.min(numberOfItems - 1, Math.round(e.translationY / itemHeight) + index)) });
     })
     .onEnd(() => {
-      isPanning.value = false;
+      isPanning.set(false);
     });
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -64,8 +64,8 @@ const DraggableCard = ({ children, draggedCardIx, moveActivity, index, itemHeigh
     } else if (draggedCardIx.value?.from == index) {
       // dropped
       if (draggedCardIx.value && !alreadyMoved.value) {
-        alreadyMoved.value = true;
-        position.value = withSpring(
+        alreadyMoved.set(true);
+        position.set(withSpring(
           (draggedCardIx.value.to - index) * itemHeight, { stiffness: 10000, damping: 1000 },
           () => {
             if (draggedCardIx.value && draggedCardIx.value.from !== draggedCardIx.value.to) {
@@ -76,19 +76,19 @@ const DraggableCard = ({ children, draggedCardIx, moveActivity, index, itemHeigh
               );
             }
           }
-        );
+        ));
       }
     } else if (draggedCardIx.value !== null) {
       // drag in progress, but I am a non-dragged card
       if (index < draggedCardIx.value.from && index >= draggedCardIx.value.to) {
-        position.value = withSpring(itemHeight);
+        position.set(withSpring(itemHeight));
       } else if (index > draggedCardIx.value.from && index <= draggedCardIx.value.to) {
-        position.value = withSpring(-itemHeight);
+        position.set(withSpring(-itemHeight));
       } else {
-        position.value = withSpring(0);
+        position.set(withSpring(0));
       }
     } else {
-      position.value = 0;
+      position.set(0);
     }
     return {
       transform: [{ translateY: position.value }],
@@ -363,7 +363,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
 
   useAnimatedReaction(() => {
   }, () => {
-    draggedCardIx.value = null;
+    draggedCardIx.set(null);
   }, [activities]);
 
   return (
@@ -400,7 +400,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
               <FlatList
                 data={activityTab.activities}
                 onScroll={(event) => {
-                  scrollY.value = event.nativeEvent.contentOffset.y;
+                  scrollY.set(event.nativeEvent.contentOffset.y);
                 }}
                 renderItem={({ item, index }) =>
                   <DraggableCard

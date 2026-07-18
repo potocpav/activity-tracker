@@ -76,7 +76,7 @@ const SkiaChart = (
   })();
 
   useEffect(() => {
-    viewportShared.value = viewport;
+    viewportShared.set(viewport);
   }, [viewport]);
 
   const viewportClip = rect(viewport.left, viewport.top, viewport.right - viewport.left, viewport.bottom - viewport.top);
@@ -113,12 +113,12 @@ const SkiaChart = (
         const xTickLabelBoxes = xTickLabels.map((label) => font.measureText(label));
 
         xTickLine.forEach((state, index) => {
-          state.x.value = xTicks[index];
-          state.p1.value = vec(xToCanvas(value.view, viewport, xTicks[index]), viewport.top);
-          state.p2.value = vec(xToCanvas(value.view, viewport, xTicks[index]), viewport.bottom);
-          state.labelX.value = xToCanvas(value.view, viewport, xTicks[index]) - xTickLabelBoxes[index]?.width / 2;
-          state.labelY.value = viewport.bottom + xLabelPadding - xTickLabelBoxes[index]?.y;
-          state.label.value = xTickLabels[index] ?? "";
+          state.x.set(xTicks[index]);
+          state.p1.set(vec(xToCanvas(value.view, viewport, xTicks[index]), viewport.top));
+          state.p2.set(vec(xToCanvas(value.view, viewport, xTicks[index]), viewport.bottom));
+          state.labelX.set(xToCanvas(value.view, viewport, xTicks[index]) - xTickLabelBoxes[index]?.width / 2);
+          state.labelY.set(viewport.bottom + xLabelPadding - xTickLabelBoxes[index]?.y);
+          state.label.set(xTickLabels[index] ?? "");
         });
       }
     }
@@ -138,12 +138,12 @@ const SkiaChart = (
         const yTickLabelBoxes = yTickLabels.map((label) => font.measureText(label));
 
         yTickLine.forEach((state, index) => {
-          state.y.value = yTicks[index];
-          state.p1.value = vec(viewport.left, yToCanvas(value.view, viewport, yTicks[index]));
-          state.p2.value = vec(viewport.right, yToCanvas(value.view, viewport, yTicks[index]));
-          state.labelX.value = viewport.left - yTickLabelBoxes[index]?.width - yLabelPadding;
-          state.labelY.value = yToCanvas(value.view, viewport, yTicks[index]) + yTickLabelBoxes[index]?.height * 0.4;
-          state.label.value = yTickLabels[index] ?? "";
+          state.y.set(yTicks[index]);
+          state.p1.set(vec(viewport.left, yToCanvas(value.view, viewport, yTicks[index])));
+          state.p2.set(vec(viewport.right, yToCanvas(value.view, viewport, yTicks[index])));
+          state.labelX.set(viewport.left - yTickLabelBoxes[index]?.width - yLabelPadding);
+          state.labelY.set(yToCanvas(value.view, viewport, yTicks[index]) + yTickLabelBoxes[index]?.height * 0.4);
+          state.label.set(yTickLabels[index] ?? "");
         });
       }
     },
@@ -171,17 +171,17 @@ const SkiaChart = (
     },
     (view, _) => {
       for (let i = 0; i < xTickLine.length; i++) {
-        xTickLine[i].p1.value = vec(xToCanvas(view, viewport, xTickLine[i].x.value), viewport.top);
-        xTickLine[i].p2.value = vec(xToCanvas(view, viewport, xTickLine[i].x.value), viewport.bottom);
-        xTickLine[i].labelX.value = xToCanvas(view, viewport, xTickLine[i].x.value) - 5;
-        xTickLine[i].labelY.value = viewport.bottom + xLabelPadding + 7;
+        xTickLine[i].p1.set(vec(xToCanvas(view, viewport, xTickLine[i].x.value), viewport.top));
+        xTickLine[i].p2.set(vec(xToCanvas(view, viewport, xTickLine[i].x.value), viewport.bottom));
+        xTickLine[i].labelX.set(xToCanvas(view, viewport, xTickLine[i].x.value) - 5);
+        xTickLine[i].labelY.set(viewport.bottom + xLabelPadding + 7);
       }
 
       for (let i = 0; i < yTickLine.length; i++) {
-        yTickLine[i].p1.value = vec(viewport.left, yToCanvas(view, viewport, yTickLine[i].y.value));
-        yTickLine[i].p2.value = vec(viewport.right, yToCanvas(view, viewport, yTickLine[i].y.value));
-        yTickLine[i].labelX.value = viewport.left - 15 - yLabelPadding;
-        yTickLine[i].labelY.value = yToCanvas(view, viewport, yTickLine[i].y.value) + 3;
+        yTickLine[i].p1.set(vec(viewport.left, yToCanvas(view, viewport, yTickLine[i].y.value)));
+        yTickLine[i].p2.set(vec(viewport.right, yToCanvas(view, viewport, yTickLine[i].y.value)));
+        yTickLine[i].labelX.set(viewport.left - 15 - yLabelPadding);
+        yTickLine[i].labelY.set(yToCanvas(view, viewport, yTickLine[i].y.value) + 3);
       }
     },
   );

@@ -132,19 +132,19 @@ const FlatListChart = (
     .Pan()
     .activateAfterLongPress(300)
     .onStart((event) => {
-      selectedRangeShared.value = { p0: getIndex(event.x), p1: getIndex(event.x) };
+      selectedRangeShared.set({ p0: getIndex(event.x), p1: getIndex(event.x) });
     })
     .onUpdate((event) => {
-      selectedRangeShared.value = { p0: selectedRangeShared.value?.p0 ?? getIndex(event.x), p1: getIndex(event.x) };
+      selectedRangeShared.set({ p0: selectedRangeShared.value?.p0 ?? getIndex(event.x), p1: getIndex(event.x) });
     })
   const tapGesture = Gesture
     .Tap()
     .onEnd((event) => {
       const tapIndex = getIndex(event.x);
       if ((selectedRangeShared.value?.p0 !== selectedRangeShared.value?.p1) || selectedRangeShared.value?.p1 === tapIndex) {
-        selectedRangeShared.value = null;
+        selectedRangeShared.set(null);
       } else {
-        selectedRangeShared.value = { p0: tapIndex, p1: tapIndex };
+        selectedRangeShared.set({ p0: tapIndex, p1: tapIndex });
       }
     });
   const gesture = Gesture.Race(panGesture, tapGesture);
@@ -212,7 +212,7 @@ const FlatListChart = (
               data={items}
               // estimatedItemSize={binWidth}
               onScroll={(event) => {
-                scrollX.value = event.nativeEvent.contentOffset.x;
+                scrollX.set(event.nativeEvent.contentOffset.x);
               }}
               renderItem={({ item, index }) => {
                 const drawnElement = renderItem({ item, index, view: itemViewDimensions });
