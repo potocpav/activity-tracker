@@ -4,7 +4,7 @@ import useStore from "../Model/Store";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAppTheme, useThemePalette, useThemeVariant } from "../Model/Theme";
 import { useToday } from "../Model/useToday";
-import { ActivityType, BleScaleWorkoutState, DataPoint, dateToDateList, State, Tag } from "../Model/StoreTypes";
+import { ActivityType, BleScaleWorkoutState, DataPoint, dateToDateList, State, Tag, Unit, SubUnit } from "../Model/StoreTypes";
 import { MD3Theme, Button as PaperButton } from "react-native-paper";
 import { matchFont, Points, Text as SkiaText, vec, Canvas, Color, SkFont } from "@shopify/react-native-skia";
 import Animated, { useSharedValue, useFrameCallback, useDerivedValue, LinearTransition, FadeIn, SharedValue } from "react-native-reanimated";
@@ -28,6 +28,20 @@ const largeFont = matchFont({ fontFamily: fontFamily, fontSize: 24, fontWeight: 
 type BleScaleInputProps = {
   navigation: any;
   route: any;
+};
+
+// Narrowed shapes the inner component can rely on once the outer wrapper has
+// asserted them (see the assertions in BleScaleInput at the bottom of the file).
+type BleScaleActivity = Omit<ActivityType, "unit"> & { unit: Extract<Unit, { type: "multiple" }> };
+type WeightSubUnit = Extract<SubUnit, { type: "weight" }>;
+type TimeSubUnit = Extract<SubUnit, { type: "time" }>;
+
+type BleScaleInputInnerProps = {
+  navigation: any;
+  route: any;
+  activity: BleScaleActivity;
+  weightUnit: WeightSubUnit;
+  timeUnit: TimeSubUnit;
 };
 
 
@@ -67,9 +81,8 @@ const CenteredAnimatedText = ({ longestText, text, font, color }: { longestText:
   );
 };
 
-const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
+const BleScaleInputInner: React.FC<BleScaleInputInnerProps> = ({ route, navigation, activity, weightUnit, timeUnit }) => {
   const { activityPath } = route.params;
-  const activity: ActivityType = useStore((state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId]);
   const appendActivityDataPoint = useStore((state: any) => state.appendActivityDataPoint);
   const theme = useAppTheme(activity.color);
   const themeVariant = useThemeVariant();
@@ -89,21 +102,6 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   const requestPermissions = useStore((state: any) => state.requestPermissions);
   const scanForPeripherals = useStore((state: any) => state.scanForPeripherals);
   const disconnectDevice = useStore((state: any) => state.disconnectDevice);
-
-  if (activity.unit.type !== "multiple") {
-    navigation.goBack();
-    console.error("BleScaleInput: Activity unit type is not multiple");
-    return;
-  }
-
-  const weightUnit = activity.unit.values.find((u: any) => u.name === "Weight")?.unit;
-  const timeUnit = activity.unit.values.find((u: any) => u.name === "Time")?.unit;
-
-  if (weightUnit === undefined || timeUnit === undefined || weightUnit.type !== "weight" || timeUnit.type !== "time") {
-    navigation.goBack();
-    console.error("BleScaleInput: Weight or time unit is wrong");
-    return;
-  }
 
   const workoutState: BleScaleWorkoutState | null = useStore((state: any) => state.bleScaleWorkoutState);
   const setWorkoutState: (workoutState: BleScaleWorkoutState | null) => void = useStore((state: any) => state.setBleScaleWorkoutState);
@@ -715,5 +713,39 @@ const getStyles = (theme: MD3Theme) => StyleSheet.create({
     color: theme.colors.outline,
   },
 });
+
+// Thin wrapper holding the invariant assertions. Doing the guards here — in a
+// component with only one hook, before the inner's ~25 hooks — keeps them out of
+// the middle of a hook list (which breaks the Rules of Hooks / React Compiler).
+// These branches should never run in normal usage.
+const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
+  const { activityPath } = route.params;
+  const activity: ActivityType = useStore((state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId]);
+
+  if (activity.unit.type !== "multiple") {
+    console.error("BleScaleInput: Activity unit type is not multiple");
+    navigation.goBack();
+    return null;
+  }
+
+  const weightUnit = activity.unit.values.find((u) => u.name === "Weight")?.unit;
+  const timeUnit = activity.unit.values.find((u) => u.name === "Time")?.unit;
+
+  if (weightUnit === undefined || timeUnit === undefined || weightUnit.type !== "weight" || timeUnit.type !== "time") {
+    console.error("BleScaleInput: Weight or time unit is wrong");
+    navigation.goBack();
+    return null;
+  }
+
+  return (
+    <BleScaleInputInner
+      route={route}
+      navigation={navigation}
+      activity={activity as BleScaleActivity}
+      weightUnit={weightUnit}
+      timeUnit={timeUnit}
+    />
+  );
+};
 
 export default BleScaleInput; 
