@@ -293,15 +293,15 @@ const BleScaleInputInner: React.FC<BleScaleInputInnerProps> = ({ route, navigati
 
   const onReset = () => {
     setWorkoutState(null);
-    tx.value = 0;
-    pastPulls.value = [];
-    scaleInput.value = {
+    tx.set(0);
+    pastPulls.set([]);
+    scaleInput.set({
       t0: null,
       tLast: null,
       max: 0,
       dataPoints: [],
       currentPull: { t0: 0, wSum: 0, wCount: 0, wMin: 0, wMax: 0, active: false },
-    };
+    });
     if (recordingState === "recording") {
       stopMeasurement();
       setRecordingState("stopped");
@@ -309,13 +309,13 @@ const BleScaleInputInner: React.FC<BleScaleInputInnerProps> = ({ route, navigati
   }
 
   const onRecord = () => {
-    scaleInput.value = {
+    scaleInput.set({
       t0: null,
       tLast: null,
       max: 0,
       dataPoints: [],
       currentPull: { t0: 0, wSum: 0, wCount: 0, wMin: 0, wMax: 0, active: false },
-    };
+    });
     if (workoutState?.state !== "playing") {
       setWorkoutState({ state: "playing", t0: t.value, t0Rest: 0, date: today });
     }
@@ -336,7 +336,7 @@ const BleScaleInputInner: React.FC<BleScaleInputInnerProps> = ({ route, navigati
           onPause();
         }
       };
-    }, [recordingState])
+    }, [recordingState, onPause])
   );
 
   // when the app is sent to the background, pause the recording

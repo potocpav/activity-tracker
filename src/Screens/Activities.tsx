@@ -52,7 +52,7 @@ const DraggableCard = ({ children, draggedCardIx, moveActivity, index, itemHeigh
     })
     .onUpdate((e) => {
       position.value = e.translationY;
-      draggedCardIx.value = { from: index, to: Math.max(0, Math.min(numberOfItems - 1, Math.round(e.translationY / itemHeight) + index)) };
+      draggedCardIx.set({ from: index, to: Math.max(0, Math.min(numberOfItems - 1, Math.round(e.translationY / itemHeight) + index)) });
     })
     .onEnd(() => {
       isPanning.value = false;
