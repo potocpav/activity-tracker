@@ -21,7 +21,7 @@ import {
 } from 'react-native-paper';
 import ActivityData from "./Screens/ActivityData";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { getTheme, getThemeVariant } from "./Model/Theme";
+import { useAppTheme, useThemeVariant } from "./Model/Theme";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import EditStat from "./Screens/EditStat";
 import BleConnectionModal from "./Components/BleConnectionModal";
@@ -48,7 +48,7 @@ const MD3BlackTheme = {
 };
 
 const App = () => {
-  const themeVariant = getThemeVariant();
+  const themeVariant = useThemeVariant();
   const blackBackground = useStore((state: any) => state.blackBackground);
   Appearance.setColorScheme(themeVariant);
 
@@ -63,8 +63,8 @@ const App = () => {
 
 const SubApp = () => {
   const Stack = createNativeStackNavigator(); 
-  const theme = getTheme();
-  const themeVariant = getThemeVariant();
+  const theme = useAppTheme();
+  const themeVariant = useThemeVariant();
   const blackBackground = useStore((state: any) => state.blackBackground);
 
   // Add missing fonts property to fix the TypeScript error

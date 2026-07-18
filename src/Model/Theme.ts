@@ -10,7 +10,7 @@ export const useWideDisplay = () : boolean => {
   return dimensions.width > 600;
 }
 
-export const getThemeVariant = () : "dark" | "light" => {
+export const useThemeVariant = () : "dark" | "light" => {
   const themeSettings = useStore((state: any) => state.theme);
   const systemScheme = useColorScheme();
   if (themeSettings === "system") {
@@ -20,15 +20,15 @@ export const getThemeVariant = () : "dark" | "light" => {
   }
 }
 
-export const getThemePalette = () : string[] => {
-  const themeVariant = getThemeVariant();
+export const useThemePalette = () : string[] => {
+  const themeVariant = useThemeVariant();
   return themeVariant === "dark" ? darkPalette : lightPalette;
 }
 
-export const getTheme = (primaryColor?: number) : MD3Theme => {
-  const palette = getThemePalette();
+export const useAppTheme = (primaryColor?: number) : MD3Theme => {
+  const palette = useThemePalette();
+  const theme = useTheme();
   if (primaryColor !== undefined) {
-    const theme = useTheme();
     return {
       ...theme,
       colors: {
@@ -36,7 +36,6 @@ export const getTheme = (primaryColor?: number) : MD3Theme => {
         primary: palette[primaryColor],
       },
     };
-  } else {
-    return useTheme();
   }
+  return theme;
 };

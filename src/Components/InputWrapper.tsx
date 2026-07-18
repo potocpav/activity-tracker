@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { View, Text } from "react-native";
 import Animated, { useSharedValue, withSequence, withTiming, withRepeat, useAnimatedStyle } from "react-native-reanimated";
-import { getTheme } from "../Model/Theme";
+import { useAppTheme } from "../Model/Theme";
 
 type InputWrapperProps = {
   children: React.ReactNode;
@@ -19,7 +19,7 @@ const TIME = 100;
 const OFFSET = 2;
 
 export const InputWrapper = ({ children, key, error, hint, ref }: InputWrapperProps) => {
-  const theme = getTheme();
+  const theme = useAppTheme();
   const offset = useSharedValue<number>(0);
   
   

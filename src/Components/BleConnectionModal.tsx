@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { Device } from "react-native-ble-plx";
 import useStore from "../Model/Store";
-import { getTheme, getThemeVariant } from "../Model/Theme";
+import { useAppTheme, useThemeVariant } from "../Model/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
 
@@ -18,8 +18,8 @@ type BleDeviceModalProps = {
 };
 
 const BleDeviceModal: FC<BleDeviceModalProps> = ({ navigation }) => {
-  const theme = getTheme();
-  const themeVariant = getThemeVariant();
+  const theme = useAppTheme();
+  const themeVariant = useThemeVariant();
   const allDevices = useStore((state: any) => state.allDevices);
   const connectToDevice = useStore((state: any) => state.connectToDevice);
 
@@ -63,7 +63,7 @@ type DeviceModalListItemProps = {
 
 
 const DeviceModalListItem: FC<DeviceModalListItemProps> = (props) => {
-  const theme = getTheme();
+  const theme = useAppTheme();
   const { item, connectToDevice, navigation } = props;
 
   const connectAndCloseModal = useCallback(() => {

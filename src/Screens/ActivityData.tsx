@@ -15,8 +15,8 @@ import { RenderTags } from "../Components/Tags";
 import TagMenu from "../Components/TagMenu";
 import { renderLongFormValue } from "../Model/Unit";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { getThemePalette, getThemeVariant } from "../Model/Theme";
-import { getTheme } from "../Model/Theme";
+import { useThemePalette, useThemeVariant } from "../Model/Theme";
+import { useAppTheme } from "../Model/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
 import EmptyPagePlaceholder from "../Components/EmptyPagePlaceholder";
@@ -356,12 +356,12 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
   const { activityPath, day } = route.params;
   const activity: ActivityType = useStore((state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId]);
   const deleteActivityDataPoints = useStore((state: any) => state.deleteActivityDataPoints);
-  const theme = getTheme(activity.color);
-  const themeVariant = getThemeVariant();
+  const theme = useAppTheme(activity.color);
+  const themeVariant = useThemeVariant();
   const [selectedPointUuids, setSelectedPointUuids] = useState<string[]>([]);
   const selectModeActive = selectedPointUuids.length > 0;
 
-  const palette = getThemePalette();
+  const palette = useThemePalette();
   const styles = getStyles(theme);
 
   // Tag filter state

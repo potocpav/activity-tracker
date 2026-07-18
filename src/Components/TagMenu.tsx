@@ -2,7 +2,7 @@ import React from "react";
 import { Menu } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Tag, ActivityType } from "../Model/StoreTypes";
-import { getTheme, getThemePalette } from "../Model/Theme";
+import { useAppTheme, useThemePalette } from "../Model/Theme";
 import { ChevronDownIcon, Button } from "./Element";
 
 interface TagMenuProps {
@@ -24,8 +24,8 @@ const TagMenu: React.FC<TagMenuProps> = ({
   activityTags,
   button,
 }) => {
-  const theme = getTheme(activity.color);
-  const palette = getThemePalette();
+  const theme = useAppTheme(activity.color);
+  const palette = useThemePalette();
   return (
     activityTags.length > 0 && (
       <Menu

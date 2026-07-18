@@ -9,7 +9,7 @@ import {
 import useStore from "../Model/Store";
 import { ActivityType, DataPoint, dateToDateList, Stat, WeekStart, DateList, ActivityTab, ActivityPath } from "../Model/StoreTypes";
 import { dayCmp, findZeroSlice, renderStatValue } from "../Model/Activity";
-import { getTheme, getThemePalette, getThemeVariant, useWideDisplay } from "../Model/Theme";
+import { useAppTheme, useThemePalette, useThemeVariant, useWideDisplay } from "../Model/Theme";
 import { SystemBars } from "react-native-edge-to-edge";
 import { SafeAreaView } from "react-native-safe-area-context";
 import EmptyPagePlaceholder from "../Components/EmptyPagePlaceholder";
@@ -253,15 +253,15 @@ const ActivityCard = ({
 }
 
 const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
-  const theme = getTheme();
-  const themeVariant = getThemeVariant();
+  const theme = useAppTheme();
+  const themeVariant = useThemeVariant();
   const activities = useStore((state: any) => state.activities);
   const weekStart = useStore((state: any) => state.weekStart);
   const dismissHint = useStore((state: any) => state.dismissHint);
   const setActivities = useStore((state: any) => state.setActivities);
   const setActivityTabName = useStore((state: any) => state.setActivityTabName);
 
-  const palette = getThemePalette();
+  const palette = useThemePalette();
   const wideDisplay = useWideDisplay();
   const dimensions = useWindowDimensions();
   const styles = getStyles(theme, wideDisplay, dimensions);

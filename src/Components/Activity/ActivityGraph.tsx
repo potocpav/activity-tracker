@@ -8,7 +8,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import TagMenu from "../TagMenu";
 import SubUnitMenu from "../SubUnitMenu";
 import DropdownMenu from "../DropdownMenu";
-import { getTheme } from "../../Model/Theme";
+import { useAppTheme } from "../../Model/Theme";
 import FlatListChart, { BarChart, BoxChart, barBoundingBox, ViewDimensions } from "../Chart/FlatListChart";
 import Animated, { FadeInUp, FadeOutUp } from "react-native-reanimated";
 import { renderLongFormValue, isSummable } from "../../Model/Unit";
@@ -20,7 +20,7 @@ const ActivityGraph = ({ activityPath, graphIndex }: { activityPath: ActivityPat
   const activity: ActivityType = useStore((state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId]);
   const graph = activity.graphs[graphIndex];
   const weekStart = useStore((state: any) => state.weekStart);
-  const theme = getTheme(activity.color);
+  const theme = useAppTheme(activity.color);
 
   const setActivityGraph = useStore((state: any) => state.setActivityGraph);
   const cloneActivityGraph = useStore((state: any) => state.cloneActivityGraph);

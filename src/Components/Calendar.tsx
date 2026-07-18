@@ -16,7 +16,7 @@ import {
 } from "../Model/StoreTypes";
 import { findZeroSlice, dayCmp, cmpDateList, extractStatValue, extractValue, binTime } from "../Model/Activity";
 import useStore from "../Model/Store";
-import { getTheme } from "../Model/Theme";
+import { useAppTheme } from "../Model/Theme";
 import { renderShortFormValue } from "../Model/Unit";
 
 type CalendarComponentProps = {
@@ -30,7 +30,7 @@ const ITEM_MARGIN = 2;
 const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, calendarIndex }) => {
   const activity: ActivityType = useStore((state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId]);
   const calendar = activity.calendars[calendarIndex];
-  const theme = getTheme(activity.color);
+  const theme = useAppTheme(activity.color);
   const dayBackground = theme.colors.primary;
   const weekStart = useStore((state: any) => state.weekStart);
   const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);

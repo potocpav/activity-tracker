@@ -7,7 +7,7 @@ import { version, migrate } from '../Model/Migrations';
 import { File, Paths, EncodingType } from 'expo-file-system';
 import * as DocumentPicker from 'expo-document-picker';
 import * as Sharing from 'expo-sharing';
-import { getTheme, getThemeVariant } from '../Model/Theme';
+import { useAppTheme, useThemeVariant } from '../Model/Theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { allHints, ActivityType, DateList, Unit, ActivityTab, stripUuids, generateUuids } from '../Model/StoreTypes';
 import { cmpDateList } from '../Model/Activity';
@@ -17,10 +17,10 @@ import { defaultGraphs, defaultCalendar, defaultStats } from '../Model/DefaultAc
 import * as Crypto from "expo-crypto";
 
 const Settings = () => {
-  const theme = getTheme();
+  const theme = useAppTheme();
   const navigation = useNavigation();
   const themeState = useStore((state: any) => state.theme);
-  const themeVariant = getThemeVariant();
+  const themeVariant = useThemeVariant();
   const blackBackground = useStore((state: any) => state.blackBackground);
   const setBlackBackground = useStore((state: any) => state.setBlackBackground);
   const weekStart = useStore((state: any) => state.weekStart);

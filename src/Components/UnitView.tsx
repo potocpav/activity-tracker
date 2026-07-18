@@ -3,7 +3,7 @@ import { TextInput, Dialog, Portal, List, SegmentedButtons } from "react-native-
 import { ClimbingGrade, DistanceUnit, SubUnit, SubUnitType, TimeUnit, WeightUnit } from "../Model/StoreTypes";
 import { useRef, useState } from "react";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { getTheme, useWideDisplay } from "../Model/Theme";
+import { useAppTheme, useWideDisplay } from "../Model/Theme";
 import { renderUnit, mapStringValue, uiaaGrades, vScaleGrades, numberToString, stringToNumber, ydsGrades, frenchGrades, fontGrades } from "../Model/Unit";
 import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -144,7 +144,7 @@ const subUnitProps = (subUnitType: SubUnitType, allUnits: SubUnit[], setAllUnits
 
 export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null, onChange: (unit: SubUnit | null) => void }) => {
   const [unitDialogVisible, setUnitDialogVisible] = useState(false);
-  const theme = getTheme();
+  const theme = useAppTheme();
 
   const [chosenUnitType, setChosenUnitType] = useState<SubUnitType | null>(unit?.type ?? null);
   const [allUnits, setAllUnits] = useState<SubUnit[]>((() => {
@@ -258,7 +258,7 @@ export const ValueEditor = ({
   onChange: (value: string) => void,
   setSubmitDisabled: (disabled: string | null) => void,
 }) => {
-  const theme = getTheme();
+  const theme = useAppTheme();
   const wideDisplay = useWideDisplay();
   const dimensions = useWindowDimensions();
   const itemHeight = 50 * dimensions.fontScale;

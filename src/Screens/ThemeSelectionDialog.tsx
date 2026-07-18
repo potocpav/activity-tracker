@@ -5,14 +5,14 @@ import { useNavigation } from '@react-navigation/native';
 import useStore from '../Model/Store';
 import { SystemBars } from 'react-native-edge-to-edge';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getThemeVariant } from '../Model/Theme';
+import { useThemeVariant } from '../Model/Theme';
 
 
 const ThemeSelectionDialog: React.FC = () => {
   const navigation = useNavigation();
   const themeState = useStore((state: any) => state.theme);
   const setThemeState = useStore((state: any) => state.setTheme);
-  const themeVariant = getThemeVariant();
+  const themeVariant = useThemeVariant();
 
 
   const handleThemeSelect = (value: string) => {

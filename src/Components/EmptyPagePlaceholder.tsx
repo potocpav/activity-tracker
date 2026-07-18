@@ -5,12 +5,12 @@ import {
   View,
 } from "react-native";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { getTheme } from "../Model/Theme";
+import { useAppTheme } from "../Model/Theme";
 
 const ITEM_HEIGHT = 60;
 
 const EmptyPagePlaceholder = ({ title, subtext }: { title: string, subtext: string }) => {
-  const theme = getTheme(); 
+  const theme = useAppTheme(); 
   const styles = getStyles(theme);
 
   return (

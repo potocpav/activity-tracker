@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  StyleSheet,
   Text,
   View,
   Alert,
@@ -11,7 +10,7 @@ import { DataPoint, ActivityType, Tag, dateListToDate, State, ActivityPath } fro
 import ActivitySummary from "./ActivitySummary";
 import { File, Paths, EncodingType } from "expo-file-system";
 import * as Sharing from 'expo-sharing';
-import { getTheme, getThemeVariant } from "../Model/Theme";
+import { useAppTheme, useThemeVariant } from "../Model/Theme";
 import { SystemBars } from "react-native-edge-to-edge";
 import Hint from "../Components/Hint";
 import { BleScaleIcon, ButtonRow, DotsIconButton, EditIconButton, PlusIconButton, Button } from "../Components/Element";
@@ -55,22 +54,12 @@ const renderCsv = (data: (string | number | null)[][]) => {
 }
 
 const ActivityInner: React.FC<{ activity: ActivityType, activityPath: ActivityPath, navigation: any }> = ({ activity, activityPath, navigation }) => {
-  const theme = getTheme(activity.color);
-  const themeVariant = getThemeVariant();
+  const theme = useAppTheme(activity.color);
+  const themeVariant = useThemeVariant();
   const [menuVisible, setMenuVisible] = React.useState(false);
   const duplicateActivity = useStore((state: any) => state.duplicateActivity);
   const deleteActivity = useStore((state: any) => state.deleteActivity);
   const dismissHint = useStore((state: any) => state.dismissHint);
-
-  if (!activity) {
-    return (
-      <View style={[styles.container, { backgroundColor: theme.colors.surfaceVariant }]}>
-        <View style={styles.errorContainer}>
-          <Text style={[styles.errorText, { color: theme.colors.onSurfaceVariant }]}>Activity not found</Text>
-        </View>
-      </View>
-    );
-  }
 
   const deleteActivityWrapper = () => {
     Alert.alert(
@@ -209,18 +198,4 @@ const ActivityInner: React.FC<{ activity: ActivityType, activityPath: ActivityPa
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  errorText: {
-    fontSize: 16,
-  },
-});
-
-export default Activity; 
+export default Activity;

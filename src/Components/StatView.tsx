@@ -3,11 +3,11 @@ import { Text, View, Pressable, StyleSheet } from "react-native";
 import { ActivityType, Stat } from "../Model/StoreTypes";
 import { renderStatValue } from "../Model/Activity";
 import useStore from "../Model/Store";
-import { getTheme } from "../Model/Theme";
+import { useAppTheme } from "../Model/Theme";
 import Animated, { LinearTransition, FadeIn, FadeOut } from "react-native-reanimated";
 
 const StatView = ({ stat, activity, onPress, sharedTransitionTag }: { stat: Stat, activity: ActivityType, onPress: () => void, sharedTransitionTag?: string }) => {
-    const theme = getTheme(activity.color);
+    const theme = useAppTheme(activity.color);
     const weekStart = useStore((state: any) => state.weekStart);
     const styles = getStyles(theme);
     

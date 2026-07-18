@@ -14,7 +14,7 @@ import useStore from "../Model/Store";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import ColorPicker from '../Components/ColorPicker';
-import { getTheme, getThemePalette, getThemeVariant } from "../Model/Theme";
+import { useAppTheme, useThemePalette, useThemeVariant } from "../Model/Theme";
 import { defaultCalendar, defaultGraphs, defaultStats, defaultBleScaleGraphs } from "../Model/DefaultActivity";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
@@ -40,7 +40,7 @@ const isSupersetOf = (set1: Set<string>, set2: Set<string>) => {
 };
 
 const ColorButton = ({ color, onPress }: { color: number, onPress: () => void }) => {
-  const theme = getTheme(color);
+  const theme = useAppTheme(color);
   return (
     <Button onPress={onPress}>
       <View style={{ width: 35, height: 35, borderRadius: 12, backgroundColor: theme.colors.primary, borderWidth: 1, borderColor: theme.colors.onBackground }} />
@@ -51,8 +51,8 @@ const ColorButton = ({ color, onPress }: { color: number, onPress: () => void })
 const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   const activityPath : ActivityPath = route.params.activityPath;
   const activity: ActivityType | null = useStore((state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId]) ?? null;
-  const themeVariant = getThemeVariant();
-  const palette = getThemePalette();
+  const themeVariant = useThemeVariant();
+  const palette = useThemePalette();
   const updateActivity = useStore((state: any) => state.updateActivity);
   const createActivity = useStore((state: any) => state.createActivity);
   const setTags = useStore((state: any) => state.setTags);
@@ -109,7 +109,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       Math.floor(Math.random() * palette.length) :
       activity.color
   );
-  const theme = getTheme(selectedColor);
+  const theme = useAppTheme(selectedColor);
   const styles = getStyles(theme);
   const [activityDescriptionInput, setActivityDescriptionInput] = useState(activity?.description ?? "");
 

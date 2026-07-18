@@ -1,6 +1,6 @@
 import { Text, StyleSheet, View } from "react-native";
 import { useState } from "react";
-import { getTheme } from "../Model/Theme";
+import { useAppTheme } from "../Model/Theme";
 import { MD3Theme } from "react-native-paper";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { Svg, Path } from "react-native-svg";
@@ -75,7 +75,7 @@ const hintInfo = (hint: HintType) => {
 
 const Hint = ({ hint, inline }: { hint: HintType, inline?: boolean }) => {
   const insets = useSafeAreaInsets();
-  const theme = getTheme();
+  const theme = useAppTheme();
   const styles = getStyles(theme, insets);
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);

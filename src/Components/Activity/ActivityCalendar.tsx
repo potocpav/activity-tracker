@@ -12,7 +12,7 @@ import TagMenu from "../TagMenu";
 import Calendar from "../Calendar";
 import ValueMenu from "../ValueMenu";
 import SubUnitMenu from "../SubUnitMenu";
-import { getTheme } from "../../Model/Theme";
+import { useAppTheme } from "../../Model/Theme";
 import { Dialog, Portal, TextInput } from "react-native-paper";
 import Hint from "../Hint";
 import { CheckButton, CopyButton, Button, DeleteIcon, ButtonRow } from "../Element";
@@ -32,7 +32,7 @@ export const formatDate = (date: Date) => {
 const ActivityCalendar = ({ navigation, activityPath, calendarIndex }: ActivityCalendarProps) => {
   const activity = useStore((state: State) => state.activities[activityPath.tabId].activities[activityPath.activityId]);
   const calendar = activity.calendars[calendarIndex];
-  const theme = getTheme(activity.color);
+  const theme = useAppTheme(activity.color);
 
   const setActivityCalendar = useStore((state: any) => state.setActivityCalendar);
   const cloneActivityCalendar = useStore((state: any) => state.cloneActivityCalendar);

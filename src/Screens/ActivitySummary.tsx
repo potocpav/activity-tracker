@@ -7,7 +7,7 @@ import { RenderTags } from "../Components/Tags";
 import ActivityGraph from "../Components/Activity/ActivityGraph";
 import ActivityCalendar from "../Components/Activity/ActivityCalendar";
 import StatView from "../Components/StatView";
-import { getTheme, getThemePalette } from "../Model/Theme";
+import { useAppTheme, useThemePalette } from "../Model/Theme";
 import Animated, { LinearTransition } from "react-native-reanimated";
 import Hint from "../Components/Hint";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -15,8 +15,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 const ActivitySummary = ({ navigation, activityPath }: { navigation: any, activityPath: ActivityPath }) => {
   const activity: ActivityType = useStore((state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId]);
   const dismissHint = useStore((state: any) => state.dismissHint);
-  const theme = getTheme(activity.color);
-  const palette = getThemePalette();
+  const theme = useAppTheme(activity.color);
+  const palette = useThemePalette();
   const styles = getStyles(theme);
 
   return (

@@ -13,7 +13,7 @@ import useStore from "../Model/Store";
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { CheckButton, CheckPlusButton, DeleteButton, ButtonRow, Button } from "../Components/Element";
 import { cmpDateList, formatDate } from "../Model/Activity";
-import { getTheme, getThemePalette, getThemeVariant } from "../Model/Theme";
+import { useAppTheme, useThemePalette, useThemeVariant } from "../Model/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
 import { numberToString, stringToNumber, renderUnit } from "../Model/Unit";
@@ -32,10 +32,10 @@ type EditDataPointProps = {
 const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   const { activityPath, dataPointIndex, newDataPoint, newDataPointDate, tags, newValue, newNote } = route.params;
   const activity: ActivityType = useStore((state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId]);
-  const theme = getTheme(activity.color);
+  const theme = useAppTheme(activity.color);
   const styles = getStyles(theme);
-  const themeVariant = getThemeVariant();
-  const palette = getThemePalette();
+  const themeVariant = useThemeVariant();
+  const palette = useThemePalette();
   const locale = Intl.DateTimeFormat().resolvedOptions().locale;
   const weekStart = useStore((state: any) => state.weekStart);
   const dismissHint = useStore((state: any) => state.dismissHint);

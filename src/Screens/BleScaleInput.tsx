@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import {StyleSheet, Text, Platform, View, AppState, useWindowDimensions} from "react-native";
 import useStore from "../Model/Store";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { getTheme, getThemePalette, getThemeVariant } from "../Model/Theme";
+import { useAppTheme, useThemePalette, useThemeVariant } from "../Model/Theme";
 import { ActivityType, BleScaleWorkoutState, DataPoint, dateToDateList, State, Tag } from "../Model/StoreTypes";
 import { MD3Theme, Button as PaperButton } from "react-native-paper";
 import { matchFont, Points, Text as SkiaText, vec, Canvas, Color, SkFont } from "@shopify/react-native-skia";
@@ -70,9 +70,9 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   const { activityPath } = route.params;
   const activity: ActivityType = useStore((state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId]);
   const appendActivityDataPoint = useStore((state: any) => state.appendActivityDataPoint);
-  const theme = getTheme(activity.color);
-  const themeVariant = getThemeVariant();
-  const palette = getThemePalette();
+  const theme = useAppTheme(activity.color);
+  const themeVariant = useThemeVariant();
+  const palette = useThemePalette();
   const today = dateToDateList(new Date());
 
   const styles = getStyles(theme);
