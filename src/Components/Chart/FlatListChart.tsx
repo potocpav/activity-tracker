@@ -312,8 +312,8 @@ export const BoxChart = ({
 
   const q0px = view.yToPx(q0);
   const q2px = view.yToPx(q2);
-  var q1px = Math.max(view.yToPx(q1), q2px + w);
-  var q3px = Math.min(view.yToPx(q3), q2px - w);
+  const q1px = Math.max(view.yToPx(q1), q2px + w);
+  const q3px = Math.min(view.yToPx(q3), q2px - w);
   const q4px = view.yToPx(q4);
 
   return (

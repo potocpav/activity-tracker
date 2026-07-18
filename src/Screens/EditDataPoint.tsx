@@ -164,7 +164,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
     }
 
     // all is OK, save the data point
-    var newValue: any;
+    let newValue: any;
     switch (activity.unit.type) {
       case "none":
         newValue = undefined;

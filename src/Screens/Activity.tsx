@@ -35,7 +35,7 @@ const Activity: React.FC<ActivityProps> = ({ navigation, route }) => {
 
 const renderCsv = (data: (string | number | null)[][]) => {
   return data.map((row) => {
-    var rowStr = "";
+    let rowStr = "";
     row.forEach((cell, ix) => {
       if (typeof cell === "string") {
         const escaped = cell.replace(/"/g, "\"\"");
@@ -99,7 +99,7 @@ const ActivityInner: React.FC<{ activity: ActivityType, activityPath: ActivityPa
     })();
     const tagNames = activity.tags.map((t: Tag) => t.name);
     const headerRow = ["Date", ...valueNames, ...tagNames];
-    var dataRows = activity.dataPoints.map((dp: DataPoint) => {
+    const dataRows = activity.dataPoints.map((dp: DataPoint) => {
       const values = (() => {
         switch (activity.unit.type) {
           case "none":

@@ -33,7 +33,7 @@ const BleDeviceModal: FC<BleDeviceModalProps> = ({ navigation }) => {
         />
       );
     },
-    [connectToDevice]
+    [connectToDevice, navigation]
   );
 
   return (
