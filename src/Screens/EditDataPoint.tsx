@@ -189,15 +189,15 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
     }
 
     const note = inputNote === "" ? {} : { "note": inputNote };
-    const newDataPoint: DataPoint = {
+    const newPoint: DataPoint = {
       uuid: Crypto.randomUUID(),
       date: inputDateList,
       ...(newValue === undefined ? {} : { value: newValue }),
       ...(inputTags.length > 0 ? { tags: inputTags } : {}),
       ...note,
     };
-    const newIndex = updateActivityDataPoint(activityPath, newDataPoint ? undefined : dataPointIndex, newDataPoint);
-    return { index: newIndex, dataPoint: newDataPoint };
+    const newIndex = updateActivityDataPoint(activityPath, newDataPoint ? undefined : dataPointIndex, newPoint);
+    return { index: newIndex, dataPoint: newPoint };
   };
 
   const duplicateDataPointWrapper = () => {
