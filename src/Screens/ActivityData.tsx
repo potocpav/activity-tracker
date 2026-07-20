@@ -50,6 +50,7 @@ const DataPointContainer = (props: {
   const isPanning = useSharedValue(false);
   const THRESHOLD = 200;
   const TOLERANCE = 10;
+  const onDelete = props.onDelete;
 
   const panGesture = Gesture.Pan()
     .enabled(props.selectModeActive !== true)
@@ -77,10 +78,10 @@ const DataPointContainer = (props: {
     isPanning: isPanning.value,
   }), (value, oldValue) => {
     if (Math.abs(value.position) > THRESHOLD && ((Math.abs(oldValue?.position ?? 0) <= THRESHOLD && !value.isPanning) || (!value.isPanning && oldValue?.isPanning))) {
-      if (props.onDelete) {
+      if (onDelete) {
         cancelAnimation(position);
         position.set(withSpring(1000 * Math.sign(value.position)));
-        scheduleOnRN(props.onDelete);
+        scheduleOnRN(onDelete);
       }
     }
   });

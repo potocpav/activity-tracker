@@ -1,14 +1,13 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, useWindowDimensions } from "react-native";
-import { 
-  DataPoint, 
+import {
   dateToDateList,
-  normalizeDateList, 
-  DateList, 
-  ActivityType, 
-  TagFilter, 
-  dateListToDate, 
-  SubUnit, 
+  normalizeDateList,
+  DateList,
+  ActivityType,
+  TagFilter,
+  dateListToDate,
+  SubUnit,
   statValueUnit,
   ActivityPath,
   State,
@@ -28,16 +27,141 @@ type CalendarComponentProps = {
 
 const ITEM_MARGIN = 2;
 
+type CalendarDayValue = {
+  day: DateList;
+  hasData: boolean;
+  hasFilteredData: boolean;
+  value: number | null;
+  firstFilteredIndex: number | null;
+  isWeekend: boolean;
+};
+
+type WeekColumnProps = {
+  weekIdx: number;
+  now: Date;
+  dayValues: CalendarDayValue[];
+  navigation: any;
+  activityPath: ActivityPath;
+  theme: ReturnType<typeof useAppTheme>;
+  styles: ReturnType<typeof getStyles>;
+  dayBackground: string;
+  subUnit: SubUnit;
+  positiveTags: string[];
+};
+
+const WeekColumnImpl: React.FC<WeekColumnProps> = ({
+  weekIdx,
+  now,
+  dayValues,
+  navigation,
+  activityPath,
+  theme,
+  styles,
+  dayBackground,
+  subUnit,
+  positiveTags,
+}) => {
+  const weekStart = useStore((state: any) => state.weekStart);
+  const unitType = useStore((state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId]?.unit.type);
+  const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);
+  const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
+  const dismissHint = useStore((state: any) => state.dismissHint);
+  const nowMs = now.getTime();
+  const itemWeekStart = binTime("week", nowMs, -weekIdx, weekStart);
+  return (
+    <View style={styles.weekColumn}>
+      <View style={styles.monthLabelContainer}>
+        {(itemWeekStart.getDate() <= 7 && itemWeekStart.getMonth() > 0) &&
+          <Text style={[styles.monthLabel, { color: theme.colors.onSurfaceVariant }]}>{`${itemWeekStart.toLocaleDateString('en-US', { month: 'short' })}`}</Text>}
+        {(itemWeekStart.getDate() <= 7 && itemWeekStart.getMonth() == 0) &&
+          <Text style={[styles.monthLabel, { color: theme.colors.onSurfaceVariant }]}>{`${itemWeekStart.toLocaleDateString('en-US', { year: 'numeric' })}`}</Text>}
+      </View>
+      {dayValues.map(({ day, hasData, hasFilteredData, value, firstFilteredIndex, isWeekend }, dayIdx) => (
+        <TouchableOpacity
+          key={dayIdx}
+          onLongPress={() => {
+            if (unitType === "none") {
+              dismissHint("quick_check_daily_activity");
+              if (hasFilteredData) {
+                deleteActivityDataPoint(activityPath, firstFilteredIndex);
+              } else {
+                updateActivityDataPoint(activityPath, undefined, { date: day, tags: positiveTags });
+              }
+            }
+          }}
+          onPress={() => {
+            if (hasData) {
+              navigation.navigate("ActivityData", { activityPath, day });
+            } else {
+              navigation.navigate("EditDataPoint", { activityPath, newDataPoint: true, newDataPointDate: day, tags: positiveTags });
+            }
+          }}
+          activeOpacity={0.3}
+        >
+          {(dayIdx == 0) &&
+          <Text style={[styles.dayNumber, { color: theme.colors.outline, backgroundColor: theme.colors.background, zIndex: 10 }]}>
+            {day[2]}
+          </Text>}
+
+          <View style={
+            {
+              ...styles.daySquareInternal,
+              backgroundColor: hasData ? dayBackground : "#888888",
+              opacity: hasFilteredData ? 1 : hasData ? (isWeekend ? 0.6 : 0.4) : (isWeekend ? 0.5 : 0.3),
+            }
+          }>
+          {hasFilteredData && <Text style={[styles.value, { color: theme.colors.background }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>
+            {value !== null ?
+              (unitType === "none" && value === 1 ?
+                "✓" :
+                renderShortFormValue(value, subUnit)) :
+              '-'}
+          </Text>}
+          </View>
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+};
+
+const dayValuesEqual = (a: CalendarDayValue[], b: CalendarDayValue[]): boolean => {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    const x = a[i], y = b[i];
+    if (
+      x.hasData !== y.hasData ||
+      x.hasFilteredData !== y.hasFilteredData ||
+      x.value !== y.value ||
+      x.firstFilteredIndex !== y.firstFilteredIndex ||
+      x.isWeekend !== y.isWeekend ||
+      x.day[0] !== y.day[0] || x.day[1] !== y.day[1] || x.day[2] !== y.day[2]
+    ) {
+      return false;
+    }
+  }
+  return true;
+};
+
+const WeekColumn = React.memo(WeekColumnImpl, (prev, next) =>
+  prev.weekIdx === next.weekIdx &&
+  prev.now === next.now &&
+  prev.navigation === next.navigation &&
+  prev.activityPath === next.activityPath &&
+  prev.theme === next.theme &&
+  prev.styles === next.styles &&
+  prev.dayBackground === next.dayBackground &&
+  prev.subUnit === next.subUnit &&
+  prev.positiveTags === next.positiveTags &&
+  dayValuesEqual(prev.dayValues, next.dayValues)
+);
+
 const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, calendarIndex }) => {
   const activity: ActivityType = useStore((state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId]);
   const calendar = activity.calendars[calendarIndex];
   const theme = useAppTheme(activity.color);
   const dayBackground = theme.colors.primary;
   const weekStart = useStore((state: any) => state.weekStart);
-  const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);
-  const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
   const dimensions = useWindowDimensions();
-  const dismissHint = useStore((state: any) => state.dismissHint);
 
   const itemWidth = 35 * dimensions.fontScale;
   const minWeekCount = Math.ceil(dimensions.width / itemWidth);
@@ -72,6 +196,39 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, 
       break;
   }
 
+  const nowDay = dateToDateList(now);
+
+  const computeWeekDayValues = (weekIdx: number): CalendarDayValue[] => {
+    const itemWeekStart = pastWeekStart(now, weekIdx);
+    const weekStartDay = itemWeekStart.getDay();
+    const days: CalendarDayValue[] = [];
+    for (let dayIdx = 0; dayIdx < 7; dayIdx++) {
+      const day = normalizeDateList([itemWeekStart.getFullYear(), itemWeekStart.getMonth() + 1, itemWeekStart.getDate() + dayIdx]);
+      if (cmpDateList(day, nowDay) > 0) {
+        break;
+      }
+      const [dayStart, dayEnd] = findZeroSlice(activity.dataPoints, (dp) => dayCmp(dp, day));
+      const filtered: [DateList, number][] = [];
+      let firstFilteredIndex: number | null = null;
+      for (let k = dayStart; k < dayEnd; k++) {
+        const v = extractValue(activity.dataPoints[k], calendar.tagFilters, calendar.subUnit);
+        if (v !== null) {
+          if (firstFilteredIndex === null) firstFilteredIndex = k;
+          filtered.push([activity.dataPoints[k].date, v]);
+        }
+      }
+      days.push({
+        day,
+        hasData: dayEnd > dayStart,
+        hasFilteredData: filtered.length > 0,
+        value: extractStatValue(filtered, calendar.value, "today", weekStart),
+        firstFilteredIndex,
+        isWeekend: [0, 6].includes((weekStartDay + dayIdx) % 7),
+      });
+    }
+    return days;
+  };
+
   return (
     <FlatList
       data={Array.from({ length: weekCount }, (_, i) => i)}
@@ -85,82 +242,20 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, 
       getItemLayout={(_, index) => (
         { length: itemWidth, offset: itemWidth * index, index }
       )}
-      renderItem={({ item: weekIdx }) => {
-        const itemWeekStart = pastWeekStart(now, weekIdx);
-        return (
-          <View style={styles.weekColumn} key={weekIdx}>
-            <View style={styles.monthLabelContainer}>
-              {(itemWeekStart.getDate() <= 7  && itemWeekStart.getMonth() > 0) &&
-                <Text style={[styles.monthLabel, { color: theme.colors.onSurfaceVariant }]}>{`${itemWeekStart.toLocaleDateString('en-US', { month: 'short' })}`}</Text>}
-              {(itemWeekStart.getDate() <= 7 && itemWeekStart.getMonth() == 0) &&
-                <Text style={[styles.monthLabel, { color: theme.colors.onSurfaceVariant }]}>{`${itemWeekStart.toLocaleDateString('en-US', { year: 'numeric' })}`}</Text>}
-            </View>
-            {[0, 1, 2, 3, 4, 5, 6].map((dayIdx) => {
-              const day = normalizeDateList([itemWeekStart.getFullYear(), itemWeekStart.getMonth() + 1, itemWeekStart.getDate() + dayIdx]);
-              if (cmpDateList(day, dateToDateList(now)) > 0) {
-                return;
-              }
-              const daySlice = findZeroSlice(activity.dataPoints, (dp) => dayCmp(dp, day));
-              const dayDataAndIndexUnfiltered: [DateList, number, number | null][] = 
-                activity.dataPoints
-                  .map((dp: DataPoint, i: number): [DataPoint, number] => [dp, i])
-                  .slice(...daySlice)
-                  .map(([dp, i]: [DataPoint, number]) => 
-                    [dp.date, i, extractValue(dp, calendar.tagFilters, calendar.subUnit)]);
-              const dayDataAndIndex = dayDataAndIndexUnfiltered
-                  .filter((v: any) => v[2] !== null);
-              const value = extractStatValue(dayDataAndIndex.map((v: any) => [v[0], v[2]]), calendar.value, "today", weekStart);
-              const hasData = dayDataAndIndexUnfiltered.length > 0;
-              const hasFilteredData = dayDataAndIndex.length > 0;
-              const isWeekend = [0, 6].includes((itemWeekStart.getDay() + dayIdx) % 7)
-              return (
-                <TouchableOpacity
-                  key={dayIdx}
-                  onLongPress={() => {
-                    if (activity.unit.type === "none") {
-                      dismissHint("quick_check_daily_activity");
-                      if (hasFilteredData) {
-                        deleteActivityDataPoint(activityPath, dayDataAndIndex[0][1]);
-                      } else {
-                        updateActivityDataPoint(activityPath, undefined, { date: day, tags: positiveTags });
-                      }
-                    }
-                  }}
-                  onPress={() => {
-                    if (hasData) {
-                      navigation.navigate("ActivityData", { activityPath, day });
-                    } else {
-                      navigation.navigate("EditDataPoint", { activityPath, newDataPoint: true, newDataPointDate: day, tags: positiveTags });
-                    }
-                  }}
-                  activeOpacity={0.3}
-                >
-                  {(dayIdx == 0) && 
-                  <Text style={[styles.dayNumber, { color: theme.colors.outline, backgroundColor: theme.colors.background, zIndex: 10 }]}>
-                    {day[2]}
-                  </Text>}
-
-                  <View style={
-                    {
-                      ...styles.daySquareInternal,
-                      backgroundColor: hasData ? dayBackground : "#888888",
-                      opacity: hasFilteredData ? 1 : hasData ? (isWeekend ? 0.6 : 0.4) : (isWeekend ? 0.5 : 0.3),
-                    }
-                  }>
-                  {hasFilteredData && <Text style={[styles.value, { color: theme.colors.background }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>
-                    {value !== null ? 
-                      (activity.unit.type === "none" && value === 1 ? 
-                        "✓" : 
-                        renderShortFormValue(value, subUnit)) : 
-                      '-'}
-                  </Text>}
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        );
-      }}
+      renderItem={({ item: weekIdx }) => (
+        <WeekColumn
+          weekIdx={weekIdx}
+          now={now}
+          dayValues={computeWeekDayValues(weekIdx)}
+          navigation={navigation}
+          activityPath={activityPath}
+          theme={theme}
+          styles={styles}
+          dayBackground={dayBackground}
+          subUnit={subUnit}
+          positiveTags={positiveTags}
+        />
+      )}
     />
   );
 };
