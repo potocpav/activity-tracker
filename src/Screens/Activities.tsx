@@ -7,7 +7,7 @@ import {
   FlatList,
 } from "react-native";
 import useStore from "../Model/Store";
-import { ActivityType, DataPoint, dateToDateList, Stat, WeekStart, DateList, ActivityTab, ActivityPath } from "../Model/StoreTypes";
+import { ActivityType, DataPoint, dateToDateList, Stat, ActivityTab, ActivityPath } from "../Model/StoreTypes";
 import { dayCmp, findZeroSlice, renderStatValue } from "../Model/Activity";
 import { useAppTheme, useThemePalette, useThemeVariant, useWideDisplay } from "../Model/Theme";
 import { useToday } from "../Model/useToday";
@@ -64,16 +64,14 @@ const DraggableCard = ({ children, draggedCardIx, moveActivity, index, itemHeigh
     } else if (draggedCardIx.value?.from == index) {
       // dropped
       if (draggedCardIx.value && !alreadyMoved.value) {
+        const dragged = draggedCardIx.value;
         alreadyMoved.set(true);
+
         position.set(withSpring(
           (draggedCardIx.value.to - index) * itemHeight, { stiffness: 10000, damping: 1000 },
-          () => {
-            if (draggedCardIx.value && draggedCardIx.value.from !== draggedCardIx.value.to) {
-              scheduleOnRN(
-                moveActivity,
-                draggedCardIx.value.from,
-                draggedCardIx.value.to
-              );
+          (cancelled) => {
+            if (cancelled && dragged && dragged.from !== dragged.to) {
+              scheduleOnRN(moveActivity, dragged.from, dragged.to);
             }
           }
         ));
@@ -106,31 +104,34 @@ const DraggableCard = ({ children, draggedCardIx, moveActivity, index, itemHeigh
 };
 
 const ActivityCard = ({
-  activity,
-  activityPath,
-  wideDisplay,
-  weekStart,
-  today,
+  tabId,
+  activityId,
   navigation,
-  styles,
-  palette,
   selectedActivities,
   setSelectedActivities
 }: {
-  activity: ActivityType,
-  activityPath: ActivityPath,
-  wideDisplay: boolean,
-  weekStart: WeekStart,
-  today: DateList,
+  tabId: number,
+  activityId: number,
   navigation: any,
-  styles: any,
-  palette: any
   selectedActivities: number[]
   setSelectedActivities: (activities: (activities: number[]) => number[]) => void
 }) => {
-  const index = activityPath.activityId;
+  const index = activityId;
+  const activityPath: ActivityPath = { tabId, activityId };
+  const activity = useStore((state: any) => state.activities[tabId]?.activities[activityId]) as ActivityType | undefined;
   const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
   const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);
+  const weekStart = useStore((state: any) => state.weekStart);
+  const wideDisplay = useWideDisplay();
+  const palette = useThemePalette();
+  const today = dateToDateList(useToday());
+  const theme = useAppTheme();
+  const dimensions = useWindowDimensions();
+  const styles = getStyles(theme, wideDisplay, dimensions);
+
+  if (!activity) {
+    return null;
+  }
 
   let stats;
   if (wideDisplay) {
@@ -257,16 +258,13 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   const theme = useAppTheme();
   const themeVariant = useThemeVariant();
   const activities = useStore((state: any) => state.activities);
-  const weekStart = useStore((state: any) => state.weekStart);
   const dismissHint = useStore((state: any) => state.dismissHint);
-  const setActivities = useStore((state: any) => state.setActivities);
+  const moveActivity = useStore((state: any) => state.moveActivity);
   const setActivityTabName = useStore((state: any) => state.setActivityTabName);
 
-  const palette = useThemePalette();
   const wideDisplay = useWideDisplay();
   const dimensions = useWindowDimensions();
   const styles = getStyles(theme, wideDisplay, dimensions);
-  const today = dateToDateList(useToday());
 
   // First page and last page are empty, with no data backing them up in the model.
   // First page corresponds to zeroth index in the activities array.
@@ -282,10 +280,6 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   const scrollY = useSharedValue(0);
   const draggedCardIx = useSharedValue<{ from: number, to: number } | null>(null);
   const itemHeight = 40 * dimensions.fontScale;
-
-  // React.useEffect(() => {
-  //   pagerViewRef.current?.setPageWithoutAnimation(currentTabId + 1);
-  // }, [currentTabId]);
 
   React.useEffect(() => {
     navigation.setOptions({
@@ -348,16 +342,8 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
     });
   }, [navigation, currentTabId, theme, activities, selectedActivities]);
 
-  const moveActivity = (from: number, to: number) => {
-    // swap activity into the new place
-    const as = activities[currentTabId].activities;
-    let newActivities: ActivityType[];
-    if (from < to) {
-      newActivities = [...as.slice(0, from), ...as.slice(from + 1, to + 1), as[from], ...as.slice(to + 1)];
-    } else {
-      newActivities = [...as.slice(0, to), as[from], ...as.slice(to, from), ...as.slice(from + 1)];
-    }
-    setActivities(currentTabId, newActivities);
+  const moveActivityAction = (from: number, to: number) => {
+    moveActivity(currentTabId, from, to);
     setSelectedActivities([]);
   };
 
@@ -406,21 +392,16 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
                   <DraggableCard
                     draggedCardIx={draggedCardIx}
                     index={index}
-                    moveActivity={moveActivity}
+                    moveActivity={moveActivityAction}
                     itemHeight={itemHeight}
                     numberOfItems={activityTab.activities.length}
                   >
                     <ActivityCard
-                      activity={item}
-                      activityPath={{ tabId, activityId: index }}
-                      wideDisplay={wideDisplay}
-                      weekStart={weekStart}
-                      today={today}
+                      tabId={tabId}
+                      activityId={index}
                       selectedActivities={selectedActivities}
                       setSelectedActivities={setSelectedActivities}
                       navigation={navigation}
-                      styles={styles}
-                      palette={palette}
                     />
                   </DraggableCard>
                 }

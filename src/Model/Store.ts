@@ -154,11 +154,27 @@ const useStore = create<State>()(
       },
 
       setActivities: (tabId: number, activities: ActivityType[]) => {
-        set((state: any) => ({ 
+        set((state: any) => ({
           activities: state.activities.map(
             (tab: ActivityTab, i: number) => i === tabId ? { ...tab, activities } : tab
-          ) 
+          )
         }));
+      },
+
+      moveActivity: (tabId: number, from: number, to: number) => {
+        set((state: any) => {
+          const oldTab = state.activities[tabId];
+          const as = oldTab.activities;
+          let newScreen: ActivityType[];
+          if (from < to) {
+            newScreen = [...as.slice(0, from), ...as.slice(from + 1, to + 1), as[from], ...as.slice(to + 1)];
+          } else {
+            newScreen = [...as.slice(0, to), as[from], ...as.slice(to, from), ...as.slice(from + 1)];
+          }
+          const newActivities = state.activities.slice(0);
+          newActivities[tabId] = { ...oldTab, activities: newScreen };
+          return { activities: newActivities };
+        });
       },
 
       addActivityTab: (tabName: string, activities: ActivityType[]) => {
