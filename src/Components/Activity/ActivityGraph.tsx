@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { View, Text, useWindowDimensions, StyleSheet, ToastAndroid, Pressable } from "react-native";
 import { Menu, Portal, Dialog, TextInput } from 'react-native-paper';
 import useStore from "../../Model/Store";
@@ -440,24 +440,27 @@ const ActivityChart = (
     items = binTimeSeries(graph.binSize as BinnableSize, filteredValues, weekStart).reverse();
   }
 
-  let unit: SubUnit;
-  if (graph.graphType === "bar-count") {
-    unit = { type: "count" };
-  } else if (graph.graphType === "bar-daily-mean") {
-    unit = { type: "percentage" };
-  } else {
-    switch (activityUnit.type) {
-      case "none":
-        unit = { type: "count" };
-        break;
-      case "single":
-        unit = activityUnit.unit;
-        break;
-      case "multiple":
-        unit = activityUnit.values.find((u) => u.name === graph.subUnit)?.unit ?? { type: "number", symbol: "n/a" };
-        break;
+  const unit: SubUnit = useMemo(() => {
+    let unit: SubUnit;
+    if (graph.graphType === "bar-count") {
+      unit = { type: "count" };
+    } else if (graph.graphType === "bar-daily-mean") {
+      unit = { type: "percentage" };
+    } else {
+      switch (activityUnit.type) {
+        case "none":
+          unit = { type: "count" };
+          break;
+        case "single":
+          unit = activityUnit.unit;
+          break;
+        case "multiple":
+          unit = activityUnit.values.find((u) => u.name === graph.subUnit)?.unit ?? { type: "number", symbol: "n/a" };
+          break;
+      }
     }
-  }
+    return unit;
+  }, [graph.graphType, activityUnit, graph.subUnit]);
 
   let selectionStats: Stats | null = null;
   if (selectedRange) {

@@ -72,6 +72,27 @@ type FlatListChartData = {
   setSelectedRange?: (range: { min: number, max: number } | null) => void,
 }
 
+const XAxisLabel = React.memo(({ label, binWidth, viewportHeight, xAxisHeight, gridLineColor }: {
+  label: string,
+  binWidth: number,
+  viewportHeight: number,
+  xAxisHeight: number,
+  gridLineColor: string,
+}) => (
+  <View style={{
+    position: 'absolute',
+    top: viewportHeight,
+    width: binWidth,
+    height: xAxisHeight,
+    alignItems: 'center',
+    paddingTop: 4,
+  }}>
+    <Text style={{ textAlign: 'center', fontSize: 10, color: gridLineColor }}>
+      {label}
+    </Text>
+  </View>
+));
+
 const FlatListChart = (
   {
     height,
@@ -115,6 +136,10 @@ const FlatListChart = (
   const itemViewDimensions = useMemo(
     () => ({ width: binWidth, height: viewportHeight, yToPx }),
     [binWidth, viewportHeight, yToPx]
+  );
+  const cellStyle = useMemo(
+    () => ({ top: topViewportPadding, width: binWidth, height: viewportHeight }),
+    [topViewportPadding, binWidth, viewportHeight]
   );
 
   const onLayout = React.useCallback(
@@ -217,28 +242,18 @@ const FlatListChart = (
               onScroll={(event) => {
                 scrollX.set(event.nativeEvent.contentOffset.x);
               }}
-              renderItem={({ item, index }) => {
-                const drawnElement = renderItem({ item, index, view: itemViewDimensions });
-                const xLabelElement = (
-                  <View style={{
-                    position: 'absolute',
-                    top: viewportHeight,
-                    width: binWidth,
-                    height: xAxisHeight,
-                    alignItems: 'center',
-                    paddingTop: 4,
-                  }}>
-                    <Text style={{ textAlign: 'center', fontSize: 10, color: gridLineColor }}>
-                      {itemLabel(item)}
-                    </Text>
-                  </View>);
-                return (
-                  <View style={{ top: topViewportPadding, width: binWidth, height: viewportHeight }}>
-                    {drawnElement}
-                    {xLabelElement}
-                  </View>
-                );
-              }}
+              renderItem={({ item, index }) => (
+                <View style={cellStyle}>
+                  {renderItem({ item, index, view: itemViewDimensions })}
+                  <XAxisLabel
+                    label={itemLabel(item)}
+                    binWidth={binWidth}
+                    viewportHeight={viewportHeight}
+                    xAxisHeight={xAxisHeight}
+                    gridLineColor={gridLineColor}
+                  />
+                </View>
+              )}
               keyExtractor={(item) => `${item.time.toString()}-${item.dayIndex?.toString() ?? ""}`}
               inverted={true}
               horizontal={true}
