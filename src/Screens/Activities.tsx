@@ -28,13 +28,16 @@ type ActivitiesProps = {
   navigation: any;
 };
 
-const DraggableCard = ({ children, draggedCardIx, moveActivity, index, itemHeight, numberOfItems }: {
-  children: React.ReactNode,
+const DraggableCard = ({ draggedCardIx, moveActivity, index, itemHeight, numberOfItems, tabId, navigation, selectedActivities, setSelectedActivities }: {
   draggedCardIx: SharedValue<{ from: number, to: number } | null>,
   moveActivity: (from: number, to: number) => void,
   index: number
   itemHeight: number
   numberOfItems: number
+  tabId: number
+  navigation: any
+  selectedActivities: number[]
+  setSelectedActivities: (activities: (activities: number[]) => number[]) => void
 }) => {
   const TOLERANCE = 100;
   const position = useSharedValue(0);
@@ -97,7 +100,13 @@ const DraggableCard = ({ children, draggedCardIx, moveActivity, index, itemHeigh
   return (
     <GestureDetector gesture={panGesture}>
       <Animated.View style={[animatedStyle, { height: itemHeight }]}>
-        {children}
+        <ActivityCard
+          tabId={tabId}
+          activityId={index}
+          navigation={navigation}
+          selectedActivities={selectedActivities}
+          setSelectedActivities={setSelectedActivities}
+        />
       </Animated.View>
     </GestureDetector>
   );
@@ -388,22 +397,18 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
                 onScroll={(event) => {
                   scrollY.set(event.nativeEvent.contentOffset.y);
                 }}
-                renderItem={({ item, index }) =>
+                renderItem={({ index }) =>
                   <DraggableCard
                     draggedCardIx={draggedCardIx}
                     index={index}
                     moveActivity={moveActivityAction}
                     itemHeight={itemHeight}
                     numberOfItems={activityTab.activities.length}
-                  >
-                    <ActivityCard
-                      tabId={tabId}
-                      activityId={index}
-                      selectedActivities={selectedActivities}
-                      setSelectedActivities={setSelectedActivities}
-                      navigation={navigation}
-                    />
-                  </DraggableCard>
+                    tabId={tabId}
+                    navigation={navigation}
+                    selectedActivities={selectedActivities}
+                    setSelectedActivities={setSelectedActivities}
+                  />
                 }
                 keyExtractor={(item) => item.uuid}
                 contentContainerStyle={styles.listContainer}
