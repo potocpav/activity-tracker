@@ -1,4 +1,4 @@
-import React, { Fragment, useRef, useState } from "react";
+import React, { Fragment, useRef, useState, useMemo, useCallback } from "react";
 import { View, Text, Platform, useWindowDimensions, FlatList, LayoutChangeEvent, LayoutRectangle } from "react-native";
 import { Canvas, matchFont, RoundedRect, Text as SkiaText, vec, Line } from "@shopify/react-native-skia";
 import { SubUnit } from "../../Model/StoreTypes";
@@ -109,10 +109,13 @@ const FlatListChart = (
   // make viewportWidth a multiple of binWidth
   const binWidth = viewportWidth / Math.round(viewportWidth / targetBinWidth);
 
-  const yToPx = (y: number) => {
+  const yToPx = useCallback((y: number) => {
     return viewportHeight - (y - yRange.min) * viewportHeight / (yRange.max - yRange.min);
-  }
-  const itemViewDimensions = { width: binWidth, height: viewportHeight, yToPx: yToPx };
+  }, [viewportHeight, yRange.min, yRange.max]);
+  const itemViewDimensions = useMemo(
+    () => ({ width: binWidth, height: viewportHeight, yToPx }),
+    [binWidth, viewportHeight, yToPx]
+  );
 
   const onLayout = React.useCallback(
     ({ nativeEvent: { layout } }: LayoutChangeEvent) => {
@@ -289,13 +292,11 @@ export const BarChart = ({
 export const BoxChart = ({
   view,
   values,
-  unit,
   color,
   surfaceColor,
 }: {
   view: ViewDimensions,
   values: number[],
-  unit: any,
   color: string,
   surfaceColor: string,
 }) => {

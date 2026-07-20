@@ -524,7 +524,7 @@ const ActivityChart = (
         <>
           {selectedRange && <SelectedRangeBox theme={theme} selectedRange={selectedRange} index={index} view={view} cornerRadius={10} />}
           {selectionStats?.regression && graph.binSize !== "point" && <RegressionLine theme={theme} regression={selectionStats.regression} time={item.time} view={view} weekStart={weekStart} binSize={graph.binSize} />}
-          <BoxChart view={view} values={item.values} unit={unit} color={theme.colors.primary} surfaceColor={theme.colors.surface} />
+          <BoxChart view={view} values={item.values} color={theme.colors.primary} surfaceColor={theme.colors.surface} />
         </>
       );
       itemBoundingBox = (item: any, itemWidthPx: number) => item.values.length > 0 ? {
