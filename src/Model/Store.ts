@@ -55,15 +55,15 @@ export const partialize = (state: State) => ({
 });
 
 const mapActivity = (state: State, activityPath: ActivityPath, f: (activity: ActivityType) => ActivityType) : {} | { activities: ActivityTab[] } => {
-  const oldActivity = state.activities[activityPath.tabId]?.activities[activityPath.activityId];
+  const oldTab = state.activities[activityPath.tabId];
+  const oldActivity = oldTab?.activities[activityPath.activityId];
   if (!oldActivity) {
     return {};
   }
-  const newActivity = f(oldActivity);
-  const newScreen = state.activities[activityPath.tabId].activities.slice(0);
-  newScreen[activityPath.activityId] = newActivity;
+  const newScreen = oldTab.activities.slice(0);
+  newScreen[activityPath.activityId] = f(oldActivity);
   const newActivities = state.activities.slice(0);
-  newActivities[activityPath.tabId].activities = newScreen;
+  newActivities[activityPath.tabId] = { ...oldTab, activities: newScreen };
   return { activities: newActivities };
 };
 
@@ -177,7 +177,8 @@ const useStore = create<State>()(
           ];
 
           const newActivities = state.activities.slice(0);
-          newActivities[activityPath.tabId].activities = newScreenActivities;
+          const oldTab = newActivities[activityPath.tabId];
+          newActivities[activityPath.tabId] = { ...oldTab, activities: newScreenActivities };
           return { activities: newActivities };
         });
       },
@@ -185,7 +186,10 @@ const useStore = create<State>()(
       deleteActivity: (activityPath: ActivityPath) => {
         set((state: any) => {
           const newActivities = state.activities.slice(0);
-          newActivities[activityPath.tabId].activities.splice(activityPath.activityId, 1);
+          const oldTab = newActivities[activityPath.tabId];
+          const newScreen = oldTab.activities.slice(0);
+          newScreen.splice(activityPath.activityId, 1);
+          newActivities[activityPath.tabId] = { ...oldTab, activities: newScreen };
           return trimEmptyTabs(newActivities, state.currentTabId);
         });
       },
@@ -204,7 +208,8 @@ const useStore = create<State>()(
             tabId = state.activities.length;
           } else {
             newActivities = state.activities.slice(0);
-            newActivities[tabId].activities.push(activity);
+            const oldTab = newActivities[tabId];
+            newActivities[tabId] = { ...oldTab, activities: [...oldTab.activities, activity] };
           }
           const {activities, currentTabId} = trimEmptyTabs(newActivities, tabId);
           tabId = currentTabId;
@@ -228,10 +233,12 @@ const useStore = create<State>()(
           } else {
             newActivities = state.activities.slice(0);
           }
-          const selectedActivities = newActivities[tabId].activities.filter((activity: ActivityType, index: number) => activityIds.includes(index));
-          const unselectedActivities = newActivities[tabId].activities.filter((activity: ActivityType, index: number) => !activityIds.includes(index));
-          newActivities[tabId].activities = unselectedActivities;
-          newActivities[toTabId].activities = [...newActivities[toTabId].activities, ...selectedActivities];
+          const fromTab = newActivities[tabId];
+          const selectedActivities = fromTab.activities.filter((activity: ActivityType, index: number) => activityIds.includes(index));
+          const unselectedActivities = fromTab.activities.filter((activity: ActivityType, index: number) => !activityIds.includes(index));
+          newActivities[tabId] = { ...fromTab, activities: unselectedActivities };
+          const toTab = newActivities[toTabId];
+          newActivities[toTabId] = { ...toTab, activities: [...toTab.activities, ...selectedActivities] };
           return trimEmptyTabs(newActivities, tabId);
         });
       },
