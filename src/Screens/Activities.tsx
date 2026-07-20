@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useMemo } from "react";
 import {
   StyleSheet,
   Text,
@@ -43,7 +43,7 @@ const DraggableCard = ({ draggedCardIx, moveActivity, index, itemHeight, numberO
   const position = useSharedValue(0);
   const isPanning = useSharedValue(false);
   const alreadyMoved = useSharedValue(false);
-  const panGesture = Gesture
+  const panGesture = useMemo(() => Gesture
     .Pan()
     .activateAfterLongPress(400)
     .activeOffsetY([-TOLERANCE, TOLERANCE])
@@ -59,7 +59,7 @@ const DraggableCard = ({ draggedCardIx, moveActivity, index, itemHeight, numberO
     })
     .onEnd(() => {
       isPanning.set(false);
-    });
+    }), [index, numberOfItems, itemHeight, draggedCardIx, position, isPanning, alreadyMoved]);
 
   const animatedStyle = useAnimatedStyle(() => {
     if (isPanning.value) {
