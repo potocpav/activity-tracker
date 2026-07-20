@@ -32,7 +32,6 @@ type CalendarDayValue = {
   hasData: boolean;
   hasFilteredData: boolean;
   value: number | null;
-  firstFilteredIndex: number | null;
   isWeekend: boolean;
 };
 
@@ -47,6 +46,7 @@ type WeekColumnProps = {
   dayBackground: string;
   subUnit: SubUnit;
   positiveTags: string[];
+  tagFilters: TagFilter[];
 };
 
 const WeekColumnImpl: React.FC<WeekColumnProps> = ({
@@ -60,11 +60,12 @@ const WeekColumnImpl: React.FC<WeekColumnProps> = ({
   dayBackground,
   subUnit,
   positiveTags,
+  tagFilters,
 }) => {
   const weekStart = useStore((state: any) => state.weekStart);
   const unitType = useStore((state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId]?.unit.type);
   const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);
-  const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
+  const deleteActivityDataPointByDate = useStore((state: any) => state.deleteActivityDataPointByDate);
   const dismissHint = useStore((state: any) => state.dismissHint);
   const nowMs = now.getTime();
   const itemWeekStart = binTime("week", nowMs, -weekIdx, weekStart);
@@ -76,14 +77,14 @@ const WeekColumnImpl: React.FC<WeekColumnProps> = ({
         {(itemWeekStart.getDate() <= 7 && itemWeekStart.getMonth() == 0) &&
           <Text style={[styles.monthLabel, { color: theme.colors.onSurfaceVariant }]}>{`${itemWeekStart.toLocaleDateString('en-US', { year: 'numeric' })}`}</Text>}
       </View>
-      {dayValues.map(({ day, hasData, hasFilteredData, value, firstFilteredIndex, isWeekend }, dayIdx) => (
+      {dayValues.map(({ day, hasData, hasFilteredData, value, isWeekend }, dayIdx) => (
         <TouchableOpacity
           key={dayIdx}
           onLongPress={() => {
             if (unitType === "none") {
               dismissHint("quick_check_daily_activity");
               if (hasFilteredData) {
-                deleteActivityDataPoint(activityPath, firstFilteredIndex);
+                deleteActivityDataPointByDate(activityPath, day, tagFilters);
               } else {
                 updateActivityDataPoint(activityPath, undefined, { date: day, tags: positiveTags });
               }
@@ -132,7 +133,6 @@ const dayValuesEqual = (a: CalendarDayValue[], b: CalendarDayValue[]): boolean =
       x.hasData !== y.hasData ||
       x.hasFilteredData !== y.hasFilteredData ||
       x.value !== y.value ||
-      x.firstFilteredIndex !== y.firstFilteredIndex ||
       x.isWeekend !== y.isWeekend ||
       x.day[0] !== y.day[0] || x.day[1] !== y.day[1] || x.day[2] !== y.day[2]
     ) {
@@ -152,6 +152,7 @@ const WeekColumn = React.memo(WeekColumnImpl, (prev, next) =>
   prev.dayBackground === next.dayBackground &&
   prev.subUnit === next.subUnit &&
   prev.positiveTags === next.positiveTags &&
+  prev.tagFilters === next.tagFilters &&
   dayValuesEqual(prev.dayValues, next.dayValues)
 );
 
@@ -209,11 +210,9 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, 
       }
       const [dayStart, dayEnd] = findZeroSlice(activity.dataPoints, (dp) => dayCmp(dp, day));
       const filtered: [DateList, number][] = [];
-      let firstFilteredIndex: number | null = null;
       for (let k = dayStart; k < dayEnd; k++) {
         const v = extractValue(activity.dataPoints[k], calendar.tagFilters, calendar.subUnit);
         if (v !== null) {
-          if (firstFilteredIndex === null) firstFilteredIndex = k;
           filtered.push([activity.dataPoints[k].date, v]);
         }
       }
@@ -222,7 +221,6 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, 
         hasData: dayEnd > dayStart,
         hasFilteredData: filtered.length > 0,
         value: extractStatValue(filtered, calendar.value, "today", weekStart),
-        firstFilteredIndex,
         isWeekend: [0, 6].includes((weekStartDay + dayIdx) % 7),
       });
     }
@@ -254,6 +252,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, 
           dayBackground={dayBackground}
           subUnit={subUnit}
           positiveTags={positiveTags}
+          tagFilters={calendar.tagFilters}
         />
       )}
     />

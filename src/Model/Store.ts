@@ -23,6 +23,7 @@ import {
   ActivityType,
   Tag,
   DataPoint,
+  DateList,
   SetTag,
   TagName,
   State,
@@ -37,7 +38,7 @@ import {
 import { areUnitsEqual } from "./Unit";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { findZeroSlice, dayCmp } from "./Activity";
+import { findZeroSlice, dayCmp, extractValue } from "./Activity";
 import { version, migrate } from "./Migrations";
 import * as Crypto from "expo-crypto";
 
@@ -660,11 +661,27 @@ const useStore = create<State>()(
       },
 
       deleteActivityDataPoint: (activityPath: ActivityPath, dataPointIndex: number) => {
-        set((state: State) => 
+        set((state: State) =>
           mapActivity(state, activityPath, (activity: ActivityType) => {
             const updatedDataPoints = [...activity.dataPoints];
             updatedDataPoints.splice(dataPointIndex, 1);
             return { ...activity, dataPoints: updatedDataPoints };
+          })
+        );
+      },
+
+      deleteActivityDataPointByDate: (activityPath: ActivityPath, date: DateList, tagFilters: TagFilter[]) => {
+        set((state: State) =>
+          mapActivity(state, activityPath, (activity: ActivityType) => {
+            const [dayStart, dayEnd] = findZeroSlice(activity.dataPoints, (dp) => dayCmp(dp, date));
+            for (let k = dayStart; k < dayEnd; k++) {
+              if (extractValue(activity.dataPoints[k], tagFilters, null) !== null) {
+                const updatedDataPoints = [...activity.dataPoints];
+                updatedDataPoints.splice(k, 1);
+                return { ...activity, dataPoints: updatedDataPoints };
+              }
+            }
+            return activity;
           })
         );
       },
