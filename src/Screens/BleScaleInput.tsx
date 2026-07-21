@@ -622,6 +622,7 @@ const BleScaleInputInner: React.FC<BleScaleInputInnerProps> = ({
                 theme={theme}
                 style={{ flex: 1, borderWidth: 1, borderColor: theme.colors.primary }}
                 selected={false}
+                enableSwipeToDelete={false}
               >
                 <LabeledValue label="Rep" theme={theme}>
                   <CenteredAnimatedText
@@ -661,6 +662,7 @@ const BleScaleInputInner: React.FC<BleScaleInputInnerProps> = ({
                 selectModeActive={false}
                 isSelected={false}
                 toggleSelection={() => {}}
+                enableSwipeToDelete={true}
               />
             </Animated.View>
           );

@@ -45,6 +45,7 @@ const DataPointContainer = (props: {
   onPress?: () => void;
   onLongPress?: () => void;
   selected: boolean;
+  enableSwipeToDelete: boolean;
   style?: any;
   theme: any;
 }) => {
@@ -55,6 +56,7 @@ const DataPointContainer = (props: {
   const onDelete = props.onDelete;
 
   const panGesture = Gesture.Pan()
+    .enabled(props.enableSwipeToDelete)
     .activeOffsetX([-TOLERANCE, TOLERANCE])
     .failOffsetY([-TOLERANCE, TOLERANCE])
     .onStart((e) => {
@@ -145,6 +147,7 @@ export const DataPointCardMultiContainer = (props: {
   onLongPress?: () => void;
   style?: any;
   selected: boolean;
+  enableSwipeToDelete: boolean;
 }) => {
   return (
     <DataPointContainer
@@ -154,6 +157,7 @@ export const DataPointCardMultiContainer = (props: {
       theme={props.theme}
       style={props.style}
       selected={props.selected}
+      enableSwipeToDelete={props.enableSwipeToDelete}
     >
       <View style={{ gap: 4 }}>
         <View
@@ -188,6 +192,7 @@ export const DataPointCardSingleContainer = (props: {
   onDelete?: () => void;
   style?: any;
   selected: boolean;
+  enableSwipeToDelete: boolean;
 }) => {
   return (
     <DataPointContainer
@@ -197,6 +202,7 @@ export const DataPointCardSingleContainer = (props: {
       theme={props.theme}
       style={props.style}
       selected={props.selected}
+      enableSwipeToDelete={props.enableSwipeToDelete}
     >
       <View style={{ flexDirection: "row", gap: 6, alignItems: "flex-start", justifyContent: "space-between" }}>
         <View
@@ -254,6 +260,7 @@ export const DataPointCard = ({
   selectModeActive,
   isSelected,
   toggleSelection,
+  enableSwipeToDelete,
 }: {
   activityPath: ActivityPath;
   i: number;
@@ -262,6 +269,7 @@ export const DataPointCard = ({
   selectModeActive: boolean;
   isSelected: boolean;
   toggleSelection: (uuids: string[]) => void;
+  enableSwipeToDelete: boolean;
 }) => {
   const { dataPoint, activityTags, unit, color } = useStore(
     useShallow((state: State) => {
@@ -309,6 +317,7 @@ export const DataPointCard = ({
       note={note}
       theme={theme}
       selected={isSelected}
+      enableSwipeToDelete={enableSwipeToDelete}
     >
       <LabeledValue label="Value" theme={theme}>
         <TextValue theme={theme}>
@@ -350,6 +359,7 @@ export const DataPointCard = ({
         note={note}
         theme={theme}
         selected={isSelected}
+        enableSwipeToDelete={enableSwipeToDelete}
       >
         {renderedValues}
       </DataPointCardMultiContainer>
@@ -607,6 +617,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
               selectModeActive={selectModeActive}
               isSelected={item.selected}
               toggleSelection={toggleSelection}
+              enableSwipeToDelete={false}
             />
           )}
         />
