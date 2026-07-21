@@ -2,6 +2,7 @@ import React, { useState, ReactElement } from "react";
 import { StyleSheet, Text, View, SectionList, Alert, BackHandler } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import useStore from "../Model/Store";
+import { useShallow } from "zustand/react/shallow";
 import { DataPoint, ActivityType, Tag, DateList, dateListToDate, ActivityPath, State } from "../Model/StoreTypes";
 import { cmpDateList, dayCmp, findZeroSlice, formatDate } from "../Model/Activity";
 import { RenderTags } from "../Components/Tags";
@@ -252,34 +253,42 @@ export const TextValue = (props: { children: string; theme: any }) => {
 };
 
 export const DataPointCard = ({
-  activity,
   activityPath,
   i,
   repNumber = undefined,
-  theme,
-  palette,
   navigation,
   selectModeActive,
   isSelected,
   toggleSelection,
 }: {
-  activity: ActivityType;
   activityPath: ActivityPath;
   i: number;
   repNumber?: number;
-  theme: any;
-  palette: any;
   navigation: any;
   selectModeActive: boolean;
   isSelected: boolean;
-  toggleSelection: () => void;
+  toggleSelection: (uuids: string[]) => void;
 }) => {
-  const dataPoint = activity.dataPoints[i];
+  const { dataPoint, activityTags, unit, color } = useStore(
+    useShallow((state: State) => {
+      const activity = state.activities[activityPath.tabId]?.activities[activityPath.activityId];
+      return {
+        dataPoint: activity.dataPoints[i],
+        activityTags: activity.tags,
+        unit: activity.unit,
+        color: activity.color,
+      };
+    }),
+  );
+  const theme = useAppTheme(color);
+  const palette = useThemePalette();
   const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
+
+  const toggleThisSelection = () => toggleSelection([dataPoint.uuid]);
 
   const tags = dataPoint.tags && (
     <RenderTags
-      tags={activity.tags.filter((t: Tag) => (dataPoint.tags ?? []).includes(t.name))}
+      tags={activityTags.filter((t: Tag) => (dataPoint.tags ?? []).includes(t.name))}
       theme={theme}
       palette={palette}
     />
@@ -289,7 +298,7 @@ export const DataPointCard = ({
 
   const onPress = () => {
     if (selectModeActive) {
-      toggleSelection();
+      toggleThisSelection();
     } else {
       navigation.navigate("EditDataPoint", { activityPath, inputData: { type: "edit", dataPoints: [dataPoint] } });
     }
@@ -300,7 +309,7 @@ export const DataPointCard = ({
   const renderSingleValue = () => (
     <DataPointCardSingleContainer
       onPress={onPress}
-      onLongPress={toggleSelection}
+      onLongPress={toggleThisSelection}
       onDelete={deleteDataPoint}
       tags={tags}
       note={note}
@@ -310,8 +319,8 @@ export const DataPointCard = ({
     >
       <LabeledValue label="Value" theme={theme}>
         <TextValue theme={theme}>
-          {typeof dataPoint.value === "number" && activity.unit.type === "single"
-            ? renderLongFormValue(dataPoint.value, activity.unit.unit)
+          {typeof dataPoint.value === "number" && unit.type === "single"
+            ? renderLongFormValue(dataPoint.value, unit.unit)
             : "✓"}
         </TextValue>
       </LabeledValue>
@@ -328,8 +337,8 @@ export const DataPointCard = ({
         </LabeledValue>,
       );
     }
-    if (activity.unit.type === "multiple") {
-      activity.unit.values.forEach(({ name, unit }) => {
+    if (unit.type === "multiple") {
+      unit.values.forEach(({ name, unit }) => {
         const value = (dataPoint.value as any)[name];
         const renderedValue = value !== undefined ? renderLongFormValue(value, unit) : "-";
         renderedValues.push(
@@ -342,7 +351,7 @@ export const DataPointCard = ({
     return (
       <DataPointCardMultiContainer
         onPress={onPress}
-        onLongPress={toggleSelection}
+        onLongPress={toggleThisSelection}
         onDelete={deleteDataPoint}
         tags={tags}
         note={note}
@@ -355,7 +364,7 @@ export const DataPointCard = ({
     );
   };
 
-  switch (activity.unit.type) {
+  switch (unit.type) {
     case "none":
       return renderSingleValue();
     case "single":
@@ -377,7 +386,6 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
   const selectModeActive = selectedPointUuids.length > 0;
   const today = useToday();
 
-  const palette = useThemePalette();
   const styles = getStyles(theme);
 
   // Tag filter state
@@ -582,15 +590,12 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
           }}
           renderItem={({ item: item }) => (
             <DataPointCard
-              activity={activity}
               activityPath={activityPath}
               i={item.index}
-              theme={theme}
-              palette={palette}
               navigation={navigation}
               selectModeActive={selectModeActive}
               isSelected={item.selected}
-              toggleSelection={() => toggleSelection([item.dataPoint.uuid])}
+              toggleSelection={toggleSelection}
             />
           )}
         />

@@ -655,12 +655,9 @@ const BleScaleInputInner: React.FC<BleScaleInputInnerProps> = ({
           return (
             <Animated.View>
               <DataPointCard
-                activity={activity}
                 activityPath={activityPath}
                 i={item.index}
                 repNumber={pastDataPoints.length - index}
-                theme={theme}
-                palette={palette}
                 navigation={navigation}
                 selectModeActive={false}
                 isSelected={false}

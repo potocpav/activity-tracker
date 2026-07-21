@@ -17,7 +17,6 @@ import { defaultGraphs, defaultCalendar, defaultStats } from "../Model/DefaultAc
 import * as Crypto from "expo-crypto";
 
 const Settings = () => {
-  const theme = useAppTheme();
   const navigation = useNavigation();
   const themeState = useStore((state: any) => state.theme);
   const themeVariant = useThemeVariant();
