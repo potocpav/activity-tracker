@@ -524,7 +524,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
           <Button
             onPress={() => setSelectedPointUuids(filteredDataPoints.map(([_, i]) => activity.dataPoints[i].uuid))}
           >
-            <MaterialCommunityIcons name="all-inclusive" size={24} color="white" />
+            <MaterialCommunityIcons name="checkbox-intermediate-variant" size={24} color="white" />
           </Button>
         )}
         <Button onPress={() => setSelectedPointUuids([])}>

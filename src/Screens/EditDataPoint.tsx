@@ -232,11 +232,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
       ToastAndroid.show("Data point saved", ToastAndroid.SHORT);
       navigation.replace("EditDataPoint", {
         activityPath,
-        newDataPoint: true,
-        newDataPointDate: res.dataPoint.date,
-        tags: res.dataPoint.tags,
-        newValue: res.dataPoint.value,
-        newNote: res.dataPoint.note,
+        inputData: { type: "new", dataPoint: res.dataPoint },
       });
     }
   };
@@ -261,8 +257,8 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
         inputData.type === "new"
           ? "New data point"
           : editingMultiple
-            ? `${dataPoints.length} data points`
-            : `${formatDate(dateListToDate(dataPoints[0].date))} point`,
+            ? `Editing ${dataPoints.length} data points`
+            : `Editing data point`,
       headerStyle: themeVariant == "light" ? { backgroundColor: theme.colors.primary } : undefined,
       headerTintColor: "#ffffff",
       headerRight: () => (
