@@ -1,19 +1,19 @@
-import React, { Fragment } from 'react';
-import { ScrollView, ToastAndroid, Alert, Linking } from 'react-native';
-import { List, Switch } from 'react-native-paper';
-import { useNavigation } from '@react-navigation/native';
-import useStore, { partialize } from '../Model/Store';
-import { version, migrate } from '../Model/Migrations';
-import { File, Paths, EncodingType } from 'expo-file-system';
-import * as DocumentPicker from 'expo-document-picker';
-import * as Sharing from 'expo-sharing';
-import { useAppTheme, useThemeVariant } from '../Model/Theme';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { allHints, ActivityType, DateList, Unit, ActivityTab, stripUuids, generateUuids } from '../Model/StoreTypes';
-import { cmpDateList } from '../Model/Activity';
-import { SystemBars } from 'react-native-edge-to-edge';
-import * as SQLite from 'expo-sqlite';
-import { defaultGraphs, defaultCalendar, defaultStats } from '../Model/DefaultActivity';
+import React, { Fragment } from "react";
+import { ScrollView, ToastAndroid, Alert, Linking } from "react-native";
+import { List, Switch } from "react-native-paper";
+import { useNavigation } from "@react-navigation/native";
+import useStore, { partialize } from "../Model/Store";
+import { version, migrate } from "../Model/Migrations";
+import { File, Paths, EncodingType } from "expo-file-system";
+import * as DocumentPicker from "expo-document-picker";
+import * as Sharing from "expo-sharing";
+import { useAppTheme, useThemeVariant } from "../Model/Theme";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { allHints, ActivityType, DateList, Unit, ActivityTab, stripUuids, generateUuids } from "../Model/StoreTypes";
+import { cmpDateList } from "../Model/Activity";
+import { SystemBars } from "react-native-edge-to-edge";
+import * as SQLite from "expo-sqlite";
+import { defaultGraphs, defaultCalendar, defaultStats } from "../Model/DefaultActivity";
 import * as Crypto from "expo-crypto";
 
 const Settings = () => {
@@ -34,15 +34,14 @@ const Settings = () => {
   const activateAllHints = useStore((state: any) => state.activateAllHints);
 
   const openThemeSelection = () => {
-    (navigation as any).navigate('ThemeSelection', { currentTheme: themeState });
+    (navigation as any).navigate("ThemeSelection", { currentTheme: themeState });
   };
 
-  
   const exportData = async () => {
-    const stateWithoutUuids = stripUuids({...state});
+    const stateWithoutUuids = stripUuids({ ...state });
     const data = JSON.stringify({ ...partialize(stateWithoutUuids), version: version }, null, 2);
     const date = new Date();
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = date.toISOString().split("T")[0];
 
     const file = new File(Paths.cache, `activities-${dateStr}.json`);
     try {
@@ -53,8 +52,8 @@ const Settings = () => {
       file.write(data, { encoding: EncodingType.UTF8 });
 
       await Sharing.shareAsync(file.uri, {
-        dialogTitle: 'Export Activities',
-        mimeType: 'application/json',
+        dialogTitle: "Export Activities",
+        mimeType: "application/json",
       });
     } catch (error) {
       console.error(error);
@@ -62,11 +61,11 @@ const Settings = () => {
     if (file.exists) {
       file.delete();
     }
-  }
+  };
 
   const importData = async () => {
     const result = await DocumentPicker.getDocumentAsync({
-      type: 'application/json',
+      type: "application/json",
       copyToCacheDirectory: true,
     });
     if (!result.canceled) {
@@ -74,7 +73,7 @@ const Settings = () => {
 
       try {
         const file = new File(asset.uri);
-        const contents = await file.text()
+        const contents = await file.text();
         const json = JSON.parse(contents);
 
         if (json.version === undefined) {
@@ -92,8 +91,8 @@ const Settings = () => {
             ...tab,
             activities: tab.activities.map((activity: ActivityType) => ({
               ...activity,
-              dataPoints: [...activity.dataPoints].sort((a, b) => cmpDateList(a.date, b.date))
-            }))
+              dataPoints: [...activity.dataPoints].sort((a, b) => cmpDateList(a.date, b.date)),
+            })),
           })),
         };
 
@@ -105,13 +104,12 @@ const Settings = () => {
         Alert.alert((error as Error).name, (error as Error).message);
         return;
       }
-
     }
-  }
+  };
 
   const importLoopHabitTrackerData = async () => {
     const result = await DocumentPicker.getDocumentAsync({
-      type: 'application/zip',
+      type: "application/zip",
       copyToCacheDirectory: true,
     });
     if (!result.canceled) {
@@ -119,8 +117,8 @@ const Settings = () => {
         const asset = result.assets[0];
         const file = new File(asset.uri);
         const db = SQLite.openDatabaseSync(file.uri);
-        const habits = db.getAllSync('SELECT * FROM Habits ORDER BY position ASC');
-        const repetitions = db.getAllSync('SELECT * FROM Repetitions ORDER BY timestamp ASC');
+        const habits = db.getAllSync("SELECT * FROM Habits ORDER BY position ASC");
+        const repetitions = db.getAllSync("SELECT * FROM Repetitions ORDER BY timestamp ASC");
 
         let activities: ActivityType[] = [];
 
@@ -149,7 +147,9 @@ const Settings = () => {
               }
             });
 
-          const unit: Unit = isNumeric ? { type: "single", unit: { type: "number", symbol: habit.unit } } : { type: "none" };
+          const unit: Unit = isNumeric
+            ? { type: "single", unit: { type: "number", symbol: habit.unit } }
+            : { type: "none" };
           const activity: ActivityType = {
             uuid: Crypto.randomUUID(),
             name: habit.name,
@@ -173,18 +173,18 @@ const Settings = () => {
         return;
       }
     }
-  }
+  };
 
   return (
     <Fragment>
-      <SystemBars style={themeVariant == 'light' ? "dark" : "light"} />
+      <SystemBars style={themeVariant == "light" ? "dark" : "light"} />
       <ScrollView showsVerticalScrollIndicator={false}>
-        <SafeAreaView style={{ }} edges={["left", "right", "bottom"]}>
+        <SafeAreaView style={{}} edges={["left", "right", "bottom"]}>
           <List.Section>
             <List.Subheader>Interface</List.Subheader>
             <List.Item
               title="Theme"
-              description={`Current theme: ${themeState === 'system' ? 'System' : themeState === 'light' ? 'Light' : 'Dark'}`}
+              description={`Current theme: ${themeState === "system" ? "System" : themeState === "light" ? "Light" : "Dark"}`}
               onPress={openThemeSelection}
               left={(props) => <List.Icon {...props} icon="theme-light-dark" />}
               right={(props) => <List.Icon {...props} icon="chevron-right" />}
@@ -195,16 +195,13 @@ const Settings = () => {
               onPress={() => setBlackBackground(!blackBackground)}
               left={(props) => <List.Icon {...props} icon="brightness-6" />}
               right={() => (
-                <Switch
-                  value={blackBackground}
-                  onValueChange={() => setBlackBackground(!blackBackground)}
-                />
+                <Switch value={blackBackground} onValueChange={() => setBlackBackground(!blackBackground)} />
               )}
             />
             <List.Item
               title="First day of the week"
-              description={weekStart == 'sunday' ? 'Sunday' : 'Monday'}
-              onPress={() => setWeekStart(weekStart == 'sunday' ? 'monday' : 'sunday')}
+              description={weekStart == "sunday" ? "Sunday" : "Monday"}
+              onPress={() => setWeekStart(weekStart == "sunday" ? "monday" : "sunday")}
               left={(props) => <List.Icon {...props} icon="calendar" />}
             />
           </List.Section>
@@ -238,23 +235,14 @@ const Settings = () => {
               description="Show hints to help you use the app."
               onPress={() => setShowHints(!showHints)}
               left={(props) => <List.Icon {...props} icon="lightbulb" />}
-              right={() => (
-                <Switch
-                  value={showHints}
-                  onValueChange={() => setShowHints(!showHints)}
-                />
-              )}
+              right={() => <Switch value={showHints} onValueChange={() => setShowHints(!showHints)} />}
             />
             <List.Item
               title="Activate all hints"
               description="Re-activate dismissed hints."
               onPress={activateAllHints}
               left={(props) => <List.Icon {...props} icon="lightbulb-group" />}
-              right={(props) => (
-                activeHints.length === allHints.length ? (
-                  <List.Icon {...props} icon="check" />
-                ) : null
-              )}
+              right={(props) => (activeHints.length === allHints.length ? <List.Icon {...props} icon="check" /> : null)}
             />
           </List.Section>
 
@@ -264,25 +252,27 @@ const Settings = () => {
               title="FAQ"
               left={(props) => <List.Icon {...props} icon="help-circle" />}
               right={(props) => <List.Icon {...props} icon="chevron-right" />}
-              onPress={() => Linking.openURL('https://potocpav.github.io/activity-tracker/faq')}
+              onPress={() => Linking.openURL("https://potocpav.github.io/activity-tracker/faq")}
             />
             <List.Item
               title="Privacy Policy"
               left={(props) => <List.Icon {...props} icon="shield-lock" />}
               right={(props) => <List.Icon {...props} icon="chevron-right" />}
-              onPress={() => Linking.openURL('https://potocpav.github.io/activity-tracker/privacy')}
+              onPress={() => Linking.openURL("https://potocpav.github.io/activity-tracker/privacy")}
             />
             <List.Item
               title="Google Play"
               left={(props) => <List.Icon {...props} icon="google-play" />}
               right={(props) => <List.Icon {...props} icon="chevron-right" />}
-              onPress={() => Linking.openURL('https://play.google.com/store/apps/details?id=com.pavelpotocek.activitytracker')}
+              onPress={() =>
+                Linking.openURL("https://play.google.com/store/apps/details?id=com.pavelpotocek.activitytracker")
+              }
             />
             <List.Item
               title="Visit us on GitHub"
               left={(props) => <List.Icon {...props} icon="github" />}
               right={(props) => <List.Icon {...props} icon="chevron-right" />}
-              onPress={() => Linking.openURL('https://github.com/potocpav/activity-tracker')}
+              onPress={() => Linking.openURL("https://github.com/potocpav/activity-tracker")}
             />
           </List.Section>
         </SafeAreaView>
@@ -291,4 +281,4 @@ const Settings = () => {
   );
 };
 
-export default Settings; 
+export default Settings;

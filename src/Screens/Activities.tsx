@@ -1,11 +1,5 @@
 import React, { useState, useRef, useMemo } from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  useWindowDimensions,
-  FlatList,
-} from "react-native";
+import { StyleSheet, Text, View, useWindowDimensions, FlatList } from "react-native";
 import useStore from "../Model/Store";
 import { ActivityType, DataPoint, dateToDateList, Stat, ActivityTab, ActivityPath } from "../Model/StoreTypes";
 import { dayCmp, findZeroSlice, renderStatValue } from "../Model/Activity";
@@ -17,9 +11,29 @@ import EmptyPagePlaceholder from "../Components/EmptyPagePlaceholder";
 import Hint from "../Components/Hint";
 import Inset from "../Components/SafeAreaInset";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { ButtonRow, CheckIcon, CloseIcon, DoubleCheckIcon, PlusIcon, PlusIconButton, Button, BleScaleIcon, CheckButton, CloseButton } from "../Components/Element";
-import PagerView from 'react-native-pager-view';
-import Animated, { FadeOut, FadeIn, SharedValue, useAnimatedReaction, useAnimatedStyle, useDerivedValue, useSharedValue, withSpring } from "react-native-reanimated";
+import {
+  ButtonRow,
+  CheckIcon,
+  CloseIcon,
+  DoubleCheckIcon,
+  PlusIcon,
+  PlusIconButton,
+  Button,
+  BleScaleIcon,
+  CheckButton,
+  CloseButton,
+} from "../Components/Element";
+import PagerView from "react-native-pager-view";
+import Animated, {
+  FadeOut,
+  FadeIn,
+  SharedValue,
+  useAnimatedReaction,
+  useAnimatedStyle,
+  useDerivedValue,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
 import { Gesture, GestureDetector, Pressable } from "react-native-gesture-handler";
 import { scheduleOnRN } from "react-native-worklets";
 import { Dialog, Portal, TextInput } from "react-native-paper";
@@ -28,56 +42,74 @@ type ActivitiesProps = {
   navigation: any;
 };
 
-const DraggableCard = ({ draggedCardIx, moveActivity, index, itemHeight, numberOfItems, tabId, navigation, selectedActivities, setSelectedActivities }: {
-  draggedCardIx: SharedValue<{ from: number, to: number } | null>,
-  moveActivity: (from: number, to: number) => void,
-  index: number
-  itemHeight: number
-  numberOfItems: number
-  tabId: number
-  navigation: any
-  selectedActivities: number[]
-  setSelectedActivities: (activities: (activities: number[]) => number[]) => void
+const DraggableCard = ({
+  draggedCardIx,
+  moveActivity,
+  index,
+  itemHeight,
+  numberOfItems,
+  tabId,
+  navigation,
+  selectedActivities,
+  setSelectedActivities,
+}: {
+  draggedCardIx: SharedValue<{ from: number; to: number } | null>;
+  moveActivity: (from: number, to: number) => void;
+  index: number;
+  itemHeight: number;
+  numberOfItems: number;
+  tabId: number;
+  navigation: any;
+  selectedActivities: number[];
+  setSelectedActivities: (activities: (activities: number[]) => number[]) => void;
 }) => {
   const TOLERANCE = 100;
   const position = useSharedValue(0);
   const isPanning = useSharedValue(false);
   const alreadyMoved = useSharedValue(false);
-  const panGesture = useMemo(() => Gesture
-    .Pan()
-    .activateAfterLongPress(400)
-    .activeOffsetY([-TOLERANCE, TOLERANCE])
-    .failOffsetX([-TOLERANCE, TOLERANCE])
-    .onStart((e) => {
-      position.set(e.translationY);
-      isPanning.set(true);
-      alreadyMoved.set(false);
-    })
-    .onUpdate((e) => {
-      position.set(e.translationY);
-      draggedCardIx.set({ from: index, to: Math.max(0, Math.min(numberOfItems - 1, Math.round(e.translationY / itemHeight) + index)) });
-    })
-    .onEnd(() => {
-      isPanning.set(false);
-    }), [index, numberOfItems, itemHeight, draggedCardIx, position, isPanning, alreadyMoved]);
+  const panGesture = useMemo(
+    () =>
+      Gesture.Pan()
+        .activateAfterLongPress(400)
+        .activeOffsetY([-TOLERANCE, TOLERANCE])
+        .failOffsetX([-TOLERANCE, TOLERANCE])
+        .onStart((e) => {
+          position.set(e.translationY);
+          isPanning.set(true);
+          alreadyMoved.set(false);
+        })
+        .onUpdate((e) => {
+          position.set(e.translationY);
+          draggedCardIx.set({
+            from: index,
+            to: Math.max(0, Math.min(numberOfItems - 1, Math.round(e.translationY / itemHeight) + index)),
+          });
+        })
+        .onEnd(() => {
+          isPanning.set(false);
+        }),
+    [index, numberOfItems, itemHeight, draggedCardIx, position, isPanning, alreadyMoved],
+  );
 
   const animatedStyle = useAnimatedStyle(() => {
     if (isPanning.value) {
-
     } else if (draggedCardIx.value?.from == index) {
       // dropped
       if (draggedCardIx.value && !alreadyMoved.value) {
         const dragged = draggedCardIx.value;
         alreadyMoved.set(true);
 
-        position.set(withSpring(
-          (draggedCardIx.value.to - index) * itemHeight, { stiffness: 10000, damping: 1000 },
-          (cancelled) => {
-            if (cancelled && dragged && dragged.from !== dragged.to) {
-              scheduleOnRN(moveActivity, dragged.from, dragged.to);
-            }
-          }
-        ));
+        position.set(
+          withSpring(
+            (draggedCardIx.value.to - index) * itemHeight,
+            { stiffness: 10000, damping: 1000 },
+            (cancelled) => {
+              if (cancelled && dragged && dragged.from !== dragged.to) {
+                scheduleOnRN(moveActivity, dragged.from, dragged.to);
+              }
+            },
+          ),
+        );
       }
     } else if (draggedCardIx.value !== null) {
       // drag in progress, but I am a non-dragged card
@@ -117,17 +149,18 @@ const ActivityCard = ({
   activityId,
   navigation,
   selectedActivities,
-  setSelectedActivities
+  setSelectedActivities,
 }: {
-  tabId: number,
-  activityId: number,
-  navigation: any,
-  selectedActivities: number[]
-  setSelectedActivities: (activities: (activities: number[]) => number[]) => void
+  tabId: number;
+  activityId: number;
+  navigation: any;
+  selectedActivities: number[];
+  setSelectedActivities: (activities: (activities: number[]) => number[]) => void;
 }) => {
   const index = activityId;
   const activityPath: ActivityPath = { tabId, activityId };
-  const activity = useStore((state: any) => state.activities[tabId]?.activities[activityId]) as ActivityType | undefined;
+  const activity = useStore((state: any) => state.activities[tabId]?.activities[activityId]) as
+    ActivityType | undefined;
   const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
   const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);
   const weekStart = useStore((state: any) => state.weekStart);
@@ -155,7 +188,7 @@ const ActivityCard = ({
   if (activity.unit.type === "none") {
     todayPointIndices = activity.dataPoints
       .map((_: DataPoint, i: number) => i)
-      .slice(...findZeroSlice(activity.dataPoints, (dp) => dayCmp(dp, today)))
+      .slice(...findZeroSlice(activity.dataPoints, (dp) => dayCmp(dp, today)));
   }
 
   const isSelected = selectedActivities.includes(activityPath.activityId);
@@ -168,10 +201,12 @@ const ActivityCard = ({
         return [...selected, index];
       }
     });
-  }
+  };
 
   return (
-    <Animated.View style={[styles.activityCard, { borderWidth: isSelected ? 2 : 0, borderColor: palette[activity.color] }]}>
+    <Animated.View
+      style={[styles.activityCard, { borderWidth: isSelected ? 2 : 0, borderColor: palette[activity.color] }]}
+    >
       <Pressable
         onLongPress={() => {
           toggleSelected();
@@ -179,7 +214,7 @@ const ActivityCard = ({
         delayLongPress={300}
         onPress={() => {
           if (selectedActivities.length === 0) {
-            navigation.navigate('Activity', { activityPath });
+            navigation.navigate("Activity", { activityPath });
           } else {
             toggleSelected();
           }
@@ -188,11 +223,17 @@ const ActivityCard = ({
         style={styles.activityRow}
       >
         <View style={styles.activityTitleContainer}>
-          <Text numberOfLines={1} style={[styles.activityTitle, { color: palette[activity.color] }]}>{activity.name}</Text>
+          <Text numberOfLines={1} style={[styles.activityTitle, { color: palette[activity.color] }]}>
+            {activity.name}
+          </Text>
         </View>
         {statValues.map((value, index) => (
           <View key={index} style={styles.activityValueContainer}>
-            <Text numberOfLines={1} adjustsFontSizeToFit style={[styles.activityValue, { color: palette[activity.color] }]}>
+            <Text
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              style={[styles.activityValue, { color: palette[activity.color] }]}
+            >
               {value}
             </Text>
           </View>
@@ -203,9 +244,12 @@ const ActivityCard = ({
           if (selectedActivities.length === 0) {
             if (activity.unit.type === "none") {
               if (todayPointIndices.length > 0) {
-                navigation.navigate('EditDataPoint', { activityPath, dataPointIndex: todayPointIndices[todayPointIndices.length - 1] });
+                navigation.navigate("EditDataPoint", {
+                  activityPath,
+                  dataPointIndex: todayPointIndices[todayPointIndices.length - 1],
+                });
               } else {
-                navigation.navigate('EditDataPoint', { activityPath, newDataPoint: true });
+                navigation.navigate("EditDataPoint", { activityPath, newDataPoint: true });
               }
             } else {
               switch (activity.special?.type ?? null) {
@@ -213,7 +257,7 @@ const ActivityCard = ({
                   navigation.navigate("BleScaleInput", { activityPath });
                   break;
                 case null:
-                  navigation.navigate('EditDataPoint', { activityPath, newDataPoint: true });
+                  navigation.navigate("EditDataPoint", { activityPath, newDataPoint: true });
                   break;
               }
             }
@@ -234,11 +278,14 @@ const ActivityCard = ({
             }
           }
         }}
-        style={({ pressed }) => [styles.addDataPointButton, {
-          opacity: pressed ? 0.5 : 1,
-        }]}
+        style={({ pressed }) => [
+          styles.addDataPointButton,
+          {
+            opacity: pressed ? 0.5 : 1,
+          },
+        ]}
       >
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           {(() => {
             if (activity.unit.type === "none") {
               if (todayPointIndices.length > 1) {
@@ -261,7 +308,7 @@ const ActivityCard = ({
       </Pressable>
     </Animated.View>
   );
-}
+};
 
 const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   const theme = useAppTheme();
@@ -281,73 +328,96 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   const setCurrentTabId = useStore((state: any) => state.setCurrentTabId);
   const moveActivitiesToTab = useStore((state: any) => state.moveActivitiesToTab);
   const [activityTabDialogVisible, setActivityTabDialogVisible] = useState(false);
-  const [activityTabDialogNameInput, setActivityTabDialogNameInput] = useState(activities[currentTabId]?.tabName ?? "Activities");
+  const [activityTabDialogNameInput, setActivityTabDialogNameInput] = useState(
+    activities[currentTabId]?.tabName ?? "Activities",
+  );
 
   const [selectedActivities, setSelectedActivities] = useState<number[]>([]);
   const pagerViewRef = useRef<PagerView>(null);
 
   const scrollY = useSharedValue(0);
-  const draggedCardIx = useSharedValue<{ from: number, to: number } | null>(null);
+  const draggedCardIx = useSharedValue<{ from: number; to: number } | null>(null);
   const itemHeight = 40 * dimensions.fontScale;
 
   React.useEffect(() => {
     navigation.setOptions({
       title: "Activities",
-      headerTitle: selectedActivities.length > 0 ? () => (
-        <Animated.View entering={FadeIn} exiting={FadeOut} style={{ flexDirection: 'row' }}>
-          <ButtonRow>
-            <Button onPress={() => setSelectedActivities([])}>
-              <MaterialCommunityIcons name="close" size={24} color={theme.colors.onSurface} />
-            </Button>
-            {(currentTabId > 0 || selectedActivities.length < activities[currentTabId].activities.length) && (
-              <Button onPress={() => {
-                moveActivitiesToTab(currentTabId, selectedActivities, currentTabId - 1);
-                setSelectedActivities([]);
-              }}>
-                <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onSurface} />
-              </Button>
-            )}
-            {(currentTabId < activities.length - 1 || selectedActivities.length < activities[currentTabId].activities.length) && (
-              <Button onPress={() => {
-                moveActivitiesToTab(currentTabId, selectedActivities, currentTabId + 1);
-                setSelectedActivities([]);
-              }}>
-                <MaterialCommunityIcons name="arrow-right" size={24} color={theme.colors.onSurface} />
-              </Button>
-            )}
-          </ButtonRow>
-        </Animated.View>
-      ) : () => (
-        <Animated.View entering={FadeIn} exiting={FadeOut} style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Button 
-            onPress={() => {
-              if (activities[currentTabId] !== undefined) {
-                setActivityTabDialogVisible(true);
-              }
-            }}
-            >
-              <Text style={{ color: theme.colors.onSurface, fontSize: 20 }}>
-                {activities[currentTabId]?.tabName ?? "Activities"}
-              </Text>
-            </Button>
-        </Animated.View>
-      ),
-      headerRight: selectedActivities.length === 0 ? () => (
-        <Animated.View key="unselected" entering={FadeIn} exiting={FadeOut}>
-          <ButtonRow>
-            <PlusIconButton onPress={() => {
-              dismissHint("hello");
-              navigation.navigate('EditActivity', { activityPath: { tabId: currentTabId, activityId: activities[currentTabId]?.activities?.length ?? 0 } });
-            }} color={theme.colors.onSurface} />
-            <Button onPress={() => {
-              dismissHint("hello");
-              navigation.navigate('Settings');
-            }}>
-              <MaterialCommunityIcons name="cog" size={24} color={theme.colors.onSurface} />
-            </Button>
-          </ButtonRow>
-        </Animated.View>
-      ) : undefined,
+      headerTitle:
+        selectedActivities.length > 0
+          ? () => (
+              <Animated.View entering={FadeIn} exiting={FadeOut} style={{ flexDirection: "row" }}>
+                <ButtonRow>
+                  <Button onPress={() => setSelectedActivities([])}>
+                    <MaterialCommunityIcons name="close" size={24} color={theme.colors.onSurface} />
+                  </Button>
+                  {(currentTabId > 0 || selectedActivities.length < activities[currentTabId].activities.length) && (
+                    <Button
+                      onPress={() => {
+                        moveActivitiesToTab(currentTabId, selectedActivities, currentTabId - 1);
+                        setSelectedActivities([]);
+                      }}
+                    >
+                      <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onSurface} />
+                    </Button>
+                  )}
+                  {(currentTabId < activities.length - 1 ||
+                    selectedActivities.length < activities[currentTabId].activities.length) && (
+                    <Button
+                      onPress={() => {
+                        moveActivitiesToTab(currentTabId, selectedActivities, currentTabId + 1);
+                        setSelectedActivities([]);
+                      }}
+                    >
+                      <MaterialCommunityIcons name="arrow-right" size={24} color={theme.colors.onSurface} />
+                    </Button>
+                  )}
+                </ButtonRow>
+              </Animated.View>
+            )
+          : () => (
+              <Animated.View entering={FadeIn} exiting={FadeOut} style={{ flexDirection: "row", alignItems: "center" }}>
+                <Button
+                  onPress={() => {
+                    if (activities[currentTabId] !== undefined) {
+                      setActivityTabDialogVisible(true);
+                    }
+                  }}
+                >
+                  <Text style={{ color: theme.colors.onSurface, fontSize: 20 }}>
+                    {activities[currentTabId]?.tabName ?? "Activities"}
+                  </Text>
+                </Button>
+              </Animated.View>
+            ),
+      headerRight:
+        selectedActivities.length === 0
+          ? () => (
+              <Animated.View key="unselected" entering={FadeIn} exiting={FadeOut}>
+                <ButtonRow>
+                  <PlusIconButton
+                    onPress={() => {
+                      dismissHint("hello");
+                      navigation.navigate("EditActivity", {
+                        activityPath: {
+                          tabId: currentTabId,
+                          activityId: activities[currentTabId]?.activities?.length ?? 0,
+                        },
+                      });
+                    }}
+                    color={theme.colors.onSurface}
+                  />
+                  <Button
+                    onPress={() => {
+                      dismissHint("hello");
+                      navigation.navigate("Settings");
+                    }}
+                  >
+                    <MaterialCommunityIcons name="cog" size={24} color={theme.colors.onSurface} />
+                  </Button>
+                </ButtonRow>
+              </Animated.View>
+            )
+          : undefined,
     });
   }, [navigation, currentTabId, theme, activities, selectedActivities]);
 
@@ -356,22 +426,23 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
     setSelectedActivities([]);
   };
 
-  useAnimatedReaction(() => {
-  }, () => {
-    draggedCardIx.set(null);
-  }, [activities]);
+  useAnimatedReaction(
+    () => {},
+    () => {
+      draggedCardIx.set(null);
+    },
+    [activities],
+  );
 
   return (
     <SafeAreaView style={[styles.container]} edges={["left", "right"]}>
-      <SystemBars style={themeVariant == 'light' ? "dark" : "light"} />
+      <SystemBars style={themeVariant == "light" ? "dark" : "light"} />
       <Hint hint="hello" />
-      <View style={{ position: 'absolute', top: 100, left: 0, right: 0 }}>
-        {activities.length >= 6 && (
-          <Hint hint="reorder_activities" />
-        )}
+      <View style={{ position: "absolute", top: 100, left: 0, right: 0 }}>
+        {activities.length >= 6 && <Hint hint="reorder_activities" />}
       </View>
-      <View style={{ position: 'absolute', top: -20, left: 0, right: 0, zIndex: 20 }}>
-        <Text style={{ color: 'black' }}>Hello, world!</Text>
+      <View style={{ position: "absolute", top: -20, left: 0, right: 0, zIndex: 20 }}>
+        <Text style={{ color: "black" }}>Hello, world!</Text>
       </View>
       <PagerView
         ref={pagerViewRef}
@@ -397,7 +468,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
                 onScroll={(event) => {
                   scrollY.set(event.nativeEvent.contentOffset.y);
                 }}
-                renderItem={({ index }) =>
+                renderItem={({ index }) => (
                   <DraggableCard
                     draggedCardIx={draggedCardIx}
                     index={index}
@@ -409,7 +480,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
                     selectedActivities={selectedActivities}
                     setSelectedActivities={setSelectedActivities}
                   />
-                }
+                )}
                 keyExtractor={(item) => item.uuid}
                 contentContainerStyle={styles.listContainer}
                 ListFooterComponent={() => <Inset type="bottom" />}
@@ -424,19 +495,27 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
       <Portal>
         <Dialog visible={activityTabDialogVisible} onDismiss={() => setActivityTabDialogVisible(false)}>
           <Dialog.Content>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
               <View style={{ flex: 1 }}>
-                <TextInput label="Tab Name" defaultValue={activityTabDialogNameInput} onChangeText={setActivityTabDialogNameInput} mode="outlined" />
+                <TextInput
+                  label="Tab Name"
+                  defaultValue={activityTabDialogNameInput}
+                  onChangeText={setActivityTabDialogNameInput}
+                  mode="outlined"
+                />
               </View>
             </View>
           </Dialog.Content>
           <Dialog.Actions>
             <ButtonRow>
               <CloseButton onPress={() => setActivityTabDialogVisible(false)} color={theme.colors.onSurface} />
-              <CheckButton onPress={() => {
-                setActivityTabName(currentTabId, activityTabDialogNameInput);
-                setActivityTabDialogVisible(false);
-              }} color={theme.colors.onSurface} />
+              <CheckButton
+                onPress={() => {
+                  setActivityTabName(currentTabId, activityTabDialogNameInput);
+                  setActivityTabDialogVisible(false);
+                }}
+                color={theme.colors.onSurface}
+              />
             </ButtonRow>
           </Dialog.Actions>
         </Dialog>
@@ -445,58 +524,59 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   );
 };
 
-const getStyles = (theme: any, wideDisplay: boolean, dimensions: any) => StyleSheet.create({
-  menuContainer: {
-    position: 'absolute',
-    top: 10,
-    right: 0,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.elevation.background,
-    paddingTop: 2,
-  },
-  listContainer: {
-    padding: 2,
-  },
-  activityCard: {
-    flex: 1,
-    backgroundColor: theme.colors.elevation.level1,
-    elevation: 1,
-    margin: 2,
-    borderRadius: 2,
-    flexDirection: 'row',
-  },
-  activityRow: {
-    paddingHorizontal: 10 * dimensions.fontScale,
-    flex: 1,
-    flexDirection: 'row',
-    gap: 4,
-  },
-  activityTitleContainer: {
-    flex: 1,
+const getStyles = (theme: any, wideDisplay: boolean, dimensions: any) =>
+  StyleSheet.create({
+    menuContainer: {
+      position: "absolute",
+      top: 10,
+      right: 0,
+    },
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.elevation.background,
+      paddingTop: 2,
+    },
+    listContainer: {
+      padding: 2,
+    },
+    activityCard: {
+      flex: 1,
+      backgroundColor: theme.colors.elevation.level1,
+      elevation: 1,
+      margin: 2,
+      borderRadius: 2,
+      flexDirection: "row",
+    },
+    activityRow: {
+      paddingHorizontal: 10 * dimensions.fontScale,
+      flex: 1,
+      flexDirection: "row",
+      gap: 4,
+    },
+    activityTitleContainer: {
+      flex: 1,
 
-    justifyContent: 'center',
-  },
-  activityValueContainer: {
-    width: wideDisplay ? '10%' : '25%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  addDataPointButton: {
-    width: 45,
-  },
-  activityTitle: {
-    fontSize: 16,
-    width: '60%',
-  },
-  activityValue: {
-    fontSize: 16,
-  },
-  menuAnchor: {
-    width: 1,
-    height: 1,
-  },
-});
+      justifyContent: "center",
+    },
+    activityValueContainer: {
+      width: wideDisplay ? "10%" : "25%",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    addDataPointButton: {
+      width: 45,
+    },
+    activityTitle: {
+      fontSize: 16,
+      width: "60%",
+    },
+    activityValue: {
+      fontSize: 16,
+    },
+    menuAnchor: {
+      width: 1,
+      height: 1,
+    },
+  });
 
-export default Activities; 
+export default Activities;

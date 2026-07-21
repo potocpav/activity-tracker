@@ -2,17 +2,29 @@ import { Text, View, ScrollView, Pressable, Modal, FlatList, useWindowDimensions
 import { TextInput, Dialog, Portal, List, SegmentedButtons } from "react-native-paper";
 import { ClimbingGrade, DistanceUnit, SubUnit, SubUnitType, TimeUnit, WeightUnit } from "../Model/StoreTypes";
 import { useRef, useState } from "react";
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useAppTheme, useWideDisplay } from "../Model/Theme";
-import { renderUnit, mapStringValue, uiaaGrades, vScaleGrades, numberToString, stringToNumber, ydsGrades, frenchGrades, fontGrades } from "../Model/Unit";
+import {
+  renderUnit,
+  mapStringValue,
+  uiaaGrades,
+  vScaleGrades,
+  numberToString,
+  stringToNumber,
+  ydsGrades,
+  frenchGrades,
+  fontGrades,
+} from "../Model/Unit";
 import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CheckButton, CloseButton, MinusIcon, PlusIcon, Button } from "./Element";
-import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
+import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 
-
-const subUnitProps = (subUnitType: SubUnitType, allUnits: SubUnit[], setAllUnits: (units: SubUnit[]) => void): { title: string, icon: string, description: string | null, children: React.ReactNode | null } => {
-
+const subUnitProps = (
+  subUnitType: SubUnitType,
+  allUnits: SubUnit[],
+  setAllUnits: (units: SubUnit[]) => void,
+): { title: string; icon: string; description: string | null; children: React.ReactNode | null } => {
   switch (subUnitType) {
     case "count":
       return {
@@ -36,17 +48,26 @@ const subUnitProps = (subUnitType: SubUnitType, allUnits: SubUnit[], setAllUnits
         children: (
           <View style={{ gap: 10 }}>
             <SegmentedButtons
-              value={allUnits.find(unit => unit.type === subUnitType)?.unit ?? ""}
-              onValueChange={value => { setAllUnits(allUnits.map(unit => unit.type === subUnitType ? { ...unit, unit: value as DistanceUnit } : unit)) }}
+              value={allUnits.find((unit) => unit.type === subUnitType)?.unit ?? ""}
+              onValueChange={(value) => {
+                setAllUnits(
+                  allUnits.map((unit) => (unit.type === subUnitType ? { ...unit, unit: value as DistanceUnit } : unit)),
+                );
+              }}
               buttons={[
                 { value: "mm", label: "mm" },
                 { value: "cm", label: "cm" },
                 { value: "m", label: "m" },
                 { value: "km", label: "km" },
-              ]} />
+              ]}
+            />
             <SegmentedButtons
-              value={allUnits.find(unit => unit.type === subUnitType)?.unit ?? ""}
-              onValueChange={value => { setAllUnits(allUnits.map(unit => unit.type === subUnitType ? { ...unit, unit: value as DistanceUnit } : unit)) }}
+              value={allUnits.find((unit) => unit.type === subUnitType)?.unit ?? ""}
+              onValueChange={(value) => {
+                setAllUnits(
+                  allUnits.map((unit) => (unit.type === subUnitType ? { ...unit, unit: value as DistanceUnit } : unit)),
+                );
+              }}
               buttons={[
                 { value: "in", label: "in" },
                 { value: "ft", label: "ft" },
@@ -65,15 +86,24 @@ const subUnitProps = (subUnitType: SubUnitType, allUnits: SubUnit[], setAllUnits
         children: (
           <View style={{ gap: 10 }}>
             <SegmentedButtons
-              value={allUnits.find(unit => unit.type === subUnitType)?.unit ?? ""}
-              onValueChange={value => { setAllUnits(allUnits.map(unit => unit.type === subUnitType ? { ...unit, unit: value as WeightUnit } : unit)) }}
+              value={allUnits.find((unit) => unit.type === subUnitType)?.unit ?? ""}
+              onValueChange={(value) => {
+                setAllUnits(
+                  allUnits.map((unit) => (unit.type === subUnitType ? { ...unit, unit: value as WeightUnit } : unit)),
+                );
+              }}
               buttons={[
                 { value: "g", label: "g" },
                 { value: "kg", label: "kg" },
-              ]} />
+              ]}
+            />
             <SegmentedButtons
-              value={allUnits.find(unit => unit.type === subUnitType)?.unit ?? ""}
-              onValueChange={value => { setAllUnits(allUnits.map(unit => unit.type === subUnitType ? { ...unit, unit: value as WeightUnit } : unit)) }}
+              value={allUnits.find((unit) => unit.type === subUnitType)?.unit ?? ""}
+              onValueChange={(value) => {
+                setAllUnits(
+                  allUnits.map((unit) => (unit.type === subUnitType ? { ...unit, unit: value as WeightUnit } : unit)),
+                );
+              }}
               buttons={[
                 { value: "oz", label: "oz" },
                 { value: "lb", label: "lb" },
@@ -89,12 +119,17 @@ const subUnitProps = (subUnitType: SubUnitType, allUnits: SubUnit[], setAllUnits
         description: null,
         children: (
           <SegmentedButtons
-            value={allUnits.find(unit => unit.type === subUnitType)?.unit ?? ""}
-            onValueChange={value => { setAllUnits(allUnits.map(unit => unit.type === subUnitType ? { ...unit, unit: value as TimeUnit } : unit)) }}
+            value={allUnits.find((unit) => unit.type === subUnitType)?.unit ?? ""}
+            onValueChange={(value) => {
+              setAllUnits(
+                allUnits.map((unit) => (unit.type === subUnitType ? { ...unit, unit: value as TimeUnit } : unit)),
+              );
+            }}
             buttons={[
               { value: "seconds", label: "seconds" },
               { value: "hours", label: "hours" },
-            ]} />
+            ]}
+          />
         ),
       };
     case "climbing_grade":
@@ -105,16 +140,29 @@ const subUnitProps = (subUnitType: SubUnitType, allUnits: SubUnit[], setAllUnits
         children: (
           <View style={{ gap: 10 }}>
             <SegmentedButtons
-              value={allUnits.find(unit => unit.type === subUnitType)?.grade ?? ""}
-              onValueChange={value => { setAllUnits(allUnits.map(unit => unit.type === subUnitType ? { ...unit, grade: value as ClimbingGrade } : unit)) }}
+              value={allUnits.find((unit) => unit.type === subUnitType)?.grade ?? ""}
+              onValueChange={(value) => {
+                setAllUnits(
+                  allUnits.map((unit) =>
+                    unit.type === subUnitType ? { ...unit, grade: value as ClimbingGrade } : unit,
+                  ),
+                );
+              }}
               buttons={[
                 { value: "uiaa", label: "UIAA" },
                 { value: "french", label: "French" },
                 { value: "yds", label: "YDS" },
-              ]} />
+              ]}
+            />
             <SegmentedButtons
-              value={allUnits.find(unit => unit.type === subUnitType)?.grade ?? ""}
-              onValueChange={value => { setAllUnits(allUnits.map(unit => unit.type === subUnitType ? { ...unit, grade: value as ClimbingGrade } : unit)) }}
+              value={allUnits.find((unit) => unit.type === subUnitType)?.grade ?? ""}
+              onValueChange={(value) => {
+                setAllUnits(
+                  allUnits.map((unit) =>
+                    unit.type === subUnitType ? { ...unit, grade: value as ClimbingGrade } : unit,
+                  ),
+                );
+              }}
               buttons={[
                 { value: "font", label: "Font" },
                 { value: "v-scale", label: "V-Scale" },
@@ -132,33 +180,37 @@ const subUnitProps = (subUnitType: SubUnitType, allUnits: SubUnit[], setAllUnits
           <InputWrapper>
             <TextInput
               label="Unit"
-              value={allUnits.find(unit => unit.type === subUnitType)?.symbol ?? ""}
-              onChangeText={text => setAllUnits(allUnits.map(unit => unit.type === subUnitType ? { ...unit, symbol: text } : unit))}
+              value={allUnits.find((unit) => unit.type === subUnitType)?.symbol ?? ""}
+              onChangeText={(text) =>
+                setAllUnits(allUnits.map((unit) => (unit.type === subUnitType ? { ...unit, symbol: text } : unit)))
+              }
               mode="outlined"
             />
           </InputWrapper>
         ),
       };
   }
-}
+};
 
-export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null, onChange: (unit: SubUnit | null) => void }) => {
+export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null; onChange: (unit: SubUnit | null) => void }) => {
   const [unitDialogVisible, setUnitDialogVisible] = useState(false);
   const theme = useAppTheme();
 
   const [chosenUnitType, setChosenUnitType] = useState<SubUnitType | null>(unit?.type ?? null);
-  const [allUnits, setAllUnits] = useState<SubUnit[]>((() => {
-    let defaultUnits: SubUnit[] = [
-      { type: "count" },
-      { type: "percentage" },
-      { type: "distance", unit: "km" },
-      { type: "weight", unit: "kg" },
-      { type: "time", unit: "seconds" },
-      { type: "climbing_grade", grade: "french" },
-      { type: "number", symbol: "" },
-    ];
-    return defaultUnits.map(defaultUnit => unit?.type === defaultUnit.type ? unit : defaultUnit);
-  })());
+  const [allUnits, setAllUnits] = useState<SubUnit[]>(
+    (() => {
+      let defaultUnits: SubUnit[] = [
+        { type: "count" },
+        { type: "percentage" },
+        { type: "distance", unit: "km" },
+        { type: "weight", unit: "kg" },
+        { type: "time", unit: "seconds" },
+        { type: "climbing_grade", grade: "french" },
+        { type: "number", symbol: "" },
+      ];
+      return defaultUnits.map((defaultUnit) => (unit?.type === defaultUnit.type ? unit : defaultUnit));
+    })(),
+  );
 
   return (
     <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -189,18 +241,30 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null, onChange:
         onDismiss={() => setUnitDialogVisible(false)}
       >
         <SafeAreaView style={{ flex: 1 }}>
-          <View style={{ backgroundColor: theme.colors.elevation.level1, elevation: 2, flexDirection: 'row', paddingVertical: 10, paddingRight: 10, alignItems: 'center' }}>
+          <View
+            style={{
+              backgroundColor: theme.colors.elevation.level1,
+              elevation: 2,
+              flexDirection: "row",
+              paddingVertical: 10,
+              paddingRight: 10,
+              alignItems: "center",
+            }}
+          >
             <Button onPress={() => setUnitDialogVisible(false)}>
               <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onSurface} />
             </Button>
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: 20, color: theme.colors.onSurface }}>Select Unit</Text>
             </View>
-            <CheckButton onPress={() => {
-              setUnitDialogVisible(false);
-              const newUnitInput = allUnits.find(unit => unit.type === chosenUnitType) ?? null;
-              onChange(newUnitInput);
-            }} color={theme.colors.onSurface} />
+            <CheckButton
+              onPress={() => {
+                setUnitDialogVisible(false);
+                const newUnitInput = allUnits.find((unit) => unit.type === chosenUnitType) ?? null;
+                onChange(newUnitInput);
+              }}
+              color={theme.colors.onSurface}
+            />
           </View>
           <ScrollView>
             <View style={{ gap: 10, padding: 10 }}>
@@ -224,7 +288,9 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null, onChange:
                     <List.Item
                       key={subUnit.type}
                       title={title}
-                      titleStyle={{ color: chosenUnitType === subUnit.type ? theme.colors.primary : theme.colors.onSurface }}
+                      titleStyle={{
+                        color: chosenUnitType === subUnit.type ? theme.colors.primary : theme.colors.onSurface,
+                      }}
                       onPress={() => setChosenUnitType(subUnit.type)}
                       left={() => <List.Icon icon={icon} />}
                       description={description}
@@ -239,7 +305,7 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null, onChange:
       {/* </Portal> */}
     </View>
   );
-}
+};
 
 export const ValueEditor = ({
   unit,
@@ -250,13 +316,13 @@ export const ValueEditor = ({
   onChange,
   setSubmitDisabled, // whether to disable submitting the value
 }: {
-  unit: SubUnit,
-  label: string,
-  value: string,
-  error: string | null,
-  inputWrapperRef: React.RefObject<InputWrapperRef>,
-  onChange: (value: string) => void,
-  setSubmitDisabled: (disabled: string | null) => void,
+  unit: SubUnit;
+  label: string;
+  value: string;
+  error: string | null;
+  inputWrapperRef: React.RefObject<InputWrapperRef>;
+  onChange: (value: string) => void;
+  setSubmitDisabled: (disabled: string | null) => void;
 }) => {
   const theme = useAppTheme();
   const wideDisplay = useWideDisplay();
@@ -277,7 +343,7 @@ export const ValueEditor = ({
     setNow(null);
     setSubmitDisabled(null);
     onChange(numberToString(0, unit));
-  }
+  };
 
   const toggleTimer = (timeUnit: TimeUnit) => {
     const timeFactor = timeUnit === "hours" ? 3600e3 : 1e3;
@@ -301,14 +367,16 @@ export const ValueEditor = ({
       setNow(Date.now() / timeFactor);
       setSubmitDisabled("Timer is running");
 
-      setTimerInterval(setInterval(() => {
-        setNow(Date.now() / timeFactor);
-      }, 200));
+      setTimerInterval(
+        setInterval(() => {
+          setNow(Date.now() / timeFactor);
+        }, 200),
+      );
     }
   };
 
   const addTimerToValue = (val: string) => {
-    return numberToString((stringToNumber(val, unit) ?? 0) + ((now ?? 0) - (timerStartTime ?? 0)), unit)
+    return numberToString((stringToNumber(val, unit) ?? 0) + ((now ?? 0) - (timerStartTime ?? 0)), unit);
   };
 
   const flatListRef = useRef<FlatList<string>>(null);
@@ -316,19 +384,22 @@ export const ValueEditor = ({
   const pickerDialog = (options: string[]) => {
     return (
       <>
-        <Pressable onPress={() => {
-          setClimbingGradeDialogVisible(true);
-          flatListRef.current?.scrollToIndex({ index: options.findIndex(o => o === value) });
-        }} style={({ pressed }) => [
-          {
-            flex: 1,
-            opacity: pressed ? 0.7 : 1,
-          },
-        ]}>
+        <Pressable
+          onPress={() => {
+            setClimbingGradeDialogVisible(true);
+            flatListRef.current?.scrollToIndex({ index: options.findIndex((o) => o === value) });
+          }}
+          style={({ pressed }) => [
+            {
+              flex: 1,
+              opacity: pressed ? 0.7 : 1,
+            },
+          ]}
+        >
           <TextInput
             label={label}
             value={value}
-            onChangeText={text => onChange(text)}
+            onChangeText={(text) => onChange(text)}
             keyboardType="numeric"
             editable={false}
             mode="outlined"
@@ -337,11 +408,14 @@ export const ValueEditor = ({
         <Portal>
           <Dialog visible={climbingGradeDialogVisible} onDismiss={() => setClimbingGradeDialogVisible(false)}>
             <Dialog.Title>
-              <View style={{ flex: 1, alignItems: 'flex-end', width: '100%' }}>
-                <CloseButton onPress={() => {
-                  setClimbingGradeDialogVisible(false);
-                  onChange("");
-                }} color={theme.colors.onSurface} />
+              <View style={{ flex: 1, alignItems: "flex-end", width: "100%" }}>
+                <CloseButton
+                  onPress={() => {
+                    setClimbingGradeDialogVisible(false);
+                    onChange("");
+                  }}
+                  color={theme.colors.onSurface}
+                />
               </View>
             </Dialog.Title>
             <Dialog.ScrollArea>
@@ -351,7 +425,7 @@ export const ValueEditor = ({
                 numColumns={numColumns}
                 ref={(ref) => {
                   flatListRef.current = ref;
-                  const itemIx = options.findIndex(o => o === value);
+                  const itemIx = options.findIndex((o) => o === value);
                   const scrollIx = itemIx === -1 ? options.length / 2 : itemIx;
                   ref?.scrollToIndex({ index: Math.max(0, Math.floor(scrollIx / numColumns)), viewPosition: 0.0 });
                 }}
@@ -362,7 +436,10 @@ export const ValueEditor = ({
                     right={value === item ? (props) => <List.Icon {...props} icon="check" /> : undefined}
                     style={{ flex: 1, height: itemHeight }}
                     key={item}
-                    onPress={() => { onChange(item); setClimbingGradeDialogVisible(false); }}
+                    onPress={() => {
+                      onChange(item);
+                      setClimbingGradeDialogVisible(false);
+                    }}
                     title={item}
                   />
                 )}
@@ -372,27 +449,34 @@ export const ValueEditor = ({
         </Portal>
       </>
     );
-  }
+  };
 
   const showTimePicker = () => {
     const valueHours = stringToNumber(value, unit);
     DateTimePickerAndroid.open({
       mode: "time",
       is24Hour: true,
-      value: valueHours ? new Date(0, 0, 0, Math.floor((valueHours ?? 0) + 1 / 120), Math.floor(((valueHours ?? 0) + 1 / 120) % 1 * 60)) : new Date(),
+      value: valueHours
+        ? new Date(
+            0,
+            0,
+            0,
+            Math.floor((valueHours ?? 0) + 1 / 120),
+            Math.floor((((valueHours ?? 0) + 1 / 120) % 1) * 60),
+          )
+        : new Date(),
       onChange: (event, selectedDate) => {
         if (selectedDate !== undefined) {
           const newValue = selectedDate.getHours() + selectedDate.getMinutes() / 60;
           onChange(numberToString(newValue, unit));
         }
-
       },
     });
-  }
+  };
 
   return (
     <InputWrapper error={error} ref={inputWrapperRef}>
-      <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, marginVertical: 4 }}>
+      <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 8, marginVertical: 4 }}>
         {(() => {
           switch (unit.type) {
             case "time":
@@ -427,7 +511,11 @@ export const ValueEditor = ({
                         <MaterialCommunityIcons name="reload" size={22} color={theme.colors.onSurface} />
                       </Button>
                       <Button onPress={() => toggleTimer(unit.unit)}>
-                        <MaterialCommunityIcons name={timerActive ? "pause" : "play"} size={22} color={theme.colors.onSurface} />
+                        <MaterialCommunityIcons
+                          name={timerActive ? "pause" : "play"}
+                          size={22}
+                          color={theme.colors.onSurface}
+                        />
                       </Button>
                     </>
                   );
@@ -441,18 +529,18 @@ export const ValueEditor = ({
                     style={{ flex: 1 }}
                     label={label}
                     value={value}
-                    onChangeText={text => onChange(text)}
+                    onChangeText={(text) => onChange(text)}
                     keyboardType="numeric"
                     mode="outlined"
                   />
-                  <Button onPress={() => onChange(mapStringValue(unit, value, v => v - 1))}>
+                  <Button onPress={() => onChange(mapStringValue(unit, value, (v) => v - 1))}>
                     <MinusIcon color={theme.colors.onSurface} />
                   </Button>
-                  <Button onPress={() => onChange(mapStringValue(unit, value, v => v + 1))}>
+                  <Button onPress={() => onChange(mapStringValue(unit, value, (v) => v + 1))}>
                     <PlusIcon color={theme.colors.onSurface} />
                   </Button>
                 </>
-              )
+              );
             case "climbing_grade":
               switch (unit.grade) {
                 case "uiaa":
@@ -467,17 +555,19 @@ export const ValueEditor = ({
                   return pickerDialog(vScaleGrades);
               }
             default:
-              return <TextInput
-                style={{ flex: 1 }}
-                label={label}
-                value={value}
-                onChangeText={text => onChange(text)}
-                keyboardType="numeric"
-                mode="outlined"
-              />
+              return (
+                <TextInput
+                  style={{ flex: 1 }}
+                  label={label}
+                  value={value}
+                  onChangeText={(text) => onChange(text)}
+                  keyboardType="numeric"
+                  mode="outlined"
+                />
+              );
           }
         })()}
       </View>
     </InputWrapper>
   );
-}
+};

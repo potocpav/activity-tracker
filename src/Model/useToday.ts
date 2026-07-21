@@ -1,10 +1,8 @@
-import { useSyncExternalStore } from 'react';
-import { AppState } from 'react-native';
+import { useSyncExternalStore } from "react";
+import { AppState } from "react-native";
 
 const isSameDay = (a: Date, b: Date) =>
-  a.getFullYear() === b.getFullYear() &&
-  a.getMonth() === b.getMonth() &&
-  a.getDate() === b.getDate();
+  a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 
 let current = new Date();
 const listeners = new Set<() => void>();
@@ -26,8 +24,8 @@ const subscribe = (listener: () => void) => {
     const now = new Date();
     if (!isSameDay(current, now)) current = now;
     interval = setInterval(refresh, 60 * 1000);
-    appStateSub = AppState.addEventListener('change', (state) => {
-      if (state === 'active') refresh();
+    appStateSub = AppState.addEventListener("change", (state) => {
+      if (state === "active") refresh();
     });
   }
   listeners.add(listener);

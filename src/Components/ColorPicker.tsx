@@ -1,7 +1,7 @@
-import React from 'react';
-import { View } from 'react-native';
-import { Dialog, Button } from 'react-native-paper';
-import { CheckIcon } from './Element';
+import React from "react";
+import { View } from "react-native";
+import { Dialog, Button } from "react-native-paper";
+import { CheckIcon } from "./Element";
 
 interface ColorPickerProps {
   visible: boolean;
@@ -16,9 +16,9 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ visible, palette, selectedCol
   <Dialog visible={visible} onDismiss={onDismiss}>
     <Dialog.Title>Pick a color</Dialog.Title>
     <Dialog.Content>
-      <View style={{ flexDirection: 'column', alignItems: 'center' }}>
-        {[0, 1, 2, 3, 4].map(row => (
-          <View key={row} style={{ flexDirection: 'row', marginBottom: 8 }}>
+      <View style={{ flexDirection: "column", alignItems: "center" }}>
+        {[0, 1, 2, 3, 4].map((row) => (
+          <View key={row} style={{ flexDirection: "row", marginBottom: 8 }}>
             {palette.slice(row * 4, row * 4 + 4).map((color, idx) => (
               <Button
                 key={idx}
@@ -33,8 +33,8 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ visible, palette, selectedCol
                   borderRadius: 15,
                   borderWidth: selectedColor === row * 4 + idx ? 2 : 1,
                   borderColor: selectedColor === row * 4 + idx ? theme.colors.onSurface : theme.colors.onSurfaceVariant,
-                  justifyContent: 'center',
-                  alignItems: 'center',
+                  justifyContent: "center",
+                  alignItems: "center",
                   elevation: 2,
                 }}
                 contentStyle={{ width: 40, height: 45 }}
@@ -49,4 +49,4 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ visible, palette, selectedCol
   </Dialog>
 );
 
-export default ColorPicker; 
+export default ColorPicker;

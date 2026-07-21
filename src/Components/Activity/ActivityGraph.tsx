@@ -1,10 +1,24 @@
 import React, { useState, useMemo } from "react";
 import { View, Text, useWindowDimensions, StyleSheet, ToastAndroid, Pressable } from "react-native";
-import { Menu, Portal, Dialog, TextInput } from 'react-native-paper';
+import { Menu, Portal, Dialog, TextInput } from "react-native-paper";
 import useStore from "../../Model/Store";
-import { DataPoint, dateListToTime, ActivityType, GraphType, WeekStart, DateList, SubUnit, GraphProps, Unit, BinSize, BinnableSize, ActivityPath, State } from "../../Model/StoreTypes";
+import {
+  DataPoint,
+  dateListToTime,
+  ActivityType,
+  GraphType,
+  WeekStart,
+  DateList,
+  SubUnit,
+  GraphProps,
+  Unit,
+  BinSize,
+  BinnableSize,
+  ActivityPath,
+  State,
+} from "../../Model/StoreTypes";
 import { binTime, binTimeSeries, cmpDateList, extractValue } from "../../Model/Activity";
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import TagMenu from "../TagMenu";
 import SubUnitMenu from "../SubUnitMenu";
 import DropdownMenu from "../DropdownMenu";
@@ -15,9 +29,10 @@ import { renderLongFormValue, isSummable } from "../../Model/Unit";
 import { Canvas, Line, vec } from "@shopify/react-native-skia";
 import { ChevronDownIcon, DeleteButton, ButtonRow, CopyButton, CheckButton, Button } from "../Element";
 
-
-const ActivityGraph = ({ activityPath, graphIndex }: { activityPath: ActivityPath, graphIndex: number }) => {
-  const activity: ActivityType = useStore((state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId]);
+const ActivityGraph = ({ activityPath, graphIndex }: { activityPath: ActivityPath; graphIndex: number }) => {
+  const activity: ActivityType = useStore(
+    (state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId],
+  );
   const graph = activity.graphs[graphIndex];
   const weekStart = useStore((state: any) => state.weekStart);
   const theme = useAppTheme(activity.color);
@@ -28,7 +43,7 @@ const ActivityGraph = ({ activityPath, graphIndex }: { activityPath: ActivityPat
 
   const styles = getStyles(theme);
 
-  const subUnitNames = activity.unit.type === "multiple" ? activity.unit.values.map(u => u.name) : null;
+  const subUnitNames = activity.unit.type === "multiple" ? activity.unit.values.map((u) => u.name) : null;
 
   const [binMenuVisible, setBinMenuVisible] = useState(false);
   const [subUnitMenuVisible, setSubUnitMenuVisible] = useState(false);
@@ -41,41 +56,41 @@ const ActivityGraph = ({ activityPath, graphIndex }: { activityPath: ActivityPat
   const graphLabel = (gType: any) => {
     if (gType === "box") {
       return (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
           <MaterialCommunityIcons name="chart-waterfall" size={24} color={theme.colors.onSurfaceVariant} />
           <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Box</Text>
         </View>
       );
     } else if (gType === "bar-count") {
       return (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
           <MaterialCommunityIcons name="chart-bar" size={24} color={theme.colors.onSurfaceVariant} />
           <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Count</Text>
         </View>
       );
     } else if (gType === "bar-daily-mean") {
       return (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
           <MaterialCommunityIcons name="chart-bar" size={24} color={theme.colors.onSurfaceVariant} />
           <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Daily Mean</Text>
         </View>
       );
     } else if (gType === "bar-sum") {
       return (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
           <MaterialCommunityIcons name="chart-bar" size={24} color={theme.colors.onSurfaceVariant} />
           <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Sum</Text>
         </View>
       );
     } else if (gType === "line-mean") {
       return (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
           <MaterialCommunityIcons name="chart-line" size={24} color={theme.colors.onSurfaceVariant} />
           <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Mean</Text>
         </View>
       );
     }
-  }
+  };
 
   let binningLabels;
   if (activity.unit.type === "none") {
@@ -84,7 +99,7 @@ const ActivityGraph = ({ activityPath, graphIndex }: { activityPath: ActivityPat
       week: "Week",
       month: "Month",
       quarter: "Quarter",
-      year: "Year"
+      year: "Year",
     };
   } else {
     binningLabels = {
@@ -93,7 +108,7 @@ const ActivityGraph = ({ activityPath, graphIndex }: { activityPath: ActivityPat
       week: "Week",
       month: "Month",
       quarter: "Quarter",
-      year: "Year"
+      year: "Year",
     };
   }
   const binningOptions = Object.entries(binningLabels).map(([key, label]) => ({ key, label }));
@@ -118,7 +133,10 @@ const ActivityGraph = ({ activityPath, graphIndex }: { activityPath: ActivityPat
           theme={theme}
         />
       </View>
-      <View key="menusRow" style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
+      <View
+        key="menusRow"
+        style={{ flexDirection: "row", justifyContent: "center", alignItems: "center", flexWrap: "wrap" }}
+      >
         {/* Binning menu */}
         <DropdownMenu
           options={binningOptions}
@@ -155,7 +173,7 @@ const ActivityGraph = ({ activityPath, graphIndex }: { activityPath: ActivityPat
           onDismiss={() => setGraphTypeMenuVisible(false)}
           anchor={
             <Button onPress={() => setGraphTypeMenuVisible(true)}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
                 {graphLabel(graph.graphType)}
                 <ChevronDownIcon color={theme.colors.onSurfaceVariant} />
               </View>
@@ -169,7 +187,7 @@ const ActivityGraph = ({ activityPath, graphIndex }: { activityPath: ActivityPat
                 setGraphTypeMenuVisible(false);
                 setActivityGraph(activityPath, graphIndex, { ...graph, graphType: type as GraphType });
               }}
-              title={<View style={{ flexDirection: 'row', alignItems: 'center' }}>{graphLabel(type)}</View>}
+              title={<View style={{ flexDirection: "row", alignItems: "center" }}>{graphLabel(type)}</View>}
               trailingIcon={graph.graphType === type ? "check" : undefined}
             />
           ))}
@@ -178,30 +196,44 @@ const ActivityGraph = ({ activityPath, graphIndex }: { activityPath: ActivityPat
       <Portal>
         <Dialog visible={graphDialogVisible} onDismiss={() => setGraphDialogVisible(false)}>
           <Dialog.Content>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
               <View style={{ flex: 1 }}>
-                <TextInput label="Graph Name" defaultValue={graphDialogNameInput} onChangeText={setGraphDialogNameInput} mode="outlined" />
+                <TextInput
+                  label="Graph Name"
+                  defaultValue={graphDialogNameInput}
+                  onChangeText={setGraphDialogNameInput}
+                  mode="outlined"
+                />
               </View>
             </View>
           </Dialog.Content>
           <Dialog.Actions>
             <ButtonRow>
               {activity.graphs.length > 1 && (
-                <DeleteButton onPress={() => {
-                  deleteActivityGraph(activityPath, graphIndex);
-                  setGraphDialogVisible(false);
-                  ToastAndroid.show('Graph deleted', ToastAndroid.SHORT);
-                }} color={theme.colors.onSurface} />
+                <DeleteButton
+                  onPress={() => {
+                    deleteActivityGraph(activityPath, graphIndex);
+                    setGraphDialogVisible(false);
+                    ToastAndroid.show("Graph deleted", ToastAndroid.SHORT);
+                  }}
+                  color={theme.colors.onSurface}
+                />
               )}
-              <CopyButton onPress={() => {
-                cloneActivityGraph(activityPath, graphIndex);
-                setGraphDialogVisible(false);
-                ToastAndroid.show('Graph cloned', ToastAndroid.SHORT);
-              }} color={theme.colors.onSurface} />
-              <CheckButton onPress={() => {
-                setActivityGraph(activityPath, graphIndex, { ...graph, label: graphDialogNameInput });
-                setGraphDialogVisible(false);
-              }} color={theme.colors.onSurface} />
+              <CopyButton
+                onPress={() => {
+                  cloneActivityGraph(activityPath, graphIndex);
+                  setGraphDialogVisible(false);
+                  ToastAndroid.show("Graph cloned", ToastAndroid.SHORT);
+                }}
+                color={theme.colors.onSurface}
+              />
+              <CheckButton
+                onPress={() => {
+                  setActivityGraph(activityPath, graphIndex, { ...graph, label: graphDialogNameInput });
+                  setGraphDialogVisible(false);
+                }}
+                color={theme.colors.onSurface}
+              />
             </ButtonRow>
           </Dialog.Actions>
         </Dialog>
@@ -216,18 +248,18 @@ const xLabel = (t: number, binSize: BinSize, dayIndex?: number) => {
     case "point": {
       if (dayIndex !== undefined && dayIndex === 0) {
         const date = d.getDate();
-        return date > 1 ? `${date}` : `${date}\n${d.toLocaleString('default', { month: 'short' })}`;
+        return date > 1 ? `${date}` : `${date}\n${d.toLocaleString("default", { month: "short" })}`;
       } else {
         return "";
       }
     }
     case "day": {
       const date = d.getDate();
-      return date > 1 ? `${date}` : `${date}\n${d.toLocaleString('default', { month: 'short' })}`;
+      return date > 1 ? `${date}` : `${date}\n${d.toLocaleString("default", { month: "short" })}`;
     }
     case "week": {
       const date = d.getDate();
-      return date > 7 ? `${date}` : `${date}\n${d.toLocaleString('default', { month: 'short' })}`;
+      return date > 7 ? `${date}` : `${date}\n${d.toLocaleString("default", { month: "short" })}`;
     }
     case "month": {
       const m = d.getMonth() + 1;
@@ -243,25 +275,15 @@ const xLabel = (t: number, binSize: BinSize, dayIndex?: number) => {
   }
 };
 
-const StatBox = ({
-  theme,
-  unit,
-  stats,
-  onPress,
-}: {
-  theme: any,
-  unit: SubUnit,
-  stats: Stats,
-  onPress: () => void,
-}) => {
+const StatBox = ({ theme, unit, stats, onPress }: { theme: any; unit: SubUnit; stats: Stats; onPress: () => void }) => {
   return (
-    <View style={{ position: 'relative' }}>
+    <View style={{ position: "relative" }}>
       <Animated.View
         key="stats"
         entering={FadeInUp}
         exiting={FadeOutUp}
         style={{
-          position: 'absolute',
+          position: "absolute",
           top: 0,
           right: 0,
           left: 0,
@@ -272,11 +294,12 @@ const StatBox = ({
           padding: 8,
           backgroundColor: theme.colors.surface,
           elevation: 1,
-          flexDirection: 'column',
+          flexDirection: "column",
           zIndex: 1,
-        }}>
+        }}
+      >
         <Pressable style={{ flex: 1 }} onPress={onPress}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
             <View style={{ flex: 1, minWidth: 100 }}>
               <Text style={{ color: theme.colors.onSurface }} numberOfLines={1}>
                 Count: {Math.round(stats.count)}
@@ -289,7 +312,7 @@ const StatBox = ({
             </View>
           </View>
           {stats.regression && (
-            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
               <View style={{ flex: 1, minWidth: 100 }}>
                 <Text style={{ color: theme.colors.onSurface }} numberOfLines={1}>
                   {`${stats.regression.slope >= 0 ? "+" : ""}${renderLongFormValue(stats.regression.slope * 1e3 * 3600 * 24 * 30, unit)} per month`}
@@ -301,8 +324,7 @@ const StatBox = ({
       </Animated.View>
     </View>
   );
-}
-
+};
 
 const SelectedRangeBox = ({
   theme,
@@ -311,16 +333,16 @@ const SelectedRangeBox = ({
   view,
   cornerRadius,
 }: {
-  theme: any,
-  selectedRange: { min: number, max: number },
-  index: number,
-  view: ViewDimensions,
-  cornerRadius: number,
+  theme: any;
+  selectedRange: { min: number; max: number };
+  index: number;
+  view: ViewDimensions;
+  cornerRadius: number;
 }) => {
   return (
     <View
       style={{
-        position: 'absolute',
+        position: "absolute",
         ...view,
         borderTopWidth: 1,
         borderBottomWidth: 1,
@@ -336,13 +358,13 @@ const SelectedRangeBox = ({
       }}
     />
   );
-}
+};
 
 type Stats = {
-  regression: { slope: number, intercept: number } | null,
-  mean: number,
-  count: number,
-}
+  regression: { slope: number; intercept: number } | null;
+  mean: number;
+  count: number;
+};
 
 const RegressionLine = ({
   theme,
@@ -352,22 +374,22 @@ const RegressionLine = ({
   weekStart,
   binSize,
 }: {
-  theme: any,
-  regression: { slope: number, intercept: number },
-  time: number,
-  view: ViewDimensions,
-  weekStart: WeekStart,
-  binSize: BinnableSize,
+  theme: any;
+  regression: { slope: number; intercept: number };
+  time: number;
+  view: ViewDimensions;
+  weekStart: WeekStart;
+  binSize: BinnableSize;
 }) => {
   const x0 = binTime(binSize, time, -1, weekStart).getTime();
   const x1 = binTime(binSize, time, 1, weekStart).getTime();
   const y0 = view.yToPx(regression.intercept + regression.slope * x0);
   const y1 = view.yToPx(regression.intercept + regression.slope * x1);
   return (
-    <Canvas style={{ position: 'absolute', ...view }}>
+    <Canvas style={{ position: "absolute", ...view }}>
       <Line
         p1={vec(-view.width / 2, y0)}
-        p2={vec(view.width * 3 / 2, y1)}
+        p2={vec((view.width * 3) / 2, y1)}
         color={theme.colors.outline}
         strokeWidth={2}
         strokeCap="round"
@@ -377,15 +399,15 @@ const RegressionLine = ({
 };
 
 type ActivityChart = {
-  height: number,
-  graph: GraphProps,
-  dataPoints: DataPoint[],
-  activityUnit: Unit,
-  weekStart: WeekStart,
-  theme: any,
-}
+  height: number;
+  graph: GraphProps;
+  dataPoints: DataPoint[];
+  activityUnit: Unit;
+  weekStart: WeekStart;
+  theme: any;
+};
 
-const linearRegression = (values: { x: number, y: number }[]) => {
+const linearRegression = (values: { x: number; y: number }[]) => {
   const sum = (v: number[]) => v.reduce((acc, v) => acc + v, 0);
   const sx = sum(values.map((v) => v.x));
   const sy = sum(values.map((v) => v.y));
@@ -396,32 +418,21 @@ const linearRegression = (values: { x: number, y: number }[]) => {
   const slope = (n * sxy - sx * sy) / (n * sxx - sx * sx);
   const intercept = (sy - slope * sx) / n;
   return { slope, intercept };
-}
+};
 
-const ActivityChart = (
-  {
-    height,
-    graph,
-    dataPoints,
-    activityUnit,
-    weekStart,
-    theme,
-  }:
-    ActivityChart
-) => {
+const ActivityChart = ({ height, graph, dataPoints, activityUnit, weekStart, theme }: ActivityChart) => {
   const windowDimensions = useWindowDimensions();
 
-  const [selectedRange, setSelectedRange] = useState<{ min: number, max: number } | null>(null);
+  const [selectedRange, setSelectedRange] = useState<{ min: number; max: number } | null>(null);
 
-  const filteredValues: { date: DateList, value: number }[] = dataPoints
+  const filteredValues: { date: DateList; value: number }[] = dataPoints
     .map((dp: DataPoint) => ({
       date: dp.date,
-      value: extractValue(dp, graph.tagFilters, graph.subUnit)
-    }
-    ))
-    .filter(x => x.value !== null) as { date: DateList, value: number }[];
+      value: extractValue(dp, graph.tagFilters, graph.subUnit),
+    }))
+    .filter((x) => x.value !== null) as { date: DateList; value: number }[];
 
-  let items: { time: number, values: any[], nDays: number, dayIndex?: number }[];
+  let items: { time: number; values: any[]; nDays: number; dayIndex?: number }[];
   if (graph.binSize === "point") {
     items = [];
     let dayIndex = 0;
@@ -433,7 +444,12 @@ const ActivityChart = (
       } else {
         dayIndex++;
       }
-      items.push({ time: dateListToTime(filteredValues[i].date), values: [filteredValues[i].value], nDays: 1, dayIndex });
+      items.push({
+        time: dateListToTime(filteredValues[i].date),
+        values: [filteredValues[i].value],
+        nDays: 1,
+        dayIndex,
+      });
     }
     items.reverse();
   } else {
@@ -464,15 +480,18 @@ const ActivityChart = (
 
   let selectionStats: Stats | null = null;
   if (selectedRange) {
-    let rangeValues: { x: number, y: number }[] = [];
-    let regression: { slope: number, intercept: number } | null = null;
+    let rangeValues: { x: number; y: number }[] = [];
+    let regression: { slope: number; intercept: number } | null = null;
     const rangeItems = items.slice(selectedRange.min, selectedRange.max + 1);
     switch (graph.graphType) {
       case "bar-daily-mean":
-        rangeValues = rangeItems.map((item) => ({ x: item.time, y: item.values.length * 100 / item.nDays }));
+        rangeValues = rangeItems.map((item) => ({ x: item.time, y: (item.values.length * 100) / item.nDays }));
         break;
       case "bar-sum":
-        rangeValues = rangeItems.map((item) => ({ x: item.time, y: item.values.reduce((a: number, b: number) => a + b, 0) }));
+        rangeValues = rangeItems.map((item) => ({
+          x: item.time,
+          y: item.values.reduce((a: number, b: number) => a + b, 0),
+        }));
         break;
       case "bar-count":
         rangeValues = rangeItems.map((item) => ({ x: item.time, y: item.values.length }));
@@ -503,39 +522,71 @@ const ActivityChart = (
       let value: (item: any) => number | null;
       switch (graph.graphType) {
         case "bar-count":
-          value = (item: any) => item.values.length > 0 ? item.values.length : null;
+          value = (item: any) => (item.values.length > 0 ? item.values.length : null);
           break;
         case "bar-sum":
-          value = (item: any) => item.values.length > 0 ? item.values.reduce((a: number, b: number) => a + b, 0) : null;
+          value = (item: any) =>
+            item.values.length > 0 ? item.values.reduce((a: number, b: number) => a + b, 0) : null;
           break;
         case "bar-daily-mean":
-          value = (item: any) => item.values.reduce((a: number, b: number) => a + b, 0) / item.nDays * 100;
+          value = (item: any) => (item.values.reduce((a: number, b: number) => a + b, 0) / item.nDays) * 100;
           break;
       }
-      renderItem = ({ item, index, view }: { item: any, index: number, view: ViewDimensions }) => (
+      renderItem = ({ item, index, view }: { item: any; index: number; view: ViewDimensions }) => (
         <>
-          {selectedRange && <SelectedRangeBox theme={theme} selectedRange={selectedRange} index={index} view={view} cornerRadius={4} />}
-          {selectionStats?.regression && graph.binSize !== "point" && <RegressionLine theme={theme} regression={selectionStats.regression} time={item.time} weekStart={weekStart} binSize={graph.binSize} view={view} />}
-          <BarChart view={view} value={value(item)} unit={unit} color={theme.colors.primary} fontScale={windowDimensions.fontScale} />
+          {selectedRange && (
+            <SelectedRangeBox theme={theme} selectedRange={selectedRange} index={index} view={view} cornerRadius={4} />
+          )}
+          {selectionStats?.regression && graph.binSize !== "point" && (
+            <RegressionLine
+              theme={theme}
+              regression={selectionStats.regression}
+              time={item.time}
+              weekStart={weekStart}
+              binSize={graph.binSize}
+              view={view}
+            />
+          )}
+          <BarChart
+            view={view}
+            value={value(item)}
+            unit={unit}
+            color={theme.colors.primary}
+            fontScale={windowDimensions.fontScale}
+          />
         </>
       );
       itemBoundingBox = (item: any) => barBoundingBox(value(item), windowDimensions.fontScale);
       break;
     }
     case "box": {
-      renderItem = ({ item, index, view }: { item: any, index: number, view: ViewDimensions }) => (
+      renderItem = ({ item, index, view }: { item: any; index: number; view: ViewDimensions }) => (
         <>
-          {selectedRange && <SelectedRangeBox theme={theme} selectedRange={selectedRange} index={index} view={view} cornerRadius={10} />}
-          {selectionStats?.regression && graph.binSize !== "point" && <RegressionLine theme={theme} regression={selectionStats.regression} time={item.time} view={view} weekStart={weekStart} binSize={graph.binSize} />}
+          {selectedRange && (
+            <SelectedRangeBox theme={theme} selectedRange={selectedRange} index={index} view={view} cornerRadius={10} />
+          )}
+          {selectionStats?.regression && graph.binSize !== "point" && (
+            <RegressionLine
+              theme={theme}
+              regression={selectionStats.regression}
+              time={item.time}
+              view={view}
+              weekStart={weekStart}
+              binSize={graph.binSize}
+            />
+          )}
           <BoxChart view={view} values={item.values} color={theme.colors.primary} surfaceColor={theme.colors.surface} />
         </>
       );
-      itemBoundingBox = (item: any, itemWidthPx: number) => item.values.length > 0 ? {
-        min: Math.min(...item.values),
-        max: Math.max(...item.values),
-        padMin: itemWidthPx / 2,
-        padMax: itemWidthPx / 2,
-      } : null;
+      itemBoundingBox = (item: any, itemWidthPx: number) =>
+        item.values.length > 0
+          ? {
+              min: Math.min(...item.values),
+              max: Math.max(...item.values),
+              padMin: itemWidthPx / 2,
+              padMax: itemWidthPx / 2,
+            }
+          : null;
       break;
     }
   }
@@ -552,26 +603,24 @@ const ActivityChart = (
         itemLabel={(item) => xLabel(item.time, graph.binSize, item.dayIndex)}
         setSelectedRange={setSelectedRange}
       />
-      {selectionStats && <StatBox
-        onPress={() => setSelectedRange(null)}
-        theme={theme}
-        unit={unit}
-        stats={selectionStats}
-      />}
+      {selectionStats && (
+        <StatBox onPress={() => setSelectedRange(null)} theme={theme} unit={unit} stats={selectionStats} />
+      )}
     </>
-  )
-}
+  );
+};
 
-const getStyles = (theme: any) => StyleSheet.create({
-  container: {
-    flex: 1,
-    marginVertical: 15,
-    paddingHorizontal: 4,
-  },
-  headerText: {
-    fontSize: 16,
-    color: theme.colors.onSurface,
-  },
-});
+const getStyles = (theme: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      marginVertical: 15,
+      paddingHorizontal: 4,
+    },
+    headerText: {
+      fontSize: 16,
+      color: theme.colors.onSurface,
+    },
+  });
 
-export default ActivityGraph; 
+export default ActivityGraph;

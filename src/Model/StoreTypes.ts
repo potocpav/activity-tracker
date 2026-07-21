@@ -1,42 +1,38 @@
-import {
-    Device,
-    Subscription,
-  } from "react-native-ble-plx";
+import { Device, Subscription } from "react-native-ble-plx";
 import * as Crypto from "expo-crypto";
 
+export type Unit =
+  | { type: "none" }
+  | { type: "single"; unit: SubUnit }
+  | { type: "multiple"; values: { name: string; unit: SubUnit }[] };
 
-export type Unit = 
-  { type: "none" } |
-  { type: "single", unit: SubUnit } |
-  { type: "multiple", values: { name: string, unit: SubUnit }[] };
-
-export type SubUnit = 
-  {
-    type: "number",
-    symbol: string,
-  } |
-  {
-    type: "count",
-  } |
-  { 
-    type: "percentage",
-  } |
-  {
-    type: "distance",
-    unit: DistanceUnit,
-  } |
-  {
-    type: "weight",
-    unit: WeightUnit,
-  } |
-  {
-    type: "time",
-    unit: TimeUnit,
-  } |
-  {
-    type: "climbing_grade",
-    grade: ClimbingGrade,
-  };
+export type SubUnit =
+  | {
+      type: "number";
+      symbol: string;
+    }
+  | {
+      type: "count";
+    }
+  | {
+      type: "percentage";
+    }
+  | {
+      type: "distance";
+      unit: DistanceUnit;
+    }
+  | {
+      type: "weight";
+      unit: WeightUnit;
+    }
+  | {
+      type: "time";
+      unit: TimeUnit;
+    }
+  | {
+      type: "climbing_grade";
+      grade: ClimbingGrade;
+    };
 
 export type SubUnitType = "number" | "count" | "percentage" | "distance" | "weight" | "time" | "climbing_grade";
 
@@ -57,7 +53,7 @@ export type SetTag = {
   oldTagName: TagName | null;
   name: TagName;
   color: number;
-}
+};
 
 export type TagName = string;
 
@@ -75,33 +71,44 @@ export type DataPoint = {
 
 export type StatValue = "n_days" | "n_points" | "daily_mean" | "sum" | "mean" | "max" | "min" | "last";
 
-export const numericStatValues : StatValue[] = [
-  "n_days", "n_points", "sum", "mean", "max", "min", "last"
-];
+export const numericStatValues: StatValue[] = ["n_days", "n_points", "sum", "mean", "max", "min", "last"];
 
-export const statValueUnit = (statValue: StatValue, unit: SubUnit) : SubUnit => {
+export const statValueUnit = (statValue: StatValue, unit: SubUnit): SubUnit => {
   if (["n_days", "n_points", "daily_mean"].includes(statValue)) {
     return { type: "count" };
   } else {
     return unit;
   }
-}
+};
 
-export const unaryStatValues : StatValue[] = [
-  "n_days", "n_points", "daily_mean"
-]
+export const unaryStatValues: StatValue[] = ["n_days", "n_points", "daily_mean"];
 
-export type StatPeriod = 
-  "today" | "last_active_day" | "this_week" | "this_month" | "this_quarter" | "this_year" |
-  "last_7_days" | "last_30_days" | "last_90_days" | "last_365_days" |
-  "all_time";
+export type StatPeriod =
+  | "today"
+  | "last_active_day"
+  | "this_week"
+  | "this_month"
+  | "this_quarter"
+  | "this_year"
+  | "last_7_days"
+  | "last_30_days"
+  | "last_90_days"
+  | "last_365_days"
+  | "all_time";
 
-export const allStatPeriods : StatPeriod[] = [
-  "today", "last_active_day", "this_week", "this_month", "this_quarter", "this_year",
-  "last_7_days", "last_30_days", "last_90_days", "last_365_days",
-  "all_time"
+export const allStatPeriods: StatPeriod[] = [
+  "today",
+  "last_active_day",
+  "this_week",
+  "this_month",
+  "this_quarter",
+  "this_year",
+  "last_7_days",
+  "last_30_days",
+  "last_90_days",
+  "last_365_days",
+  "all_time",
 ];
-
 
 export type TagFilter = {
   name: string;
@@ -131,9 +138,7 @@ export type BinSize = "point" | "day" | "week" | "month" | "quarter" | "year";
 // subset of `BinSize` that can be used for time-based binning
 export type BinnableSize = "day" | "week" | "month" | "quarter" | "year";
 
-export const binSizes : BinSize[] = [
-  "day", "week", "month", "quarter", "year"
-];
+export const binSizes: BinSize[] = ["day", "week", "month", "quarter", "year"];
 
 export type GraphProps = {
   label: string;
@@ -157,17 +162,22 @@ export type ActivityType = {
   special: SpecialActivity | null;
 };
 
-export type SpecialActivity = { type: "ble_scale", minWeight: number };
+export type SpecialActivity = { type: "ble_scale"; minWeight: number };
 
 export type WeekStart = "sunday" | "monday";
 
-export type HintType = 
-  "hello" | "reorder_activities" | 
-  "add_data_point" | "overview_edit_hint" | "rename_calendar" | "calendar_introduction" | "quick_check_daily_activity" |
-  "save_data_point"
+export type HintType =
+  | "hello"
+  | "reorder_activities"
+  | "add_data_point"
+  | "overview_edit_hint"
+  | "rename_calendar"
+  | "calendar_introduction"
+  | "quick_check_daily_activity"
+  | "save_data_point";
 
 // hint sequencing. Must contain all hints.
-export const hintDependencyChains : HintType[][] = [
+export const hintDependencyChains: HintType[][] = [
   // Activities screen
   ["hello", "reorder_activities"],
   // Activity screen
@@ -180,19 +190,19 @@ export const hintDependencyChains : HintType[][] = [
   // (none)
 ];
 
-export const allHints : HintType[] = [...new Set(hintDependencyChains.flat(Infinity))] as HintType[];
+export const allHints: HintType[] = [...new Set(hintDependencyChains.flat(Infinity))] as HintType[];
 
 export type ActivityTab = {
   tabName: string;
   activities: ActivityType[];
-}
+};
 
 export type ActivityPath = {
   tabId: number;
   activityId: number;
-}
+};
 
-export type BleScaleWorkoutState = { state: "playing", t0: number, t0Rest: number, date: DateList };
+export type BleScaleWorkoutState = { state: "playing"; t0: number; t0Rest: number; date: DateList };
 
 export type State = {
   // Device related state
@@ -230,9 +240,8 @@ export type State = {
   updateActivityDataPoint: any;
 };
 
-
 export const dateToDateList = (date: Date): DateList => {
-    return [date.getFullYear(), date.getMonth() + 1, date.getDate()];
+  return [date.getFullYear(), date.getMonth() + 1, date.getDate()];
 };
 
 export const dateListToDate = (dateList: DateList): Date => {
@@ -240,15 +249,15 @@ export const dateListToDate = (dateList: DateList): Date => {
 };
 
 export const normalizeDateList = (dateList: DateList): DateList => {
-    return dateToDateList(dateListToDate(dateList));
+  return dateToDateList(dateListToDate(dateList));
 };
 
 export const timeToDateList = (time: number): DateList => {
-    return dateToDateList(new Date(time));
+  return dateToDateList(new Date(time));
 };
 
 export const dateListToTime = (dateList: DateList): number => {
-    return dateListToDate(dateList).getTime();
+  return dateListToDate(dateList).getTime();
 };
 
 export const generateUuids = (state: State) => {
@@ -260,7 +269,7 @@ export const generateUuids = (state: State) => {
       });
     });
   });
-}
+};
 
 export const stripUuids = (state: any): any => {
   state.activities.forEach((tab: ActivityTab, tabId: number) => {
@@ -272,4 +281,4 @@ export const stripUuids = (state: any): any => {
     });
   });
   return state;
-}
+};

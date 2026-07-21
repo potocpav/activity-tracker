@@ -1,6 +1,6 @@
 import React from "react";
-import { Menu } from 'react-native-paper';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { Menu } from "react-native-paper";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Tag, ActivityType } from "../Model/StoreTypes";
 import { useAppTheme, useThemePalette } from "../Model/Theme";
 import { ChevronDownIcon, Button } from "./Element";
@@ -33,31 +33,39 @@ const TagMenu: React.FC<TagMenuProps> = ({
         visible={menuVisible}
         onDismiss={() => setMenuVisible(false)}
         anchor={
-          button ? button(() => setMenuVisible(true)) :
+          button ? (
+            button(() => setMenuVisible(true))
+          ) : (
             <Button onPress={() => setMenuVisible(true)}>
-              {tags.length === 0 ?
-                <MaterialCommunityIcons name="tag-outline" size={18} color={theme.colors.onSurfaceVariant} /> :
+              {tags.length === 0 ? (
+                <MaterialCommunityIcons name="tag-outline" size={18} color={theme.colors.onSurfaceVariant} />
+              ) : (
                 <MaterialCommunityIcons name="tag" size={18} color={theme.colors.primary} />
-              }
+              )}
               <ChevronDownIcon color={theme.colors.onSurfaceVariant} />
             </Button>
+          )
         }
       >
         {activityTags.map((tag: Tag) => {
           const state = tags.find((t) => t.name === tag.name)?.state ?? "maybe";
           let icon = undefined;
           let title = tag.name;
-          if (state === 'yes') icon = 'check';
-          else if (state === 'no') icon = 'close';
-          const newState: "yes" | "no" | "maybe" = state === 'maybe' ? 'yes' : state === 'yes' ? 'no' : 'maybe';
+          if (state === "yes") icon = "check";
+          else if (state === "no") icon = "close";
+          const newState: "yes" | "no" | "maybe" = state === "maybe" ? "yes" : state === "yes" ? "no" : "maybe";
           let newTags;
-          if (newState === 'maybe') {
+          if (newState === "maybe") {
             newTags = tags.filter((t) => t.name !== tag.name);
           } else if (tags.find((t) => t.name === tag.name)) {
-            newTags = tags.map((t) => t.name === tag.name ? {
-              ...t,
-              state: newState
-            } : t);
+            newTags = tags.map((t) =>
+              t.name === tag.name
+                ? {
+                    ...t,
+                    state: newState,
+                  }
+                : t,
+            );
           } else {
             newTags = [...tags, { name: tag.name, state: newState }];
           }
@@ -76,4 +84,4 @@ const TagMenu: React.FC<TagMenuProps> = ({
   );
 };
 
-export default TagMenu; 
+export default TagMenu;

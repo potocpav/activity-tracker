@@ -11,7 +11,7 @@ import { BoundingBox, cmpMajorTicks, boundingBoxToRange } from "./Common";
 const fontFamily = Platform.select({ default: "sans-serif" });
 
 const quartiles = (values: number[]) => {
-  const vs = values.filter(v => v !== null).sort((a, b) => a - b);
+  const vs = values.filter((v) => v !== null).sort((a, b) => a - b);
   const floatIndex = (i: number) => {
     const f = Math.max(0, Math.min(Math.floor(i), vs.length - 1));
     const c = Math.max(0, Math.min(Math.ceil(i), vs.length - 1));
@@ -39,7 +39,7 @@ const mergeBoundingBoxes = (boxes: BoundingBox[]): BoundingBox => {
       padMax: Math.max(...validBoxes.map((b) => b.padMax)),
     };
   }
-}
+};
 
 export const barBoundingBox = (value: number | null, fontScale: number): BoundingBox => {
   if (value === null) {
@@ -52,60 +52,64 @@ export const barBoundingBox = (value: number | null, fontScale: number): Boundin
       padMax: value > 0 ? 15 * fontScale : 0,
     };
   }
-}
+};
 
 export type ViewDimensions = {
-  width: number,
-  height: number,
-  yToPx: (y: number) => number,
-}
-
+  width: number;
+  height: number;
+  yToPx: (y: number) => number;
+};
 
 type FlatListChartData = {
-  height: number,
-  unit: SubUnit,
-  gridLineColor: string,
-  items: { time: number, values: number[], nDays: number, dayIndex?: number }[], // todo: swap for any[]
-  renderItem: (params: { item: any, index: number, view: ViewDimensions }) => React.ReactNode,
-  itemBoundingBox: (item: any, itemWidthPx: number) => BoundingBox,
-  itemLabel: (item: any) => string,
-  setSelectedRange?: (range: { min: number, max: number } | null) => void,
-}
+  height: number;
+  unit: SubUnit;
+  gridLineColor: string;
+  items: { time: number; values: number[]; nDays: number; dayIndex?: number }[]; // todo: swap for any[]
+  renderItem: (params: { item: any; index: number; view: ViewDimensions }) => React.ReactNode;
+  itemBoundingBox: (item: any, itemWidthPx: number) => BoundingBox;
+  itemLabel: (item: any) => string;
+  setSelectedRange?: (range: { min: number; max: number } | null) => void;
+};
 
-const XAxisLabel = React.memo(({ label, binWidth, viewportHeight, xAxisHeight, gridLineColor }: {
-  label: string,
-  binWidth: number,
-  viewportHeight: number,
-  xAxisHeight: number,
-  gridLineColor: string,
-}) => (
-  <View style={{
-    position: 'absolute',
-    top: viewportHeight,
-    width: binWidth,
-    height: xAxisHeight,
-    alignItems: 'center',
-    paddingTop: 4,
-  }}>
-    <Text style={{ textAlign: 'center', fontSize: 10, color: gridLineColor }}>
-      {label}
-    </Text>
-  </View>
-));
-
-const FlatListChart = (
-  {
-    height,
-    unit,
+const XAxisLabel = React.memo(
+  ({
+    label,
+    binWidth,
+    viewportHeight,
+    xAxisHeight,
     gridLineColor,
-    items,
-    renderItem,
-    itemBoundingBox,
-    itemLabel,
-    setSelectedRange,
-  }:
-    FlatListChartData
-) => {
+  }: {
+    label: string;
+    binWidth: number;
+    viewportHeight: number;
+    xAxisHeight: number;
+    gridLineColor: string;
+  }) => (
+    <View
+      style={{
+        position: "absolute",
+        top: viewportHeight,
+        width: binWidth,
+        height: xAxisHeight,
+        alignItems: "center",
+        paddingTop: 4,
+      }}
+    >
+      <Text style={{ textAlign: "center", fontSize: 10, color: gridLineColor }}>{label}</Text>
+    </View>
+  ),
+);
+
+const FlatListChart = ({
+  height,
+  unit,
+  gridLineColor,
+  items,
+  renderItem,
+  itemBoundingBox,
+  itemLabel,
+  setSelectedRange,
+}: FlatListChartData) => {
   const [hasMeasuredLayoutSize, setHasMeasuredLayoutSize] = useState(false);
   const [size, setSize] = useState<LayoutRectangle | null>(null);
   const rootRef = useRef<View>(null);
@@ -130,51 +134,48 @@ const FlatListChart = (
   // make viewportWidth a multiple of binWidth
   const binWidth = viewportWidth / Math.round(viewportWidth / targetBinWidth);
 
-  const yToPx = useCallback((y: number) => {
-    return viewportHeight - (y - yRange.min) * viewportHeight / (yRange.max - yRange.min);
-  }, [viewportHeight, yRange.min, yRange.max]);
+  const yToPx = useCallback(
+    (y: number) => {
+      return viewportHeight - ((y - yRange.min) * viewportHeight) / (yRange.max - yRange.min);
+    },
+    [viewportHeight, yRange.min, yRange.max],
+  );
   const itemViewDimensions = useMemo(
     () => ({ width: binWidth, height: viewportHeight, yToPx }),
-    [binWidth, viewportHeight, yToPx]
+    [binWidth, viewportHeight, yToPx],
   );
   const cellStyle = useMemo(
     () => ({ top: topViewportPadding, width: binWidth, height: viewportHeight }),
-    [topViewportPadding, binWidth, viewportHeight]
+    [topViewportPadding, binWidth, viewportHeight],
   );
 
-  const onLayout = React.useCallback(
-    ({ nativeEvent: { layout } }: LayoutChangeEvent) => {
-      setHasMeasuredLayoutSize(true);
-      setSize(layout);
-    },
-    [],
-  );
+  const onLayout = React.useCallback(({ nativeEvent: { layout } }: LayoutChangeEvent) => {
+    setHasMeasuredLayoutSize(true);
+    setSize(layout);
+  }, []);
 
   const scrollX = useSharedValue(0);
-  const selectedRangeShared = useSharedValue<{ p0: number, p1: number } | null>(null);
+  const selectedRangeShared = useSharedValue<{ p0: number; p1: number } | null>(null);
   const getIndex = (num: number) => {
-    "worklet"
+    "worklet";
     return Math.min(items.length - 1, Math.max(0, Math.floor((viewportWidth - num + scrollX.value) / binWidth)));
   };
-  const panGesture = Gesture
-    .Pan()
+  const panGesture = Gesture.Pan()
     .activateAfterLongPress(300)
     .onStart((event) => {
       selectedRangeShared.set({ p0: getIndex(event.x), p1: getIndex(event.x) });
     })
     .onUpdate((event) => {
       selectedRangeShared.set({ p0: selectedRangeShared.value?.p0 ?? getIndex(event.x), p1: getIndex(event.x) });
-    })
-  const tapGesture = Gesture
-    .Tap()
-    .onEnd((event) => {
-      const tapIndex = getIndex(event.x);
-      if ((selectedRangeShared.value?.p0 !== selectedRangeShared.value?.p1) || selectedRangeShared.value?.p1 === tapIndex) {
-        selectedRangeShared.set(null);
-      } else {
-        selectedRangeShared.set({ p0: tapIndex, p1: tapIndex });
-      }
     });
+  const tapGesture = Gesture.Tap().onEnd((event) => {
+    const tapIndex = getIndex(event.x);
+    if (selectedRangeShared.value?.p0 !== selectedRangeShared.value?.p1 || selectedRangeShared.value?.p1 === tapIndex) {
+      selectedRangeShared.set(null);
+    } else {
+      selectedRangeShared.set({ p0: tapIndex, p1: tapIndex });
+    }
+  });
   const gesture = Gesture.Race(panGesture, tapGesture);
 
   useAnimatedReaction(
@@ -189,81 +190,93 @@ const FlatListChart = (
           } else {
             scheduleOnRN(setSelectedRange, {
               min: Math.min(currentValue.p0, currentValue.p1),
-              max: Math.max(currentValue.p0, currentValue.p1)
+              max: Math.max(currentValue.p0, currentValue.p1),
             });
           }
         }
       }
-    }
+    },
   );
 
   return (
-    <View key="root" ref={rootRef} style={{ height, flex: 1, position: 'relative', overflow: 'hidden' }} onLayout={onLayout}>
-      {hasMeasuredLayoutSize && <>
-        <Canvas key="grid" style={{
-          position: 'absolute',
-          width: size?.width,
-          height: size?.height,
-        }}>
-          {majorTicks.map((tick, index) => {
-            const tickBox = font.measureText(majorTickLabels[index]);
-            return (
-              <Fragment key={tick.toString()}>
-                <Line
-                  p1={vec(yAxisWidth, yToPx(tick) + topViewportPadding)}
-                  p2={vec(width, yToPx(tick) + topViewportPadding)}
-                  color={gridLineColor}
-                  strokeWidth={0}
-                  opacity={0.5}
-                />
-                <SkiaText
-                  x={yAxisWidth - tickBox.width - yLabelPadding}
-                  y={yToPx(tick) + tickBox.height * 0.4 + topViewportPadding}
-                  color={gridLineColor}
-                  font={font}
-                  text={majorTickLabels[index]}
-                />
-              </Fragment>
-            )
-          })}
-        </Canvas>
-        <GestureDetector gesture={gesture}>
-          <View style={{
-            position: 'absolute',
-            left: yAxisWidth,
-            top: 0,
-            width: viewportWidth,
-            height: height,
-          }}>
-            <FlatList
-              key="flashlist"
-              data={items}
-              // estimatedItemSize={binWidth}
-              onScroll={(event) => {
-                scrollX.set(event.nativeEvent.contentOffset.x);
-              }}
-              renderItem={({ item, index }) => (
-                <View style={cellStyle}>
-                  {renderItem({ item, index, view: itemViewDimensions })}
-                  <XAxisLabel
-                    label={itemLabel(item)}
-                    binWidth={binWidth}
-                    viewportHeight={viewportHeight}
-                    xAxisHeight={xAxisHeight}
-                    gridLineColor={gridLineColor}
+    <View
+      key="root"
+      ref={rootRef}
+      style={{ height, flex: 1, position: "relative", overflow: "hidden" }}
+      onLayout={onLayout}
+    >
+      {hasMeasuredLayoutSize && (
+        <>
+          <Canvas
+            key="grid"
+            style={{
+              position: "absolute",
+              width: size?.width,
+              height: size?.height,
+            }}
+          >
+            {majorTicks.map((tick, index) => {
+              const tickBox = font.measureText(majorTickLabels[index]);
+              return (
+                <Fragment key={tick.toString()}>
+                  <Line
+                    p1={vec(yAxisWidth, yToPx(tick) + topViewportPadding)}
+                    p2={vec(width, yToPx(tick) + topViewportPadding)}
+                    color={gridLineColor}
+                    strokeWidth={0}
+                    opacity={0.5}
                   />
-                </View>
-              )}
-              keyExtractor={(item) => `${item.time.toString()}-${item.dayIndex?.toString() ?? ""}`}
-              inverted={true}
-              horizontal={true}
-            />
-          </View>
-        </GestureDetector>
-      </>}
+                  <SkiaText
+                    x={yAxisWidth - tickBox.width - yLabelPadding}
+                    y={yToPx(tick) + tickBox.height * 0.4 + topViewportPadding}
+                    color={gridLineColor}
+                    font={font}
+                    text={majorTickLabels[index]}
+                  />
+                </Fragment>
+              );
+            })}
+          </Canvas>
+          <GestureDetector gesture={gesture}>
+            <View
+              style={{
+                position: "absolute",
+                left: yAxisWidth,
+                top: 0,
+                width: viewportWidth,
+                height: height,
+              }}
+            >
+              <FlatList
+                key="flashlist"
+                data={items}
+                // estimatedItemSize={binWidth}
+                onScroll={(event) => {
+                  scrollX.set(event.nativeEvent.contentOffset.x);
+                }}
+                renderItem={({ item, index }) => (
+                  <View style={cellStyle}>
+                    {renderItem({ item, index, view: itemViewDimensions })}
+                    <XAxisLabel
+                      label={itemLabel(item)}
+                      binWidth={binWidth}
+                      viewportHeight={viewportHeight}
+                      xAxisHeight={xAxisHeight}
+                      gridLineColor={gridLineColor}
+                    />
+                  </View>
+                )}
+                keyExtractor={(item) => `${item.time.toString()}-${item.dayIndex?.toString() ?? ""}`}
+                inverted={true}
+                horizontal={true}
+              />
+            </View>
+          </GestureDetector>
+        </>
+      )}
     </View>
   );
-}
+};
 
 export const BarChart = ({
   view,
@@ -272,37 +285,45 @@ export const BarChart = ({
   color,
   fontScale,
 }: {
-  view: ViewDimensions,
-  value: number | null,
-  unit: any,
-  color: string,
-  fontScale: number,
+  view: ViewDimensions;
+  value: number | null;
+  unit: any;
+  color: string;
+  fontScale: number;
 }) => {
   let barWidth = view.width * 0.6;
   let belowZero = value !== null && value < 0;
   let labelOffset = belowZero ? 0 : 13 * fontScale;
 
-  return (value !== null) && (
-    <Fragment key="data view">
-      <View key="value text" style={{ top: view.yToPx(value) - labelOffset, alignItems: 'center' }}>
-        <Text style={{ fontSize: 9, color: color }} numberOfLines={1} adjustsFontSizeToFit>{renderShortFormValue(value, unit)}</Text>
-      </View>
-      <Canvas key="bar" style={{ position: 'absolute', ...view }}>
-        <RoundedRect
-          rect={{
-            rect: { x: (view.width - barWidth) / 2, y: view.yToPx(0), width: barWidth, height: view.yToPx(value) - view.yToPx(0) },
-            topLeft: belowZero ? vec(0, 0) : vec(barWidth / 3, barWidth / 3),
-            topRight: belowZero ? vec(0, 0) : vec(barWidth / 3, barWidth / 3),
-            bottomRight: belowZero ? vec(barWidth / 3, barWidth / 3) : vec(0, 0),
-            bottomLeft: belowZero ? vec(barWidth / 3, barWidth / 3) : vec(0, 0),
-
-          }}
-          color={color}
-        />
-      </Canvas>
-    </Fragment>
+  return (
+    value !== null && (
+      <Fragment key="data view">
+        <View key="value text" style={{ top: view.yToPx(value) - labelOffset, alignItems: "center" }}>
+          <Text style={{ fontSize: 9, color: color }} numberOfLines={1} adjustsFontSizeToFit>
+            {renderShortFormValue(value, unit)}
+          </Text>
+        </View>
+        <Canvas key="bar" style={{ position: "absolute", ...view }}>
+          <RoundedRect
+            rect={{
+              rect: {
+                x: (view.width - barWidth) / 2,
+                y: view.yToPx(0),
+                width: barWidth,
+                height: view.yToPx(value) - view.yToPx(0),
+              },
+              topLeft: belowZero ? vec(0, 0) : vec(barWidth / 3, barWidth / 3),
+              topRight: belowZero ? vec(0, 0) : vec(barWidth / 3, barWidth / 3),
+              bottomRight: belowZero ? vec(barWidth / 3, barWidth / 3) : vec(0, 0),
+              bottomLeft: belowZero ? vec(barWidth / 3, barWidth / 3) : vec(0, 0),
+            }}
+            color={color}
+          />
+        </Canvas>
+      </Fragment>
+    )
   );
-}
+};
 
 export const BoxChart = ({
   view,
@@ -310,10 +331,10 @@ export const BoxChart = ({
   color,
   surfaceColor,
 }: {
-  view: ViewDimensions,
-  values: number[],
-  color: string,
-  surfaceColor: string,
+  view: ViewDimensions;
+  values: number[];
+  color: string;
+  surfaceColor: string;
 }) => {
   let barWidth = view.width * 0.5;
   let xmid = view.width / 2;
@@ -333,23 +354,9 @@ export const BoxChart = ({
   const q4px = view.yToPx(q4);
 
   return (
-    <Canvas key="bar" style={{ position: 'absolute', ...view }}>
-      <RoundedRect
-        x={xmid - w}
-        y={q1px}
-        width={2 * w}
-        height={q3px - q1px}
-        color={color}
-        r={w}
-      />
-      <RoundedRect
-        x={xmid - ws}
-        y={q0px}
-        width={2 * ws}
-        height={q4px - q0px}
-        color={color}
-        r={ws}
-      />
+    <Canvas key="bar" style={{ position: "absolute", ...view }}>
+      <RoundedRect x={xmid - w} y={q1px} width={2 * w} height={q3px - q1px} color={color} r={w} />
+      <RoundedRect x={xmid - ws} y={q0px} width={2 * ws} height={q4px - q0px} color={color} r={ws} />
       <RoundedRect
         x={xmid - wcircle}
         y={q2px - wcircle}
@@ -360,6 +367,6 @@ export const BoxChart = ({
       />
     </Canvas>
   );
-}
+};
 
-export default FlatListChart; 
+export default FlatListChart;

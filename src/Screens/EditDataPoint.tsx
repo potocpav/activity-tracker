@@ -1,16 +1,18 @@
 import React, { useState, FC, useRef, Fragment } from "react";
+import { View, Text, StyleSheet, ScrollView, ToastAndroid, Pressable } from "react-native";
+import { TextInput, MD3Theme } from "react-native-paper";
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  ToastAndroid,
-  Pressable,
-} from "react-native";
-import { TextInput, MD3Theme } from 'react-native-paper';
-import { ActivityType, ActivityPath, dateToDateList, DataPoint, dateListToDate, SubUnit, DateList, State } from "../Model/StoreTypes";
+  ActivityType,
+  ActivityPath,
+  dateToDateList,
+  DataPoint,
+  dateListToDate,
+  SubUnit,
+  DateList,
+  State,
+} from "../Model/StoreTypes";
 import useStore from "../Model/Store";
-import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
+import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import { CheckButton, CheckPlusButton, DeleteButton, ButtonRow, Button } from "../Components/Element";
 import { cmpDateList, formatDate } from "../Model/Activity";
 import { useAppTheme, useThemePalette, useThemeVariant } from "../Model/Theme";
@@ -21,7 +23,7 @@ import { ValueEditor } from "../Components/UnitView";
 import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
 import Hint from "../Components/Hint";
 import TagSelector from "../Components/TagSelector";
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import * as Crypto from "expo-crypto";
 import { useToday } from "../Model/useToday";
 
@@ -30,23 +32,27 @@ type EditDataPointProps = {
   route: any;
 };
 
-type InputData = {
-  "type": "new"
-  "dataPoint": DataPoint;
-} | {
-  "type": "edit",
-  "dataPoints": DataPoint[];
-};
+type InputData =
+  | {
+      type: "new";
+      dataPoint: DataPoint;
+    }
+  | {
+      type: "edit";
+      dataPoints: DataPoint[];
+    };
 
 // Return the single value if all values are the same (using JSON.stringify to compare), otherwise null
 const singleValueOrNull = (values: any[]): any | null => {
-  const set = new Set(values.map(v => JSON.stringify(v)));
+  const set = new Set(values.map((v) => JSON.stringify(v)));
   return (set.size === 1 ? values[0] : null) ?? null;
 };
 
 const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
-  const { activityPath, inputData } : { activityPath: ActivityPath, inputData: InputData } = route.params;
-  const activity: ActivityType = useStore((state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId]);
+  const { activityPath, inputData }: { activityPath: ActivityPath; inputData: InputData } = route.params;
+  const activity: ActivityType = useStore(
+    (state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId],
+  );
   const theme = useAppTheme(activity.color);
   const styles = getStyles(theme);
   const themeVariant = useThemeVariant();
@@ -59,7 +65,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   const deleteActivityDataPointsByUuid = useStore((state: any) => state.deleteActivityDataPointsByUuid);
 
   const editingMultiple = inputData.type === "edit" && inputData.dataPoints.length > 1;
-  const dataPoints : DataPoint[] = inputData.type === "new" ? [inputData.dataPoint] : inputData.dataPoints;
+  const dataPoints: DataPoint[] = inputData.type === "new" ? [inputData.dataPoint] : inputData.dataPoints;
 
   const date = singleValueOrNull(dataPoints.map((dp) => dateListToDate(dp.date)));
   const note = singleValueOrNull(dataPoints.map((dp) => dp.note));
@@ -80,36 +86,39 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   }
 
   let inputValues: {
-    subUnit:
-    { name: string | null, unit: SubUnit },
-    value: [string, (text: string) => void]
+    subUnit: { name: string | null; unit: SubUnit };
+    value: [string, (text: string) => void];
   }[];
 
   switch (activity.unit.type) {
-    case 'none':
+    case "none":
       inputValues = [];
       break;
-    case 'single':
-      const value : number | null = singleValueOrNull(dataPoints.map((dp) => dp.value as number | undefined));
-      inputValues = [{
-        subUnit: { name: null, unit: activity.unit.unit },
-        value: useState<string>(numberToString(value, activity.unit.unit))
-      }];
+    case "single":
+      const value: number | null = singleValueOrNull(dataPoints.map((dp) => dp.value as number | undefined));
+      inputValues = [
+        {
+          subUnit: { name: null, unit: activity.unit.unit },
+          value: useState<string>(numberToString(value, activity.unit.unit)),
+        },
+      ];
       break;
-    case 'multiple':
+    case "multiple":
       inputValues = activity.unit.values.map((u) => {
-        const value : number | null = singleValueOrNull(dataPoints.map((dp) => (dp.value as Record<string, number>)[u.name] ?? null));
+        const value: number | null = singleValueOrNull(
+          dataPoints.map((dp) => (dp.value as Record<string, number>)[u.name] ?? null),
+        );
         return {
           subUnit: u,
-          value: useState<string>(numberToString(value, u.unit))
+          value: useState<string>(numberToString(value, u.unit)),
         };
       });
       break;
   }
 
-  let inputValueDisabled:
-    [string | null, (disabled: string | null) => void][] =
-    inputValues.map((v) => useState<string | null>(null));
+  let inputValueDisabled: [string | null, (disabled: string | null) => void][] = inputValues.map((v) =>
+    useState<string | null>(null),
+  );
   let inputValueRefs: React.RefObject<InputWrapperRef>[] = inputValues.map((v) => useRef<InputWrapperRef>(undefined));
   let inputValueErrors: (string | null)[] = inputValues.map((v, idx) => {
     let error: string | null = null;
@@ -134,10 +143,13 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
 
   const toggleInputTag = (tag: string) => {
     setInputTags(inputTags.includes(tag) ? inputTags.filter((t: string) => t !== tag) : [...inputTags, tag]);
-  }
+  };
 
   const deleteDataPointWrapper = () => {
-    deleteActivityDataPointsByUuid(activityPath, dataPoints.map((dp) => dp.uuid));
+    deleteActivityDataPointsByUuid(
+      activityPath,
+      dataPoints.map((dp) => dp.uuid),
+    );
     navigation.goBack();
   };
 
@@ -198,7 +210,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
         break;
     }
 
-    const note = inputNote === "" ? {} : { "note": inputNote };
+    const note = inputNote === "" ? {} : { note: inputNote };
     const newPoint: DataPoint = {
       uuid: Crypto.randomUUID(),
       date: inputDateList as DateList, // TODO: handle null case
@@ -206,14 +218,18 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
       ...(inputTags.length > 0 ? { tags: inputTags } : {}),
       ...note,
     };
-    const newIndex = updateActivityDataPoint(activityPath, inputData.type === "new" ? undefined : dataPoints[0].uuid, newPoint);
+    const newIndex = updateActivityDataPoint(
+      activityPath,
+      inputData.type === "new" ? undefined : dataPoints[0].uuid,
+      newPoint,
+    );
     return { index: newIndex, dataPoint: newPoint };
   };
 
   const duplicateDataPointWrapper = () => {
     const res = saveDataPointWrapper();
     if (res !== undefined) {
-      ToastAndroid.show('Data point saved', ToastAndroid.SHORT);
+      ToastAndroid.show("Data point saved", ToastAndroid.SHORT);
       navigation.replace("EditDataPoint", {
         activityPath,
         newDataPoint: true,
@@ -241,37 +257,54 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
 
   React.useEffect(() => {
     navigation.setOptions({
-      title: inputData.type === "new" ? 'New data point' : editingMultiple ? `${dataPoints.length} data points` : `${formatDate(dateListToDate(dataPoints[0].date))} point`,
-      headerStyle: themeVariant == 'light' ? { backgroundColor: theme.colors.primary } : undefined,
+      title:
+        inputData.type === "new"
+          ? "New data point"
+          : editingMultiple
+            ? `${dataPoints.length} data points`
+            : `${formatDate(dateListToDate(dataPoints[0].date))} point`,
+      headerStyle: themeVariant == "light" ? { backgroundColor: theme.colors.primary } : undefined,
       headerTintColor: "#ffffff",
       headerRight: () => (
         <ButtonRow>
-          {inputData.type === "edit" && (
-            <DeleteButton onPress={deleteDataPointWrapper} color="white" />
-          )}
+          {inputData.type === "edit" && <DeleteButton onPress={deleteDataPointWrapper} color="white" />}
           <CheckPlusButton onPress={duplicateDataPointWrapper} color="white" />
-          <CheckButton onPress={() => { saveDataPointWrapper() && navigation.goBack(); }} color="white" />
+          <CheckButton
+            onPress={() => {
+              saveDataPointWrapper() && navigation.goBack();
+            }}
+            color="white"
+          />
         </ButtonRow>
       ),
     });
-  }, [navigation, theme, activity, inputDate, ...inputValues.map((inputValue: any) => inputValue.value[0]), inputTags, inputNote]);
+  }, [
+    navigation,
+    theme,
+    activity,
+    inputDate,
+    ...inputValues.map((inputValue: any) => inputValue.value[0]),
+    inputTags,
+    inputNote,
+  ]);
 
   return (
     <Fragment>
       <Hint hint="save_data_point" />
-      <SystemBars style={{ statusBar: "light", navigationBar: themeVariant == 'light' ? "dark" : "light" }} />
+      <SystemBars style={{ statusBar: "light", navigationBar: themeVariant == "light" ? "dark" : "light" }} />
       <ScrollView>
         <SafeAreaView style={{ gap: 10, padding: 10 }} edges={["left", "right", "bottom"]}>
           <InputWrapper error={showErrors ? dateError : null} ref={dateInputRef}>
-            <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <Pressable onPress={showDatePicker}
+            <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 10 }}>
+              <Pressable
+                onPress={showDatePicker}
                 style={({ pressed }) => [
                   {
                     flex: 1,
                     opacity: pressed ? 0.7 : 1,
                   },
                 ]}
-              // android_ripple={{ color: theme.colors.onSurface, foreground: false }}
+                // android_ripple={{ color: theme.colors.onSurface, foreground: false }}
               >
                 <TextInput
                   mode="outlined"
@@ -298,39 +331,49 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
             />
           </InputWrapper>
 
-
-          {activity.tags.length > 0 && <View style={{ gap: 5 }}>
-            <Text style={{ color: theme.colors.onSurfaceVariant, fontSize: 16 }}>Tags:</Text>
-            <TagSelector
-              activity={activity}
-              inputTags={inputTags}
-              toggleInputTag={toggleInputTag}
-              palette={palette}
-              theme={theme}
-              justifyContent="flex-start"
-            />
-          </View>}
+          {activity.tags.length > 0 && (
+            <View style={{ gap: 5 }}>
+              <Text style={{ color: theme.colors.onSurfaceVariant, fontSize: 16 }}>Tags:</Text>
+              <TagSelector
+                activity={activity}
+                inputTags={inputTags}
+                toggleInputTag={toggleInputTag}
+                palette={palette}
+                theme={theme}
+                justifyContent="flex-start"
+              />
+            </View>
+          )}
 
           {activity.unit.type !== "none" && (
             <InputWrapper error={showErrors ? emptyValueError : null} ref={valueRef}>
               <Text style={styles.header}>{activity.unit.type === "single" ? "Value:" : "Values:"}</Text>
 
               <View>
-                {inputValues.map((inputValue: {
-                  subUnit: { name: string | null, unit: SubUnit },
-                  value: [string, (text: string) => void]
-                }, index: number) => (
-                  <ValueEditor
-                    key={inputValue.subUnit.name ?? "value"}
-                    unit={inputValue.subUnit.unit}
-                    error={showErrors ? inputValueErrors[index] : null}
-                    inputWrapperRef={inputValueRefs[index]}
-                    label={inputValue.subUnit.name === null ? renderUnit(inputValue.subUnit.unit) : `${inputValue.subUnit.name} - ${renderUnit(inputValue.subUnit.unit)}`} // TODO: better label
-                    value={inputValue.value[0]}
-                    onChange={inputValue.value[1]}
-                    setSubmitDisabled={inputValueDisabled[index][1]}
-                  />
-                ))}
+                {inputValues.map(
+                  (
+                    inputValue: {
+                      subUnit: { name: string | null; unit: SubUnit };
+                      value: [string, (text: string) => void];
+                    },
+                    index: number,
+                  ) => (
+                    <ValueEditor
+                      key={inputValue.subUnit.name ?? "value"}
+                      unit={inputValue.subUnit.unit}
+                      error={showErrors ? inputValueErrors[index] : null}
+                      inputWrapperRef={inputValueRefs[index]}
+                      label={
+                        inputValue.subUnit.name === null
+                          ? renderUnit(inputValue.subUnit.unit)
+                          : `${inputValue.subUnit.name} - ${renderUnit(inputValue.subUnit.unit)}`
+                      } // TODO: better label
+                      value={inputValue.value[0]}
+                      onChange={inputValue.value[1]}
+                      setSubmitDisabled={inputValueDisabled[index][1]}
+                    />
+                  ),
+                )}
               </View>
             </InputWrapper>
           )}
@@ -340,23 +383,24 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   );
 };
 
-const getStyles = (theme: MD3Theme) => StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    marginTop: 10,
-    flex: 1,
-    padding: 10,
-  },
-  tagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  header: {
-    color: theme.colors.onSurfaceVariant,
-    fontSize: 16,
-  },
-});
+const getStyles = (theme: MD3Theme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+    content: {
+      marginTop: 10,
+      flex: 1,
+      padding: 10,
+    },
+    tagsContainer: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+    },
+    header: {
+      color: theme.colors.onSurfaceVariant,
+      fontSize: 16,
+    },
+  });
 
 export default EditDataPoint;

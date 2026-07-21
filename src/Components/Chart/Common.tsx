@@ -1,16 +1,13 @@
 import { SubUnit } from "../../Model/StoreTypes";
 
-
 export type BoundingBox = {
-  min: number, // domain units
-  max: number, // domain units
-  padMin: number, // px units
-  padMax: number, // px units
+  min: number; // domain units
+  max: number; // domain units
+  padMin: number; // px units
+  padMax: number; // px units
 } | null;
 
-
-
-export const boundingBoxToRange = (viewportHeight: number, box: BoundingBox): { min: number, max: number } => {
+export const boundingBoxToRange = (viewportHeight: number, box: BoundingBox): { min: number; max: number } => {
   if (box === null) {
     return { min: 0, max: 1 };
   } else {
@@ -26,17 +23,17 @@ export const boundingBoxToRange = (viewportHeight: number, box: BoundingBox): { 
       return { min: min, max: max };
     }
   }
-}
+};
 
-export const cmpMajorTicks = (unit: SubUnit, range: { min: number, max: number }, approxNTicks: number): number[] => {
-  'worklet'
+export const cmpMajorTicks = (unit: SubUnit, range: { min: number; max: number }, approxNTicks: number): number[] => {
+  "worklet";
   const idealStride = (range.max - range.min) / approxNTicks;
 
   const defaultStride = (targetStride: number) => {
     const logBase = Math.pow(10, 1 / 3);
     const logStride = Math.round(Math.log(targetStride) / Math.log(logBase));
     let fractionalStride = 0;
-    switch ((Math.round(logStride) % 3 + 3) % 3) {
+    switch (((Math.round(logStride) % 3) + 3) % 3) {
       case 0:
         fractionalStride = 1;
         break;
@@ -49,7 +46,7 @@ export const cmpMajorTicks = (unit: SubUnit, range: { min: number, max: number }
     }
     const stride = Math.pow(10, Math.floor(logStride / 3)) * fractionalStride;
     return stride;
-  }
+  };
 
   const enumeratedStride = (targetStride: number, strideList: number[]) => {
     let [min, minStride] = [Infinity, Infinity];
@@ -61,7 +58,7 @@ export const cmpMajorTicks = (unit: SubUnit, range: { min: number, max: number }
       }
     }
     return minStride;
-  }
+  };
 
   const stridedTicks = (stride: number) => {
     let ticks = [];
@@ -69,7 +66,7 @@ export const cmpMajorTicks = (unit: SubUnit, range: { min: number, max: number }
       ticks.push(i * stride);
     }
     return ticks;
-  }
+  };
 
   let stride = defaultStride(idealStride);
 
@@ -86,12 +83,45 @@ export const cmpMajorTicks = (unit: SubUnit, range: { min: number, max: number }
       switch (unit.unit) {
         case "hours":
           if (idealStride < 24) {
-            stride = enumeratedStride(idealStride, [1 / 3600, 2 / 3600, 5 / 3600, 10 / 3600, 30 / 3600, 1 / 60, 2 / 60, 5 / 60, 10 / 60, 15 / 60, 30 / 60, 1, 2, 6, 12, 24]);
+            stride = enumeratedStride(idealStride, [
+              1 / 3600,
+              2 / 3600,
+              5 / 3600,
+              10 / 3600,
+              30 / 3600,
+              1 / 60,
+              2 / 60,
+              5 / 60,
+              10 / 60,
+              15 / 60,
+              30 / 60,
+              1,
+              2,
+              6,
+              12,
+              24,
+            ]);
           }
           break;
         case "seconds":
           if (idealStride >= 1 && idealStride < 3600 * 24) {
-            stride = enumeratedStride(idealStride, [2, 5, 10, 30, 1 * 60, 2 * 60, 5 * 60, 10 * 60, 15 * 60, 30 * 60, 1 * 3600, 2 * 3600, 6 * 3600, 12 * 3600, 24 * 3600]);
+            stride = enumeratedStride(idealStride, [
+              2,
+              5,
+              10,
+              30,
+              1 * 60,
+              2 * 60,
+              5 * 60,
+              10 * 60,
+              15 * 60,
+              30 * 60,
+              1 * 3600,
+              2 * 3600,
+              6 * 3600,
+              12 * 3600,
+              24 * 3600,
+            ]);
           }
           break;
       }
@@ -127,4 +157,4 @@ export const cmpMajorTicks = (unit: SubUnit, range: { min: number, max: number }
       break;
   }
   return stridedTicks(stride);
-}
+};

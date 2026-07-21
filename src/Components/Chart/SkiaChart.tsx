@@ -9,44 +9,35 @@ import { cmpMajorTicks } from "./Common";
 const fontFamily = Platform.select({ default: "sans-serif" });
 
 export type Rect = {
-  x: { min: number, max: number },
-  y: { min: number, max: number },
-}
+  x: { min: number; max: number };
+  y: { min: number; max: number };
+};
 
 export type Viewport = {
-  left: number,
-  right: number,
-  top: number,
-  bottom: number,
-}
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+};
 
 export const xToCanvas = (view: Rect, viewport: Viewport, x: number) => {
-  "worklet"
-  return (x - view.x.min) * (viewport.right - viewport.left) / (view.x.max - view.x.min) + viewport.left;
-}
+  "worklet";
+  return ((x - view.x.min) * (viewport.right - viewport.left)) / (view.x.max - view.x.min) + viewport.left;
+};
 
 export const yToCanvas = (view: Rect, viewport: Viewport, y: number) => {
-  "worklet"
-  return viewport.bottom - (y - view.y.min) * (viewport.bottom - viewport.top) / (view.y.max - view.y.min);
-}
-
+  "worklet";
+  return viewport.bottom - ((y - view.y.min) * (viewport.bottom - viewport.top)) / (view.y.max - view.y.min);
+};
 
 type SkiaChartData = {
-  gridLineColor: string,
-  view: SharedValue<Rect>,
-  viewportShared: SharedValue<Viewport>,
-  children?: React.ReactNode,
-}
+  gridLineColor: string;
+  view: SharedValue<Rect>;
+  viewportShared: SharedValue<Viewport>;
+  children?: React.ReactNode;
+};
 
-const SkiaChart = (
-  {
-    gridLineColor,
-    view,
-    viewportShared,
-    children,
-  }:
-    SkiaChartData
-) => {
+const SkiaChart = ({ gridLineColor, view, viewportShared, children }: SkiaChartData) => {
   const [hasMeasuredLayoutSize, setHasMeasuredLayoutSize] = useState(false);
   const [size, setSize] = useState<LayoutRectangle | null>(null);
   const rootRef = useRef<View>(null);
@@ -72,14 +63,19 @@ const SkiaChart = (
       right: yAxisWidth + viewportWidth,
       top: topViewportPadding,
       bottom: topViewportPadding + viewportHeight,
-    }
+    };
   })();
 
   useEffect(() => {
     viewportShared.set(viewport);
   }, [viewport]);
 
-  const viewportClip = rect(viewport.left, viewport.top, viewport.right - viewport.left, viewport.bottom - viewport.top);
+  const viewportClip = rect(
+    viewport.left,
+    viewport.top,
+    viewport.right - viewport.left,
+    viewport.bottom - viewport.top,
+  );
 
   const xTickLine = [...Array(xNumTicks * 2).keys()].map(() => ({
     x: useSharedValue(NaN),
@@ -87,7 +83,7 @@ const SkiaChart = (
     p2: useSharedValue(vec(NaN, NaN)),
     labelX: useSharedValue(NaN),
     labelY: useSharedValue(NaN),
-    label: useSharedValue("")
+    label: useSharedValue(""),
   }));
 
   const yTickLine = [...Array(yNumTicks * 2).keys()].map(() => ({
@@ -96,7 +92,7 @@ const SkiaChart = (
     p2: useSharedValue(vec(NaN, NaN)),
     labelX: useSharedValue(NaN),
     labelY: useSharedValue(NaN),
-    label: useSharedValue("")
+    label: useSharedValue(""),
   }));
 
   useAnimatedReaction(
@@ -106,7 +102,7 @@ const SkiaChart = (
       };
     },
     (value, oldValue) => {
-      if (Math.floor(value.view.x.max) !== Math.floor((oldValue?.view.x.max ?? NaN))) {
+      if (Math.floor(value.view.x.max) !== Math.floor(oldValue?.view.x.max ?? NaN)) {
         const unitX: SubUnit = { type: "time", unit: "seconds" };
         const xTicks = cmpMajorTicks(unitX, value.view.x, xNumTicks);
         const xTickLabels = xTicks.map((tick) => renderShortFormValue(tick, unitX));
@@ -121,7 +117,7 @@ const SkiaChart = (
           state.label.set(xTickLabels[index] ?? "");
         });
       }
-    }
+    },
   );
 
   useAnimatedReaction(
@@ -149,13 +145,10 @@ const SkiaChart = (
     },
   );
 
-  const onLayout = React.useCallback(
-    ({ nativeEvent: { layout } }: LayoutChangeEvent) => {
-      setHasMeasuredLayoutSize(true);
-      setSize(layout);
-    },
-    [],
-  );
+  const onLayout = React.useCallback(({ nativeEvent: { layout } }: LayoutChangeEvent) => {
+    setHasMeasuredLayoutSize(true);
+    setSize(layout);
+  }, []);
 
   const framePath = Skia.Path.Make();
   const w = 1;
@@ -187,86 +180,87 @@ const SkiaChart = (
   );
 
   return (
-    <View key="root" ref={rootRef} style={{ flex: 1, position: 'relative', overflow: 'hidden' }} onLayout={onLayout}>
-      {hasMeasuredLayoutSize && <>
-        <Canvas key="grid" style={{
-          position: 'absolute',
-          width: size?.width,
-          height: size?.height,
-        }}>
-          <Path key="frame" style="stroke" strokeJoin="round" strokeWidth={w} path={framePath} color={gridLineColor} />
+    <View key="root" ref={rootRef} style={{ flex: 1, position: "relative", overflow: "hidden" }} onLayout={onLayout}>
+      {hasMeasuredLayoutSize && (
+        <>
+          <Canvas
+            key="grid"
+            style={{
+              position: "absolute",
+              width: size?.width,
+              height: size?.height,
+            }}
+          >
+            <Path
+              key="frame"
+              style="stroke"
+              strokeJoin="round"
+              strokeWidth={w}
+              path={framePath}
+              color={gridLineColor}
+            />
 
-          <Group clip={viewportClip}>
-            {xTickLine.map((tick, index) =>
-            (
-              <Line
-                key={`x-${index}`}
-                clip={viewportClip}
-                p1={tick.p1}
-                p2={tick.p2}
-                color={gridLineColor}
-                strokeWidth={0}
-                opacity={0.5}
-              />
-            )
-            )}
-            {yTickLine.map((tick, index) =>
-            (
-              <Line
-                key={`y-${index}`}
-                clip={viewportClip}
-                p1={tick.p1}
-                p2={tick.p2}
-                color={gridLineColor}
-                strokeWidth={0}
-                opacity={0.5}
-              />
-            )
-            )}
-          </Group>
-          <Fragment>
-            {xTickLine.map((tick, index) =>
-            (
-              <SkiaText
-                key={`x-${index}-text`}
-                x={tick.labelX}
-                y={tick.labelY}
-                color={gridLineColor}
-                font={font}
-                text={tick.label}
-              />
-            )
-            )}
-            {yTickLine.map((tick, index) =>
-            (
-              <SkiaText
-                key={`y-${index}-text`}
-                x={tick.labelX}
-                y={tick.labelY}
-                color={gridLineColor}
-                font={font}
-                text={tick.label}
-              />
-            )
-            )}
-          </Fragment>
-          <Group clip={viewportClip}>
-            {children}
-          </Group>
-        </Canvas>
-        <View style={{
-          position: 'absolute',
-          left: viewport.left,
-          top: viewport.top,
-          width: viewport.right - viewport.left,
-          height: viewport.bottom - viewport.top,
-        }}>
-
-        </View>
-      </>}
+            <Group clip={viewportClip}>
+              {xTickLine.map((tick, index) => (
+                <Line
+                  key={`x-${index}`}
+                  clip={viewportClip}
+                  p1={tick.p1}
+                  p2={tick.p2}
+                  color={gridLineColor}
+                  strokeWidth={0}
+                  opacity={0.5}
+                />
+              ))}
+              {yTickLine.map((tick, index) => (
+                <Line
+                  key={`y-${index}`}
+                  clip={viewportClip}
+                  p1={tick.p1}
+                  p2={tick.p2}
+                  color={gridLineColor}
+                  strokeWidth={0}
+                  opacity={0.5}
+                />
+              ))}
+            </Group>
+            <Fragment>
+              {xTickLine.map((tick, index) => (
+                <SkiaText
+                  key={`x-${index}-text`}
+                  x={tick.labelX}
+                  y={tick.labelY}
+                  color={gridLineColor}
+                  font={font}
+                  text={tick.label}
+                />
+              ))}
+              {yTickLine.map((tick, index) => (
+                <SkiaText
+                  key={`y-${index}-text`}
+                  x={tick.labelX}
+                  y={tick.labelY}
+                  color={gridLineColor}
+                  font={font}
+                  text={tick.label}
+                />
+              ))}
+            </Fragment>
+            <Group clip={viewportClip}>{children}</Group>
+          </Canvas>
+          <View
+            style={{
+              position: "absolute",
+              left: viewport.left,
+              top: viewport.top,
+              width: viewport.right - viewport.left,
+              height: viewport.bottom - viewport.top,
+            }}
+          ></View>
+        </>
+      )}
     </View>
   );
-}
-
+};
 
 export default SkiaChart;

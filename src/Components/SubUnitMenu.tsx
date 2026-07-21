@@ -1,8 +1,7 @@
 import React from "react";
 import { Text } from "react-native";
-import { Menu } from 'react-native-paper';
+import { Menu } from "react-native-paper";
 import { ChevronDownIcon, Button } from "./Element";
-
 
 interface SubUnitMenuProps {
   subUnitNames: string[] | null;
@@ -49,4 +48,4 @@ const SubUnitMenu: React.FC<SubUnitMenuProps> = ({
   );
 };
 
-export default SubUnitMenu; 
+export default SubUnitMenu;

@@ -1,16 +1,15 @@
-import { useTheme } from 'react-native-paper';
-import useStore from './Store';
-import { darkPalette, lightPalette } from './Color';
-import { useColorScheme, useWindowDimensions } from 'react-native';
-import { MD3Theme } from 'react-native-paper/lib/typescript/types';
+import { useTheme } from "react-native-paper";
+import useStore from "./Store";
+import { darkPalette, lightPalette } from "./Color";
+import { useColorScheme, useWindowDimensions } from "react-native";
+import { MD3Theme } from "react-native-paper/lib/typescript/types";
 
-
-export const useWideDisplay = () : boolean => {
+export const useWideDisplay = (): boolean => {
   const dimensions = useWindowDimensions();
   return dimensions.width > 600;
-}
+};
 
-export const useThemeVariant = () : "dark" | "light" => {
+export const useThemeVariant = (): "dark" | "light" => {
   const themeSettings = useStore((state: any) => state.theme);
   const systemScheme = useColorScheme();
   if (themeSettings === "system") {
@@ -18,14 +17,14 @@ export const useThemeVariant = () : "dark" | "light" => {
   } else {
     return themeSettings;
   }
-}
+};
 
-export const useThemePalette = () : string[] => {
+export const useThemePalette = (): string[] => {
   const themeVariant = useThemeVariant();
   return themeVariant === "dark" ? darkPalette : lightPalette;
-}
+};
 
-export const useAppTheme = (primaryColor?: number) : MD3Theme => {
+export const useAppTheme = (primaryColor?: number): MD3Theme => {
   const palette = useThemePalette();
   const theme = useTheme();
   if (primaryColor !== undefined) {

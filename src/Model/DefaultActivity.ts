@@ -5,7 +5,7 @@ const firstSubUnitName = (unit: Unit): string | null => {
     return null;
   }
   return unit.values[0].name;
-}
+};
 
 export const defaultStats = (unit: Unit): Stat[] => {
   if (unit.type === "none") {
@@ -65,30 +65,30 @@ export const defaultGraphs = (unit: Unit): GraphProps[] => {
   if (unit.type === "none") {
     return [
       {
-      label: "Graph",
-      subUnit: null,
-      tagFilters: [],
-      graphType: "bar-count",
-      binSize: "week",
-    }
-  ];
+        label: "Graph",
+        subUnit: null,
+        tagFilters: [],
+        graphType: "bar-count",
+        binSize: "week",
+      },
+    ];
   } else {
     return [
       {
-      label: "Graph",
-      subUnit: firstSubUnitName(unit),
-      tagFilters: [],
-      graphType: "box",
-      binSize: "week",
-    },
-    {
-      label: "Counts",
-      subUnit: firstSubUnitName(unit),
-      tagFilters: [],
-      graphType: "bar-count",
-      binSize: "week",
-    }
-  ];
+        label: "Graph",
+        subUnit: firstSubUnitName(unit),
+        tagFilters: [],
+        graphType: "box",
+        binSize: "week",
+      },
+      {
+        label: "Counts",
+        subUnit: firstSubUnitName(unit),
+        tagFilters: [],
+        graphType: "bar-count",
+        binSize: "week",
+      },
+    ];
   }
 };
 
@@ -108,5 +108,5 @@ export const defaultBleScaleGraphs = (unit: Unit): GraphProps[] => {
       graphType: "box",
       binSize: "day",
     },
-  ]
+  ];
 };

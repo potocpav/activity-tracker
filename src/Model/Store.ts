@@ -9,10 +9,10 @@ import {
   stopMeasurement as stopMeasurementCommand,
   sampleBatteryVoltage,
   startStreamingData,
-  startMeasurement as startMeasurementCommand
+  startMeasurement as startMeasurementCommand,
 } from "./Ble";
 
-import {Device} from "react-native-ble-plx";
+import { Device } from "react-native-ble-plx";
 import { create } from "zustand";
 import {
   CalendarProps,
@@ -55,7 +55,11 @@ export const partialize = (state: State) => ({
   experimentalFeatures: state.experimentalFeatures,
 });
 
-const mapActivity = (state: State, activityPath: ActivityPath, f: (activity: ActivityType) => ActivityType) : {} | { activities: ActivityTab[] } => {
+const mapActivity = (
+  state: State,
+  activityPath: ActivityPath,
+  f: (activity: ActivityType) => ActivityType,
+): {} | { activities: ActivityTab[] } => {
   const oldTab = state.activities[activityPath.tabId];
   const oldActivity = oldTab?.activities[activityPath.activityId];
   if (!oldActivity) {
@@ -68,7 +72,10 @@ const mapActivity = (state: State, activityPath: ActivityPath, f: (activity: Act
   return { activities: newActivities };
 };
 
-const trimEmptyTabs = (activities: ActivityTab[], currentTabId: number) : { activities: ActivityTab[], currentTabId: number } => {
+const trimEmptyTabs = (
+  activities: ActivityTab[],
+  currentTabId: number,
+): { activities: ActivityTab[]; currentTabId: number } => {
   if (activities.length <= 1) {
     return { activities: activities, currentTabId: currentTabId };
   }
@@ -83,7 +90,7 @@ const trimEmptyTabs = (activities: ActivityTab[], currentTabId: number) : { acti
     newCurrentTabId = Math.min(newActivities.length, newCurrentTabId);
   }
   return { activities: newActivities, currentTabId: newCurrentTabId };
-}
+};
 
 const useStore = create<State>()(
   persist(
@@ -148,17 +155,15 @@ const useStore = create<State>()(
 
       setActivityTabName: (tabId: number, tabName: string) => {
         set((state: any) => ({
-          activities: state.activities.map(
-            (tab: ActivityTab, i: number) => i === tabId ? { ...tab, tabName } : tab
-          )
+          activities: state.activities.map((tab: ActivityTab, i: number) => (i === tabId ? { ...tab, tabName } : tab)),
         }));
       },
 
       setActivities: (tabId: number, activities: ActivityType[]) => {
         set((state: any) => ({
-          activities: state.activities.map(
-            (tab: ActivityTab, i: number) => i === tabId ? { ...tab, activities } : tab
-          )
+          activities: state.activities.map((tab: ActivityTab, i: number) =>
+            i === tabId ? { ...tab, activities } : tab,
+          ),
         }));
       },
 
@@ -188,9 +193,9 @@ const useStore = create<State>()(
         set((state: any) => {
           const oldScreenActivities = state.activities[activityPath.tabId].activities;
           const newScreenActivities = [
-            ...oldScreenActivities.slice(0, activityPath.activityId + 1), 
-            {...oldScreenActivities[activityPath.activityId], uuid: Crypto.randomUUID()}, 
-            ...oldScreenActivities.slice(activityPath.activityId + 1)
+            ...oldScreenActivities.slice(0, activityPath.activityId + 1),
+            { ...oldScreenActivities[activityPath.activityId], uuid: Crypto.randomUUID() },
+            ...oldScreenActivities.slice(activityPath.activityId + 1),
           ];
 
           const newActivities = state.activities.slice(0);
@@ -228,7 +233,7 @@ const useStore = create<State>()(
             const oldTab = newActivities[tabId];
             newActivities[tabId] = { ...oldTab, activities: [...oldTab.activities, activity] };
           }
-          const {activities, currentTabId} = trimEmptyTabs(newActivities, tabId);
+          const { activities, currentTabId } = trimEmptyTabs(newActivities, tabId);
           tabId = currentTabId;
           activityId = activities[tabId].activities.length - 1;
           return { activities, currentTabId, activityId };
@@ -251,8 +256,12 @@ const useStore = create<State>()(
             newActivities = state.activities.slice(0);
           }
           const fromTab = newActivities[tabId];
-          const selectedActivities = fromTab.activities.filter((activity: ActivityType, index: number) => activityIds.includes(index));
-          const unselectedActivities = fromTab.activities.filter((activity: ActivityType, index: number) => !activityIds.includes(index));
+          const selectedActivities = fromTab.activities.filter((activity: ActivityType, index: number) =>
+            activityIds.includes(index),
+          );
+          const unselectedActivities = fromTab.activities.filter(
+            (activity: ActivityType, index: number) => !activityIds.includes(index),
+          );
           newActivities[tabId] = { ...fromTab, activities: unselectedActivities };
           const toTab = newActivities[toTabId];
           newActivities[toTabId] = { ...toTab, activities: [...toTab.activities, ...selectedActivities] };
@@ -262,225 +271,257 @@ const useStore = create<State>()(
 
       updateActivity: (activityPath: ActivityPath, activity: ActivityType) => {
         set((state: any) => {
-            return mapActivity(state, activityPath, (_: ActivityType) =>  activity);
+          return mapActivity(state, activityPath, (_: ActivityType) => activity);
         });
       },
 
       setActivityCalendar: (activityPath: ActivityPath, calendarIndex: number, calendar: CalendarProps) => {
-        set((state: any) => 
+        set((state: any) =>
           mapActivity(state, activityPath, (activity: ActivityType) => {
-            return { ...activity, calendars: activity.calendars.map((c: CalendarProps, i: number) => i === calendarIndex ? calendar : c) };
-          })
+            return {
+              ...activity,
+              calendars: activity.calendars.map((c: CalendarProps, i: number) => (i === calendarIndex ? calendar : c)),
+            };
+          }),
         );
       },
 
       cloneActivityCalendar: (activityPath: ActivityPath, calendarIndex: number) => {
-        set((state: any) => 
+        set((state: any) =>
           mapActivity(state, activityPath, (activity: ActivityType) => {
-            return { ...activity, calendars: [...activity.calendars.slice(0, calendarIndex + 1), activity.calendars[calendarIndex], ...activity.calendars.slice(calendarIndex + 1)] };
-          })
+            return {
+              ...activity,
+              calendars: [
+                ...activity.calendars.slice(0, calendarIndex + 1),
+                activity.calendars[calendarIndex],
+                ...activity.calendars.slice(calendarIndex + 1),
+              ],
+            };
+          }),
         );
       },
 
       deleteActivityCalendar: (activityPath: ActivityPath, calendarIndex: number) => {
-        set((state: any) => 
+        set((state: any) =>
           mapActivity(state, activityPath, (activity: ActivityType) => {
-            return { ...activity, calendars: [...activity.calendars.slice(0, calendarIndex), ...activity.calendars.slice(calendarIndex + 1)] };
-          })
+            return {
+              ...activity,
+              calendars: [
+                ...activity.calendars.slice(0, calendarIndex),
+                ...activity.calendars.slice(calendarIndex + 1),
+              ],
+            };
+          }),
         );
       },
 
       setActivityGraph: (activityPath: ActivityPath, graphIndex: number, graph: GraphProps) => {
-        set((state: any) => 
+        set((state: any) =>
           mapActivity(state, activityPath, (activity: ActivityType) => {
-            return { ...activity, graphs: activity.graphs.map((g: GraphProps, i: number) => i === graphIndex ? graph : g) };
-          })
+            return {
+              ...activity,
+              graphs: activity.graphs.map((g: GraphProps, i: number) => (i === graphIndex ? graph : g)),
+            };
+          }),
         );
       },
 
       cloneActivityGraph: (activityPath: ActivityPath, graphIndex: number) => {
-        set((state: any) => 
+        set((state: any) =>
           mapActivity(state, activityPath, (activity: ActivityType) => {
-            return { ...activity, graphs: [...activity.graphs.slice(0, graphIndex + 1), activity.graphs[graphIndex], ...activity.graphs.slice(graphIndex + 1)] };
-          })
+            return {
+              ...activity,
+              graphs: [
+                ...activity.graphs.slice(0, graphIndex + 1),
+                activity.graphs[graphIndex],
+                ...activity.graphs.slice(graphIndex + 1),
+              ],
+            };
+          }),
         );
       },
 
       deleteActivityGraph: (activityPath: ActivityPath, graphIndex: number) => {
-        set((state: any) => 
+        set((state: any) =>
           mapActivity(state, activityPath, (activity: ActivityType) => {
-            return { ...activity, graphs: [...activity.graphs.slice(0, graphIndex), ...activity.graphs.slice(graphIndex + 1)] };
-          })
+            return {
+              ...activity,
+              graphs: [...activity.graphs.slice(0, graphIndex), ...activity.graphs.slice(graphIndex + 1)],
+            };
+          }),
         );
       },
 
       setActivityStat: (activityPath: ActivityPath, statId: number, stat: Stat) => {
-        set((state: any) => 
+        set((state: any) =>
           mapActivity(state, activityPath, (activity: ActivityType) => {
-            return { ...activity, stats: activity.stats.map((s: Stat, i: number) => i === statId ? stat : s) };
-          })
+            return { ...activity, stats: activity.stats.map((s: Stat, i: number) => (i === statId ? stat : s)) };
+          }),
         );
       },
 
       cloneActivityStat: (activityPath: ActivityPath, statId: number) => {
-        set((state: any) => 
+        set((state: any) =>
           mapActivity(state, activityPath, (activity: ActivityType) => {
-            return { ...activity, stats: [...activity.stats.slice(0, statId + 1), activity.stats[statId], ...activity.stats.slice(statId + 1)] };
-          })
+            return {
+              ...activity,
+              stats: [
+                ...activity.stats.slice(0, statId + 1),
+                activity.stats[statId],
+                ...activity.stats.slice(statId + 1),
+              ],
+            };
+          }),
         );
       },
 
       deleteActivityStat: (activityPath: ActivityPath, statId: number) => {
-        set((state: any) => 
+        set((state: any) =>
           mapActivity(state, activityPath, (activity: ActivityType) => {
             return { ...activity, stats: activity.stats.filter((s: Stat, i: number) => i !== statId) };
-          })
+          }),
         );
       },
 
-      setUnit: (activityPath: ActivityPath, unit: Unit, unitMap: { oldName: string | null, newName: string }[]) => {
-        set((state: any) => 
+      setUnit: (activityPath: ActivityPath, unit: Unit, unitMap: { oldName: string | null; newName: string }[]) => {
+        set((state: any) =>
           mapActivity(state, activityPath, (activity: ActivityType) => {
             // don't update unit if it's the same
             if (areUnitsEqual(activity.unit, unit)) {
               return activity;
             }
 
-          const setSubUnitName = (oldName: string | null) => {
-            switch (unit.type) {
-              case "none":
-                return null;
-              case "single":
-                return null;
-              case "multiple":
-                switch (activity.unit.type) {
-                  case "none":
-                    return unit.values[0].name;
-                  case "single":
-                    return unit.values[0].name;
-                  case "multiple":
-                    return unitMap.find((u: any) => u.oldName === oldName)?.newName ?? unit.values[0].name;
-                }
-            }
-            console.error("Unknown unit type", unit);
-            return null;
-          }
+            const setSubUnitName = (oldName: string | null) => {
+              switch (unit.type) {
+                case "none":
+                  return null;
+                case "single":
+                  return null;
+                case "multiple":
+                  switch (activity.unit.type) {
+                    case "none":
+                      return unit.values[0].name;
+                    case "single":
+                      return unit.values[0].name;
+                    case "multiple":
+                      return unitMap.find((u: any) => u.oldName === oldName)?.newName ?? unit.values[0].name;
+                  }
+              }
+              console.error("Unknown unit type", unit);
+              return null;
+            };
 
-          const mapDpValue = (value: undefined | number | object) => {
-            let newValue;
-            switch (unit.type) {
-              case "none":
-                value = undefined;
-                break;
-              case "single":
-                switch (activity.unit.type) {
-                  case "none":
-                    newValue = 1;
-                    break;
-                  case "single":
-                    newValue = value;
-                    break;
-                  case "multiple":
-                    newValue = (value as any)[activity.unit.values[0].name];
-                    break;
-                }
-                break;
-              case "multiple":
-                switch (activity.unit.type) {
-                  case "none":
-                    // first element is 1, the rest are undefined
-                    newValue = Object.fromEntries([[unit.values[0].name, 1]]);
-                    break;
-                  case "single":
-                    // all subunits with oldName == null are value, the rest are undefined
-                    newValue = Object.fromEntries(
-                      unitMap
-                        .filter(u => u.oldName === null)
-                        .map(u => [u.newName, value])
-                    );
-                    break;
-                  case "multiple":
-                    // all subunits with oldName are set to the appropriate previous value
-                    newValue = Object.fromEntries(
-                      unitMap
-                        .filter(u => typeof u.oldName === 'string')
-                        .map(u => [u.newName, (value as any)[u.oldName as string]])
-                        .filter(u => u[1] !== undefined)
-                    );
-                    break;
-                }
-                break;
-            }
-            return newValue;
-          }
+            const mapDpValue = (value: undefined | number | object) => {
+              let newValue;
+              switch (unit.type) {
+                case "none":
+                  value = undefined;
+                  break;
+                case "single":
+                  switch (activity.unit.type) {
+                    case "none":
+                      newValue = 1;
+                      break;
+                    case "single":
+                      newValue = value;
+                      break;
+                    case "multiple":
+                      newValue = (value as any)[activity.unit.values[0].name];
+                      break;
+                  }
+                  break;
+                case "multiple":
+                  switch (activity.unit.type) {
+                    case "none":
+                      // first element is 1, the rest are undefined
+                      newValue = Object.fromEntries([[unit.values[0].name, 1]]);
+                      break;
+                    case "single":
+                      // all subunits with oldName == null are value, the rest are undefined
+                      newValue = Object.fromEntries(
+                        unitMap.filter((u) => u.oldName === null).map((u) => [u.newName, value]),
+                      );
+                      break;
+                    case "multiple":
+                      // all subunits with oldName are set to the appropriate previous value
+                      newValue = Object.fromEntries(
+                        unitMap
+                          .filter((u) => typeof u.oldName === "string")
+                          .map((u) => [u.newName, (value as any)[u.oldName as string]])
+                          .filter((u) => u[1] !== undefined),
+                      );
+                      break;
+                  }
+                  break;
+              }
+              return newValue;
+            };
 
-        
-          // update points
-          // FIXME: What if the value is undefined, after converting a data point from Multiple to Single?
-          const newDataPoints = activity.dataPoints
-            .map((dp: DataPoint) => {
+            // update points
+            // FIXME: What if the value is undefined, after converting a data point from Multiple to Single?
+            const newDataPoints = activity.dataPoints.map((dp: DataPoint) => {
               let { value, ...dpValueless } = dp;
               const newDpValue = mapDpValue(dp.value);
               return {
                 ...dpValueless,
                 ...(newDpValue !== undefined ? { value: newDpValue } : {}),
-              }
+              };
             });
 
-          // update calendars, graphs, and stats
+            // update calendars, graphs, and stats
 
-          const newCalendars = activity.calendars.map((calendar: CalendarProps) => {
-            let newCalendarValue: StatValue;
-            if (unit.type === "none") {
-              newCalendarValue = "n_points";
-            } else {
-              newCalendarValue = calendar.value;
-            }
-
-            return {
-              ...calendar,
-              value: newCalendarValue,
-              subUnit: setSubUnitName(calendar.subUnit)
-            };
-          });
-
-          const newGraphs = activity.graphs.map((graph: GraphProps) => {
-            let newGraphType: GraphType;
-            let newBinSize = graph.binSize;
-            if (unit.type === "none" && activity.unit.type !== "none") {
-              newGraphType = "bar-count";
-              if (graph.binSize === "point") {
-                newBinSize = "day";
+            const newCalendars = activity.calendars.map((calendar: CalendarProps) => {
+              let newCalendarValue: StatValue;
+              if (unit.type === "none") {
+                newCalendarValue = "n_points";
+              } else {
+                newCalendarValue = calendar.value;
               }
-            } else if (unit.type !== "none" && activity.unit.type === "none") {
-              newGraphType = "bar-count";
-            } else {
-              newGraphType = graph.graphType;
-            }
 
-            return {
-              ...graph,
-              graphType: newGraphType,
-              binSize: newBinSize,
-              subUnit: setSubUnitName(graph.subUnit)
+              return {
+                ...calendar,
+                value: newCalendarValue,
+                subUnit: setSubUnitName(calendar.subUnit),
+              };
+            });
+
+            const newGraphs = activity.graphs.map((graph: GraphProps) => {
+              let newGraphType: GraphType;
+              let newBinSize = graph.binSize;
+              if (unit.type === "none" && activity.unit.type !== "none") {
+                newGraphType = "bar-count";
+                if (graph.binSize === "point") {
+                  newBinSize = "day";
+                }
+              } else if (unit.type !== "none" && activity.unit.type === "none") {
+                newGraphType = "bar-count";
+              } else {
+                newGraphType = graph.graphType;
+              }
+
+              return {
+                ...graph,
+                graphType: newGraphType,
+                binSize: newBinSize,
+                subUnit: setSubUnitName(graph.subUnit),
+              };
+            });
+
+            const newStats = activity.stats.map((stat: Stat) => ({
+              ...stat,
+              subUnit: setSubUnitName(stat.subUnit),
+            }));
+
+            const newActivity: ActivityType = {
+              ...activity,
+              unit,
+              dataPoints: newDataPoints,
+              calendars: newCalendars,
+              graphs: newGraphs,
+              stats: newStats,
             };
-          });
-
-          const newStats = activity.stats.map((stat: Stat) => ({
-            ...stat,
-            subUnit: setSubUnitName(stat.subUnit)
-          }));
-
-          const newActivity: ActivityType = {
-            ...activity,
-            unit,
-            dataPoints: newDataPoints,
-            calendars: newCalendars,
-            graphs: newGraphs,
-            stats: newStats
-          };
-          return newActivity;
-          })
+            return newActivity;
+          }),
         );
       },
 
@@ -497,42 +538,43 @@ const useStore = create<State>()(
         }
 
         const newTags = tags.map((t: SetTag) => ({ name: t.name, color: t.color }));
-        const updateTag = (tagName: TagName) =>
-          tags.find((t: SetTag) => t.oldTagName === tagName)?.name ?? null;
+        const updateTag = (tagName: TagName) => tags.find((t: SetTag) => t.oldTagName === tagName)?.name ?? null;
         const updateTags = (tags: TagName[] | undefined) => {
           if (tags === undefined) {
             return undefined;
           } else {
             const newTags = tags.map((t: TagName) => updateTag(t)).filter((t: TagName | null) => t !== null);
             if (newTags.length > 0) {
-              return newTags
+              return newTags;
             } else {
               return undefined;
             }
           }
         };
-        const updateTagFilters = (tagFilters: TagFilter[]) : TagFilter[] =>
-          tagFilters.map((tf: TagFilter) => ({
-            ...tf,
-            name: updateTag(tf.name)
-          })).filter((tf: any) => tf.name !== null) as TagFilter[];
+        const updateTagFilters = (tagFilters: TagFilter[]): TagFilter[] =>
+          tagFilters
+            .map((tf: TagFilter) => ({
+              ...tf,
+              name: updateTag(tf.name),
+            }))
+            .filter((tf: any) => tf.name !== null) as TagFilter[];
 
-        set((state: any) => 
+        set((state: any) =>
           mapActivity(state, activityPath, (activity: ActivityType) => {
             const newActivity: ActivityType = {
               ...activity,
               tags: newTags,
               stats: activity.stats.map((stat: Stat) => ({
                 ...stat,
-                tagFilters: updateTagFilters(stat.tagFilters)
+                tagFilters: updateTagFilters(stat.tagFilters),
               })),
               calendars: activity.calendars.map((calendar: CalendarProps) => ({
                 ...calendar,
-                tagFilters: updateTagFilters(calendar.tagFilters)
+                tagFilters: updateTagFilters(calendar.tagFilters),
               })),
               graphs: activity.graphs.map((graph: GraphProps) => ({
                 ...graph,
-                tagFilters: updateTagFilters(graph.tagFilters)
+                tagFilters: updateTagFilters(graph.tagFilters),
               })),
               dataPoints: activity.dataPoints.map((dp: DataPoint) => {
                 const newTags = updateTags(dp.tags);
@@ -541,31 +583,33 @@ const useStore = create<State>()(
                 } else {
                   return {
                     ...dp,
-                    tags: newTags
-                  }
+                    tags: newTags,
+                  };
                 }
-              })
+              }),
             };
             return newActivity;
-          })
+          }),
         );
       },
 
       findTag: (activityPath: ActivityPath, tagName: string) => {
-        return get().activities[activityPath.tabId].activities[activityPath.activityId].tags.find((t: Tag) => t.name === tagName);
+        return get().activities[activityPath.tabId].activities[activityPath.activityId].tags.find(
+          (t: Tag) => t.name === tagName,
+        );
       },
 
       addTag: (activityPath: ActivityPath, tag: Tag) => {
-        set((state: any) => 
-          mapActivity(state, activityPath, (activity: ActivityType) => ({ 
-            ...activity, 
-            tags: [...activity.tags, tag] 
-          }))
+        set((state: any) =>
+          mapActivity(state, activityPath, (activity: ActivityType) => ({
+            ...activity,
+            tags: [...activity.tags, tag],
+          })),
         );
       },
 
       deleteTag: (activityPath: ActivityPath, tagName: string) => {
-        set((state: any) => 
+        set((state: any) =>
           mapActivity(state, activityPath, (activity: ActivityType) => {
             const updateDataPoints = (dataPoints: DataPoint[]) => {
               return dataPoints.map((dataPoint: DataPoint) => {
@@ -580,47 +624,52 @@ const useStore = create<State>()(
                   }
                 }
               });
-            }
+            };
             const updateTags = (tags: Tag[]) => {
               return tags.filter((t: Tag) => t.name !== tagName);
-            }
-            const newActivity: ActivityType =
-              {
-                ...activity,
-                tags: updateTags(activity.tags),
-                dataPoints: updateDataPoints(activity.dataPoints)
-              };
+            };
+            const newActivity: ActivityType = {
+              ...activity,
+              tags: updateTags(activity.tags),
+              dataPoints: updateDataPoints(activity.dataPoints),
+            };
             return newActivity;
-          })
+          }),
         );
       },
 
       renameTag: (activityPath: ActivityPath, tagName: string, newTagName: string) => {
-        set((state: any) => 
+        set((state: any) =>
           mapActivity(state, activityPath, (activity: ActivityType) => {
-          const updateTags = (tags: Tag[], oldTagName: string, newTagName: string) => {
-            return tags.map((tag: Tag) => tag.name === oldTagName ? { ...tag, name: newTagName } : tag);
-          }
-          const updateDataPoints = (dataPoints: DataPoint[], oldTagName: string, newTagName: string) => {
-            return dataPoints.map((dataPoint: DataPoint) => {
-              if (dataPoint.tags !== undefined) {
-                return dataPoint.tags.includes(oldTagName) ? { ...dataPoint, tags: [...dataPoint.tags.filter((t: string) => t !== oldTagName), newTagName] } : dataPoint;
-              } else {
-                return dataPoint;
-              }
-            });
-          }
-          const newActivity: ActivityType = {
-            ...activity,
-            tags: updateTags(activity.tags, tagName, newTagName),
-            dataPoints: updateDataPoints(activity.dataPoints, tagName, newTagName)
-          };
-          return newActivity;
-          })
+            const updateTags = (tags: Tag[], oldTagName: string, newTagName: string) => {
+              return tags.map((tag: Tag) => (tag.name === oldTagName ? { ...tag, name: newTagName } : tag));
+            };
+            const updateDataPoints = (dataPoints: DataPoint[], oldTagName: string, newTagName: string) => {
+              return dataPoints.map((dataPoint: DataPoint) => {
+                if (dataPoint.tags !== undefined) {
+                  return dataPoint.tags.includes(oldTagName)
+                    ? { ...dataPoint, tags: [...dataPoint.tags.filter((t: string) => t !== oldTagName), newTagName] }
+                    : dataPoint;
+                } else {
+                  return dataPoint;
+                }
+              });
+            };
+            const newActivity: ActivityType = {
+              ...activity,
+              tags: updateTags(activity.tags, tagName, newTagName),
+              dataPoints: updateDataPoints(activity.dataPoints, tagName, newTagName),
+            };
+            return newActivity;
+          }),
         );
-      },  
+      },
 
-      updateActivityDataPoint: (activityPath: ActivityPath, dataPointUuid: string | undefined, updatedDataPoint: DataPoint) => {
+      updateActivityDataPoint: (
+        activityPath: ActivityPath,
+        dataPointUuid: string | undefined,
+        updatedDataPoint: DataPoint,
+      ) => {
         var insertIndex: number = NaN;
         set((state: any) =>
           mapActivity(state, activityPath, (activity: ActivityType) => {
@@ -628,9 +677,10 @@ const useStore = create<State>()(
               delete updatedDataPoint.tags;
             }
             const updatedDataPoints = [...activity.dataPoints];
-            const dataPointIndex = dataPointUuid !== undefined
-              ? updatedDataPoints.findIndex((dp: DataPoint) => dp.uuid === dataPointUuid)
-              : undefined;
+            const dataPointIndex =
+              dataPointUuid !== undefined
+                ? updatedDataPoints.findIndex((dp: DataPoint) => dp.uuid === dataPointUuid)
+                : undefined;
             if (dataPointIndex !== undefined) {
               if (dayCmp(updatedDataPoint, updatedDataPoints[dataPointIndex].date) == 0) {
                 // if date is the same, update in place
@@ -648,7 +698,7 @@ const useStore = create<State>()(
               updatedDataPoints.splice(insertIndex, 0, updatedDataPoint);
             }
             return { ...activity, dataPoints: updatedDataPoints };
-          })
+          }),
         );
         return insertIndex;
       },
@@ -656,10 +706,10 @@ const useStore = create<State>()(
       // users need to make sure that the date is monotonic
       // TODO: double check it
       appendActivityDataPoint: (activityPath: ActivityPath, dataPoint: DataPoint) => {
-        set((state: State) => 
+        set((state: State) =>
           mapActivity(state, activityPath, (activity: ActivityType) => {
             return { ...activity, dataPoints: [...activity.dataPoints, dataPoint] };
-          })
+          }),
         );
       },
 
@@ -669,7 +719,7 @@ const useStore = create<State>()(
             const updatedDataPoints = [...activity.dataPoints];
             updatedDataPoints.splice(dataPointIndex, 1);
             return { ...activity, dataPoints: updatedDataPoints };
-          })
+          }),
         );
       },
 
@@ -685,7 +735,7 @@ const useStore = create<State>()(
               }
             }
             return activity;
-          })
+          }),
         );
       },
 
@@ -694,7 +744,7 @@ const useStore = create<State>()(
           mapActivity(state, activityPath, (activity: ActivityType) => {
             const updatedDataPoints = activity.dataPoints.filter((_, index) => !dpIndices.includes(index));
             return { ...activity, dataPoints: updatedDataPoints };
-          })
+          }),
         );
       },
 
@@ -704,13 +754,13 @@ const useStore = create<State>()(
             const uuidSet = new Set(uuids);
             const updatedDataPoints = activity.dataPoints.filter((dp: DataPoint) => !uuidSet.has(dp.uuid));
             return { ...activity, dataPoints: updatedDataPoints };
-          })
+          }),
         );
       },
 
       requestPermissions: requestPermissions,
 
-      connectionStatus: () : "connected" | "disconnected" | "connecting" => {
+      connectionStatus: (): "connected" | "disconnected" | "connecting" => {
         if (get().connecting) {
           return "connecting";
         } else if (get().connectedDevice !== null) {
@@ -773,7 +823,7 @@ const useStore = create<State>()(
         });
       },
 
-      startMeasurement: async (onDataUpdate: (data: { w: number, t: number }[]) => void) => {
+      startMeasurement: async (onDataUpdate: (data: { w: number; t: number }[]) => void) => {
         get().withDevice(async (device: Device) => {
           await startMeasurementCommand(device);
           get().startStreamingData(onDataUpdate);
@@ -802,7 +852,7 @@ const useStore = create<State>()(
         });
       },
 
-      startStreamingData: (onDataUpdate: (data: { w: number, t: number }[]) => void) => {
+      startStreamingData: (onDataUpdate: (data: { w: number; t: number }[]) => void) => {
         get().withDevice((device: Device) => {
           const subscription = startStreamingData(device, (error, characteristic) => {
             const data = extractData(error, characteristic);
@@ -817,7 +867,6 @@ const useStore = create<State>()(
       setBleScaleWorkoutState: (bleScaleWorkoutState: BleScaleWorkoutState | null) => {
         set({ bleScaleWorkoutState: bleScaleWorkoutState });
       },
-
     }),
     {
       name: "store",
@@ -825,8 +874,8 @@ const useStore = create<State>()(
       version: version,
       partialize: partialize,
       migrate: migrate,
-    }
-  ));
+    },
+  ),
+);
 
-
-export default useStore; 
+export default useStore;

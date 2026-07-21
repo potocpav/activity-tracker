@@ -11,6 +11,7 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
+    "format": "prettier --write \"**/*.{ts,tsx}\"",
     "postinstall": "patch-package"
   },
   "dependencies": {
@@ -53,6 +54,7 @@
     "@types/react": "~19.2.10",
     "babel-preset-expo": "~57.0.0",
     "patch-package": "^8.0.1",
+    "prettier": "3.9.6",
     "typescript": "~6.0.3"
   },
   "private": true

@@ -2,12 +2,7 @@ import { PermissionsAndroid, Platform } from "react-native";
 import { base64 } from "./base64";
 import * as ExpoDevice from "expo-device";
 
-import {
-  BleError,
-  BleManager,
-  Characteristic,
-  Device,
-} from "react-native-ble-plx";
+import { BleError, BleManager, Characteristic, Device } from "react-native-ble-plx";
 
 const DATA_SERVICE_UUID = "7e4e1701-1ea6-40c9-9dcc-13d34ffead57";
 const CONTROL_CHARACTERISTIC_UUID = "7e4e1703-1ea6-40c9-9dcc-13d34ffead57";
@@ -16,14 +11,11 @@ const DATA_CHARACTERISTIC_UUID = "7e4e1702-1ea6-40c9-9dcc-13d34ffead57";
 const bleManager = new BleManager();
 
 const requestAndroid31Permissions = async () => {
-  const bluetoothScanPermission = await PermissionsAndroid.request(
-    PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-    {
-      title: "Location Permission",
-      message: "Bluetooth Low Energy requires Location",
-      buttonPositive: "OK",
-    }
-  );
+  const bluetoothScanPermission = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN, {
+    title: "Location Permission",
+    message: "Bluetooth Low Energy requires Location",
+    buttonPositive: "OK",
+  });
 
   const bluetoothConnectPermission = await PermissionsAndroid.request(
     PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
@@ -31,16 +23,13 @@ const requestAndroid31Permissions = async () => {
       title: "Location Permission",
       message: "Bluetooth Low Energy requires Location",
       buttonPositive: "OK",
-    }
+    },
   );
-  const fineLocationPermission = await PermissionsAndroid.request(
-    PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-    {
-      title: "Location Permission",
-      message: "Bluetooth Low Energy requires Location",
-      buttonPositive: "OK",
-    }
-  );
+  const fineLocationPermission = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION, {
+    title: "Location Permission",
+    message: "Bluetooth Low Energy requires Location",
+    buttonPositive: "OK",
+  });
 
   return (
     bluetoothScanPermission === "granted" &&
@@ -52,25 +41,21 @@ const requestAndroid31Permissions = async () => {
 const requestPermissions = async () => {
   if (Platform.OS === "android") {
     if ((ExpoDevice.platformApiLevel ?? -1) < 31) {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-        {
-          title: "Location Permission",
-          message: "Bluetooth Low Energy requires Location",
-          buttonPositive: "OK",
-        }
-      )
+      const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION, {
+        title: "Location Permission",
+        message: "Bluetooth Low Energy requires Location",
+        buttonPositive: "OK",
+      });
       return granted === PermissionsAndroid.RESULTS.GRANTED;
     } else {
-      const isAndroid31PermissionsGranted =
-        await requestAndroid31Permissions();
+      const isAndroid31PermissionsGranted = await requestAndroid31Permissions();
 
       return isAndroid31PermissionsGranted;
     }
   } else {
     return true;
   }
-}
+};
 
 const sendCommand = async (device: Device, command: number) => {
   await device.writeCharacteristicWithoutResponseForService(
@@ -108,10 +93,7 @@ const scanForPeripherals = (onDeviceFound: (device: Device) => void) => {
       console.error(error);
     }
 
-    if (
-      device &&
-      device.localName?.startsWith("Progressor")
-    ) {
+    if (device && device.localName?.startsWith("Progressor")) {
       onDeviceFound(device);
     }
   });
@@ -126,8 +108,8 @@ const stopDeviceScan = () => {
  */
 const extractData = (
   error: BleError | null,
-  characteristic: Characteristic | null
-): { w: number, t: number }[] | null => {
+  characteristic: Characteristic | null,
+): { w: number; t: number }[] | null => {
   if (error) {
     console.error(error);
     return null;
@@ -144,7 +126,7 @@ const extractData = (
   } else if (dataType === 0x01) {
     const length = bytes[1];
     const view = new DataView(bytes.buffer);
-    const dataPoints: { w: number, t: number }[] = [];
+    const dataPoints: { w: number; t: number }[] = [];
 
     for (let i = 0; i < length / 8; i++) {
       const weight = Math.abs(view.getFloat32(2 + i * 8, true));
@@ -182,13 +164,12 @@ const sampleBatteryVoltage = async (device: Device) => {
 
 const startStreamingData = (
   device: Device,
-  onDataUpdate: (
-    error: BleError | null,
-    characteristic: Characteristic | null) => void) => {
+  onDataUpdate: (error: BleError | null, characteristic: Characteristic | null) => void,
+) => {
   const subscription = device.monitorCharacteristicForService(
     DATA_SERVICE_UUID,
     DATA_CHARACTERISTIC_UUID,
-    onDataUpdate
+    onDataUpdate,
   );
   return subscription;
 };
@@ -207,5 +188,5 @@ export {
   stopMeasurement,
   shutdown,
   sampleBatteryVoltage,
-  startStreamingData
-}; 
+  startStreamingData,
+};

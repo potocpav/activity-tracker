@@ -1,17 +1,16 @@
-
-import { 
-  StatPeriod, 
-  DataPoint, 
-  DateList, 
-  dateListToTime, 
-  normalizeDateList, 
-  TagFilter, 
-  StatValue, 
-  Stat, 
-  dateToDateList, 
-  ActivityType, 
-  WeekStart, 
-  dateListToDate, 
+import {
+  StatPeriod,
+  DataPoint,
+  DateList,
+  dateListToTime,
+  normalizeDateList,
+  TagFilter,
+  StatValue,
+  Stat,
+  dateToDateList,
+  ActivityType,
+  WeekStart,
+  dateListToDate,
   BinnableSize,
 } from "./StoreTypes";
 import { renderLongFormNumber, renderLongFormValue } from "./Unit";
@@ -48,11 +47,11 @@ export const dateBetween = (d: DateList, lo: DateList, hi: DateList) => {
 // };
 
 export const statPeriodCmp = (
-  dp: DataPoint, 
-  period: StatPeriod, 
-  today: DateList, 
+  dp: DataPoint,
+  period: StatPeriod,
+  today: DateList,
   lastActive: DateList | null,
-  weekStart: WeekStart
+  weekStart: WeekStart,
 ) => {
   let lo: DateList | null = null;
   let hi: DateList | null = null;
@@ -97,30 +96,30 @@ export const statPeriodCmp = (
     // don't match
     return -1;
   }
-}
+};
 
-export const extractValue = (dataPoint: DataPoint, tagFiters: TagFilter[], subUnitName: string | null) : number | null => {
+export const extractValue = (
+  dataPoint: DataPoint,
+  tagFiters: TagFilter[],
+  subUnitName: string | null,
+): number | null => {
   const requiredTags = tagFiters.filter((t) => t.state === "yes");
   const negativeTags = tagFiters.filter((t) => t.state === "no");
   const hasAllRequiredTags = requiredTags.every((t) => (dataPoint.tags ?? []).includes(t.name));
   const hasAnyNegativeTags = negativeTags.some((t) => (dataPoint.tags ?? []).includes(t.name));
   if (hasAllRequiredTags && !hasAnyNegativeTags) {
-    const value = subUnitName !== null ? (dataPoint.value as any)[subUnitName] ?? null : dataPoint.value ?? 1;
+    const value = subUnitName !== null ? ((dataPoint.value as any)[subUnitName] ?? null) : (dataPoint.value ?? 1);
     return value;
   } else {
     return null;
   }
-}
-
+};
 
 export const calcStatValue = (stat: Stat, activity: ActivityType, weekStart: WeekStart) => {
   const today = dateToDateList(new Date());
-  const lastActive = activity.dataPoints.length > 0 ?
-    activity.dataPoints[activity.dataPoints.length - 1].date :
-    null;
-  const periodSlice = findZeroSlice(
-    activity.dataPoints,
-    (dp: DataPoint) => statPeriodCmp(dp, stat.period, today, lastActive, weekStart)
+  const lastActive = activity.dataPoints.length > 0 ? activity.dataPoints[activity.dataPoints.length - 1].date : null;
+  const periodSlice = findZeroSlice(activity.dataPoints, (dp: DataPoint) =>
+    statPeriodCmp(dp, stat.period, today, lastActive, weekStart),
   );
 
   const filteredValues: any[] = activity.dataPoints
@@ -128,7 +127,7 @@ export const calcStatValue = (stat: Stat, activity: ActivityType, weekStart: Wee
     .map((dp: DataPoint) => [dp.date, extractValue(dp, stat.tagFilters, stat.subUnit)])
     .filter((v: any) => v[1] !== null);
   return extractStatValue(filteredValues, stat.value, stat.period, weekStart);
-}
+};
 
 export const renderStatValue = (stat: Stat, activity: ActivityType, weekStart: WeekStart) => {
   const value = calcStatValue(stat, activity, weekStart);
@@ -154,7 +153,7 @@ export const renderStatValue = (stat: Stat, activity: ActivityType, weekStart: W
     }
   }
   return "-";
-}
+};
 
 // Returns the indices of the slice in data that zero the condition `cmp`
 // Data must be sorted in ascending order, such that (x)=>signum(cmp(x)) is monotonic.
@@ -169,13 +168,13 @@ export const findZeroSlice = (data: any[], cmp: (x: any) => number): [number, nu
     return [0, 0];
   } else if (cmpResultLast < 0) {
     return [data.length, data.length];
-  } 
+  }
 
   // start is within range
-    
+
   let startLo = 0;
   let startHi = data.length - 1;
-  
+
   let endLo = 0;
   let endHi = data.length - 1;
 
@@ -217,7 +216,7 @@ export const findZeroSlice = (data: any[], cmp: (x: any) => number): [number, nu
   }
 
   return [startLo, endLo];
-}
+};
 
 export const binTime = (binSize: BinnableSize, t0: number, i: number, weekStart: WeekStart): Date => {
   const t0Date = new Date(t0);
@@ -234,7 +233,7 @@ export const binTime = (binSize: BinnableSize, t0: number, i: number, weekStart:
       return new Date(t0Date.getFullYear(), t0Date.getMonth() + i, 1, 0);
     }
     case "quarter": {
-      const month = t0Date.getMonth()
+      const month = t0Date.getMonth();
       return new Date(t0Date.getFullYear(), month - (month % 3) + i * 3, 1, 0);
     }
     case "year": {
@@ -243,7 +242,11 @@ export const binTime = (binSize: BinnableSize, t0: number, i: number, weekStart:
   }
 };
 
-export const binTimeSeries = (binSize: BinnableSize, dataPoints: { date: DateList, value: number }[], weekStart: WeekStart) : { time: number, nDays: number, values: any[] }[] => {
+export const binTimeSeries = (
+  binSize: BinnableSize,
+  dataPoints: { date: DateList; value: number }[],
+  weekStart: WeekStart,
+): { time: number; nDays: number; values: any[] }[] => {
   if (dataPoints.length === 0) {
     return [];
   }
@@ -254,11 +257,13 @@ export const binTimeSeries = (binSize: BinnableSize, dataPoints: { date: DateLis
     return Math.round(tDiff / (1000 * 60 * 60 * 24));
   };
 
-  var bins: { time: number, nDays: number, values: any[] }[] = [{ 
-    time: binTime(binSize, t0, 0, weekStart).getTime(), 
-    nDays: nDays(binSize, 0), 
-    values: [] 
-  }];
+  var bins: { time: number; nDays: number; values: any[] }[] = [
+    {
+      time: binTime(binSize, t0, 0, weekStart).getTime(),
+      nDays: nDays(binSize, 0),
+      values: [],
+    },
+  ];
   var binIx = 0;
   for (let i = 0; i < dataPoints.length; i++) {
     const dp = dataPoints[i];
@@ -267,7 +272,7 @@ export const binTimeSeries = (binSize: BinnableSize, dataPoints: { date: DateLis
       bins.push({ time: binTime(binSize, t0, binIx, weekStart).getTime(), nDays: nDays(binSize, binIx), values: [] });
     }
     bins[bins.length - 1].values.push(dp.value);
-  };
+  }
   // pad till today
   const t1 = new Date().getTime();
   while (binTime(binSize, t0, binIx + 1, weekStart).getTime() <= t1) {
@@ -295,10 +300,11 @@ export const statPeriodDays = (period: StatPeriod, weekStart: WeekStart) => {
       const startDay = new Date(today.getFullYear(), Math.floor(today.getMonth() / 3) * 3, 1);
       return Math.floor((today.getTime() - startDay.getTime()) / (1000 * 60 * 60 * 24)) + 1;
     }
-    case "this_year": {
-      const startDay = new Date(today.getFullYear(), 0, 1);
-      return Math.floor((today.getTime() - startDay.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-    }
+    case "this_year":
+      {
+        const startDay = new Date(today.getFullYear(), 0, 1);
+        return Math.floor((today.getTime() - startDay.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      }
       return 365;
     case "last_7_days":
       return 7;
@@ -313,9 +319,14 @@ export const statPeriodDays = (period: StatPeriod, weekStart: WeekStart) => {
     case "all_time":
       return 365;
   }
-}
+};
 
-export const extractStatValue = (filteredValues: [DateList, number][], statValue: StatValue, period: StatPeriod, weekStart: WeekStart) : number | null => {
+export const extractStatValue = (
+  filteredValues: [DateList, number][],
+  statValue: StatValue,
+  period: StatPeriod,
+  weekStart: WeekStart,
+): number | null => {
   const periodValues = filteredValues.map((v: any) => v[1]);
   const periodDates = filteredValues.map((v: any) => v[0]);
 
@@ -325,7 +336,7 @@ export const extractStatValue = (filteredValues: [DateList, number][], statValue
   } else if (statValue === "n_points") {
     value = periodValues.length;
   } else if (statValue === "daily_mean") {
-    value = Math.round(periodValues.length / statPeriodDays(period, weekStart) * 100);
+    value = Math.round((periodValues.length / statPeriodDays(period, weekStart)) * 100);
   } else if (statValue === "sum") {
     value = periodValues.reduce((acc, v) => acc + v, 0);
   } else if (statValue === "mean") {
@@ -338,7 +349,7 @@ export const extractStatValue = (filteredValues: [DateList, number][], statValue
     value = periodValues[periodValues.length - 1];
   }
   return Number.isFinite(value) ? value : null;
-}
+};
 
 export const periodToLabel = (period: StatPeriod): string => {
   switch (period) {
@@ -365,7 +376,7 @@ export const periodToLabel = (period: StatPeriod): string => {
     case "all_time":
       return "All Time";
   }
-}
+};
 
 export const valueToLabel = (value: StatValue): string => {
   switch (value) {
@@ -386,7 +397,7 @@ export const valueToLabel = (value: StatValue): string => {
     case "last":
       return "Last";
   }
-}
+};
 
 export const formatDate = (date: Date) => {
   return date.toLocaleDateString(locale, { year: "numeric", month: "short", day: "numeric" });

@@ -11,7 +11,7 @@ import {
   statValueUnit,
   ActivityPath,
   State,
-  CalendarProps
+  CalendarProps,
 } from "../Model/StoreTypes";
 import { findZeroSlice, dayCmp, cmpDateList, extractStatValue, extractValue, binTime } from "../Model/Activity";
 import useStore from "../Model/Store";
@@ -63,7 +63,9 @@ const WeekColumnImpl: React.FC<WeekColumnProps> = ({
   tagFilters,
 }) => {
   const weekStart = useStore((state: any) => state.weekStart);
-  const unitType = useStore((state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId]?.unit.type);
+  const unitType = useStore(
+    (state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId]?.unit.type,
+  );
   const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);
   const deleteActivityDataPointByDate = useStore((state: any) => state.deleteActivityDataPointByDate);
   const dismissHint = useStore((state: any) => state.dismissHint);
@@ -72,10 +74,16 @@ const WeekColumnImpl: React.FC<WeekColumnProps> = ({
   return (
     <View style={styles.weekColumn}>
       <View style={styles.monthLabelContainer}>
-        {(itemWeekStart.getDate() <= 7 && itemWeekStart.getMonth() > 0) &&
-          <Text style={[styles.monthLabel, { color: theme.colors.onSurfaceVariant }]}>{`${itemWeekStart.toLocaleDateString('en-US', { month: 'short' })}`}</Text>}
-        {(itemWeekStart.getDate() <= 7 && itemWeekStart.getMonth() == 0) &&
-          <Text style={[styles.monthLabel, { color: theme.colors.onSurfaceVariant }]}>{`${itemWeekStart.toLocaleDateString('en-US', { year: 'numeric' })}`}</Text>}
+        {itemWeekStart.getDate() <= 7 && itemWeekStart.getMonth() > 0 && (
+          <Text
+            style={[styles.monthLabel, { color: theme.colors.onSurfaceVariant }]}
+          >{`${itemWeekStart.toLocaleDateString("en-US", { month: "short" })}`}</Text>
+        )}
+        {itemWeekStart.getDate() <= 7 && itemWeekStart.getMonth() == 0 && (
+          <Text
+            style={[styles.monthLabel, { color: theme.colors.onSurfaceVariant }]}
+          >{`${itemWeekStart.toLocaleDateString("en-US", { year: "numeric" })}`}</Text>
+        )}
       </View>
       {dayValues.map(({ day, hasData, hasFilteredData, value, isWeekend }, dayIdx) => (
         <TouchableOpacity
@@ -94,30 +102,46 @@ const WeekColumnImpl: React.FC<WeekColumnProps> = ({
             if (hasData) {
               navigation.navigate("ActivityData", { activityPath, day });
             } else {
-              navigation.navigate("EditDataPoint", { activityPath, inputData: { type: "new", dataPoint: { date: day, tags: positiveTags } } });
+              navigation.navigate("EditDataPoint", {
+                activityPath,
+                inputData: { type: "new", dataPoint: { date: day, tags: positiveTags } },
+              });
             }
           }}
           activeOpacity={0.3}
         >
-          {(dayIdx == 0) &&
-          <Text style={[styles.dayNumber, { color: theme.colors.outline, backgroundColor: theme.colors.background, zIndex: 10 }]}>
-            {day[2]}
-          </Text>}
+          {dayIdx == 0 && (
+            <Text
+              style={[
+                styles.dayNumber,
+                { color: theme.colors.outline, backgroundColor: theme.colors.background, zIndex: 10 },
+              ]}
+            >
+              {day[2]}
+            </Text>
+          )}
 
-          <View style={
-            {
+          <View
+            style={{
               ...styles.daySquareInternal,
               backgroundColor: hasData ? dayBackground : "#888888",
-              opacity: hasFilteredData ? 1 : hasData ? (isWeekend ? 0.6 : 0.4) : (isWeekend ? 0.5 : 0.3),
-            }
-          }>
-          {hasFilteredData && <Text style={[styles.value, { color: theme.colors.background }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>
-            {value !== null ?
-              (unitType === "none" && value === 1 ?
-                "✓" :
-                renderShortFormValue(value, subUnit)) :
-              '-'}
-          </Text>}
+              opacity: hasFilteredData ? 1 : hasData ? (isWeekend ? 0.6 : 0.4) : isWeekend ? 0.5 : 0.3,
+            }}
+          >
+            {hasFilteredData && (
+              <Text
+                style={[styles.value, { color: theme.colors.background }]}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.5}
+              >
+                {value !== null
+                  ? unitType === "none" && value === 1
+                    ? "✓"
+                    : renderShortFormValue(value, subUnit)
+                  : "-"}
+              </Text>
+            )}
           </View>
         </TouchableOpacity>
       ))}
@@ -128,13 +152,16 @@ const WeekColumnImpl: React.FC<WeekColumnProps> = ({
 const dayValuesEqual = (a: CalendarDayValue[], b: CalendarDayValue[]): boolean => {
   if (a.length !== b.length) return false;
   for (let i = 0; i < a.length; i++) {
-    const x = a[i], y = b[i];
+    const x = a[i],
+      y = b[i];
     if (
       x.hasData !== y.hasData ||
       x.hasFilteredData !== y.hasFilteredData ||
       x.value !== y.value ||
       x.isWeekend !== y.isWeekend ||
-      x.day[0] !== y.day[0] || x.day[1] !== y.day[1] || x.day[2] !== y.day[2]
+      x.day[0] !== y.day[0] ||
+      x.day[1] !== y.day[1] ||
+      x.day[2] !== y.day[2]
     ) {
       return false;
     }
@@ -142,22 +169,26 @@ const dayValuesEqual = (a: CalendarDayValue[], b: CalendarDayValue[]): boolean =
   return true;
 };
 
-const WeekColumn = React.memo(WeekColumnImpl, (prev, next) =>
-  prev.weekIdx === next.weekIdx &&
-  prev.now === next.now &&
-  prev.navigation === next.navigation &&
-  prev.activityPath === next.activityPath &&
-  prev.theme === next.theme &&
-  prev.styles === next.styles &&
-  prev.dayBackground === next.dayBackground &&
-  prev.subUnit === next.subUnit &&
-  prev.positiveTags === next.positiveTags &&
-  prev.tagFilters === next.tagFilters &&
-  dayValuesEqual(prev.dayValues, next.dayValues)
+const WeekColumn = React.memo(
+  WeekColumnImpl,
+  (prev, next) =>
+    prev.weekIdx === next.weekIdx &&
+    prev.now === next.now &&
+    prev.navigation === next.navigation &&
+    prev.activityPath === next.activityPath &&
+    prev.theme === next.theme &&
+    prev.styles === next.styles &&
+    prev.dayBackground === next.dayBackground &&
+    prev.subUnit === next.subUnit &&
+    prev.positiveTags === next.positiveTags &&
+    prev.tagFilters === next.tagFilters &&
+    dayValuesEqual(prev.dayValues, next.dayValues),
 );
 
 const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, calendarIndex }) => {
-  const activity: ActivityType = useStore((state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId]);
+  const activity: ActivityType = useStore(
+    (state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId],
+  );
   const calendar = activity.calendars[calendarIndex];
   const theme = useAppTheme(activity.color);
   const dayBackground = theme.colors.primary;
@@ -167,7 +198,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, 
   const itemWidth = 35 * dimensions.fontScale;
   const minWeekCount = Math.ceil(dimensions.width / itemWidth);
   const maxWeekCount = 52 * 10;
-  
+
   const styles = getStyles(itemWidth, dimensions);
   const now = useToday();
   const pastWeekStart = (date: Date, i: number) => binTime("week", date.getTime(), -i, weekStart);
@@ -181,9 +212,12 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, 
   // (babel-plugin-react-compiler@1.0.0 codegen bug), making it bail out of the whole component.
   const lastMs = lastVisibleWeek.getTime();
   const firstMs = firstVisibleWeek.getTime();
-  const weekCount = Math.min(maxWeekCount, Math.max(minWeekCount, 1 + Math.round((lastMs - firstMs) / (7 * 24 * 60 * 60 * 1000))));
+  const weekCount = Math.min(
+    maxWeekCount,
+    Math.max(minWeekCount, 1 + Math.round((lastMs - firstMs) / (7 * 24 * 60 * 60 * 1000))),
+  );
   const positiveTags = calendar.tagFilters.filter((t: TagFilter) => t.state === "yes").map((t: TagFilter) => t.name);
-  
+
   let subUnit: SubUnit;
   switch (activity.unit.type) {
     case "none":
@@ -193,7 +227,10 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, 
       subUnit = statValueUnit(calendar.value, activity.unit.unit);
       break;
     case "multiple":
-      subUnit = statValueUnit(calendar.value, (activity.unit.values as any).find((u: { name: string, unit: SubUnit }) => u.name === calendar.subUnit)?.unit);
+      subUnit = statValueUnit(
+        calendar.value,
+        (activity.unit.values as any).find((u: { name: string; unit: SubUnit }) => u.name === calendar.subUnit)?.unit,
+      );
       break;
   }
 
@@ -204,7 +241,11 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, 
     const weekStartDay = itemWeekStart.getDay();
     const days: CalendarDayValue[] = [];
     for (let dayIdx = 0; dayIdx < 7; dayIdx++) {
-      const day = normalizeDateList([itemWeekStart.getFullYear(), itemWeekStart.getMonth() + 1, itemWeekStart.getDate() + dayIdx]);
+      const day = normalizeDateList([
+        itemWeekStart.getFullYear(),
+        itemWeekStart.getMonth() + 1,
+        itemWeekStart.getDate() + dayIdx,
+      ]);
       if (cmpDateList(day, nowDay) > 0) {
         break;
       }
@@ -237,9 +278,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, 
       inverted={true}
       windowSize={2}
       horizontal={true}
-      getItemLayout={(_, index) => (
-        { length: itemWidth, offset: itemWidth * index, index }
-      )}
+      getItemLayout={(_, index) => ({ length: itemWidth, offset: itemWidth * index, index })}
       renderItem={({ item: weekIdx }) => (
         <WeekColumn
           weekIdx={weekIdx}
@@ -259,52 +298,53 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, 
   );
 };
 
-const getStyles = (itemWidth: number, dimensions: any) => StyleSheet.create({
-  calendarContainer: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: 16,
-  },
-  weekColumn: {
-    flexDirection: 'column',
-    width: itemWidth,
-  },
-  daySquareInternal: {
-    width: itemWidth - ITEM_MARGIN,
-    height: itemWidth - ITEM_MARGIN,
-    borderRadius: 8,
-    marginBottom: ITEM_MARGIN,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 3,
-  },
-  dayNumber: {
-    position: 'absolute',
-    fontSize: 8 * dimensions.fontScale,
-    top: -5 * dimensions.fontScale,
-    left: -3 * dimensions.fontScale,
-    paddingHorizontal: 3,
-    paddingVertical: 1,
-    borderRadius: 4,
-  },
-  value: {
-    position: 'absolute',
-    fontSize: 15 * dimensions.fontScale,
-  },
-  monthLabelContainer: {
-    height: 25 * dimensions.fontScale,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    marginRight: 4 * dimensions.fontScale,
-  },
-  monthLabel: {
-    fontSize: 12,
-    color: '#888',
-  },
-  scrollView: {
-    flex: 1,
-  },
-});
+const getStyles = (itemWidth: number, dimensions: any) =>
+  StyleSheet.create({
+    calendarContainer: {
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      marginVertical: 16,
+    },
+    weekColumn: {
+      flexDirection: "column",
+      width: itemWidth,
+    },
+    daySquareInternal: {
+      width: itemWidth - ITEM_MARGIN,
+      height: itemWidth - ITEM_MARGIN,
+      borderRadius: 8,
+      marginBottom: ITEM_MARGIN,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: 3,
+    },
+    dayNumber: {
+      position: "absolute",
+      fontSize: 8 * dimensions.fontScale,
+      top: -5 * dimensions.fontScale,
+      left: -3 * dimensions.fontScale,
+      paddingHorizontal: 3,
+      paddingVertical: 1,
+      borderRadius: 4,
+    },
+    value: {
+      position: "absolute",
+      fontSize: 15 * dimensions.fontScale,
+    },
+    monthLabelContainer: {
+      height: 25 * dimensions.fontScale,
+      alignItems: "center",
+      justifyContent: "flex-start",
+      marginRight: 4 * dimensions.fontScale,
+    },
+    monthLabel: {
+      fontSize: 12,
+      color: "#888",
+    },
+    scrollView: {
+      flex: 1,
+    },
+  });
 
-export default Calendar; 
+export default Calendar;

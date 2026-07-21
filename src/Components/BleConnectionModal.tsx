@@ -1,17 +1,10 @@
 import React, { FC, useCallback } from "react";
-import {
-  FlatList,
-  ListRenderItemInfo,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-} from "react-native";
+import { FlatList, ListRenderItemInfo, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Device } from "react-native-ble-plx";
 import useStore from "../Model/Store";
 import { useAppTheme, useThemeVariant } from "../Model/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
-
 
 type BleDeviceModalProps = {
   navigation: any;
@@ -25,23 +18,18 @@ const BleDeviceModal: FC<BleDeviceModalProps> = ({ navigation }) => {
 
   const renderDeviceModalListItem = useCallback(
     (item: ListRenderItemInfo<Device>) => {
-      return (
-        <DeviceModalListItem
-          item={item}
-          connectToDevice={connectToDevice}
-          navigation={navigation}
-        />
-      );
+      return <DeviceModalListItem item={item} connectToDevice={connectToDevice} navigation={navigation} />;
     },
-    [connectToDevice, navigation]
+    [connectToDevice, navigation],
   );
 
   return (
-    <SafeAreaView style={[modalStyle.modalContent, { backgroundColor: theme.colors.surface }]} edges={["left", "right", "bottom"]}>
-      <SystemBars style={themeVariant == 'light' ? "dark" : "light"} />
-      <Text style={[modalStyle.modalTitleText, { color: theme.colors.onSurface }]}>
-        Tap on a device to connect
-      </Text>
+    <SafeAreaView
+      style={[modalStyle.modalContent, { backgroundColor: theme.colors.surface }]}
+      edges={["left", "right", "bottom"]}
+    >
+      <SystemBars style={themeVariant == "light" ? "dark" : "light"} />
+      <Text style={[modalStyle.modalTitleText, { color: theme.colors.onSurface }]}>Tap on a device to connect</Text>
       <Text style={[modalStyle.instructionText, { color: theme.colors.onSurfaceVariant }]}>
         Make sure the green light is blinking on your Tindeq device.
       </Text>
@@ -60,7 +48,6 @@ type DeviceModalListItemProps = {
   connectToDevice: (device: Device) => void;
   navigation: any;
 };
-
 
 const DeviceModalListItem: FC<DeviceModalListItemProps> = (props) => {
   const theme = useAppTheme();
@@ -83,12 +70,11 @@ const DeviceModalListItem: FC<DeviceModalListItemProps> = (props) => {
   );
 };
 
-
 const modalStyle = StyleSheet.create({
   modalContent: {
     padding: 20,
     // maxHeight: '70%',
-    minHeight: '100%',
+    minHeight: "100%",
   },
   modalFlatlistContiner: {
     flexGrow: 1,
@@ -103,7 +89,7 @@ const modalStyle = StyleSheet.create({
   instructionText: {
     fontSize: 14,
     marginBottom: 15,
-    textAlign: 'center',
+    textAlign: "center",
   },
   ctaButton: {
     justifyContent: "center",

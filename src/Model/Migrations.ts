@@ -1,13 +1,4 @@
-
-import {
-  ActivityType,
-  DataPoint,
-  GraphProps,
-  HintType,
-  allHints,
-  ActivityTab,
-  generateUuids
-} from "./StoreTypes";
+import { ActivityType, DataPoint, GraphProps, HintType, allHints, ActivityTab, generateUuids } from "./StoreTypes";
 
 export const version = 33;
 
@@ -19,7 +10,7 @@ export const migrate = (persisted: any, version: number) => {
   }
   if (version < 8) {
     persisted.goals.forEach((goal: any) => {
-      if (goal.stats.length > 0 && typeof goal.stats[0] === 'object') {
+      if (goal.stats.length > 0 && typeof goal.stats[0] === "object") {
         goal.stats = [goal.stats];
       }
     });
@@ -40,7 +31,7 @@ export const migrate = (persisted: any, version: number) => {
     persisted.activities.forEach((activity: ActivityType) => {
       activity.dataPoints = activity.dataPoints.map((dp: DataPoint) => ({
         ...dp,
-        date: [dp.date[0], dp.date[1] + 1, dp.date[2]]
+        date: [dp.date[0], dp.date[1] + 1, dp.date[2]],
       }));
     });
   }
@@ -66,10 +57,13 @@ export const migrate = (persisted: any, version: number) => {
     persisted.activities.forEach((activity: any) => {
       if (activity.unit === null) {
         activity.unit = { type: "none" };
-      } else if (typeof activity.unit === 'string') {
+      } else if (typeof activity.unit === "string") {
         activity.unit = { type: "single", unit: { type: "number", symbol: activity.unit } };
       } else if (Array.isArray(activity.unit)) {
-        activity.unit = { type: "multiple", values: activity.unit.map((u: any) => ({ name: u.name, unit: { type: "number", symbol: u.symbol } })) };
+        activity.unit = {
+          type: "multiple",
+          values: activity.unit.map((u: any) => ({ name: u.name, unit: { type: "number", symbol: u.symbol } })),
+        };
       } else {
         console.error("Unknown unit type", activity.unit);
       }
@@ -85,11 +79,16 @@ export const migrate = (persisted: any, version: number) => {
     persisted.activeHints = allHints;
   }
   if (version < 20) {
-    persisted.activeHints = persisted.activeHints.filter((h: HintType | "duplicate_calendar") => h !== "duplicate_calendar");
+    persisted.activeHints = persisted.activeHints.filter(
+      (h: HintType | "duplicate_calendar") => h !== "duplicate_calendar",
+    );
   }
   if (version < 21) {
     persisted.activities.forEach((activity: ActivityType) => {
-      activity.graphs = activity.graphs.map((graph: GraphProps) => ({ ...graph, graphType: graph.graphType as any === "line-mean" ? "box" : graph.graphType }));
+      activity.graphs = activity.graphs.map((graph: GraphProps) => ({
+        ...graph,
+        graphType: (graph.graphType as any) === "line-mean" ? "box" : graph.graphType,
+      }));
     });
   }
   if (version < 22) {
@@ -101,13 +100,15 @@ export const migrate = (persisted: any, version: number) => {
     });
   }
   if (version < 24) {
-    persisted.activeHints = persisted.activeHints.filter((h: HintType | "activity_value_help") => h !== "activity_value_help");
+    persisted.activeHints = persisted.activeHints.filter(
+      (h: HintType | "activity_value_help") => h !== "activity_value_help",
+    );
   }
   if (version < 25) {
     persisted.activities.forEach((activity: ActivityType) => {
       switch (activity.special as string | null) {
         case "ble_scale":
-          activity.special = {type: "ble_scale", minWeight: 2};
+          activity.special = { type: "ble_scale", minWeight: 2 };
           break;
         case null:
           activity.special = null;
@@ -123,17 +124,20 @@ export const migrate = (persisted: any, version: number) => {
     delete persisted.workoutState;
   }
   if (version < 28) {
-    persisted.activities = 
-    [{
-      tabName: "Activities",
-      activities: persisted.activities
-    }];
+    persisted.activities = [
+      {
+        tabName: "Activities",
+        activities: persisted.activities,
+      },
+    ];
   }
   if (version < 30) {
     generateUuids(persisted);
   }
   if (version < 31) {
-    persisted.activeHints = persisted.activeHints.filter((h: HintType | "quickly_add_point") => h !== "quickly_add_point");
+    persisted.activeHints = persisted.activeHints.filter(
+      (h: HintType | "quickly_add_point") => h !== "quickly_add_point",
+    );
   }
   if (version < 32) {
     persisted.currentTabId = 0;
@@ -143,5 +147,5 @@ export const migrate = (persisted: any, version: number) => {
       persisted.activities = [{ tabName: "Activities", activities: [] }];
     }
   }
-  return persisted
+  return persisted;
 };

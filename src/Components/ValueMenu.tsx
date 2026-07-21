@@ -1,17 +1,17 @@
 import React from "react";
 import { View, Text } from "react-native";
-import { Menu } from 'react-native-paper';
+import { Menu } from "react-native-paper";
 import { numericStatValues, StatValue } from "../Model/StoreTypes";
 import { valueToLabel } from "../Model/Activity";
 import { ChevronDownIcon, Button } from "./Element";
 
 interface ValueMenuProps {
-  menuVisible: boolean
-  setMenuVisible: (visible: boolean) => void
-  value: StatValue
-  onChange: (value: StatValue) => void
-  themeColors: any
-  valueList?: StatValue[]
+  menuVisible: boolean;
+  setMenuVisible: (visible: boolean) => void;
+  value: StatValue;
+  onChange: (value: StatValue) => void;
+  themeColors: any;
+  valueList?: StatValue[];
 }
 
 const ValueMenu: React.FC<ValueMenuProps> = ({
@@ -29,10 +29,8 @@ const ValueMenu: React.FC<ValueMenuProps> = ({
       onDismiss={() => setMenuVisible(false)}
       anchor={
         <Button onPress={() => setMenuVisible(true)}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={{ marginRight: 10, color: themeColors.onSurface }}>
-              {valueToLabel(value)}
-            </Text>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Text style={{ marginRight: 10, color: themeColors.onSurface }}>{valueToLabel(value)}</Text>
             <ChevronDownIcon color={themeColors.onSurface} />
           </View>
         </Button>
@@ -54,4 +52,4 @@ const ValueMenu: React.FC<ValueMenuProps> = ({
   );
 };
 
-export default ValueMenu; 
+export default ValueMenu;
