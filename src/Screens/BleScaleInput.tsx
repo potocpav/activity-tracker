@@ -622,7 +622,6 @@ const BleScaleInputInner: React.FC<BleScaleInputInnerProps> = ({
                 theme={theme}
                 style={{ flex: 1, borderWidth: 1, borderColor: theme.colors.primary }}
                 selected={false}
-                selectModeActive={false}
               >
                 <LabeledValue label="Rep" theme={theme}>
                   <CenteredAnimatedText

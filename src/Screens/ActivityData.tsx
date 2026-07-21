@@ -45,7 +45,6 @@ const DataPointContainer = (props: {
   onPress?: () => void;
   onLongPress?: () => void;
   selected: boolean;
-  selectModeActive: boolean;
   style?: any;
   theme: any;
 }) => {
@@ -56,7 +55,6 @@ const DataPointContainer = (props: {
   const onDelete = props.onDelete;
 
   const panGesture = Gesture.Pan()
-    .enabled(props.selectModeActive !== true)
     .activeOffsetX([-TOLERANCE, TOLERANCE])
     .failOffsetY([-TOLERANCE, TOLERANCE])
     .onStart((e) => {
@@ -147,7 +145,6 @@ export const DataPointCardMultiContainer = (props: {
   onLongPress?: () => void;
   style?: any;
   selected: boolean;
-  selectModeActive: boolean;
 }) => {
   return (
     <DataPointContainer
@@ -157,7 +154,6 @@ export const DataPointCardMultiContainer = (props: {
       theme={props.theme}
       style={props.style}
       selected={props.selected}
-      selectModeActive={props.selectModeActive}
     >
       <View style={{ gap: 4 }}>
         <View
@@ -192,7 +188,6 @@ export const DataPointCardSingleContainer = (props: {
   onDelete?: () => void;
   style?: any;
   selected: boolean;
-  selectModeActive: boolean;
 }) => {
   return (
     <DataPointContainer
@@ -202,7 +197,6 @@ export const DataPointCardSingleContainer = (props: {
       theme={props.theme}
       style={props.style}
       selected={props.selected}
-      selectModeActive={props.selectModeActive}
     >
       <View style={{ flexDirection: "row", gap: 6, alignItems: "flex-start", justifyContent: "space-between" }}>
         <View
@@ -315,7 +309,6 @@ export const DataPointCard = ({
       note={note}
       theme={theme}
       selected={isSelected}
-      selectModeActive={selectModeActive}
     >
       <LabeledValue label="Value" theme={theme}>
         <TextValue theme={theme}>
@@ -357,7 +350,6 @@ export const DataPointCard = ({
         note={note}
         theme={theme}
         selected={isSelected}
-        selectModeActive={selectModeActive}
       >
         {renderedValues}
       </DataPointCardMultiContainer>
@@ -372,6 +364,38 @@ export const DataPointCard = ({
     case "multiple":
       return renderMultipleValues();
   }
+};
+
+const DataPointSectionHeader = ({
+  date,
+  toggleStatus,
+  uuids,
+  theme,
+  toggleSelection,
+}: {
+  date: DateList;
+  toggleStatus: "none" | "some" | "all";
+  uuids: string[];
+  theme: any;
+  toggleSelection: (uuids: string[]) => void;
+}) => {
+  let toggleIcon: keyof typeof MaterialCommunityIcons.glyphMap;
+  if (toggleStatus === "none") {
+    toggleIcon = "checkbox-blank-outline";
+  } else if (toggleStatus === "all") {
+    toggleIcon = "checkbox-intermediate";
+  } else {
+    toggleIcon = "checkbox-intermediate-variant";
+  }
+  const styles = getStyles(theme);
+  return (
+    <View style={styles.sectionHeader}>
+      <Text style={{ color: theme.colors.onSurface }}>{formatDate(dateListToDate(date))}</Text>
+      <Button onPress={() => toggleSelection(uuids)}>
+        <MaterialCommunityIcons name={toggleIcon} size={24} color={theme.colors.onSurfaceVariant} />
+      </Button>
+    </View>
+  );
 };
 
 const ActivityData = ({ navigation, route }: ActivityDataProps) => {
@@ -566,28 +590,15 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
           keyExtractor={(item) => item.dataPoint.uuid}
           windowSize={11}
           ListFooterComponent={() => <Inset type="bottom" />}
-          renderSectionHeader={({ section: { date, toggleStatus, data } }) => {
-            let toggleIcon: keyof typeof MaterialCommunityIcons.glyphMap;
-            if (toggleStatus === "none") {
-              toggleIcon = "checkbox-blank-outline";
-            } else if (toggleStatus === "all") {
-              toggleIcon = "checkbox-intermediate";
-            } else {
-              toggleIcon = "checkbox-intermediate-variant";
-            }
-            return (
-              <View style={styles.sectionHeader}>
-                <Text style={{ color: theme.colors.onSurface }}>{formatDate(dateListToDate(date as DateList))}</Text>
-                <Button
-                  onPress={() => {
-                    toggleSelection(data.map((item: any) => item.dataPoint.uuid));
-                  }}
-                >
-                  <MaterialCommunityIcons name={toggleIcon} size={24} color={theme.colors.onSurfaceVariant} />
-                </Button>
-              </View>
-            );
-          }}
+          renderSectionHeader={({ section: { date, toggleStatus, data } }) => (
+            <DataPointSectionHeader
+              date={date as DateList}
+              toggleStatus={toggleStatus}
+              uuids={data.map((item: any) => item.dataPoint.uuid)}
+              theme={theme}
+              toggleSelection={toggleSelection}
+            />
+          )}
           renderItem={({ item: item }) => (
             <DataPointCard
               activityPath={activityPath}
