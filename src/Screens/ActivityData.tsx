@@ -26,7 +26,7 @@ import { Divider } from "react-native-paper";
 import { Gesture, GestureDetector, Pressable } from "react-native-gesture-handler";
 import Animated, { useAnimatedReaction, useAnimatedStyle, useSharedValue, withDecay, withSpring, cancelAnimation, ReduceMotion, LinearTransition } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
-
+import { useToday } from "../Model/useToday";
 
 type ActivityDataProps = {
   navigation: any;
@@ -279,7 +279,7 @@ export const DataPointCard = (
     if (selectModeActive) {
       toggleSelection();
     } else {
-      navigation.navigate("EditDataPoint", { activityPath, dataPointIndex: i });
+      navigation.navigate("EditDataPoint", { activityPath, inputData: { type: "edit", dataPoints: [dataPoint] } });
     }
   };
 
@@ -361,6 +361,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
   const themeVariant = useThemeVariant();
   const [selectedPointUuids, setSelectedPointUuids] = useState<string[]>([]);
   const selectModeActive = selectedPointUuids.length > 0;
+  const today = useToday();
 
   const palette = useThemePalette();
   const styles = getStyles(theme);
@@ -487,7 +488,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
           />
         )}
         <Button
-          onPress={() => navigation.navigate("EditDataPoint", { activityPath, newDataPoint: true, newDataPointDate: day, tags: requiredTags })}>
+          onPress={() => navigation.navigate("EditDataPoint", { activityPath, inputData: { type: "new", dataPoint: { date: day ?? today, tags: requiredTags } } })}>
           <MaterialCommunityIcons name="plus" size={26} color={"#ffffff"} />
         </Button>
       </ButtonRow>
@@ -513,7 +514,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
       headerBackVisible: !selectModeActive,
       headerRight: selectModeActive ? selectModeButtons : normalButtons,
     });
-  }, [navigation, theme, tagsMenuVisible, tags, activity, selectModeActive, selectedPointUuids]);
+  }, [navigation, theme, tagsMenuVisible, tags, activity, selectModeActive, selectedPointUuids, today]);
 
   return (
     <SafeAreaView style={[styles.container]} edges={["left", "right"]}>

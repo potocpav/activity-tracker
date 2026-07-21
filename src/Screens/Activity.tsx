@@ -15,6 +15,7 @@ import { SystemBars } from "react-native-edge-to-edge";
 import Hint from "../Components/Hint";
 import { BleScaleIcon, ButtonRow, DotsIconButton, EditIconButton, PlusIconButton, Button } from "../Components/Element";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { useToday } from "../Model/useToday";
 
 type ActivityProps = {
   navigation: any;
@@ -60,6 +61,7 @@ const ActivityInner: React.FC<{ activity: ActivityType, activityPath: ActivityPa
   const duplicateActivity = useStore((state: any) => state.duplicateActivity);
   const deleteActivity = useStore((state: any) => state.deleteActivity);
   const dismissHint = useStore((state: any) => state.dismissHint);
+  const today = useToday();
 
   const deleteActivityWrapper = () => {
     Alert.alert(
@@ -159,7 +161,7 @@ const ActivityInner: React.FC<{ activity: ActivityType, activityPath: ActivityPa
               case null:
                 return (<PlusIconButton onPress={() => {
                   dismissHint("add_data_point");
-                  navigation.navigate("EditDataPoint", { activityPath, newDataPoint: true });
+                  navigation.navigate("EditDataPoint", { activityPath, inputData: { type: "new", dataPoint: { date: today } } });
                 }} color="white" />);
             }
           })()}
@@ -170,7 +172,7 @@ const ActivityInner: React.FC<{ activity: ActivityType, activityPath: ActivityPa
         </ButtonRow>
       ),
     });
-  }, [navigation, theme, menuVisible, activity]);
+  }, [navigation, theme, menuVisible, activity, today]);
 
   return (
     <View style={{ flex: 1 }}>

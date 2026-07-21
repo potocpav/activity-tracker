@@ -8,7 +8,7 @@ import {
   Pressable,
 } from "react-native";
 import { TextInput, MD3Theme } from 'react-native-paper';
-import { ActivityType, dateToDateList, DataPoint, dateListToDate, SubUnit, DateList, State } from "../Model/StoreTypes";
+import { ActivityType, ActivityPath, dateToDateList, DataPoint, dateListToDate, SubUnit, DateList, State } from "../Model/StoreTypes";
 import useStore from "../Model/Store";
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { CheckButton, CheckPlusButton, DeleteButton, ButtonRow, Button } from "../Components/Element";
@@ -23,14 +23,29 @@ import Hint from "../Components/Hint";
 import TagSelector from "../Components/TagSelector";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import * as Crypto from "expo-crypto";
+import { useToday } from "../Model/useToday";
 
 type EditDataPointProps = {
   navigation: any;
   route: any;
 };
 
+type InputData = {
+  "type": "new"
+  "dataPoint": DataPoint;
+} | {
+  "type": "edit",
+  "dataPoints": DataPoint[];
+};
+
+// Return the single value if all values are the same (using JSON.stringify to compare), otherwise null
+const singleValueOrNull = (values: any[]): any | null => {
+  const set = new Set(values.map(v => JSON.stringify(v)));
+  return (set.size === 1 ? values[0] : null) ?? null;
+};
+
 const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
-  const { activityPath, dataPointIndex, newDataPoint, newDataPointDate, tags, newValue, newNote } = route.params;
+  const { activityPath, inputData } : { activityPath: ActivityPath, inputData: InputData } = route.params;
   const activity: ActivityType = useStore((state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId]);
   const theme = useAppTheme(activity.color);
   const styles = getStyles(theme);
@@ -39,36 +54,28 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   const locale = Intl.DateTimeFormat().resolvedOptions().locale;
   const weekStart = useStore((state: any) => state.weekStart);
   const dismissHint = useStore((state: any) => state.dismissHint);
+  const today = useToday();
+  const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);
+  const deleteActivityDataPointsByUuid = useStore((state: any) => state.deleteActivityDataPointsByUuid);
 
-  const dataPoint: DataPoint =
-    dataPointIndex !== undefined ?
-      activity?.dataPoints[dataPointIndex] :
-      {
-        ...{
-          uuid: Crypto.randomUUID(),
-          date: dateToDateList(newDataPointDate ? dateListToDate(newDataPointDate) : new Date()),
-          tags: tags ?? [],
-        },
-        ...(newValue !== undefined ? { value: newValue } : {}),
-        ...(newNote !== undefined ? { note: newNote } : {})
-      };
+  const editingMultiple = inputData.type === "edit" && inputData.dataPoints.length > 1;
+  const dataPoints : DataPoint[] = inputData.type === "new" ? [inputData.dataPoint] : inputData.dataPoints;
 
-  const dateTime = dateListToDate(dataPoint.date);
-  const today = new Date();
+  const date = singleValueOrNull(dataPoints.map((dp) => dateListToDate(dp.date)));
+  const note = singleValueOrNull(dataPoints.map((dp) => dp.note));
+  const tags = singleValueOrNull(dataPoints.map((dp) => dp.tags));
   const [showErrors, setShowErrors] = useState(false);
 
-  const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);
-  const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
-  const [inputDate, setInputDate] = useState<Date>(dateTime);
-  const [inputNote, setInputNote] = useState<string>(dataPoint.note ?? "");
-  const [inputTags, setInputTags] = useState<string[]>(dataPoint.tags ?? tags ?? []);
+  const [inputDate, setInputDate] = useState<Date | null>(date);
+  const [inputNote, setInputNote] = useState<string>(note ?? "");
+  const [inputTags, setInputTags] = useState<string[]>(tags ?? []);
 
   const dateInputRef = useRef<InputWrapperRef>(undefined);
   let dateError: string | null = null;
-  let inputDateList: DateList = dateToDateList(inputDate);
-  if (cmpDateList(inputDateList, dateToDateList(today)) > 0) {
+  let inputDateList: DateList | null = inputDate ? dateToDateList(inputDate) : null;
+  if (inputDateList !== null && cmpDateList(inputDateList, dateToDateList(today)) > 0) {
     dateError = "Date cannot be in the future";
-  } else if (cmpDateList(inputDateList, [2000, 1, 1]) < 0) {
+  } else if (inputDateList !== null && cmpDateList(inputDateList, [2000, 1, 1]) < 0) {
     dateError = "Date must be from this millenium";
   }
 
@@ -83,17 +90,20 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
       inputValues = [];
       break;
     case 'single':
+      const value : number | null = singleValueOrNull(dataPoints.map((dp) => dp.value as number | undefined));
       inputValues = [{
         subUnit: { name: null, unit: activity.unit.unit },
-        value: useState<string>(numberToString((dataPoint as any).value ?? null, activity.unit.unit))
+        value: useState<string>(numberToString(value, activity.unit.unit))
       }];
       break;
     case 'multiple':
-      inputValues = activity.unit.values.map((u) => ({
-        subUnit: u,
-        value: useState<string>(
-          numberToString(((dataPoint as any).value ?? {})[u.name] ?? null, u.unit))
-      }));
+      inputValues = activity.unit.values.map((u) => {
+        const value : number | null = singleValueOrNull(dataPoints.map((dp) => (dp.value as Record<string, number>)[u.name] ?? null));
+        return {
+          subUnit: u,
+          value: useState<string>(numberToString(value, u.unit))
+        };
+      });
       break;
   }
 
@@ -127,7 +137,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   }
 
   const deleteDataPointWrapper = () => {
-    deleteActivityDataPoint(activityPath, dataPointIndex);
+    deleteActivityDataPointsByUuid(activityPath, dataPoints.map((dp) => dp.uuid));
     navigation.goBack();
   };
 
@@ -191,12 +201,12 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
     const note = inputNote === "" ? {} : { "note": inputNote };
     const newPoint: DataPoint = {
       uuid: Crypto.randomUUID(),
-      date: inputDateList,
+      date: inputDateList as DateList, // TODO: handle null case
       ...(newValue === undefined ? {} : { value: newValue }),
       ...(inputTags.length > 0 ? { tags: inputTags } : {}),
       ...note,
     };
-    const newIndex = updateActivityDataPoint(activityPath, newDataPoint ? undefined : dataPointIndex, newPoint);
+    const newIndex = updateActivityDataPoint(activityPath, inputData.type === "new" ? undefined : dataPoints[0].uuid, newPoint);
     return { index: newIndex, dataPoint: newPoint };
   };
 
@@ -217,7 +227,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
 
   const showDatePicker = () => {
     DateTimePickerAndroid.open({
-      value: inputDate,
+      value: inputDate ?? today,
       maximumDate: today,
       minimumDate: new Date(2000, 0, 1),
       firstDayOfWeek: weekStart === "monday" ? 1 : 0,
@@ -231,12 +241,12 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
 
   React.useEffect(() => {
     navigation.setOptions({
-      title: newDataPoint ? 'New data point' : `${formatDate(dateListToDate(dataPoint.date))} #${dataPointIndex + 1}`,
+      title: inputData.type === "new" ? 'New data point' : editingMultiple ? `${dataPoints.length} data points` : `${formatDate(dateListToDate(dataPoints[0].date))} point`,
       headerStyle: themeVariant == 'light' ? { backgroundColor: theme.colors.primary } : undefined,
       headerTintColor: "#ffffff",
       headerRight: () => (
         <ButtonRow>
-          {dataPointIndex !== undefined && (
+          {inputData.type === "edit" && (
             <DeleteButton onPress={deleteDataPointWrapper} color="white" />
           )}
           <CheckPlusButton onPress={duplicateDataPointWrapper} color="white" />

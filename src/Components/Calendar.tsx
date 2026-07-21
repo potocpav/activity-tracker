@@ -94,7 +94,7 @@ const WeekColumnImpl: React.FC<WeekColumnProps> = ({
             if (hasData) {
               navigation.navigate("ActivityData", { activityPath, day });
             } else {
-              navigation.navigate("EditDataPoint", { activityPath, newDataPoint: true, newDataPointDate: day, tags: positiveTags });
+              navigation.navigate("EditDataPoint", { activityPath, inputData: { type: "new", dataPoint: { date: day, tags: positiveTags } } });
             }
           }}
           activeOpacity={0.3}

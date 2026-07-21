@@ -620,14 +620,17 @@ const useStore = create<State>()(
         );
       },  
 
-      updateActivityDataPoint: (activityPath: ActivityPath, dataPointIndex: number | undefined, updatedDataPoint: DataPoint) => {
+      updateActivityDataPoint: (activityPath: ActivityPath, dataPointUuid: string | undefined, updatedDataPoint: DataPoint) => {
         var insertIndex: number = NaN;
-        set((state: any) => 
+        set((state: any) =>
           mapActivity(state, activityPath, (activity: ActivityType) => {
             if (updatedDataPoint.tags?.length === 0) {
               delete updatedDataPoint.tags;
             }
             const updatedDataPoints = [...activity.dataPoints];
+            const dataPointIndex = dataPointUuid !== undefined
+              ? updatedDataPoints.findIndex((dp: DataPoint) => dp.uuid === dataPointUuid)
+              : undefined;
             if (dataPointIndex !== undefined) {
               if (dayCmp(updatedDataPoint, updatedDataPoints[dataPointIndex].date) == 0) {
                 // if date is the same, update in place
@@ -687,9 +690,19 @@ const useStore = create<State>()(
       },
 
       deleteActivityDataPoints: (activityPath: ActivityPath, dpIndices: number[]) => {
-        set((state: State) => 
+        set((state: State) =>
           mapActivity(state, activityPath, (activity: ActivityType) => {
             const updatedDataPoints = activity.dataPoints.filter((_, index) => !dpIndices.includes(index));
+            return { ...activity, dataPoints: updatedDataPoints };
+          })
+        );
+      },
+
+      deleteActivityDataPointsByUuid: (activityPath: ActivityPath, uuids: string[]) => {
+        set((state: State) =>
+          mapActivity(state, activityPath, (activity: ActivityType) => {
+            const uuidSet = new Set(uuids);
+            const updatedDataPoints = activity.dataPoints.filter((dp: DataPoint) => !uuidSet.has(dp.uuid));
             return { ...activity, dataPoints: updatedDataPoints };
           })
         );
