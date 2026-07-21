@@ -204,7 +204,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
     const res = saveDataPointWrapper();
     if (res !== undefined) {
       ToastAndroid.show('Data point saved', ToastAndroid.SHORT);
-      navigation.navigate("EditDataPoint", {
+      navigation.replace("EditDataPoint", {
         activityPath,
         newDataPoint: true,
         newDataPointDate: res.dataPoint.date,
