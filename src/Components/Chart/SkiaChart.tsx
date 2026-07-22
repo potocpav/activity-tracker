@@ -150,13 +150,14 @@ const SkiaChart = ({ gridLineColor, view, viewportShared, children }: SkiaChartD
     setSize(layout);
   }, []);
 
-  const framePath = Skia.Path.Make();
   const w = 1;
-  framePath.moveTo(viewport.left + w / 2, viewport.top + w / 2);
-  framePath.lineTo(viewport.right - w / 2, viewport.top + w / 2);
-  framePath.lineTo(viewport.right - w / 2, viewport.bottom - w / 2);
-  framePath.lineTo(viewport.left + w / 2, viewport.bottom - w / 2);
-  framePath.close();
+  const framePath = Skia.PathBuilder.Make()
+    .moveTo(viewport.left + w / 2, viewport.top + w / 2)
+    .lineTo(viewport.right - w / 2, viewport.top + w / 2)
+    .lineTo(viewport.right - w / 2, viewport.bottom - w / 2)
+    .lineTo(viewport.left + w / 2, viewport.bottom - w / 2)
+    .close()
+    .detach();
 
   useAnimatedReaction(
     () => {

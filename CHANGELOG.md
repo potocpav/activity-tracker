@@ -22,10 +22,7 @@
   - [ ] Scroll climbing grade picker to the selected grade more reliably
   - [ ] Keyboard avoidance in Edit Activity and other screens
 - [ ] Performance improvements
-  - [x] Debug Activity Summary performance
-  - [x] Improve re-renders, introduce memoization
   - [ ] Debug BLE Input performance
-  - [ ] Optimize Graph and Chart rendering by splitting into smaller components
 - [ ] Optimize for tablets
 - [ ] Add ratings
   - [ ] Easy, Moderate, Hard, Very Hard, Max
@@ -38,7 +35,7 @@
 
 - Upgrade to Expo SDK 57
 - Import Loop Habit Tracker data into a new tab
-- Performance improvements
+- Substantial performance improvements
 - Fixed a crash on duplicated point handling
 
 ### 3.4.1
