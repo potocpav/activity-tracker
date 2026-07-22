@@ -184,12 +184,9 @@ const ActivityCard = ({
   const statValues = stats.map((stat: Stat) => renderStatValue(stat, activity, weekStart));
 
   // for none unit type, we need to count the number of data points for today
-  let todayPointIndices: number[] = [];
-  if (activity.unit.type === "none") {
-    todayPointIndices = activity.dataPoints
-      .map((_: DataPoint, i: number) => i)
-      .slice(...findZeroSlice(activity.dataPoints, (dp) => dayCmp(dp, today)));
-  }
+  const [start, end] = findZeroSlice(activity.dataPoints, (dp) => dayCmp(dp, today));
+  const lastTodayPoint = activity.dataPoints[end - 1];
+  const todayNPoints = end - start;
 
   const isSelected = selectedActivities.includes(activityPath.activityId);
 
@@ -243,13 +240,16 @@ const ActivityCard = ({
         onPress={() => {
           if (selectedActivities.length === 0) {
             if (activity.unit.type === "none") {
-              if (todayPointIndices.length > 0) {
+              if (todayNPoints > 0) {
                 navigation.navigate("EditDataPoint", {
                   activityPath,
-                  dataPointIndex: todayPointIndices[todayPointIndices.length - 1],
+                  inputData: { type: "edit", dataPoints: [lastTodayPoint] },
                 });
               } else {
-                navigation.navigate("EditDataPoint", { activityPath, newDataPoint: true });
+                navigation.navigate("EditDataPoint", {
+                  activityPath,
+                  inputData: { type: "new", dataPoint: { date: today } },
+                });
               }
             } else {
               switch (activity.special?.type ?? null) {
@@ -257,7 +257,10 @@ const ActivityCard = ({
                   navigation.navigate("BleScaleInput", { activityPath });
                   break;
                 case null:
-                  navigation.navigate("EditDataPoint", { activityPath, newDataPoint: true });
+                  navigation.navigate("EditDataPoint", {
+                    activityPath,
+                    inputData: { type: "new", dataPoint: { date: today } },
+                  });
                   break;
               }
             }
@@ -271,8 +274,8 @@ const ActivityCard = ({
             return;
           }
           if (activity.unit.type === "none") {
-            if (todayPointIndices.length > 0) {
-              deleteActivityDataPoint(activityPath, todayPointIndices[0]);
+            if (todayNPoints > 0) {
+              deleteActivityDataPoint(activityPath, end - 1);
             } else {
               updateActivityDataPoint(activityPath, undefined, { date: today });
             }
@@ -288,9 +291,9 @@ const ActivityCard = ({
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           {(() => {
             if (activity.unit.type === "none") {
-              if (todayPointIndices.length > 1) {
+              if (todayNPoints > 1) {
                 return <DoubleCheckIcon color={palette[activity.color]} />;
-              } else if (todayPointIndices.length === 1) {
+              } else if (todayNPoints === 1) {
                 return <CheckIcon color={palette[activity.color]} />;
               } else {
                 return <CloseIcon color={palette[activity.color]} />;
