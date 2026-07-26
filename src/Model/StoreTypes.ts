@@ -8,15 +8,12 @@ export type Unit =
 
 export type SubUnit =
   | {
-      type: "number";
-      symbol: string;
-    }
-  | {
       type: "count";
     }
   | {
       type: "percentage";
     }
+  | ({ type: "rating" } & RatingUnit)
   | {
       type: "distance";
       unit: DistanceUnit;
@@ -32,7 +29,38 @@ export type SubUnit =
   | {
       type: "climbing_grade";
       grade: ClimbingGrade;
-    };
+    }
+  | {
+    type: "number";
+    symbol: string;
+  };
+
+export type RatingUnit = 
+  | {
+      rating: "stars";
+      stars: 3 | 5 | 10;
+      half_stars: boolean;
+    }
+  | {
+      rating: "likert-scale";
+      levels: 5 | 7;
+    }
+  | {
+      rating: "nps";
+      nps: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+    }
+  | {
+      rating: "rpe";
+      rpe: 6 | 10;
+    }
+  | {
+      rating: "hedonic-scale";
+      levels: 5 | 7;
+    }
+  | {
+    rating: "grading";
+    scale: "A-F" | "1-5"
+  };
 
 export type SubUnitType = "number" | "count" | "percentage" | "distance" | "weight" | "time" | "climbing_grade";
 
