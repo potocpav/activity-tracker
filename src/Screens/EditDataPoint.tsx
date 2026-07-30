@@ -106,7 +106,10 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
     case "multiple":
       inputValues = activity.unit.values.map((u) => {
         const value: number | null = singleValueOrNull(
-          dataPoints.map((dp) => (dp.value as Record<string, number>)[u.name] ?? null),
+          dataPoints.map((dp) => {
+            const value = dp.value as Record<string, number> | undefined;
+            return value?.[u.name] ?? null;
+          }),
         );
         return {
           subUnit: u,

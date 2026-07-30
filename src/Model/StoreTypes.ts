@@ -46,8 +46,7 @@ export type RatingUnit =
       levels: 5 | 7;
     }
   | {
-      rating: "nps";
-      nps: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+      rating: "nrs-11";
     }
   | {
       rating: "rpe";
