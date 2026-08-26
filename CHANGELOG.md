@@ -37,6 +37,7 @@
 - Import Loop Habit Tracker data into a new tab
 - Substantial performance improvements
 - Fixed a crash on duplicated point handling
+- More robust context menus
 
 ### 3.4.1
 
