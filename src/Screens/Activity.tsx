@@ -2,7 +2,7 @@ import React from "react";
 import { Text, View, Alert } from "react-native";
 import { Menu } from "react-native-paper";
 import useStore from "../Model/Store";
-import { DataPoint, ActivityType, Tag, dateListToDate, State, ActivityPath } from "../Model/StoreTypes";
+import { DataPoint, ActivityType, Tag, dateListToDate, State, ActivityPath, dateToDateList } from "../Model/StoreTypes";
 import ActivitySummary from "./ActivitySummary";
 import { File, Paths, EncodingType } from "expo-file-system";
 import * as Sharing from "expo-sharing";
@@ -64,7 +64,7 @@ const ActivityInner: React.FC<{ activity: ActivityType; activityPath: ActivityPa
   const duplicateActivity = useStore((state: any) => state.duplicateActivity);
   const deleteActivity = useStore((state: any) => state.deleteActivity);
   const dismissHint = useStore((state: any) => state.dismissHint);
-  const today = useToday();
+  const today = dateToDateList(useToday());
 
   const deleteActivityWrapper = () => {
     Alert.alert(

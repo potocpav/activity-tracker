@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, SectionList, Alert, BackHandler } from "react-n
 import { useFocusEffect } from "@react-navigation/native";
 import useStore from "../Model/Store";
 import { useShallow } from "zustand/react/shallow";
-import { DataPoint, ActivityType, Tag, DateList, dateListToDate, ActivityPath, State } from "../Model/StoreTypes";
+import { DataPoint, ActivityType, Tag, DateList, dateListToDate, ActivityPath, State, dateToDateList } from "../Model/StoreTypes";
 import { cmpDateList, dayCmp, findZeroSlice, formatDate } from "../Model/Activity";
 import { RenderTags } from "../Components/Tags";
 import TagMenu from "../Components/TagMenu";
@@ -418,7 +418,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
   const themeVariant = useThemeVariant();
   const [selectedPointUuids, setSelectedPointUuids] = useState<string[]>([]);
   const selectModeActive = selectedPointUuids.length > 0;
-  const today = useToday();
+  const today = dateToDateList(useToday());
 
   const styles = getStyles(theme);
 
