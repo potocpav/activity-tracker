@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { View, Text, useWindowDimensions, StyleSheet, ToastAndroid, Pressable } from "react-native";
-import { Menu, Portal, Dialog, TextInput } from "react-native-paper";
+import { Portal, Dialog, TextInput } from "react-native-paper";
+import Menu from "../Menu";
 import useStore from "../../Model/Store";
 import {
   DataPoint,
@@ -168,7 +169,6 @@ const ActivityGraph = ({ activityPath, graphIndex }: { activityPath: ActivityPat
         />
         {/* Graph type menu */}
         <Menu
-          key={graphTypeMenuVisible ? "open" : "closed"}
           visible={graphTypeMenuVisible}
           onDismiss={() => setGraphTypeMenuVisible(false)}
           anchor={

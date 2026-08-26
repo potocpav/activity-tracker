@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text } from "react-native";
-import { Menu } from "react-native-paper";
+import Menu from "./Menu";
 import { numericStatValues, StatValue } from "../Model/StoreTypes";
 import { valueToLabel } from "../Model/Activity";
 import { ChevronDownIcon, Button } from "./Element";
@@ -24,7 +24,6 @@ const ValueMenu: React.FC<ValueMenuProps> = ({
 }) => {
   return (
     <Menu
-      key={menuVisible ? "open" : "closed"}
       visible={menuVisible}
       onDismiss={() => setMenuVisible(false)}
       anchor={
@@ -45,6 +44,7 @@ const ValueMenu: React.FC<ValueMenuProps> = ({
               onChange(v);
             }}
             title={valueToLabel(v)}
+            trailingIcon={v === value ? "check" : undefined}
           />
         );
       })}

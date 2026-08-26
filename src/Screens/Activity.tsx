@@ -1,6 +1,6 @@
 import React from "react";
 import { Text, View, Alert } from "react-native";
-import { Menu } from "react-native-paper";
+import Menu from "../Components/Menu";
 import useStore from "../Model/Store";
 import { DataPoint, ActivityType, Tag, dateListToDate, State, ActivityPath, dateToDateList } from "../Model/StoreTypes";
 import ActivitySummary from "./ActivitySummary";
@@ -194,7 +194,6 @@ const ActivityInner: React.FC<{ activity: ActivityType; activityPath: ActivityPa
       <SystemBars style={{ statusBar: "light", navigationBar: themeVariant == "light" ? "dark" : "light" }} />
       <View style={{ position: "absolute", top: 10, right: 0 }}>
         <Menu
-          key={menuVisible ? "open" : "closed"}
           visible={menuVisible}
           onDismiss={() => setMenuVisible(false)}
           anchor={<View style={{ width: 1, height: 1 }} />}

@@ -1,6 +1,7 @@
 import React, { useState, FC, useRef } from "react";
 import { View, Text, StyleSheet, ScrollView, Alert } from "react-native";
-import { Dialog, Portal, SegmentedButtons, MD3Theme, Menu } from "react-native-paper";
+import { Dialog, Portal, SegmentedButtons, MD3Theme } from "react-native-paper";
+import Menu from "../Components/Menu";
 import { ActivityType, SetTag, Tag, SubUnit, Unit, WeightUnit, State, ActivityPath } from "../Model/StoreTypes";
 import { TextInput, Chip } from "react-native-paper";
 import { stringToNumber } from "../Model/Unit";
@@ -601,7 +602,6 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       <SystemBars style={{ statusBar: "light", navigationBar: themeVariant == "light" ? "dark" : "light" }} />
       <View style={{ position: "absolute", top: 10, right: 0 }}>
         <Menu
-          key={specialMenuVisible ? "open" : "closed"}
           visible={specialMenuVisible}
           onDismiss={() => setSpecialMenuVisible(false)}
           anchor={<View style={{ width: 1, height: 1 }} />}

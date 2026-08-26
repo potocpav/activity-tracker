@@ -1,6 +1,6 @@
 import React from "react";
 import { Text } from "react-native";
-import { Menu } from "react-native-paper";
+import Menu from "./Menu";
 import { ChevronDownIcon, Button } from "./Element";
 
 interface SubUnitMenuProps {
@@ -23,7 +23,6 @@ const SubUnitMenu: React.FC<SubUnitMenuProps> = ({
   if (!subUnitNames || subUnitNames.length === 0) return null;
   return (
     <Menu
-      key={menuVisible ? "open" : "closed"}
       visible={menuVisible}
       onDismiss={() => setMenuVisible(false)}
       anchor={

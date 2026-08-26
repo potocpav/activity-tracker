@@ -1,5 +1,5 @@
 import React from "react";
-import { Menu } from "react-native-paper";
+import Menu from "./Menu";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Tag, ActivityType } from "../Model/StoreTypes";
 import { useAppTheme, useThemePalette } from "../Model/Theme";
@@ -29,7 +29,6 @@ const TagMenu: React.FC<TagMenuProps> = ({
   return (
     activityTags.length > 0 && (
       <Menu
-        key={menuVisible ? "open" : "closed"}
         visible={menuVisible}
         onDismiss={() => setMenuVisible(false)}
         anchor={

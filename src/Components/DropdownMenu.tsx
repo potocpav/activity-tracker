@@ -1,6 +1,6 @@
 import React from "react";
 import { Text } from "react-native";
-import { Menu } from "react-native-paper";
+import Menu from "./Menu";
 import { ChevronDownIcon, Button } from "./Element";
 
 export interface DropdownMenuOption {
@@ -30,7 +30,6 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
   const selectedLabel = options.find((o) => o.key === selectedKey)?.label || label || "(select)";
   return (
     <Menu
-      key={visible ? "open" : "closed"}
       visible={visible}
       onDismiss={() => setVisible(false)}
       anchor={
