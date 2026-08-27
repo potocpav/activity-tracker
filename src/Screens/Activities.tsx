@@ -36,7 +36,8 @@ import Animated, {
 } from "react-native-reanimated";
 import { Gesture, GestureDetector, Pressable } from "react-native-gesture-handler";
 import { scheduleOnRN } from "react-native-worklets";
-import { Dialog, Portal, TextInput } from "react-native-paper";
+import { TextInput } from "react-native-paper";
+import Dialog from "../Components/Dialog";
 
 type ActivitiesProps = {
   navigation: any;
@@ -495,34 +496,30 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
           <EmptyPagePlaceholder title="No activities" subtext="Tap the + button to create an activity" />
         </View>
       </PagerView>
-      <Portal>
-        <Dialog visible={activityTabDialogVisible} onDismiss={() => setActivityTabDialogVisible(false)}>
-          <Dialog.Content>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <View style={{ flex: 1 }}>
-                <TextInput
-                  label="Tab Name"
-                  defaultValue={activityTabDialogNameInput}
-                  onChangeText={setActivityTabDialogNameInput}
-                  mode="outlined"
-                />
-              </View>
-            </View>
-          </Dialog.Content>
-          <Dialog.Actions>
-            <ButtonRow>
-              <CloseButton onPress={() => setActivityTabDialogVisible(false)} color={theme.colors.onSurface} />
-              <CheckButton
-                onPress={() => {
-                  setActivityTabName(currentTabId, activityTabDialogNameInput);
-                  setActivityTabDialogVisible(false);
-                }}
-                color={theme.colors.onSurface}
-              />
-            </ButtonRow>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
+      <Dialog visible={activityTabDialogVisible} onDismiss={() => setActivityTabDialogVisible(false)} theme={theme}>
+        <Dialog.Content>
+          <View style={{ flex: 1 }}>
+            <TextInput
+              label="Tab Name"
+              defaultValue={activityTabDialogNameInput}
+              onChangeText={setActivityTabDialogNameInput}
+              mode="outlined"
+            />
+          </View>
+        </Dialog.Content>
+        <Dialog.Actions>
+          <ButtonRow>
+            <CloseButton onPress={() => setActivityTabDialogVisible(false)} color={theme.colors.onSurface} />
+            <CheckButton
+              onPress={() => {
+                setActivityTabName(currentTabId, activityTabDialogNameInput);
+                setActivityTabDialogVisible(false);
+              }}
+              color={theme.colors.onSurface}
+            />
+          </ButtonRow>
+        </Dialog.Actions>
+      </Dialog>
     </SafeAreaView>
   );
 };
