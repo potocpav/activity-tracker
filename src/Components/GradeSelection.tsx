@@ -1,7 +1,7 @@
-import React, { useRef } from "react";
+import React, { Fragment, useRef } from "react";
 import { FlatList, Modal, Text, View, useWindowDimensions } from "react-native";
 import { List } from "react-native-paper";
-import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
+import { SafeAreaInsetsContext, SafeAreaView } from 'react-native-safe-area-context';
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useAppTheme, useThemeVariant, useWideDisplay } from "../Model/Theme";
 import { Button, CloseButton } from "./Element";
@@ -45,57 +45,61 @@ const GradeSelection = ({ visible, options, value, activityColor, onSelect, onDi
     >
       <SafeAreaInsetsContext.Consumer>
         {(insets) =>
-          <View
-            style={{
-              backgroundColor: theme.colors.primary,
-              elevation: 2,
-              flexDirection: "row",
-              paddingTop: insets?.top,
-              paddingLeft: insets?.left,
-              paddingRight: insets?.right,
-            }}
-          >
-            <View style={{ flex: 1, flexDirection: "row", paddingVertical: 6, paddingHorizontal: 6, alignItems: "center", gap: 15 }}>
-              <Button onPress={onDismiss}>
-                <MaterialCommunityIcons name="arrow-left" size={24} color="white" />
-              </Button>
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 20, color: "white" }}>Select Grade</Text>
+          <Fragment>
+            <View
+              style={{
+                backgroundColor: theme.colors.primary,
+                elevation: 2,
+                flexDirection: "row",
+                paddingTop: insets?.top,
+                paddingLeft: insets?.left,
+                paddingRight: insets?.right,
+              }}
+            >
+              <View style={{ flex: 1, flexDirection: "row", paddingVertical: 6, paddingHorizontal: 6, alignItems: "center", gap: 15 }}>
+                <Button onPress={onDismiss}>
+                  <MaterialCommunityIcons name="arrow-left" size={24} color="white" />
+                </Button>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 20, color: "white" }}>Select Grade</Text>
+                </View>
+                <CloseButton
+                  onPress={() => {
+                    onSelect("");
+                    onDismiss();
+                  }}
+                  color="white"
+                />
               </View>
-              <CloseButton
-                onPress={() => {
-                  onSelect("");
-                  onDismiss();
-                }}
-                color="white"
-              />
             </View>
-          </View>
-
+            <FlatList
+              key={`grade-list-${numColumns}`}
+              ref={listRef}
+              getItemLayout={(_, index) => ({ length: itemHeight, offset: itemHeight * index, index })}
+              onLayout={() => listRef.current?.scrollToIndex({ index: initialRow, viewPosition: 0.5, animated: true })}
+              numColumns={numColumns}
+              indicatorStyle="black"
+              data={options}
+              renderItem={({ item }) => (
+                <List.Item
+                  style={{ flex: 1, height: itemHeight, backgroundColor: value === item ? theme.colors.primary : theme.colors.surface }}
+                  titleStyle={{ color: value === item ? "white" : theme.colors.onSurface }}
+                  key={item}
+                  onPress={() => {
+                    onSelect(item);
+                    onDismiss();
+                  }}
+                  title={item}
+                />
+              )}
+            />
+            <View style={{ flex: 1, paddingBottom: insets?.bottom }}></View>
+          </Fragment>
         }
       </SafeAreaInsetsContext.Consumer>
 
-      <FlatList
-        key={`grade-list-${numColumns}`}
-        ref={listRef}
-        getItemLayout={(_, index) => ({ length: itemHeight, offset: itemHeight * index, index })}
-        onLayout={() => listRef.current?.scrollToIndex({ index: initialRow, viewPosition: 0.5, animated: true })}
-        numColumns={numColumns}
-        indicatorStyle="black"
-        data={options}
-        renderItem={({ item }) => (
-          <List.Item
-            right={value === item ? (props) => <List.Icon {...props} icon="check" /> : undefined}
-            style={{ flex: 1, height: itemHeight }}
-            key={item}
-            onPress={() => {
-              onSelect(item);
-              onDismiss();
-            }}
-            title={item}
-          />
-        )}
-      />
+      <SafeAreaView edges={["left", "right", "bottom"]}>
+      </SafeAreaView>
     </Modal>
   );
 };
