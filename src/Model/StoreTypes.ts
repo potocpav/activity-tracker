@@ -61,7 +61,7 @@ export type RatingUnit =
     scale: "A-F" | "1-5"
   };
 
-export type SubUnitType = "number" | "count" | "percentage" | "distance" | "weight" | "time" | "climbing_grade";
+export type SubUnitType = "number" | "count" | "percentage" | "distance" | "weight" | "time" | "climbing_grade" | "rating";
 
 export type DistanceUnit = "mm" | "cm" | "m" | "km" | "in" | "ft" | "yd" | "mi";
 

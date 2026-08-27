@@ -1,4 +1,4 @@
-import { Text, View, ScrollView, Pressable, Modal, FlatList, useWindowDimensions } from "react-native";
+import { Text, View, ScrollView, Pressable, Modal, FlatList, useWindowDimensions, KeyboardAvoidingView } from "react-native";
 import { TextInput, Dialog, Portal, List, SegmentedButtons } from "react-native-paper";
 import { ClimbingGrade, DistanceUnit, SubUnit, SubUnitType, TimeUnit, WeightUnit } from "../Model/StoreTypes";
 import { useRef, useState } from "react";
@@ -240,67 +240,69 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null; onChange:
         visible={unitDialogVisible}
         onDismiss={() => setUnitDialogVisible(false)}
       >
-        <SafeAreaView style={{ flex: 1 }}>
-          <View
-            style={{
-              backgroundColor: theme.colors.elevation.level1,
-              elevation: 2,
-              flexDirection: "row",
-              paddingVertical: 10,
-              paddingRight: 10,
-              alignItems: "center",
-            }}
-          >
-            <Button onPress={() => setUnitDialogVisible(false)}>
-              <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onSurface} />
-            </Button>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 20, color: theme.colors.onSurface }}>Select Unit</Text>
-            </View>
-            <CheckButton
-              onPress={() => {
-                setUnitDialogVisible(false);
-                const newUnitInput = allUnits.find((unit) => unit.type === chosenUnitType) ?? null;
-                onChange(newUnitInput);
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+          <SafeAreaView style={{ flex: 1 }}>
+            <View
+              style={{
+                backgroundColor: theme.colors.elevation.level1,
+                elevation: 2,
+                flexDirection: "row",
+                paddingVertical: 10,
+                paddingRight: 10,
+                alignItems: "center",
               }}
-              color={theme.colors.onSurface}
-            />
-          </View>
-          <ScrollView>
-            <View style={{ gap: 10, padding: 10 }}>
-              {allUnits.map((subUnit) => {
-                const { title, icon, description, children } = subUnitProps(subUnit.type, allUnits, setAllUnits);
-                if (children) {
-                  return (
-                    <List.Accordion
-                      key={subUnit.type}
-                      title={title}
-                      left={() => <List.Icon icon={icon} />}
-                      description={description}
-                      expanded={chosenUnitType === subUnit.type}
-                      onPress={() => setChosenUnitType(chosenUnitType === subUnit.type ? null : subUnit.type)}
-                    >
-                      {children}
-                    </List.Accordion>
-                  );
-                } else {
-                  return (
-                    <List.Item
-                      key={subUnit.type}
-                      title={title}
-                      titleStyle={{
-                        color: chosenUnitType === subUnit.type ? theme.colors.primary : theme.colors.onSurface,
-                      }}
-                      onPress={() => setChosenUnitType(subUnit.type)}
-                      left={() => <List.Icon icon={icon} />}
-                      description={description}
-                    />
-                  );
-                }
-              })}
+            >
+              <Button onPress={() => setUnitDialogVisible(false)}>
+                <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onSurface} />
+              </Button>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 20, color: theme.colors.onSurface }}>Select Unit</Text>
+              </View>
+              <CheckButton
+                onPress={() => {
+                  setUnitDialogVisible(false);
+                  const newUnitInput = allUnits.find((unit) => unit.type === chosenUnitType) ?? null;
+                  onChange(newUnitInput);
+                }}
+                color={theme.colors.onSurface}
+              />
             </View>
-          </ScrollView>
-        </SafeAreaView>
+            <ScrollView>
+              <View style={{ gap: 10, padding: 10 }}>
+                {allUnits.map((subUnit) => {
+                  const { title, icon, description, children } = subUnitProps(subUnit.type, allUnits, setAllUnits);
+                  if (children) {
+                    return (
+                      <List.Accordion
+                        key={subUnit.type}
+                        title={title}
+                        left={() => <List.Icon icon={icon} />}
+                        description={description}
+                        expanded={chosenUnitType === subUnit.type}
+                        onPress={() => setChosenUnitType(chosenUnitType === subUnit.type ? null : subUnit.type)}
+                      >
+                        {children}
+                      </List.Accordion>
+                    );
+                  } else {
+                    return (
+                      <List.Item
+                        key={subUnit.type}
+                        title={title}
+                        titleStyle={{
+                          color: chosenUnitType === subUnit.type ? theme.colors.primary : theme.colors.onSurface,
+                        }}
+                        onPress={() => setChosenUnitType(subUnit.type)}
+                        left={() => <List.Icon icon={icon} />}
+                        description={description}
+                      />
+                    );
+                  }
+                })}
+              </View>
+            </ScrollView>
+          </SafeAreaView>
+        </KeyboardAvoidingView>
       </Modal>
       {/* </Portal> */}
     </View>
@@ -458,12 +460,12 @@ export const ValueEditor = ({
       is24Hour: true,
       value: valueHours
         ? new Date(
-            0,
-            0,
-            0,
-            Math.floor((valueHours ?? 0) + 1 / 120),
-            Math.floor((((valueHours ?? 0) + 1 / 120) % 1) * 60),
-          )
+          0,
+          0,
+          0,
+          Math.floor((valueHours ?? 0) + 1 / 120),
+          Math.floor((((valueHours ?? 0) + 1 / 120) % 1) * 60),
+        )
         : new Date(),
       onChange: (event, selectedDate) => {
         if (selectedDate !== undefined) {

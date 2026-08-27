@@ -183,6 +183,7 @@ export const DataPointCardMultiContainer = (props: {
 };
 
 export const DataPointCardSingleContainer = (props: {
+  variant: "single" | "no-value";
   children: React.ReactNode;
   tags: ReactElement<any, any> | undefined;
   note: React.ReactNode | undefined;
@@ -208,7 +209,7 @@ export const DataPointCardSingleContainer = (props: {
         <View
           key="children"
           style={{
-            width: ITEM_HEIGHT * 1.5,
+            width: props.variant === "single" ? ITEM_HEIGHT * 1.5 : ITEM_HEIGHT * 0.8,
             flexDirection: "row",
             gap: 6,
             alignItems: "flex-start",
@@ -310,6 +311,7 @@ export const DataPointCard = ({
 
   const renderSingleValue = () => (
     <DataPointCardSingleContainer
+      variant={unit.type === "none" ? "no-value" : "single"}
       onPress={onPress}
       onLongPress={toggleThisSelection}
       onDelete={deleteDataPoint}
@@ -661,28 +663,6 @@ const getStyles = (theme: any) =>
       margin: 4,
       borderRadius: 15,
       elevation: 2,
-    },
-    activityContent: {
-      flexDirection: "row",
-      padding: 0,
-      height: ITEM_HEIGHT,
-      alignItems: "center",
-      gap: 6,
-    },
-    activityValues: {
-      width: ITEM_HEIGHT * 1.3,
-      backgroundColor: theme.colors.elevation.level5,
-      borderRadius: 15,
-      elevation: 5,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    activityNoteTags: {
-      flex: 1,
-      paddingVertical: 3,
-      paddingHorizontal: 6,
-      // backgroundColor: theme.colors.elevation.level5,
-      // elevation: 3,
     },
   });
 

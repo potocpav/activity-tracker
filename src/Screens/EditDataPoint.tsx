@@ -1,6 +1,7 @@
 import React, { useState, FC, useRef, Fragment } from "react";
-import { View, Text, StyleSheet, ScrollView, ToastAndroid, Pressable } from "react-native";
+import { View, Text, StyleSheet, ScrollView, ToastAndroid, Pressable, KeyboardAvoidingView } from "react-native";
 import { TextInput, MD3Theme } from "react-native-paper";
+import { TextInput as NativeTextInput } from "react-native";
 import {
   ActivityType,
   ActivityPath,
@@ -288,7 +289,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   ]);
 
   return (
-    <Fragment>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding" keyboardVerticalOffset={100}>
       <Hint hint="save_data_point" />
       <SystemBars style={{ statusBar: "light", navigationBar: themeVariant == "light" ? "dark" : "light" }} />
       <ScrollView>
@@ -319,14 +320,13 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
           </InputWrapper>
 
           <InputWrapper>
-            <TextInput
-              label="Note (optional)"
+            <NativeTextInput
+              placeholder="Note (optional)"
               value={inputNote}
               onChangeText={setInputNote}
               multiline
-              numberOfLines={2}
-              style={{ height: 80 }}
-              mode="outlined"
+              numberOfLines={Infinity}
+              style={styles.noteInput}
             />
           </InputWrapper>
 
@@ -378,7 +378,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
           )}
         </SafeAreaView>
       </ScrollView>
-    </Fragment>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -399,6 +399,13 @@ const getStyles = (theme: MD3Theme) =>
     header: {
       color: theme.colors.onSurfaceVariant,
       fontSize: 16,
+    },
+    noteInput: {
+      color: theme.colors.onSurface,
+      borderColor: theme.colors.onSurfaceVariant,
+      borderWidth: 1,
+      borderRadius: 5,
+      padding: 10,
     },
   });
 

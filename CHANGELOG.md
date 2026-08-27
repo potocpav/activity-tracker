@@ -9,6 +9,7 @@
   - [x] Bulk selection
   - [ ] Bulk editing
   - [ ] Bulk deletion
+- [ ] Data list filtering and sorting
 - [ ] Tag groups to support mutually exclusive tags. 
   - [ ] Drag-drop across multiple tab rows.
   - [ ] Drag-drop the tag rows themeslves.
@@ -20,10 +21,11 @@
   - [ ] BLE Input font size debugging
   - [ ] Unit conversions: kg <-> lbs, etc. This could include the ability to input values in different units - useful for climbing grades.
   - [ ] Scroll climbing grade picker to the selected grade more reliably
-  - [ ] Keyboard avoidance in Edit Activity and other screens
+  - [x] Keyboard avoidance in Edit Activity and other screens
 - [ ] Performance improvements
   - [ ] Debug BLE Input performance
 - [ ] Optimize for tablets
+- [ ] Add authenticated activities
 - [ ] Add ratings
   - [ ] Easy, Moderate, Hard, Very Hard, Max
   - [ ] 1-5 stars

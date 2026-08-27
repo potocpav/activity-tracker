@@ -1,5 +1,5 @@
 import React, { useState, FC, useRef } from "react";
-import { View, Text, StyleSheet, ScrollView, Alert } from "react-native";
+import { View, Text, StyleSheet, ScrollView, Alert, KeyboardAvoidingView } from "react-native";
 import { Dialog, Portal, SegmentedButtons, MD3Theme } from "react-native-paper";
 import Menu from "../Components/Menu";
 import { ActivityType, SetTag, Tag, SubUnit, Unit, WeightUnit, State, ActivityPath } from "../Model/StoreTypes";
@@ -598,7 +598,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   );
 
   return (
-    <View style={{ flex: 1 }}>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding" keyboardVerticalOffset={100}>
       <SystemBars style={{ statusBar: "light", navigationBar: themeVariant == "light" ? "dark" : "light" }} />
       <View style={{ position: "absolute", top: 10, right: 0 }}>
         <Menu
@@ -825,7 +825,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
           theme={theme}
         />
       </Portal>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
