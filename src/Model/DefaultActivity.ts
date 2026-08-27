@@ -55,7 +55,7 @@ export const defaultStats = (unit: Unit): Stat[] => {
 export const defaultCalendar = (unit: Unit): CalendarProps => {
   return {
     label: "Calendar",
-    value: "mean",
+    value: unit.type === "none" ? "n_points" : "mean",
     subUnit: firstSubUnitName(unit),
     tagFilters: [],
   };

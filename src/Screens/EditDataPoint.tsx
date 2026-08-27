@@ -403,7 +403,7 @@ const getStyles = (theme: MD3Theme) =>
     },
     noteInput: {
       color: theme.colors.onSurface,
-      borderColor: theme.colors.onSurfaceVariant,
+      borderColor: theme.colors.outline,
       borderWidth: 1,
       borderRadius: 5,
       padding: 10,

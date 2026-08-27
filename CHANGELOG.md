@@ -36,6 +36,7 @@
 ### 3.6.0
 
 - Improve taking long notes to enable the diary use-case
+- Improve dialogs and keyboard avoidance
 
 ### 3.5.0
 
