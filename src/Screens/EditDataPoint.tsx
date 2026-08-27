@@ -358,6 +358,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
                     index: number,
                   ) => (
                     <ValueEditor
+                      activityColor={activity.color}
                       key={inputValue.subUnit.name ?? "value"}
                       unit={inputValue.subUnit.unit}
                       error={showErrors ? inputValueErrors[index] : null}

@@ -314,6 +314,7 @@ export const ValueEditor = ({
   value,
   error,
   inputWrapperRef,
+  activityColor,
   onChange,
   setSubmitDisabled, // whether to disable submitting the value
 }: {
@@ -322,6 +323,7 @@ export const ValueEditor = ({
   value: string;
   error: string | null;
   inputWrapperRef: React.RefObject<InputWrapperRef>;
+  activityColor: number;
   onChange: (value: string) => void;
   setSubmitDisabled: (disabled: string | null) => void;
 }) => {
@@ -398,6 +400,7 @@ export const ValueEditor = ({
           />
         </Pressable>
         <GradeSelection
+          activityColor={activityColor}
           visible={gradeSelectionVisible}
           options={options}
           value={value}
