@@ -7,9 +7,9 @@ import Calendar from "../Calendar";
 import ValueMenu from "../ValueMenu";
 import SubUnitMenu from "../SubUnitMenu";
 import { useAppTheme } from "../../Model/Theme";
-import { Dialog, Portal, TextInput } from "react-native-paper";
 import Hint from "../Hint";
-import { CheckButton, CopyButton, Button, DeleteIcon, ButtonRow } from "../Element";
+import RenameDialog from "../RenameDialog";
+import { Button, ButtonRow } from "../Element";
 
 const locale = NativeModules.I18nManager.localeIdentifier;
 
@@ -100,52 +100,32 @@ const ActivityCalendar = ({ navigation, activityPath, calendarIndex }: ActivityC
           />
         )}
       </View>
-      <Portal>
-        <Dialog visible={calendarDialogVisible} onDismiss={() => setCalendarDialogVisible(false)}>
-          <Dialog.Content>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <View style={{ flex: 1 }}>
-                <TextInput
-                  label="Calendar Name"
-                  defaultValue={calendarDialogNameInput}
-                  onChangeText={setCalendarDialogNameInput}
-                  mode="outlined"
-                />
-              </View>
-            </View>
-          </Dialog.Content>
-          <Dialog.Actions>
-            <ButtonRow>
-              {activity.calendars.length > 1 && (
-                <Button
-                  onPress={() => {
-                    deleteActivityCalendar(activityPath, calendarIndex);
-                    setCalendarDialogVisible(false);
-                    ToastAndroid.show("Calendar deleted", ToastAndroid.SHORT);
-                  }}
-                >
-                  <DeleteIcon color={theme.colors.onSurface} />
-                </Button>
-              )}
-              <CopyButton
-                onPress={() => {
-                  cloneActivityCalendar(activityPath, calendarIndex);
-                  setCalendarDialogVisible(false);
-                  ToastAndroid.show("Calendar cloned", ToastAndroid.SHORT);
-                }}
-                color={theme.colors.onSurface}
-              />
-              <CheckButton
-                onPress={() => {
-                  setActivityCalendar(activityPath, calendarIndex, { ...calendar, label: calendarDialogNameInput });
-                  setCalendarDialogVisible(false);
-                }}
-                color={theme.colors.onSurface}
-              />
-            </ButtonRow>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
+      <RenameDialog
+        visible={calendarDialogVisible}
+        onDismiss={() => setCalendarDialogVisible(false)}
+        label="Calendar Name"
+        nameInput={calendarDialogNameInput}
+        onChangeName={setCalendarDialogNameInput}
+        onDelete={
+          activity.calendars.length > 1
+            ? () => {
+                deleteActivityCalendar(activityPath, calendarIndex);
+                setCalendarDialogVisible(false);
+                ToastAndroid.show("Calendar deleted", ToastAndroid.SHORT);
+              }
+            : undefined
+        }
+        onClone={() => {
+          cloneActivityCalendar(activityPath, calendarIndex);
+          setCalendarDialogVisible(false);
+          ToastAndroid.show("Calendar cloned", ToastAndroid.SHORT);
+        }}
+        onConfirm={() => {
+          setActivityCalendar(activityPath, calendarIndex, { ...calendar, label: calendarDialogNameInput });
+          setCalendarDialogVisible(false);
+        }}
+        theme={theme}
+      />
     </View>
   );
 };

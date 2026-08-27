@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from "react";
 import { View, Text, useWindowDimensions, StyleSheet, ToastAndroid, Pressable } from "react-native";
-import { Portal, Dialog, TextInput } from "react-native-paper";
 import Menu from "../Menu";
 import useStore from "../../Model/Store";
 import {
@@ -23,12 +22,13 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import TagMenu from "../TagMenu";
 import SubUnitMenu from "../SubUnitMenu";
 import DropdownMenu from "../DropdownMenu";
+import RenameDialog from "../RenameDialog";
 import { useAppTheme } from "../../Model/Theme";
 import FlatListChart, { BarChart, BoxChart, barBoundingBox, ViewDimensions } from "../Chart/FlatListChart";
 import Animated, { FadeInUp, FadeOutUp } from "react-native-reanimated";
 import { renderLongFormValue, isSummable } from "../../Model/Unit";
 import { Canvas, Line, vec } from "@shopify/react-native-skia";
-import { ChevronDownIcon, DeleteButton, ButtonRow, CopyButton, CheckButton, Button } from "../Element";
+import { ChevronDownIcon, ButtonRow, Button } from "../Element";
 
 const ActivityGraph = ({ activityPath, graphIndex }: { activityPath: ActivityPath; graphIndex: number }) => {
   const activity: ActivityType = useStore(
@@ -193,51 +193,32 @@ const ActivityGraph = ({ activityPath, graphIndex }: { activityPath: ActivityPat
           ))}
         </Menu>
       </View>
-      <Portal>
-        <Dialog visible={graphDialogVisible} onDismiss={() => setGraphDialogVisible(false)}>
-          <Dialog.Content>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <View style={{ flex: 1 }}>
-                <TextInput
-                  label="Graph Name"
-                  defaultValue={graphDialogNameInput}
-                  onChangeText={setGraphDialogNameInput}
-                  mode="outlined"
-                />
-              </View>
-            </View>
-          </Dialog.Content>
-          <Dialog.Actions>
-            <ButtonRow>
-              {activity.graphs.length > 1 && (
-                <DeleteButton
-                  onPress={() => {
-                    deleteActivityGraph(activityPath, graphIndex);
-                    setGraphDialogVisible(false);
-                    ToastAndroid.show("Graph deleted", ToastAndroid.SHORT);
-                  }}
-                  color={theme.colors.onSurface}
-                />
-              )}
-              <CopyButton
-                onPress={() => {
-                  cloneActivityGraph(activityPath, graphIndex);
-                  setGraphDialogVisible(false);
-                  ToastAndroid.show("Graph cloned", ToastAndroid.SHORT);
-                }}
-                color={theme.colors.onSurface}
-              />
-              <CheckButton
-                onPress={() => {
-                  setActivityGraph(activityPath, graphIndex, { ...graph, label: graphDialogNameInput });
-                  setGraphDialogVisible(false);
-                }}
-                color={theme.colors.onSurface}
-              />
-            </ButtonRow>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
+      <RenameDialog
+        visible={graphDialogVisible}
+        onDismiss={() => setGraphDialogVisible(false)}
+        label="Graph Name"
+        nameInput={graphDialogNameInput}
+        onChangeName={setGraphDialogNameInput}
+        onDelete={
+          activity.graphs.length > 1
+            ? () => {
+                deleteActivityGraph(activityPath, graphIndex);
+                setGraphDialogVisible(false);
+                ToastAndroid.show("Graph deleted", ToastAndroid.SHORT);
+              }
+            : undefined
+        }
+        onClone={() => {
+          cloneActivityGraph(activityPath, graphIndex);
+          setGraphDialogVisible(false);
+          ToastAndroid.show("Graph cloned", ToastAndroid.SHORT);
+        }}
+        onConfirm={() => {
+          setActivityGraph(activityPath, graphIndex, { ...graph, label: graphDialogNameInput });
+          setGraphDialogVisible(false);
+        }}
+        theme={theme}
+      />
     </View>
   );
 };
