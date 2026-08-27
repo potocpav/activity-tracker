@@ -247,11 +247,11 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
       maximumDate: today,
       minimumDate: new Date(2000, 0, 1),
       firstDayOfWeek: weekStart === "monday" ? 1 : 0,
-      onChange: (event, selectedDate) => {
+      onValueChange: (event, selectedDate) => {
         if (selectedDate !== undefined) {
           setInputDate(selectedDate);
         }
-      },
+      }
     });
   };
 

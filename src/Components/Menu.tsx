@@ -16,10 +16,6 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAppTheme, useThemeVariant } from "../Model/Theme";
 
-// Drop-in replacement for react-native-paper's <Menu> / <Menu.Item>, covering the
-// subset of the API this app uses. A Modal holds the popup, the anchor is measured
-// in window coordinates, and the popup is placed against it with screen-edge flipping.
-
 const SCREEN_MARGIN = 8;
 const MIN_WIDTH = 200;
 const MAX_WIDTH = 320;

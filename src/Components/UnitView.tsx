@@ -1,9 +1,9 @@
-import { Text, View, ScrollView, Pressable, Modal, FlatList, useWindowDimensions, KeyboardAvoidingView } from "react-native";
-import { TextInput, Dialog, Portal, List, SegmentedButtons } from "react-native-paper";
+import { Text, View, ScrollView, Pressable, Modal, KeyboardAvoidingView } from "react-native";
+import { TextInput, List, SegmentedButtons } from "react-native-paper";
 import { ClimbingGrade, DistanceUnit, SubUnit, SubUnitType, TimeUnit, WeightUnit } from "../Model/StoreTypes";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { useAppTheme, useWideDisplay } from "../Model/Theme";
+import { useAppTheme } from "../Model/Theme";
 import {
   renderUnit,
   mapStringValue,
@@ -16,8 +16,9 @@ import {
   fontGrades,
 } from "../Model/Unit";
 import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
+import GradeSelection from "./GradeSelection";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { CheckButton, CloseButton, MinusIcon, PlusIcon, Button } from "./Element";
+import { CheckButton, MinusIcon, PlusIcon, Button } from "./Element";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 
 const subUnitProps = (
@@ -231,7 +232,6 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null; onChange:
           mode="outlined"
         />
       </Pressable>
-      {/* <Portal> */}
       <Modal
         transparent={false}
         backdropColor={theme.colors.surface}
@@ -304,7 +304,6 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null; onChange:
           </SafeAreaView>
         </KeyboardAvoidingView>
       </Modal>
-      {/* </Portal> */}
     </View>
   );
 };
@@ -327,12 +326,8 @@ export const ValueEditor = ({
   setSubmitDisabled: (disabled: string | null) => void;
 }) => {
   const theme = useAppTheme();
-  const wideDisplay = useWideDisplay();
-  const dimensions = useWindowDimensions();
-  const itemHeight = 50 * dimensions.fontScale;
-  const numColumns = wideDisplay ? 4 : 2;
 
-  const [climbingGradeDialogVisible, setClimbingGradeDialogVisible] = useState(false);
+  const [gradeSelectionVisible, setGradeSelectionVisible] = useState(false);
   const [timerActive, setTimerActive] = useState(false);
   const [timerStartTime, setTimerStartTime] = useState<number | null>(null);
   const [now, setNow] = useState<number | null>(null);
@@ -381,16 +376,11 @@ export const ValueEditor = ({
     return numberToString((stringToNumber(val, unit) ?? 0) + ((now ?? 0) - (timerStartTime ?? 0)), unit);
   };
 
-  const flatListRef = useRef<FlatList<string>>(null);
-
-  const pickerDialog = (options: string[]) => {
+  const gradePicker = (options: string[]) => {
     return (
       <>
         <Pressable
-          onPress={() => {
-            setClimbingGradeDialogVisible(true);
-            flatListRef.current?.scrollToIndex({ index: options.findIndex((o) => o === value) });
-          }}
+          onPress={() => setGradeSelectionVisible(true)}
           style={({ pressed }) => [
             {
               flex: 1,
@@ -407,48 +397,13 @@ export const ValueEditor = ({
             mode="outlined"
           />
         </Pressable>
-        <Portal>
-          <Dialog visible={climbingGradeDialogVisible} onDismiss={() => setClimbingGradeDialogVisible(false)}>
-            <Dialog.Title>
-              <View style={{ flex: 1, alignItems: "flex-end", width: "100%" }}>
-                <CloseButton
-                  onPress={() => {
-                    setClimbingGradeDialogVisible(false);
-                    onChange("");
-                  }}
-                  color={theme.colors.onSurface}
-                />
-              </View>
-            </Dialog.Title>
-            <Dialog.ScrollArea>
-              <FlatList
-                key={`uiaa-grade-list-${numColumns}`}
-                getItemLayout={(_, index) => ({ length: itemHeight, offset: itemHeight * index, index })}
-                numColumns={numColumns}
-                ref={(ref) => {
-                  flatListRef.current = ref;
-                  const itemIx = options.findIndex((o) => o === value);
-                  const scrollIx = itemIx === -1 ? options.length / 2 : itemIx;
-                  ref?.scrollToIndex({ index: Math.max(0, Math.floor(scrollIx / numColumns)), viewPosition: 0.0 });
-                }}
-                indicatorStyle="black"
-                data={options}
-                renderItem={({ item }) => (
-                  <List.Item
-                    right={value === item ? (props) => <List.Icon {...props} icon="check" /> : undefined}
-                    style={{ flex: 1, height: itemHeight }}
-                    key={item}
-                    onPress={() => {
-                      onChange(item);
-                      setClimbingGradeDialogVisible(false);
-                    }}
-                    title={item}
-                  />
-                )}
-              />
-            </Dialog.ScrollArea>
-          </Dialog>
-        </Portal>
+        <GradeSelection
+          visible={gradeSelectionVisible}
+          options={options}
+          value={value}
+          onSelect={onChange}
+          onDismiss={() => setGradeSelectionVisible(false)}
+        />
       </>
     );
   };
@@ -460,12 +415,12 @@ export const ValueEditor = ({
       is24Hour: true,
       value: valueHours
         ? new Date(
-          0,
-          0,
-          0,
-          Math.floor((valueHours ?? 0) + 1 / 120),
-          Math.floor((((valueHours ?? 0) + 1 / 120) % 1) * 60),
-        )
+            0,
+            0,
+            0,
+            Math.floor((valueHours ?? 0) + 1 / 120),
+            Math.floor((((valueHours ?? 0) + 1 / 120) % 1) * 60),
+          )
         : new Date(),
       onChange: (event, selectedDate) => {
         if (selectedDate !== undefined) {
@@ -546,15 +501,15 @@ export const ValueEditor = ({
             case "climbing_grade":
               switch (unit.grade) {
                 case "uiaa":
-                  return pickerDialog(uiaaGrades);
+                  return gradePicker(uiaaGrades);
                 case "yds":
-                  return pickerDialog(ydsGrades);
+                  return gradePicker(ydsGrades);
                 case "french":
-                  return pickerDialog(frenchGrades);
+                  return gradePicker(frenchGrades);
                 case "font":
-                  return pickerDialog(fontGrades);
+                  return gradePicker(fontGrades);
                 case "v-scale":
-                  return pickerDialog(vScaleGrades);
+                  return gradePicker(vScaleGrades);
               }
             default:
               return (

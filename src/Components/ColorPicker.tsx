@@ -2,10 +2,6 @@ import React from "react";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { CheckIcon } from "./Element";
 
-// Plain react-native replacement for the react-native-paper <Dialog> this used to be:
-// a Modal with a see-through backdrop, a full-screen Pressable behind the card to
-// dismiss on an outside tap, and the card itself centered on top.
-
 const COLUMNS = 4;
 const SWATCH_SIZE = 40;
 
