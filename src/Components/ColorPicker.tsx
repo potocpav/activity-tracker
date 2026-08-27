@@ -1,7 +1,13 @@
 import React from "react";
-import { View } from "react-native";
-import { Dialog, Button } from "react-native-paper";
+import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { CheckIcon } from "./Element";
+
+// Plain react-native replacement for the react-native-paper <Dialog> this used to be:
+// a Modal with a see-through backdrop, a full-screen Pressable behind the card to
+// dismiss on an outside tap, and the card itself centered on top.
+
+const COLUMNS = 4;
+const SWATCH_SIZE = 40;
 
 interface ColorPickerProps {
   visible: boolean;
@@ -12,41 +18,101 @@ interface ColorPickerProps {
   theme: any;
 }
 
-const ColorPicker: React.FC<ColorPickerProps> = ({ visible, palette, selectedColor, onSelect, onDismiss, theme }) => (
-  <Dialog visible={visible} onDismiss={onDismiss}>
-    <Dialog.Title>Pick a color</Dialog.Title>
-    <Dialog.Content>
-      <View style={{ flexDirection: "column", alignItems: "center" }}>
-        {[0, 1, 2, 3, 4].map((row) => (
-          <View key={row} style={{ flexDirection: "row", marginBottom: 8 }}>
-            {palette.slice(row * 4, row * 4 + 4).map((color, idx) => (
-              <Button
-                key={idx}
-                mode="contained"
-                compact={true}
-                onPress={() => onSelect(row * 4 + idx)}
-                style={{
-                  backgroundColor: color,
-                  marginHorizontal: 4,
-                  width: 40,
-                  height: 40,
-                  borderRadius: 15,
-                  borderWidth: selectedColor === row * 4 + idx ? 2 : 1,
-                  borderColor: selectedColor === row * 4 + idx ? theme.colors.onSurface : theme.colors.onSurfaceVariant,
-                  justifyContent: "center",
-                  alignItems: "center",
-                  elevation: 2,
-                }}
-                contentStyle={{ width: 40, height: 45 }}
-              >
-                {selectedColor === row * 4 + idx ? <CheckIcon color={theme.colors.surface} /> : null}
-              </Button>
+const ColorPicker: React.FC<ColorPickerProps> = ({ visible, palette, selectedColor, onSelect, onDismiss, theme }) => {
+  const rows: number[][] = [];
+  for (let start = 0; start < palette.length; start += COLUMNS) {
+    rows.push(palette.map((_, ix) => ix).slice(start, start + COLUMNS));
+  }
+
+  return (
+    <Modal
+      visible={visible}
+      animationType="fade"
+      backdropColor={"rgba(0, 0, 0, 0.0)"}
+      onRequestClose={onDismiss}
+      statusBarTranslucent
+      navigationBarTranslucent
+    >
+      <Pressable style={StyleSheet.absoluteFill} onPress={onDismiss} />
+      <View style={styles.centered} pointerEvents="box-none">
+        <View style={[styles.card, { backgroundColor: theme.colors.elevation.level3 }]}>
+          <Text style={[styles.title, { color: theme.colors.onSurface }]}>Pick a color</Text>
+          <View style={styles.grid}>
+            {rows.map((row, rowIx) => (
+              <View key={rowIx} style={styles.row}>
+                {row.map((colorIx) => {
+                  const selected = selectedColor === colorIx;
+                  return (
+                    <Pressable
+                      key={colorIx}
+                      onPress={() => onSelect(colorIx)}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected }}
+                      android_ripple={{ color: "rgba(255, 255, 255, 0.3)", borderless: false }}
+                      style={({ pressed }) => [
+                        styles.swatch,
+                        {
+                          backgroundColor: palette[colorIx],
+                          borderWidth: selected ? 2 : 1,
+                          borderColor: selected ? theme.colors.onSurface : theme.colors.onSurfaceVariant,
+                          opacity: pressed ? 0.7 : 1,
+                        },
+                      ]}
+                    >
+                      {selected ? <CheckIcon color={theme.colors.surface} /> : null}
+                    </Pressable>
+                  );
+                })}
+              </View>
             ))}
           </View>
-        ))}
+        </View>
       </View>
-    </Dialog.Content>
-  </Dialog>
-);
+    </Modal>
+  );
+};
+
+const styles = StyleSheet.create({
+  centered: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+  },
+  card: {
+    borderRadius: 28,
+    paddingVertical: 24,
+    paddingHorizontal: 24,
+    maxWidth: 400,
+    elevation: 24,
+    shadowColor: "#000000",
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+  },
+  title: {
+    fontSize: 24,
+    lineHeight: 32,
+    marginBottom: 20,
+  },
+  grid: {
+    flexDirection: "column",
+    alignItems: "center",
+  },
+  row: {
+    flexDirection: "row",
+    marginBottom: 8,
+  },
+  swatch: {
+    width: SWATCH_SIZE,
+    height: SWATCH_SIZE,
+    marginHorizontal: 4,
+    borderRadius: 15,
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
+    elevation: 2,
+  },
+});
 
 export default ColorPicker;

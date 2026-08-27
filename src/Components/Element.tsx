@@ -1,5 +1,6 @@
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { View, Pressable } from "react-native";
+import { useAppTheme } from "../Model/Theme";
 
 export const ButtonRow = ({ children }: { children: React.ReactNode }) => (
   <View style={{ gap: 4, flexDirection: "row", alignItems: "center" }}>{children}</View>
@@ -47,6 +48,24 @@ export const Button = ({
     )}
   </Pressable>
 );
+
+export const ColorButton = ({ color, onPress }: { color: number; onPress: () => void }) => {
+  const theme = useAppTheme(color);
+  return (
+    <Button onPress={onPress}>
+      <View
+        style={{
+          width: 35,
+          height: 35,
+          borderRadius: 12,
+          backgroundColor: theme.colors.primary,
+          borderWidth: 1,
+          borderColor: theme.colors.onBackground,
+        }}
+      />
+    </Button>
+  );
+};
 
 export const PlusIconButton = ({
   onPress,

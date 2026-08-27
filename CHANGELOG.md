@@ -33,6 +33,10 @@
 
 # Changelog
 
+### 3.6.0
+
+- Improve taking long notes to enable the diary use-case
+
 ### 3.5.0
 
 - Upgrade to Expo SDK 57

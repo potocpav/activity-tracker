@@ -1,6 +1,6 @@
 import React, { useState, FC, useRef } from "react";
 import { View, Text, StyleSheet, ScrollView, Alert, KeyboardAvoidingView } from "react-native";
-import { Dialog, Portal, SegmentedButtons, MD3Theme } from "react-native-paper";
+import { SegmentedButtons, MD3Theme } from "react-native-paper";
 import Menu from "../Components/Menu";
 import { ActivityType, SetTag, Tag, SubUnit, Unit, WeightUnit, State, ActivityPath } from "../Model/StoreTypes";
 import { TextInput, Chip } from "react-native-paper";
@@ -9,13 +9,14 @@ import useStore from "../Model/Store";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import DraggableFlatList from "react-native-draggable-flatlist";
 import ColorPicker from "../Components/ColorPicker";
+import TagDialog from "../Components/TagDialog";
 import { useAppTheme, useThemePalette, useThemeVariant } from "../Model/Theme";
 import { defaultCalendar, defaultGraphs, defaultStats, defaultBleScaleGraphs } from "../Model/DefaultActivity";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
 import { UnitEditor } from "../Components/UnitView";
 import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
-import { CheckButton, DeleteButton, ButtonRow, Button, PlusIcon } from "../Components/Element";
+import { CheckButton, DeleteButton, ButtonRow, Button, ColorButton, PlusIcon } from "../Components/Element";
 import * as Crypto from "expo-crypto";
 
 type SpecialType = "ble_scale" | null;
@@ -32,24 +33,6 @@ const isSupersetOf = (set1: Set<string>, set2: Set<string>) => {
     }
   }
   return true;
-};
-
-const ColorButton = ({ color, onPress }: { color: number; onPress: () => void }) => {
-  const theme = useAppTheme(color);
-  return (
-    <Button onPress={onPress}>
-      <View
-        style={{
-          width: 35,
-          height: 35,
-          borderRadius: 12,
-          backgroundColor: theme.colors.primary,
-          borderWidth: 1,
-          borderColor: theme.colors.onBackground,
-        }}
-      />
-    </Button>
-  );
 };
 
 const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
@@ -214,7 +197,6 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
     tagDialogNameError = "A tag with this name already exists";
   }
   const [tagDialogColorInput, setTagDialogColorInput] = useState(0);
-  const [tagColorDialogVisible, setTagColorDialogVisible] = useState(false);
 
   const [colorDialogVisible, setColorDialogVisible] = useState(false);
 
@@ -477,11 +459,6 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   const handleColorSelect = (colorIx: number) => {
     setSelectedColor(colorIx);
     setColorDialogVisible(false);
-  };
-
-  const handleTagColorSelect = (colorIx: number) => {
-    setTagDialogColorInput(colorIx);
-    setTagColorDialogVisible(false);
   };
 
   const setSpecialActivity = (specialType: SpecialType) => {
@@ -778,53 +755,33 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
           </View>
         </SafeAreaView>
       </ScrollView>
-      <Portal>
-        {/* Tag dialog (existing) */}
-        <Dialog
-          visible={tagDialogVisible}
-          onDismiss={() => {
-            setTagDialogVisible(false);
-            setShowTagDialogErrors(false);
-          }}
-        >
-          <Dialog.Content>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-              <InputWrapper error={showTagDialogErrors ? tagDialogNameError : null} ref={tagDialogNameInputRef}>
-                <TextInput
-                  label="Tag Name"
-                  defaultValue={tagDialogNameInput}
-                  onChangeText={setTagDialogNameInput}
-                  mode="outlined"
-                />
-              </InputWrapper>
-              <ColorButton color={tagDialogColorInput} onPress={() => setTagColorDialogVisible(true)} />
-            </View>
-          </Dialog.Content>
-          <Dialog.Actions>
-            <ButtonRow>
-              <DeleteButton onPress={() => onUpdateTag("delete")} color={theme.colors.onSurface} />
-              <CheckButton onPress={() => onUpdateTag("update")} color={theme.colors.onSurface} />
-            </ButtonRow>
-          </Dialog.Actions>
-        </Dialog>
-        {/* Color picker dialog */}
-        <ColorPicker
-          visible={colorDialogVisible}
-          palette={palette}
-          selectedColor={selectedColor}
-          onSelect={handleColorSelect}
-          onDismiss={() => setColorDialogVisible(false)}
-          theme={theme}
-        />
-        <ColorPicker
-          visible={tagColorDialogVisible}
-          palette={palette}
-          selectedColor={tagDialogColorInput}
-          onSelect={handleTagColorSelect}
-          onDismiss={() => setTagColorDialogVisible(false)}
-          theme={theme}
-        />
-      </Portal>
+      {/* Tag dialog */}
+      <TagDialog
+        visible={tagDialogVisible}
+        onDismiss={() => {
+          setTagDialogVisible(false);
+          setShowTagDialogErrors(false);
+        }}
+        nameInput={tagDialogNameInput}
+        onChangeName={setTagDialogNameInput}
+        nameError={showTagDialogErrors ? tagDialogNameError : null}
+        nameInputRef={tagDialogNameInputRef}
+        color={tagDialogColorInput}
+        onChangeColor={setTagDialogColorInput}
+        onDelete={() => onUpdateTag("delete")}
+        onUpdate={() => onUpdateTag("update")}
+        palette={palette}
+        theme={theme}
+      />
+      {/* Color picker dialog */}
+      <ColorPicker
+        visible={colorDialogVisible}
+        palette={palette}
+        selectedColor={selectedColor}
+        onSelect={handleColorSelect}
+        onDismiss={() => setColorDialogVisible(false)}
+        theme={theme}
+      />
     </KeyboardAvoidingView>
   );
 };

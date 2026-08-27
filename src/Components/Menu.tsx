@@ -139,9 +139,8 @@ const MenuBase: React.FC<MenuProps> = ({ visible, onDismiss, anchor, children })
         {anchor}
       </View>
       <Modal
-        backdropColor={themeVariant === "dark" ? "rgba(0, 0, 0, 0.2)" : "rgba(255, 255, 255, 0.2)"}
+        backdropColor={"rgba(0, 0, 0, 0.0)"}
         visible={visible}
-        animationType="none"
         onRequestClose={onDismiss}
         statusBarTranslucent
         navigationBarTranslucent
