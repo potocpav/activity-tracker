@@ -31,9 +31,9 @@
   - [ ] Unit conversions: kg <-> lbs, etc. This could include the ability to input values in different units - useful for climbing grades.
   - [x] Scroll climbing grade picker to the selected grade more reliably
   - [x] Keyboard avoidance in Edit Activity and other screens
-- [ ] Bugfixes
-  - [ ] Fix header color in Select Grade dialog in dark themes, and fix selected grade text color in dark themes
-  - [ ] Make Select unit dialog header and styling work similarly to Select Grade dialog
+- [x] Bugfixes
+  - [x] Fix header color in Select Grade dialog in dark themes, and fix selected grade text color in dark themes
+  - [x] Make Select unit dialog header and styling work similarly to Select Grade dialog
 
 # Changelog
 
