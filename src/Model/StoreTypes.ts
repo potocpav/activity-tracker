@@ -31,11 +31,11 @@ export type SubUnit =
       grade: ClimbingGrade;
     }
   | {
-    type: "number";
-    symbol: string;
-  };
+      type: "number";
+      symbol: string;
+    };
 
-export type RatingUnit = 
+export type RatingUnit =
   | {
       rating: "stars";
       stars: 3 | 5 | 10;
@@ -57,11 +57,12 @@ export type RatingUnit =
       levels: 5 | 7;
     }
   | {
-    rating: "grading";
-    scale: "A-F" | "1-5"
-  };
+      rating: "grading";
+      scale: "A-F" | "1-5";
+    };
 
-export type SubUnitType = "number" | "count" | "percentage" | "distance" | "weight" | "time" | "climbing_grade" | "rating";
+export type SubUnitType =
+  "number" | "count" | "percentage" | "distance" | "weight" | "time" | "climbing_grade" | "rating";
 
 export type DistanceUnit = "mm" | "cm" | "m" | "km" | "in" | "ft" | "yd" | "mi";
 

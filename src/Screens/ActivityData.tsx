@@ -3,7 +3,16 @@ import { StyleSheet, Text, View, SectionList, Alert, BackHandler } from "react-n
 import { useFocusEffect } from "@react-navigation/native";
 import useStore from "../Model/Store";
 import { useShallow } from "zustand/react/shallow";
-import { DataPoint, ActivityType, Tag, DateList, dateListToDate, ActivityPath, State, dateToDateList } from "../Model/StoreTypes";
+import {
+  DataPoint,
+  ActivityType,
+  Tag,
+  DateList,
+  dateListToDate,
+  ActivityPath,
+  State,
+  dateToDateList,
+} from "../Model/StoreTypes";
 import { cmpDateList, dayCmp, findZeroSlice, formatDate } from "../Model/Activity";
 import { RenderTags } from "../Components/Tags";
 import TagMenu from "../Components/TagMenu";

@@ -41,6 +41,13 @@ const subUnitProps = (
         description: null,
         children: null,
       };
+    case "rating":
+      return {
+        title: "Rating",
+        icon: "star",
+        description: null,
+        children: null, // TODO: implement children
+      };
     case "distance":
       return {
         title: "Distance",
@@ -207,6 +214,7 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null; onChange:
         { type: "weight", unit: "kg" },
         { type: "time", unit: "seconds" },
         { type: "climbing_grade", grade: "french" },
+        // { type: "rating", rating: "stars", stars: 5, half_stars: false },
         { type: "number", symbol: "" },
       ];
       return defaultUnits.map((defaultUnit) => (unit?.type === defaultUnit.type ? unit : defaultUnit));

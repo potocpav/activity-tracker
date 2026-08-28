@@ -16,6 +16,8 @@ export const isSummable = (unit: SubUnit): boolean => {
       return true;
     case "climbing_grade":
       return false;
+    case "rating":
+      return false;
   }
 };
 
@@ -31,6 +33,8 @@ export const numberToString = (value: number | null, unit: SubUnit): string => {
     case "number":
       return value.toString();
     case "count":
+      return value.toString();
+    case "rating":
       return value.toString();
     case "percentage":
       return value.toString();
@@ -211,6 +215,8 @@ export const stringToNumber = (value: string, unit: SubUnit): number | null => {
       return parseInt(value);
     case "percentage":
       return parseFloat(value);
+    case "rating":
+      return parseFloat(value);
     case "distance":
       return parseFloat(value);
     case "weight":
@@ -382,6 +388,8 @@ export const renderShortFormValue = (value: number, unit: SubUnit): string => {
       } else {
         return renderShortFormNumber(Math.round(value)) + "%";
       }
+    case "rating":
+      return renderShortFormNumber(Math.round(value * 10) / 10); // TODO: render better
     case "distance":
       return renderShortFormNumber(value);
     case "weight":
@@ -425,6 +433,8 @@ export const renderLongFormValue = (value: number, unit: SubUnit): string => {
       return renderLongFormNumber(value);
     case "percentage":
       return renderLongFormNumber(value) + " %";
+    case "rating":
+      return renderLongFormNumber(value); // TODO: render better
     case "distance":
       return `${renderLongFormNumber(value)} ${unit.unit}`;
     case "weight":
@@ -461,6 +471,8 @@ export const renderUnit = (unit: SubUnit): string => {
       return "Count";
     case "percentage":
       return "Percentage";
+    case "rating":
+      return "Rating";
     case "distance":
       return `Distance (${unit.unit})`;
     case "weight":
@@ -576,6 +588,25 @@ export const areSubUnitsEqual = (subUnit1: SubUnit, subUnit2: SubUnit): boolean 
         return true;
       case "percentage":
         return true;
+      case "rating":
+        if (subUnit1.rating === subUnit2Copy.rating) {
+          switch (subUnit1.rating) {
+            case "stars":
+              return subUnit1.stars === subUnit2Copy.stars && subUnit1.half_stars === subUnit2Copy.half_stars;
+            case "likert-scale":
+              return subUnit1.levels === subUnit2Copy.levels;
+            case "nrs-11":
+              return true;
+            case "rpe":
+              return subUnit1.rpe === subUnit2Copy.rpe;
+            case "hedonic-scale":
+              return subUnit1.levels === subUnit2Copy.levels;
+            case "grading":
+              return subUnit1.scale === subUnit2Copy.scale;
+          }
+        } else {
+          return false;
+        }
       case "distance":
         return subUnit1.unit === subUnit2Copy.unit;
       case "weight":

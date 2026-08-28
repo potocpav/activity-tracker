@@ -1,7 +1,7 @@
 
 # Planned features
 
-- [ ] Multiple acitivity screens
+- [ ] Improve multiple acitivity screens
   - [ ] Remove wing tabs when no activities exist
   - [ ] Animate title on tab changes
   - [ ] Navigate to the new tab on Loop Habits import
@@ -14,22 +14,26 @@
   - [ ] Drag-drop across multiple tab rows.
   - [ ] Drag-drop the tag rows themeslves.
   - [ ] Merge tag row buttons visually
+  - [ ] Tag colors in calendar/graph option
 - [ ] Persistent timers as notifications
   - [ ] Show running timers on activity screen
+- [ ] Performance improvements
+  - [ ] Debug BLE Input performance
+- [ ] Optimize for tablets
+- [ ] Authenticated activities
+- [o] Add ratings
+  - [o] Easy, Moderate, Hard, Very Hard, Max
+  - [o] 1-5 stars
+  - [o] 1-10 points
 - [ ] Minor features
   - [ ] Remember last tags for each activity
   - [ ] BLE Input font size debugging
   - [ ] Unit conversions: kg <-> lbs, etc. This could include the ability to input values in different units - useful for climbing grades.
-  - [ ] Scroll climbing grade picker to the selected grade more reliably
+  - [x] Scroll climbing grade picker to the selected grade more reliably
   - [x] Keyboard avoidance in Edit Activity and other screens
-- [ ] Performance improvements
-  - [ ] Debug BLE Input performance
-- [ ] Optimize for tablets
-- [ ] Add authenticated activities
-- [ ] Add ratings
-  - [ ] Easy, Moderate, Hard, Very Hard, Max
-  - [ ] 1-5 stars
-  - [ ] 1-10 points
+- [ ] Bugfixes
+  - [ ] Fix header color in Select Grade dialog in dark themes, and fix selected grade text color in dark themes
+  - [ ] Make Select unit dialog header and styling work similarly to Select Grade dialog
 
 # Changelog
 

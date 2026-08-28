@@ -251,7 +251,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
         if (selectedDate !== undefined) {
           setInputDate(selectedDate);
         }
-      }
+      },
     });
   };
 

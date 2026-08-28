@@ -1,7 +1,7 @@
 import React, { Fragment, useRef } from "react";
 import { FlatList, Modal, Text, View, useWindowDimensions } from "react-native";
 import { List } from "react-native-paper";
-import { SafeAreaInsetsContext, SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaInsetsContext, SafeAreaView } from "react-native-safe-area-context";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useAppTheme, useThemeVariant, useWideDisplay } from "../Model/Theme";
 import { Button, CloseButton } from "./Element";
@@ -44,11 +44,11 @@ const GradeSelection = ({ visible, options, value, activityColor, onSelect, onDi
       navigationBarTranslucent={true}
     >
       <SafeAreaInsetsContext.Consumer>
-        {(insets) =>
+        {(insets) => (
           <Fragment>
             <View
               style={{
-                backgroundColor: theme.colors.primary,
+                backgroundColor: themeVariant === "light" ? theme.colors.primary : theme.colors.elevation.level2,
                 elevation: 2,
                 flexDirection: "row",
                 paddingTop: insets?.top,
@@ -56,7 +56,16 @@ const GradeSelection = ({ visible, options, value, activityColor, onSelect, onDi
                 paddingRight: insets?.right,
               }}
             >
-              <View style={{ flex: 1, flexDirection: "row", paddingVertical: 6, paddingHorizontal: 6, alignItems: "center", gap: 15 }}>
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  paddingVertical: 6,
+                  paddingHorizontal: 6,
+                  alignItems: "center",
+                  gap: 15,
+                }}
+              >
                 <Button onPress={onDismiss}>
                   <MaterialCommunityIcons name="arrow-left" size={24} color="white" />
                 </Button>
@@ -82,8 +91,12 @@ const GradeSelection = ({ visible, options, value, activityColor, onSelect, onDi
               data={options}
               renderItem={({ item }) => (
                 <List.Item
-                  style={{ flex: 1, height: itemHeight, backgroundColor: value === item ? theme.colors.primary : theme.colors.surface }}
-                  titleStyle={{ color: value === item ? "white" : theme.colors.onSurface }}
+                  style={{
+                    flex: 1,
+                    height: itemHeight,
+                    backgroundColor: value === item ? theme.colors.primary : theme.colors.surface,
+                  }}
+                  titleStyle={{ color: value === item ? theme.colors.onPrimary : theme.colors.onSurface }}
                   key={item}
                   onPress={() => {
                     onSelect(item);
@@ -95,11 +108,10 @@ const GradeSelection = ({ visible, options, value, activityColor, onSelect, onDi
             />
             <View style={{ flex: 1, paddingBottom: insets?.bottom }}></View>
           </Fragment>
-        }
+        )}
       </SafeAreaInsetsContext.Consumer>
 
-      <SafeAreaView edges={["left", "right", "bottom"]}>
-      </SafeAreaView>
+      <SafeAreaView edges={["left", "right", "bottom"]}></SafeAreaView>
     </Modal>
   );
 };
