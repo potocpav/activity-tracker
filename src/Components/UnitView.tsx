@@ -1,9 +1,10 @@
-import { Text, View, ScrollView, Pressable, Modal, KeyboardAvoidingView } from "react-native";
+import { View, ScrollView, Pressable, StyleSheet } from "react-native";
 import { TextInput, List, SegmentedButtons } from "react-native-paper";
 import { ClimbingGrade, DistanceUnit, SubUnit, SubUnitType, TimeUnit, WeightUnit } from "../Model/StoreTypes";
 import { useState } from "react";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useAppTheme } from "../Model/Theme";
+import { MD3Theme } from "react-native-paper/lib/typescript/types";
 import {
   renderUnit,
   mapStringValue,
@@ -17,7 +18,7 @@ import {
 } from "../Model/Unit";
 import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
 import GradeSelection from "./GradeSelection";
-import { SafeAreaView } from "react-native-safe-area-context";
+import FullScreenDialog from "./FullScreenDialog";
 import { CheckButton, MinusIcon, PlusIcon, Button } from "./Element";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 
@@ -203,6 +204,7 @@ const subUnitProps = (
 export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null; onChange: (unit: SubUnit | null) => void }) => {
   const [unitDialogVisible, setUnitDialogVisible] = useState(false);
   const theme = useAppTheme();
+  const styles = getStyles(theme);
 
   const [chosenUnitType, setChosenUnitType] = useState<SubUnitType | null>(unit?.type ?? null);
   const [allUnits, setAllUnits] = useState<SubUnit[]>(
@@ -240,78 +242,54 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null; onChange:
           mode="outlined"
         />
       </Pressable>
-      <Modal
-        transparent={false}
-        backdropColor={theme.colors.surface}
-        onRequestClose={() => setUnitDialogVisible(false)}
-        animationType="fade"
+      <FullScreenDialog
         visible={unitDialogVisible}
+        title="Select Unit"
         onDismiss={() => setUnitDialogVisible(false)}
+        headerRight={
+          <CheckButton
+            onPress={() => {
+              setUnitDialogVisible(false);
+              const newUnitInput = allUnits.find((unit) => unit.type === chosenUnitType) ?? null;
+              onChange(newUnitInput);
+            }}
+            color="white"
+          />
+        }
       >
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
-          <SafeAreaView style={{ flex: 1 }}>
-            <View
-              style={{
-                backgroundColor: theme.colors.elevation.level1,
-                elevation: 2,
-                flexDirection: "row",
-                paddingVertical: 10,
-                paddingRight: 10,
-                alignItems: "center",
-              }}
-            >
-              <Button onPress={() => setUnitDialogVisible(false)}>
-                <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onSurface} />
-              </Button>
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 20, color: theme.colors.onSurface }}>Select Unit</Text>
-              </View>
-              <CheckButton
-                onPress={() => {
-                  setUnitDialogVisible(false);
-                  const newUnitInput = allUnits.find((unit) => unit.type === chosenUnitType) ?? null;
-                  onChange(newUnitInput);
-                }}
-                color={theme.colors.onSurface}
-              />
-            </View>
-            <ScrollView>
-              <View style={{ gap: 10, padding: 10 }}>
-                {allUnits.map((subUnit) => {
-                  const { title, icon, description, children } = subUnitProps(subUnit.type, allUnits, setAllUnits);
-                  if (children) {
-                    return (
-                      <List.Accordion
-                        key={subUnit.type}
-                        title={title}
-                        left={() => <List.Icon icon={icon} />}
-                        description={description}
-                        expanded={chosenUnitType === subUnit.type}
-                        onPress={() => setChosenUnitType(chosenUnitType === subUnit.type ? null : subUnit.type)}
-                      >
-                        {children}
-                      </List.Accordion>
-                    );
-                  } else {
-                    return (
-                      <List.Item
-                        key={subUnit.type}
-                        title={title}
-                        titleStyle={{
-                          color: chosenUnitType === subUnit.type ? theme.colors.primary : theme.colors.onSurface,
-                        }}
-                        onPress={() => setChosenUnitType(subUnit.type)}
-                        left={() => <List.Icon icon={icon} />}
-                        description={description}
-                      />
-                    );
-                  }
-                })}
-              </View>
-            </ScrollView>
-          </SafeAreaView>
-        </KeyboardAvoidingView>
-      </Modal>
+        <ScrollView>
+          <View style={styles.unitList}>
+            {allUnits.map((subUnit) => {
+              const { title, icon, description, children } = subUnitProps(subUnit.type, allUnits, setAllUnits);
+              if (children) {
+                return (
+                  <List.Accordion
+                    key={subUnit.type}
+                    title={title}
+                    left={() => <List.Icon icon={icon} />}
+                    description={description}
+                    expanded={chosenUnitType === subUnit.type}
+                    onPress={() => setChosenUnitType(chosenUnitType === subUnit.type ? null : subUnit.type)}
+                  >
+                    {children}
+                  </List.Accordion>
+                );
+              } else {
+                return (
+                  <List.Item
+                    key={subUnit.type}
+                    title={title}
+                    titleStyle={chosenUnitType === subUnit.type ? styles.chosenUnitTitle : styles.unitTitle}
+                    onPress={() => setChosenUnitType(subUnit.type)}
+                    left={() => <List.Icon icon={icon} />}
+                    description={description}
+                  />
+                );
+              }
+            })}
+          </View>
+        </ScrollView>
+      </FullScreenDialog>
     </View>
   );
 };
@@ -539,3 +517,17 @@ export const ValueEditor = ({
     </InputWrapper>
   );
 };
+
+const getStyles = (theme: MD3Theme) =>
+  StyleSheet.create({
+    unitList: {
+      gap: 10,
+      padding: 10,
+    },
+    unitTitle: {
+      color: theme.colors.onSurface,
+    },
+    chosenUnitTitle: {
+      color: theme.colors.primary,
+    },
+  });

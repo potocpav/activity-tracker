@@ -1,10 +1,10 @@
-import React, { Fragment, useRef } from "react";
-import { FlatList, Modal, Text, View, useWindowDimensions } from "react-native";
+import React, { useRef } from "react";
+import { FlatList, StyleSheet, useWindowDimensions } from "react-native";
 import { List } from "react-native-paper";
-import { SafeAreaInsetsContext, SafeAreaView } from "react-native-safe-area-context";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { useAppTheme, useThemeVariant, useWideDisplay } from "../Model/Theme";
-import { Button, CloseButton } from "./Element";
+import { MD3Theme } from "react-native-paper/lib/typescript/types";
+import { useAppTheme, useWideDisplay } from "../Model/Theme";
+import { CloseButton } from "./Element";
+import FullScreenDialog from "./FullScreenDialog";
 
 // Full-screen climbing grade picker, opened from the read-only grade field in ValueEditor.
 // Selecting a grade applies it and closes; the header's close button clears the value.
@@ -22,9 +22,9 @@ const GradeSelection = ({ visible, options, value, activityColor, onSelect, onDi
   const theme = useAppTheme(activityColor);
   const wideDisplay = useWideDisplay();
   const dimensions = useWindowDimensions();
-  const themeVariant = useThemeVariant();
   const itemHeight = 50 * dimensions.fontScale;
   const numColumns = wideDisplay ? 4 : 2;
+  const styles = getStyles(theme, itemHeight);
 
   // Open on the current grade, or in the middle of the scale when nothing is set yet.
   const itemIx = options.findIndex((o) => o === value);
@@ -33,87 +33,64 @@ const GradeSelection = ({ visible, options, value, activityColor, onSelect, onDi
   const listRef = useRef<FlatList<string>>(null);
 
   return (
-    <Modal
-      transparent={false}
-      backdropColor={theme.colors.surface}
-      onRequestClose={onDismiss}
-      animationType="fade"
+    <FullScreenDialog
       visible={visible}
+      title="Select Grade"
+      activityColor={activityColor}
       onDismiss={onDismiss}
-      statusBarTranslucent={true}
-      navigationBarTranslucent={true}
+      headerRight={
+        <CloseButton
+          onPress={() => {
+            onSelect("");
+            onDismiss();
+          }}
+          color="white"
+        />
+      }
     >
-      <SafeAreaInsetsContext.Consumer>
-        {(insets) => (
-          <Fragment>
-            <View
-              style={{
-                backgroundColor: themeVariant === "light" ? theme.colors.primary : theme.colors.elevation.level2,
-                elevation: 2,
-                flexDirection: "row",
-                paddingTop: insets?.top,
-                paddingLeft: insets?.left,
-                paddingRight: insets?.right,
-              }}
-            >
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  paddingVertical: 6,
-                  paddingHorizontal: 6,
-                  alignItems: "center",
-                  gap: 15,
-                }}
-              >
-                <Button onPress={onDismiss}>
-                  <MaterialCommunityIcons name="arrow-left" size={24} color="white" />
-                </Button>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 20, color: "white" }}>Select Grade</Text>
-                </View>
-                <CloseButton
-                  onPress={() => {
-                    onSelect("");
-                    onDismiss();
-                  }}
-                  color="white"
-                />
-              </View>
-            </View>
-            <FlatList
-              key={`grade-list-${numColumns}`}
-              ref={listRef}
-              getItemLayout={(_, index) => ({ length: itemHeight, offset: itemHeight * index, index })}
-              onLayout={() => listRef.current?.scrollToIndex({ index: initialRow, viewPosition: 0.5, animated: true })}
-              numColumns={numColumns}
-              indicatorStyle="black"
-              data={options}
-              renderItem={({ item }) => (
-                <List.Item
-                  style={{
-                    flex: 1,
-                    height: itemHeight,
-                    backgroundColor: value === item ? theme.colors.primary : theme.colors.surface,
-                  }}
-                  titleStyle={{ color: value === item ? theme.colors.onPrimary : theme.colors.onSurface }}
-                  key={item}
-                  onPress={() => {
-                    onSelect(item);
-                    onDismiss();
-                  }}
-                  title={item}
-                />
-              )}
-            />
-            <View style={{ flex: 1, paddingBottom: insets?.bottom }}></View>
-          </Fragment>
+      <FlatList
+        key={`grade-list-${numColumns}`}
+        ref={listRef}
+        getItemLayout={(_, index) => ({ length: itemHeight, offset: itemHeight * index, index })}
+        onLayout={() => listRef.current?.scrollToIndex({ index: initialRow, viewPosition: 0.5, animated: true })}
+        numColumns={numColumns}
+        indicatorStyle="black"
+        data={options}
+        renderItem={({ item }) => (
+          <List.Item
+            style={[styles.item, value === item ? styles.selectedItem : styles.unselectedItem]}
+            titleStyle={value === item ? styles.selectedItemTitle : styles.unselectedItemTitle}
+            key={item}
+            onPress={() => {
+              onSelect(item);
+              onDismiss();
+            }}
+            title={item}
+          />
         )}
-      </SafeAreaInsetsContext.Consumer>
-
-      <SafeAreaView edges={["left", "right", "bottom"]}></SafeAreaView>
-    </Modal>
+      />
+    </FullScreenDialog>
   );
 };
+
+const getStyles = (theme: MD3Theme, itemHeight: number) =>
+  StyleSheet.create({
+    item: {
+      flex: 1,
+      height: itemHeight,
+    },
+    selectedItem: {
+      backgroundColor: theme.colors.primary,
+    },
+    unselectedItem: {
+      backgroundColor: theme.colors.surface,
+    },
+    selectedItemTitle: {
+      color: theme.colors.onPrimary,
+    },
+    unselectedItemTitle: {
+      color: theme.colors.onSurface,
+    },
+  });
 
 export default GradeSelection;
