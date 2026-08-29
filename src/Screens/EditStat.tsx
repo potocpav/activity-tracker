@@ -1,6 +1,5 @@
 import React, { Fragment } from "react";
 import { ScrollView, ToastAndroid, View } from "react-native";
-import { TextInput } from "react-native-paper";
 import useStore from "../Model/Store";
 import {
   ActivityType,
@@ -17,6 +16,7 @@ import TagMenu from "../Components/TagMenu";
 import SubUnitMenu from "../Components/SubUnitMenu";
 import DropdownMenu from "../Components/DropdownMenu";
 import StatView from "../Components/StatView";
+import TextField from "../Components/TextField";
 import { useAppTheme, useThemeVariant } from "../Model/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
@@ -119,7 +119,7 @@ export const EditStat = ({ navigation, route }: { navigation: any; route: any })
         </ButtonRow>
       ),
     });
-  }, [activityPath, navigation, theme, activity]);
+  }, [activityPath, dialogStat, navigation, theme, activity]);
 
   return (
     <Fragment>
@@ -141,12 +141,11 @@ export const EditStat = ({ navigation, route }: { navigation: any; route: any })
             )}
           </View>
 
-          <TextInput
+          <TextField
             label="Label"
-            mode="outlined"
             value={inputLabel}
             onChangeText={setInputLabel}
-            style={{ flex: 1, margin: 10 }}
+            containerStyle={{ flex: 1, margin: 10 }}
           />
 
           <View

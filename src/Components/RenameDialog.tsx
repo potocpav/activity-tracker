@@ -1,8 +1,8 @@
 import React from "react";
-import { View } from "react-native";
-import { TextInput } from "react-native-paper";
-import Dialog from "./Dialog";
+import { StyleSheet, View } from "react-native";
+import SmallDialog from "./SmallDialog";
 import { ButtonRow, CheckButton, CopyButton, DeleteButton } from "./Element";
+import TextField from "./TextField";
 
 // Shared "rename this thing" dialog behind the graph and calendar headers: a name
 // field plus delete / clone / confirm. Delete is hidden when onDelete is omitted,
@@ -31,20 +31,16 @@ const RenameDialog: React.FC<RenameDialogProps> = ({
   onConfirm,
   theme,
 }) => (
-  <Dialog visible={visible} onDismiss={onDismiss} theme={theme}>
-    <Dialog.Content>
-      <View style={{ flex: 1 }}>
-        <TextInput label={label} defaultValue={nameInput} onChangeText={onChangeName} mode="outlined" />
-      </View>
-    </Dialog.Content>
-    <Dialog.Actions>
+  <SmallDialog visible={visible} onDismiss={onDismiss} theme={theme}>
+      <TextField label={label} defaultValue={nameInput} onChangeText={onChangeName} />
+    <SmallDialog.Actions>
       <ButtonRow>
         {onDelete !== undefined && <DeleteButton onPress={onDelete} color={theme.colors.onSurface} />}
         <CopyButton onPress={onClone} color={theme.colors.onSurface} />
         <CheckButton onPress={onConfirm} color={theme.colors.onSurface} />
       </ButtonRow>
-    </Dialog.Actions>
-  </Dialog>
+    </SmallDialog.Actions>
+  </SmallDialog>
 );
 
 export default RenameDialog;

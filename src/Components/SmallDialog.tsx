@@ -1,20 +1,14 @@
 import React from "react";
 import { KeyboardAvoidingView, Modal, Pressable, StyleSheet, View } from "react-native";
 
-// Plain react-native replacement for react-native-paper's <Dialog>, covering the
-// subset of the API this app uses. A Modal with a see-through backdrop, a full-screen
-// Pressable behind the card to dismiss on an outside tap, and the card centered on top.
-// The KeyboardAvoidingView lives here because the screen's own one does not reach into
-// the Modal's separate native window.
-
-interface DialogProps {
+interface SmallDialogProps {
   visible: boolean;
   onDismiss: () => void;
   theme: any;
   children: React.ReactNode;
 }
 
-const DialogBase: React.FC<DialogProps> = ({ visible, onDismiss, theme, children }) => (
+const SmallDialogBase: React.FC<SmallDialogProps> = ({ visible, onDismiss, theme, children }) => (
   <Modal
     visible={visible}
     animationType="fade"
@@ -30,9 +24,9 @@ const DialogBase: React.FC<DialogProps> = ({ visible, onDismiss, theme, children
   </Modal>
 );
 
-const DialogContent = ({ children }: { children: React.ReactNode }) => <View style={styles.content}>{children}</View>;
-
-const DialogActions = ({ children }: { children: React.ReactNode }) => <View style={styles.actions}>{children}</View>;
+const SmallDialogActions = ({ children }: { children: React.ReactNode }) => (
+  <View style={styles.actions}>{children}</View>
+);
 
 const styles = StyleSheet.create({
   centered: {
@@ -46,28 +40,22 @@ const styles = StyleSheet.create({
     maxWidth: 560,
     borderRadius: 28,
     paddingTop: 24,
+    paddingHorizontal: 24,
     elevation: 24,
     shadowColor: "#000000",
     shadowOpacity: 0.3,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 6 },
   },
-  content: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    paddingHorizontal: 24,
-  },
   actions: {
     flexDirection: "row",
     justifyContent: "flex-end",
-    paddingHorizontal: 16,
     paddingBottom: 16,
     paddingTop: 8,
   },
 });
 
-const Dialog = Object.assign(DialogBase, { Content: DialogContent, Actions: DialogActions });
+const SmallDialog = Object.assign(SmallDialogBase, { Actions: SmallDialogActions });
 
-export default Dialog;
-export { Dialog };
+export default SmallDialog;
+export { SmallDialog };

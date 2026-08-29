@@ -29,11 +29,21 @@
   - [ ] Remember last tags for each activity
   - [ ] BLE Input font size debugging
   - [ ] Unit conversions: kg <-> lbs, etc. This could include the ability to input values in different units - useful for climbing grades.
+  - [ ] Desktop shortcuts for activities
+  - [o] Remove React Native Paper dependency
   - [x] Scroll climbing grade picker to the selected grade more reliably
   - [x] Keyboard avoidance in Edit Activity and other screens
 - [x] Bugfixes
   - [x] Fix header color in Select Grade dialog in dark themes, and fix selected grade text color in dark themes
   - [x] Make Select unit dialog header and styling work similarly to Select Grade dialog
+
+- [ ] Test
+  - [x] Rows in GradeSelection dialog, including selection
+  - [x] TextInput in RenameDialog, 
+  - [x] TagDialog (in edit activity), 
+  - [x] Rename Graph and Rename Calendar dialogs, 
+  - [x] Fix Edit Stat dialog
+  - [ ] Fix ColorButton padding in relation to TextInput fields
 
 # Changelog
 

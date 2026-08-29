@@ -1,6 +1,5 @@
 import React, { useRef } from "react";
-import { FlatList, StyleSheet, useWindowDimensions } from "react-native";
-import { List } from "react-native-paper";
+import { FlatList, Pressable, StyleSheet, Text, useWindowDimensions } from "react-native";
 import { MD3Theme } from "react-native-paper/lib/typescript/types";
 import { useAppTheme, useWideDisplay } from "../Model/Theme";
 import { CloseButton } from "./Element";
@@ -57,16 +56,17 @@ const GradeSelection = ({ visible, options, value, activityColor, onSelect, onDi
         indicatorStyle="black"
         data={options}
         renderItem={({ item }) => (
-          <List.Item
+          <Pressable
             style={[styles.item, value === item ? styles.selectedItem : styles.unselectedItem]}
-            titleStyle={value === item ? styles.selectedItemTitle : styles.unselectedItemTitle}
             key={item}
+            android_ripple={{ foreground: true }}
             onPress={() => {
               onSelect(item);
               onDismiss();
             }}
-            title={item}
-          />
+          >
+            <Text style={value === item ? styles.selectedItemTitle : styles.unselectedItemTitle}>{item}</Text>
+          </Pressable>
         )}
       />
     </FullScreenDialog>
@@ -78,6 +78,8 @@ const getStyles = (theme: MD3Theme, itemHeight: number) =>
     item: {
       flex: 1,
       height: itemHeight,
+      justifyContent: "center",
+      paddingHorizontal: 16,
     },
     selectedItem: {
       backgroundColor: theme.colors.primary,
@@ -86,9 +88,11 @@ const getStyles = (theme: MD3Theme, itemHeight: number) =>
       backgroundColor: theme.colors.surface,
     },
     selectedItemTitle: {
+      fontSize: 16,
       color: theme.colors.onPrimary,
     },
     unselectedItemTitle: {
+      fontSize: 16,
       color: theme.colors.onSurface,
     },
   });

@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { TextInput } from "react-native-paper";
+import { StyleSheet, View } from "react-native";
 import ColorPicker from "./ColorPicker";
-import Dialog from "./Dialog";
+import SmallDialog from "./SmallDialog";
 import InputWrapper, { InputWrapperRef } from "./InputWrapper";
 import { ButtonRow, CheckButton, ColorButton, DeleteButton } from "./Element";
+import TextField from "./TextField";
 
 // Tag rename / recolor dialog. The color picker lives inside this Dialog's Modal so
 // it is layered above the dialog rather than beside it.
@@ -40,12 +41,14 @@ const TagDialog: React.FC<TagDialogProps> = ({
   const [colorPickerVisible, setColorPickerVisible] = useState(false);
 
   return (
-    <Dialog visible={visible} onDismiss={onDismiss} theme={theme}>
-      <Dialog.Content>
+    <SmallDialog visible={visible} onDismiss={onDismiss} theme={theme}>
+      <View style={styles.content}>
         <InputWrapper error={nameError} ref={nameInputRef}>
-          <TextInput label="Tag Name" defaultValue={nameInput} onChangeText={onChangeName} mode="outlined" />
+          <TextField label="Tag Name" defaultValue={nameInput} onChangeText={onChangeName} />
         </InputWrapper>
-        <ColorButton color={color} onPress={() => setColorPickerVisible(true)} />
+        <View style={{ borderWidth: 1, borderColor: "red" }}>
+          <ColorButton color={color} onPress={() => setColorPickerVisible(true)} />
+        </View>
         <ColorPicker
           visible={colorPickerVisible}
           palette={palette}
@@ -57,15 +60,23 @@ const TagDialog: React.FC<TagDialogProps> = ({
           onDismiss={() => setColorPickerVisible(false)}
           theme={theme}
         />
-      </Dialog.Content>
-      <Dialog.Actions>
+      </View>
+      <SmallDialog.Actions>
         <ButtonRow>
           <DeleteButton onPress={onDelete} color={theme.colors.onSurface} />
           <CheckButton onPress={onUpdate} color={theme.colors.onSurface} />
         </ButtonRow>
-      </Dialog.Actions>
-    </Dialog>
+      </SmallDialog.Actions>
+    </SmallDialog>
   );
 };
+
+const styles = StyleSheet.create({
+  content: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+  },
+});
 
 export default TagDialog;

@@ -36,8 +36,8 @@ import Animated, {
 } from "react-native-reanimated";
 import { Gesture, GestureDetector, Pressable } from "react-native-gesture-handler";
 import { scheduleOnRN } from "react-native-worklets";
-import { TextInput } from "react-native-paper";
-import Dialog from "../Components/Dialog";
+import SmallDialog from "../Components/SmallDialog";
+import TextField from "../Components/TextField";
 
 type ActivitiesProps = {
   navigation: any;
@@ -496,18 +496,17 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
           <EmptyPagePlaceholder title="No activities" subtext="Tap the + button to create an activity" />
         </View>
       </PagerView>
-      <Dialog visible={activityTabDialogVisible} onDismiss={() => setActivityTabDialogVisible(false)} theme={theme}>
-        <Dialog.Content>
-          <View style={{ flex: 1 }}>
-            <TextInput
-              label="Tab Name"
-              defaultValue={activityTabDialogNameInput}
-              onChangeText={setActivityTabDialogNameInput}
-              mode="outlined"
-            />
-          </View>
-        </Dialog.Content>
-        <Dialog.Actions>
+      <SmallDialog
+        visible={activityTabDialogVisible}
+        onDismiss={() => setActivityTabDialogVisible(false)}
+        theme={theme}
+      >
+          <TextField
+            label="Tab Name"
+            defaultValue={activityTabDialogNameInput}
+            onChangeText={setActivityTabDialogNameInput}
+          />
+        <SmallDialog.Actions>
           <ButtonRow>
             <CloseButton onPress={() => setActivityTabDialogVisible(false)} color={theme.colors.onSurface} />
             <CheckButton
@@ -518,8 +517,8 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
               color={theme.colors.onSurface}
             />
           </ButtonRow>
-        </Dialog.Actions>
-      </Dialog>
+        </SmallDialog.Actions>
+      </SmallDialog>
     </SafeAreaView>
   );
 };

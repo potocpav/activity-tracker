@@ -1,4 +1,4 @@
-import React, { Fragment } from "react";
+import { Fragment } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { Divider } from "react-native-paper";
 import useStore from "../Model/Store";
