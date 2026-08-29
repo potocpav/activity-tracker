@@ -36,14 +36,19 @@
 - [x] Bugfixes
   - [x] Fix header color in Select Grade dialog in dark themes, and fix selected grade text color in dark themes
   - [x] Make Select unit dialog header and styling work similarly to Select Grade dialog
+  - [ ] Fix all the padding issues for text fields
+    - UnitView.tsx:425 (marginVertical: 4, gap 8) — all five unit fields
+    - EditActivity.tsx:607 — Activity Name + ColorButton
+    - EditActivity.tsx:709 — Minimum Weight + SegmentedButtons
+    - EditDataPoint.tsx:298 — Date + calendar Button
+  - [ ] Remove repeated Name, Unit headers in EditActivity with multiple units
 
-- [ ] Test
+- [o] Test
   - [x] Rows in GradeSelection dialog, including selection
   - [x] TextInput in RenameDialog, 
   - [x] TagDialog (in edit activity), 
   - [x] Rename Graph and Rename Calendar dialogs, 
   - [x] Fix Edit Stat dialog
-  - [ ] Fix ColorButton padding in relation to TextInput fields
 
 # Changelog
 

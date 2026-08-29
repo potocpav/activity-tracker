@@ -1,5 +1,5 @@
 import { View, ScrollView, Pressable, StyleSheet } from "react-native";
-import { TextInput, List, SegmentedButtons } from "react-native-paper";
+import { List, SegmentedButtons } from "react-native-paper";
 import { ClimbingGrade, DistanceUnit, SubUnit, SubUnitType, TimeUnit, WeightUnit } from "../Model/StoreTypes";
 import { useState } from "react";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
@@ -20,6 +20,7 @@ import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
 import GradeSelection from "./GradeSelection";
 import FullScreenDialog from "./FullScreenDialog";
 import { CheckButton, MinusIcon, PlusIcon, Button } from "./Element";
+import TextField from "./TextField";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 
 const subUnitProps = (
@@ -187,13 +188,12 @@ const subUnitProps = (
         description: "Numerical value",
         children: (
           <InputWrapper>
-            <TextInput
+            <TextField
               label="Unit"
               value={allUnits.find((unit) => unit.type === subUnitType)?.symbol ?? ""}
               onChangeText={(text) =>
                 setAllUnits(allUnits.map((unit) => (unit.type === subUnitType ? { ...unit, symbol: text } : unit)))
               }
-              mode="outlined"
             />
           </InputWrapper>
         ),
@@ -234,12 +234,11 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null; onChange:
           },
         ]}
       >
-        <TextInput
-          style={{ flex: 1 }}
+        <TextField
+          containerStyle={{ flex: 1 }}
           label="Unit"
           value={unit === null ? "" : renderUnit(unit)}
           editable={false}
-          mode="outlined"
         />
       </Pressable>
       <FullScreenDialog
@@ -376,13 +375,13 @@ export const ValueEditor = ({
             },
           ]}
         >
-          <TextInput
+          <TextField
             label={label}
             value={value}
             onChangeText={(text) => onChange(text)}
             keyboardType="numeric"
             editable={false}
-            mode="outlined"
+            activityColor={activityColor}
           />
         </Pressable>
         <GradeSelection
@@ -430,12 +429,12 @@ export const ValueEditor = ({
                 case "hours":
                   return (
                     <>
-                      <TextInput
-                        style={{ flex: 1 }}
+                      <TextField
+                        containerStyle={{ flex: 1 }}
                         label={label}
                         value={value}
                         onChangeText={onChange}
-                        mode="outlined"
+                        activityColor={activityColor}
                       />
                       <Button onPress={() => showTimePicker()}>
                         <MaterialCommunityIcons name="timer" size={22} color={theme.colors.onSurface} />
@@ -445,13 +444,13 @@ export const ValueEditor = ({
                 case "seconds":
                   return (
                     <>
-                      <TextInput
-                        style={{ flex: 1 }}
+                      <TextField
+                        containerStyle={{ flex: 1 }}
                         label={label}
                         value={timerActive ? addTimerToValue(value) : value}
                         editable={!timerActive}
                         onChangeText={onChange}
-                        mode="outlined"
+                        activityColor={activityColor}
                       />
                       <Button onPress={() => resetTimer()}>
                         <MaterialCommunityIcons name="reload" size={22} color={theme.colors.onSurface} />
@@ -471,13 +470,13 @@ export const ValueEditor = ({
             case "count":
               return (
                 <>
-                  <TextInput
-                    style={{ flex: 1 }}
+                  <TextField
+                    containerStyle={{ flex: 1 }}
                     label={label}
                     value={value}
                     onChangeText={(text) => onChange(text)}
                     keyboardType="numeric"
-                    mode="outlined"
+                    activityColor={activityColor}
                   />
                   <Button onPress={() => onChange(mapStringValue(unit, value, (v) => v - 1))}>
                     <MinusIcon color={theme.colors.onSurface} />
@@ -502,13 +501,13 @@ export const ValueEditor = ({
               }
             default:
               return (
-                <TextInput
-                  style={{ flex: 1 }}
+                <TextField
+                  containerStyle={{ flex: 1 }}
                   label={label}
                   value={value}
                   onChangeText={(text) => onChange(text)}
                   keyboardType="numeric"
-                  mode="outlined"
+                  activityColor={activityColor}
                 />
               );
           }

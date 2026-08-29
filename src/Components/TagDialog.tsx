@@ -46,7 +46,7 @@ const TagDialog: React.FC<TagDialogProps> = ({
         <InputWrapper error={nameError} ref={nameInputRef}>
           <TextField label="Tag Name" defaultValue={nameInput} onChangeText={onChangeName} />
         </InputWrapper>
-        <View style={{ borderWidth: 1, borderColor: "red" }}>
+        <View>
           <ColorButton color={color} onPress={() => setColorPickerVisible(true)} />
         </View>
         <ColorPicker

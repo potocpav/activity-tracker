@@ -1,7 +1,16 @@
 import React, { useState, FC, useRef, Fragment } from "react";
-import { View, Text, StyleSheet, ScrollView, ToastAndroid, Pressable, KeyboardAvoidingView } from "react-native";
-import { TextInput, MD3Theme } from "react-native-paper";
-import { TextInput as NativeTextInput } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  ToastAndroid,
+  Pressable,
+  KeyboardAvoidingView,
+  TextInput,
+} from "react-native";
+import { MD3Theme } from "react-native-paper";
+import TextField from "../Components/TextField";
 import {
   ActivityType,
   ActivityPath,
@@ -306,10 +315,10 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
                 ]}
                 // android_ripple={{ color: theme.colors.onSurface, foreground: false }}
               >
-                <TextInput
-                  mode="outlined"
+                <TextField
                   label="Date"
                   editable={false}
+                  activityColor={activity.color}
                   value={inputDate ? inputDate.toLocaleDateString(locale) : "Select date"}
                 />
               </Pressable>
@@ -320,7 +329,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
           </InputWrapper>
 
           <InputWrapper>
-            <NativeTextInput
+            <TextInput
               placeholder="Note (optional)"
               value={inputNote}
               onChangeText={setInputNote}

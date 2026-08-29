@@ -1,9 +1,10 @@
 import React, { useState, FC, useRef } from "react";
-import { View, Text, StyleSheet, ScrollView, Alert, KeyboardAvoidingView } from "react-native";
+import { View, Text, StyleSheet, ScrollView, Alert, KeyboardAvoidingView, TextInput } from "react-native";
 import { SegmentedButtons, MD3Theme } from "react-native-paper";
 import Menu from "../Components/Menu";
 import { ActivityType, SetTag, Tag, SubUnit, Unit, WeightUnit, State, ActivityPath } from "../Model/StoreTypes";
-import { TextInput, Chip } from "react-native-paper";
+import { Chip } from "react-native-paper";
+import TextField from "../Components/TextField";
 import { stringToNumber } from "../Model/Unit";
 import useStore from "../Model/Store";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
@@ -514,7 +515,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
               error={showErrors ? multiUnitInput[idx].nameError : null}
               ref={(el) => (multiUnitInput[idx].nameRef = el)}
             >
-              <TextInput
+              <TextField
                 label="Name"
                 value={val.name}
                 onChangeText={(text) => {
@@ -523,7 +524,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
                   newVals[idx].name = text;
                   setMultiUnitInput(newVals);
                 }}
-                mode="outlined"
+                activityColor={selectedColor}
               />
             </InputWrapper>
             <InputWrapper
@@ -604,11 +605,11 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
             <View>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
                 <InputWrapper error={showErrors ? activityNameError : null} ref={activityNameInputRef}>
-                  <TextInput
+                  <TextField
                     label="Activity Name"
                     value={activityNameInput}
                     onChangeText={setActivityNameInput}
-                    mode="outlined"
+                    activityColor={selectedColor}
                   />
                 </InputWrapper>
                 <ColorButton color={selectedColor} onPress={() => setColorDialogVisible(true)} />
@@ -617,13 +618,13 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
 
             <View>
               <TextInput
-                label="Description (optional)"
+                placeholder="Description (optional)"
+                placeholderTextColor={theme.colors.onSurfaceVariant}
                 value={activityDescriptionInput}
                 onChangeText={setActivityDescriptionInput}
                 multiline
-                numberOfLines={2}
-                style={{ height: 80 }}
-                mode="outlined"
+                numberOfLines={Infinity}
+                style={styles.descriptionInput}
               />
             </View>
 
@@ -706,13 +707,13 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
                   ]}
                 />
                 <InputWrapper error={showErrors ? bleMinWeightError : null} ref={bleMinWeightInputRef}>
-                  <TextInput
-                    style={{ flex: 1 }}
+                  <TextField
+                    containerStyle={{ flex: 1 }}
                     label={`Minimum Weight (${bleMinWeightUnit})`}
                     value={bleMinWeight}
                     onChangeText={setBleMinWeight}
                     keyboardType="numeric"
-                    mode="outlined"
+                    activityColor={selectedColor}
                   />
                 </InputWrapper>
               </View>
@@ -799,6 +800,13 @@ const getStyles = (theme: MD3Theme) =>
       color: theme.colors.onSurfaceVariant,
       fontSize: 16,
       marginBottom: 5,
+    },
+    descriptionInput: {
+      color: theme.colors.onSurface,
+      borderColor: theme.colors.outline,
+      borderWidth: 1,
+      borderRadius: 5,
+      padding: 10,
     },
     colorButton: {
       borderWidth: 1,

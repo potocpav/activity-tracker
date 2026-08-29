@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { StyleProp, StyleSheet, Text, TextInput, TextInputProps, View, ViewStyle } from "react-native";
 import { MD3Theme } from "react-native-paper/lib/typescript/types";
 import { useAppTheme } from "../Model/Theme";
@@ -8,16 +8,41 @@ import { useAppTheme } from "../Model/Theme";
 type TextFieldProps = TextInputProps & {
   label?: string;
   containerStyle?: StyleProp<ViewStyle>;
+  // Tints the focused outline and label with the activity's color.
+  activityColor?: number;
 };
 
-export const TextField = ({ label, containerStyle, style, ...props }: TextFieldProps) => {
-  const theme = useAppTheme();
+export const TextField = ({
+  label,
+  containerStyle,
+  style,
+  activityColor,
+  editable,
+  onFocus,
+  onBlur,
+  ...props
+}: TextFieldProps) => {
+  const theme = useAppTheme(activityColor);
   const styles = getStyles(theme);
+  const [focused, setFocused] = useState(false);
 
   return (
     <View style={containerStyle}>
-      {label !== undefined && <Text style={styles.label}>{label}</Text>}
-      <TextInput placeholderTextColor={theme.colors.onSurfaceVariant} style={[styles.input, style]} {...props} />
+      {label !== undefined && <Text style={[styles.label, focused && styles.focusedLabel]}>{label}</Text>}
+      <TextInput
+        editable={editable}
+        placeholderTextColor={theme.colors.onSurfaceVariant}
+        onFocus={(e) => {
+          setFocused(true);
+          onFocus?.(e);
+        }}
+        onBlur={(e) => {
+          setFocused(false);
+          onBlur?.(e);
+        }}
+        style={[styles.input, editable === false && styles.readOnlyInput, focused && styles.focusedInput, style]}
+        {...props}
+      />
     </View>
   );
 };
@@ -29,6 +54,9 @@ const getStyles = (theme: MD3Theme) =>
       marginBottom: 4,
       color: theme.colors.onSurfaceVariant,
     },
+    focusedLabel: {
+      color: theme.colors.primary,
+    },
     input: {
       fontSize: 16,
       color: theme.colors.onSurface,
@@ -37,6 +65,18 @@ const getStyles = (theme: MD3Theme) =>
       borderRadius: 5,
       paddingHorizontal: 10,
       paddingVertical: 8,
+    },
+    // Read-only fields (the unit / grade / date pickers) keep the value at full
+    // contrast but drop the outline back, so they don't invite typing.
+    readOnlyInput: {
+    },
+    // The thicker outline eats one pixel of padding on each side, so focusing a
+    // field doesn't shift its contents.
+    focusedInput: {
+      borderColor: theme.colors.primary,
+      borderWidth: 2,
+      paddingHorizontal: 9,
+      paddingVertical: 7,
     },
   });
 

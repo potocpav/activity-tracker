@@ -143,6 +143,7 @@ export const EditStat = ({ navigation, route }: { navigation: any; route: any })
 
           <TextField
             label="Label"
+            activityColor={activity.color}
             value={inputLabel}
             onChangeText={setInputLabel}
             containerStyle={{ flex: 1, margin: 10 }}
