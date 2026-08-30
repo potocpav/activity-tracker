@@ -252,7 +252,7 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null; onChange:
               const newUnitInput = allUnits.find((unit) => unit.type === chosenUnitType) ?? null;
               onChange(newUnitInput);
             }}
-            color="white"
+            color={theme.onHeader}
           />
         }
       >

@@ -45,7 +45,7 @@ const FullScreenDialog = ({
         <View style={styles.header}>
           <View style={styles.headerContent}>
             <Button onPress={onDismiss}>
-              <MaterialCommunityIcons name="arrow-left" size={24} color="white" />
+              <MaterialCommunityIcons name="arrow-left" size={24} color={theme.onHeader} />
             </Button>
             <View style={styles.titleContainer}>
               <Text style={styles.title}>{title}</Text>
@@ -65,7 +65,7 @@ const getStyles = (theme: Theme, insets: EdgeInsets) =>
       flex: 1,
     },
     header: {
-      backgroundColor: theme.variant === "light" ? theme.primary : theme.elevation2,
+      backgroundColor: theme.header,
       flexDirection: "row",
       paddingTop: insets.top,
       paddingLeft: insets.left,
@@ -87,7 +87,7 @@ const getStyles = (theme: Theme, insets: EdgeInsets) =>
     },
     title: {
       fontSize: 20,
-      color: "white",
+      color: theme.onHeader,
     },
     content: {
       flex: 1,

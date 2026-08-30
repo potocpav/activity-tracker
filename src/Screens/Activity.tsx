@@ -147,8 +147,8 @@ const ActivityInner: React.FC<{ activity: ActivityType; activityPath: ActivityPa
   React.useEffect(() => {
     navigation.setOptions({
       title: activity.name,
-      headerStyle: theme.variant == "light" ? { backgroundColor: theme.primary } : undefined,
-      headerTintColor: "#ffffff",
+      headerStyle: { backgroundColor: theme.header },
+      headerTintColor: theme.onHeader,
       headerRight: () => (
         <ButtonRow>
           {(() => {
@@ -161,7 +161,7 @@ const ActivityInner: React.FC<{ activity: ActivityType; activityPath: ActivityPa
                       navigation.navigate("BleScaleInput", { activityPath });
                     }}
                   >
-                    <BleScaleIcon color="white" />
+                    <BleScaleIcon color={theme.onHeader} />
                   </Button>
                 );
               case null:
@@ -174,15 +174,15 @@ const ActivityInner: React.FC<{ activity: ActivityType; activityPath: ActivityPa
                         inputData: { type: "new", dataPoint: { date: today } },
                       });
                     }}
-                    color="white"
+                    color={theme.onHeader}
                   />
                 );
             }
           })()}
           <Button onPress={() => navigation.navigate("ActivityData", { activityPath })}>
-            <MaterialCommunityIcons name="text" size={24} color="white" />
+            <MaterialCommunityIcons name="text" size={24} color={theme.onHeader} />
           </Button>
-          <DotsIconButton onPress={() => setMenuVisible(!menuVisible)} color="white" />
+          <DotsIconButton onPress={() => setMenuVisible(!menuVisible)} color={theme.onHeader} />
         </ButtonRow>
       ),
     });

@@ -108,13 +108,13 @@ export const EditStat = ({ navigation, route }: { navigation: any; route: any })
 
   React.useEffect(() => {
     navigation.setOptions({
-      headerStyle: theme.variant == "light" ? { backgroundColor: theme.primary } : undefined,
-      headerTintColor: "#ffffff",
+      headerStyle: { backgroundColor: theme.header },
+      headerTintColor: theme.onHeader,
       headerRight: () => (
         <ButtonRow>
-          <CheckButton onPress={handleApply} color="white" />
-          <CopyButton onPress={handleDuplicate} color="white" />
-          {activity.stats.length > 1 && <DeleteButton onPress={handleDelete} color="white" />}
+          <CheckButton onPress={handleApply} color={theme.onHeader} />
+          <CopyButton onPress={handleDuplicate} color={theme.onHeader} />
+          {activity.stats.length > 1 && <DeleteButton onPress={handleDelete} color={theme.onHeader} />}
         </ButtonRow>
       ),
     });

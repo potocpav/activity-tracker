@@ -59,17 +59,10 @@ const App = () => {
         <View style={[styles.container]}>
           <NavigationContainer theme={navigationTheme}>
             <Stack.Navigator
-              screenOptions={
-                theme.variant == "dark" && blackBackground
-                  ? {
-                      headerStyle: {
-                        backgroundColor: theme.surface,
-                      },
-                    }
-                  : theme.variant == "light"
-                    ? { headerStyle: { backgroundColor: theme.surfaceVariant } }
-                    : {}
-              }
+              screenOptions={{
+                // Plain screens; the themed screens set their own header color.
+                headerStyle: { backgroundColor: theme.variant === "light" ? theme.surfaceVariant : theme.header },
+              }}
             >
               <Stack.Group>
                 <Stack.Screen name="Activities" component={Activities} options={{ title: "Activities" }} />

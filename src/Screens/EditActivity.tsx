@@ -390,8 +390,8 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   React.useEffect(() => {
     navigation.setOptions({
       title: activity === null ? "New Activity" : activity.name,
-      headerStyle: theme.variant == "light" ? { backgroundColor: theme.primary } : undefined,
-      headerTintColor: "#ffffff",
+      headerStyle: { backgroundColor: theme.header },
+      headerTintColor: theme.onHeader,
       headerRight: () => (
         <ButtonRow>
           {
@@ -399,11 +399,11 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
               <MaterialCommunityIcons
                 name={specialType ? (specialIcon(specialType) as any) : "star-outline"}
                 size={24}
-                color={"#ffffff"}
+                color={theme.onHeader}
               />
             </Button>
           }
-          <CheckButton onPress={saveActivityWrapper} color={"white"} />
+          <CheckButton onPress={saveActivityWrapper} color={theme.onHeader} />
         </ButtonRow>
       ),
     });

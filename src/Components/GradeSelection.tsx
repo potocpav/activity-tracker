@@ -42,7 +42,7 @@ const GradeSelection = ({ visible, options, value, activityColor, onSelect, onDi
             onSelect("");
             onDismiss();
           }}
-          color="white"
+          color={theme.onHeader}
         />
       }
     >

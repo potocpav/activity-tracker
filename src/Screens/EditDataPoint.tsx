@@ -270,17 +270,17 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
           : editingMultiple
             ? `Editing ${dataPoints.length} data points`
             : `Editing data point`,
-      headerStyle: theme.variant == "light" ? { backgroundColor: theme.primary } : undefined,
-      headerTintColor: "#ffffff",
+      headerStyle: { backgroundColor: theme.header },
+      headerTintColor: theme.onHeader,
       headerRight: () => (
         <ButtonRow>
-          {inputData.type === "edit" && <DeleteButton onPress={deleteDataPointWrapper} color="white" />}
-          <CheckPlusButton onPress={duplicateDataPointWrapper} color="white" />
+          {inputData.type === "edit" && <DeleteButton onPress={deleteDataPointWrapper} color={theme.onHeader} />}
+          <CheckPlusButton onPress={duplicateDataPointWrapper} color={theme.onHeader} />
           <CheckButton
             onPress={() => {
               saveDataPointWrapper() && navigation.goBack();
             }}
-            color="white"
+            color={theme.onHeader}
           />
         </ButtonRow>
       ),

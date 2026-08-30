@@ -476,22 +476,22 @@ const BleScaleInputInner: React.FC<BleScaleInputInnerProps> = ({
 
   React.useEffect(() => {
     navigation.setOptions({
-      headerStyle: theme.variant == "light" ? { backgroundColor: theme.primary } : undefined,
-      headerTintColor: "#ffffff",
+      headerStyle: { backgroundColor: theme.header },
+      headerTintColor: theme.onHeader,
       headerRight: () => {
         switch (connectionStatus()) {
           case "connected":
             return (
               <Button onPress={disconnectDevice}>
-                <Text style={{ color: "white", fontSize: 16, fontWeight: "semibold" }}>Disconnect</Text>
-                <MaterialCommunityIcons name="bluetooth-off" size={22} color={"white"} />
+                <Text style={{ color: theme.onHeader, fontSize: 16, fontWeight: "semibold" }}>Disconnect</Text>
+                <MaterialCommunityIcons name="bluetooth-off" size={22} color={theme.onHeader} />
               </Button>
             );
           case "disconnected":
             return (
               <Button onPress={openConnectionModal}>
-                <Text style={{ color: "white", fontSize: 16, fontWeight: "semibold" }}>Connect</Text>
-                <MaterialCommunityIcons name="bluetooth" size={22} color={"white"} />
+                <Text style={{ color: theme.onHeader, fontSize: 16, fontWeight: "semibold" }}>Connect</Text>
+                <MaterialCommunityIcons name="bluetooth" size={22} color={theme.onHeader} />
               </Button>
             );
           case "connecting":
@@ -501,8 +501,8 @@ const BleScaleInputInner: React.FC<BleScaleInputInnerProps> = ({
                   disconnectDevice();
                 }}
               >
-                <Text style={{ color: "white", fontSize: 16, fontWeight: "semibold" }}>Connecting...</Text>
-                <MaterialCommunityIcons name="bluetooth" size={22} color={"white"} />
+                <Text style={{ color: theme.onHeader, fontSize: 16, fontWeight: "semibold" }}>Connecting...</Text>
+                <MaterialCommunityIcons name="bluetooth" size={22} color={theme.onHeader} />
               </Button>
             );
         }

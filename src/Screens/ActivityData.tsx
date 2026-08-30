@@ -536,7 +536,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
               ]);
             }}
           >
-            <DeleteIcon color="white" />
+            <DeleteIcon color={theme.onHeader} />
           </Button>
         )}
         {activity.tags.length > 0 && (
@@ -549,7 +549,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
             activityTags={activity.tags}
             button={(setMenuVisible) => (
               <Button onPress={() => setMenuVisible()}>
-                <MaterialCommunityIcons name="filter" size={24} color="white" />
+                <MaterialCommunityIcons name="filter" size={24} color={theme.onHeader} />
               </Button>
             )}
           />
@@ -562,7 +562,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
             })
           }
         >
-          <MaterialCommunityIcons name="plus" size={26} color={"#ffffff"} />
+          <MaterialCommunityIcons name="plus" size={26} color={theme.onHeader} />
         </Button>
       </ButtonRow>
     );
@@ -573,11 +573,11 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
           <Button
             onPress={() => setSelectedPointUuids(filteredDataPoints.map(([_, i]) => activity.dataPoints[i].uuid))}
           >
-            <MaterialCommunityIcons name="checkbox-intermediate-variant" size={24} color="white" />
+            <MaterialCommunityIcons name="checkbox-intermediate-variant" size={24} color={theme.onHeader} />
           </Button>
         )}
         <Button onPress={() => setSelectedPointUuids([])}>
-          <MaterialCommunityIcons name="close" size={24} color="white" />
+          <MaterialCommunityIcons name="close" size={24} color={theme.onHeader} />
         </Button>
       </ButtonRow>
     );
@@ -588,8 +588,8 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
         : selectModeActive
           ? selectedPointUuids.length + " selected"
           : "All data",
-      headerStyle: theme.variant == "light" ? { backgroundColor: theme.primary } : undefined,
-      headerTintColor: "#ffffff",
+      headerStyle: { backgroundColor: theme.header },
+      headerTintColor: theme.onHeader,
       headerBackVisible: !selectModeActive,
       headerRight: selectModeActive ? selectModeButtons : normalButtons,
     });

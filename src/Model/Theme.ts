@@ -21,6 +21,11 @@ export type Theme = {
   outline: string;
   outlineVariant: string;
   error: string;
+  // The themed header bar: the activity's color (or the plain primary) in the light
+  // theme, a neutral dark surface in the dark themes. Its content is white throughout,
+  // so a themed header needs no per-variant conditions at the call site.
+  header: string;
+  onHeader: string;
   // Tinted surfaces for content sitting above the background, per MD3's elevation
   // overlays: progressively lighter in both variants.
   elevation1: string;
@@ -44,6 +49,8 @@ export const lightTheme: Theme = {
   outline: "#79747E",
   outlineVariant: "#CAC4D0",
   error: "#B3261E",
+  header: "#6750A4",
+  onHeader: "#FFFFFF",
   elevation1: "#F7F3F9",
   elevation2: "#F3EDF6",
   elevation3: "#EEE8F4",
@@ -65,6 +72,8 @@ export const darkTheme: Theme = {
   outline: "#938F99",
   outlineVariant: "#49454F",
   error: "#F2B8B5",
+  header: "#2C2831",
+  onHeader: "#FFFFFF",
   elevation1: "#25232A",
   elevation2: "#2C2831",
   elevation3: "#312C38",
@@ -76,6 +85,7 @@ export const blackTheme: Theme = {
   background: "#000000",
   surface: "#000000",
   surfaceVariant: "#000000",
+  header: "#000000",
   elevation1: "#000000",
   elevation2: "#222222",
 };
@@ -105,7 +115,10 @@ export const useAppTheme = (primaryColor?: number): Theme => {
   const blackBackground = useStore((state: any) => state.blackBackground);
   const theme = variant === "light" ? lightTheme : blackBackground ? blackTheme : darkTheme;
   if (primaryColor !== undefined) {
-    return { ...theme, primary: palette[primaryColor] };
+    // A themed screen wears the activity's color, but only where the header is colored
+    // at all: the dark themes keep their neutral header.
+    const primary = palette[primaryColor];
+    return { ...theme, primary, header: variant === "light" ? primary : theme.header };
   }
   return theme;
 };
