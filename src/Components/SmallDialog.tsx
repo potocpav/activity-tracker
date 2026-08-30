@@ -19,7 +19,7 @@ const SmallDialogBase: React.FC<SmallDialogProps> = ({ visible, onDismiss, theme
   >
     <Pressable style={StyleSheet.absoluteFill} onPress={onDismiss} />
     <KeyboardAvoidingView style={styles.centered} behavior="padding" pointerEvents="box-none">
-      <View style={[styles.card, { backgroundColor: theme.colors.elevation.level3 }]}>{children}</View>
+      <View style={[styles.card, { backgroundColor: theme.elevation3 }]}>{children}</View>
     </KeyboardAvoidingView>
   </Modal>
 );

@@ -6,7 +6,7 @@ import { DataPoint, ActivityType, Tag, dateListToDate, State, ActivityPath, date
 import ActivitySummary from "./ActivitySummary";
 import { File, Paths, EncodingType } from "expo-file-system";
 import * as Sharing from "expo-sharing";
-import { useAppTheme, useThemeVariant } from "../Model/Theme";
+import { useAppTheme } from "../Model/Theme";
 import { SystemBars } from "react-native-edge-to-edge";
 import Hint from "../Components/Hint";
 import { BleScaleIcon, ButtonRow, DotsIconButton, EditIconButton, PlusIconButton, Button } from "../Components/Element";
@@ -59,7 +59,6 @@ const ActivityInner: React.FC<{ activity: ActivityType; activityPath: ActivityPa
   navigation,
 }) => {
   const theme = useAppTheme(activity.color);
-  const themeVariant = useThemeVariant();
   const [menuVisible, setMenuVisible] = React.useState(false);
   const duplicateActivity = useStore((state: any) => state.duplicateActivity);
   const deleteActivity = useStore((state: any) => state.deleteActivity);
@@ -148,7 +147,7 @@ const ActivityInner: React.FC<{ activity: ActivityType; activityPath: ActivityPa
   React.useEffect(() => {
     navigation.setOptions({
       title: activity.name,
-      headerStyle: themeVariant == "light" ? { backgroundColor: theme.colors.primary } : undefined,
+      headerStyle: theme.variant == "light" ? { backgroundColor: theme.primary } : undefined,
       headerTintColor: "#ffffff",
       headerRight: () => (
         <ButtonRow>
@@ -191,7 +190,7 @@ const ActivityInner: React.FC<{ activity: ActivityType; activityPath: ActivityPa
 
   return (
     <View style={{ flex: 1 }}>
-      <SystemBars style={{ statusBar: "light", navigationBar: themeVariant == "light" ? "dark" : "light" }} />
+      <SystemBars style={{ statusBar: "light", navigationBar: theme.variant == "light" ? "dark" : "light" }} />
       <View style={{ position: "absolute", top: 10, right: 0 }}>
         <Menu
           visible={menuVisible}

@@ -1,23 +1,83 @@
-import { MD3LightTheme, MD3DarkTheme } from "react-native-paper";
 import useStore from "./Store";
 import { darkPalette, lightPalette } from "./Color";
 import { useColorScheme, useWindowDimensions } from "react-native";
-import { MD3Theme } from "react-native-paper/lib/typescript/types";
+
+// The app's colors, flat: a theme holds nothing but colors and the variant it belongs
+// to, so there is nothing to nest them under. The values are the Material Design 3
+// baseline palette, previously reached through react-native-paper's MD3 themes.
+export type Theme = {
+  variant: "light" | "dark";
+  primary: string;
+  onPrimary: string;
+  secondary: string;
+  secondaryContainer: string;
+  onSecondaryContainer: string;
+  background: string;
+  surface: string;
+  surfaceVariant: string;
+  onSurface: string;
+  onSurfaceVariant: string;
+  onSurfaceDisabled: string;
+  outline: string;
+  outlineVariant: string;
+  error: string;
+  // Tinted surfaces for content sitting above the background, per MD3's elevation
+  // overlays: progressively lighter in both variants.
+  elevation1: string;
+  elevation2: string;
+  elevation3: string;
+};
+
+export const lightTheme: Theme = {
+  variant: "light",
+  primary: "#6750A4",
+  onPrimary: "#FFFFFF",
+  secondary: "#625B71",
+  secondaryContainer: "#E8DEF8",
+  onSecondaryContainer: "#1D192B",
+  background: "#FFFBFE",
+  surface: "#FFFBFE",
+  surfaceVariant: "#E7E0EC",
+  onSurface: "#1C1B1F",
+  onSurfaceVariant: "#49454F",
+  onSurfaceDisabled: "#1C1B1F61",
+  outline: "#79747E",
+  outlineVariant: "#CAC4D0",
+  error: "#B3261E",
+  elevation1: "#F7F3F9",
+  elevation2: "#F3EDF6",
+  elevation3: "#EEE8F4",
+};
+
+export const darkTheme: Theme = {
+  variant: "dark",
+  primary: "#D0BCFF",
+  onPrimary: "#381E72",
+  secondary: "#CCC2DC",
+  secondaryContainer: "#4A4458",
+  onSecondaryContainer: "#E8DEF8",
+  background: "#1C1B1F",
+  surface: "#1C1B1F",
+  surfaceVariant: "#49454F",
+  onSurface: "#E6E1E5",
+  onSurfaceVariant: "#CAC4D0",
+  onSurfaceDisabled: "#E6E1E561",
+  outline: "#938F99",
+  outlineVariant: "#49454F",
+  error: "#F2B8B5",
+  elevation1: "#25232A",
+  elevation2: "#2C2831",
+  elevation3: "#312C38",
+};
 
 // Dark theme with pure black backgrounds, for AMOLED screens.
-const MD3BlackTheme: MD3Theme = {
-  ...MD3DarkTheme,
-  colors: {
-    ...MD3DarkTheme.colors,
-    background: "#000000",
-    surface: "#000000",
-    surfaceVariant: "#000000",
-    elevation: {
-      ...MD3DarkTheme.colors.elevation,
-      level1: "#000000",
-      level2: "#222222",
-    },
-  },
+export const blackTheme: Theme = {
+  ...darkTheme,
+  background: "#000000",
+  surface: "#000000",
+  surfaceVariant: "#000000",
+  elevation1: "#000000",
+  elevation2: "#222222",
 };
 
 export const useWideDisplay = (): boolean => {
@@ -25,7 +85,7 @@ export const useWideDisplay = (): boolean => {
   return dimensions.width > 600;
 };
 
-export const useThemeVariant = (): "dark" | "light" => {
+const useVariant = (): "light" | "dark" => {
   const themeSettings = useStore((state: any) => state.theme);
   const systemScheme = useColorScheme();
   if (themeSettings === "system") {
@@ -36,23 +96,16 @@ export const useThemeVariant = (): "dark" | "light" => {
 };
 
 export const useThemePalette = (): string[] => {
-  const themeVariant = useThemeVariant();
-  return themeVariant === "dark" ? darkPalette : lightPalette;
+  return useVariant() === "dark" ? darkPalette : lightPalette;
 };
 
-export const useAppTheme = (primaryColor?: number): MD3Theme => {
+export const useAppTheme = (primaryColor?: number): Theme => {
   const palette = useThemePalette();
-  const themeVariant = useThemeVariant();
+  const variant = useVariant();
   const blackBackground = useStore((state: any) => state.blackBackground);
-  const theme = themeVariant === "light" ? MD3LightTheme : blackBackground ? MD3BlackTheme : MD3DarkTheme;
+  const theme = variant === "light" ? lightTheme : blackBackground ? blackTheme : darkTheme;
   if (primaryColor !== undefined) {
-    return {
-      ...theme,
-      colors: {
-        ...theme.colors,
-        primary: palette[primaryColor],
-      },
-    };
+    return { ...theme, primary: palette[primaryColor] };
   }
   return theme;
 };

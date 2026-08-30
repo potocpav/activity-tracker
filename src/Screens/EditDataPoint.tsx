@@ -9,7 +9,6 @@ import {
   KeyboardAvoidingView,
   TextInput,
 } from "react-native";
-import { MD3Theme } from "react-native-paper";
 import TextField from "../Components/TextField";
 import {
   ActivityType,
@@ -25,7 +24,7 @@ import useStore from "../Model/Store";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import { CheckButton, CheckPlusButton, DeleteButton, ButtonRow, Button } from "../Components/Element";
 import { cmpDateList, formatDate } from "../Model/Activity";
-import { useAppTheme, useThemePalette, useThemeVariant } from "../Model/Theme";
+import { useAppTheme, useThemePalette, Theme } from "../Model/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
 import { numberToString, stringToNumber, renderUnit } from "../Model/Unit";
@@ -65,7 +64,6 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   );
   const theme = useAppTheme(activity.color);
   const styles = getStyles(theme);
-  const themeVariant = useThemeVariant();
   const palette = useThemePalette();
   const locale = Intl.DateTimeFormat().resolvedOptions().locale;
   const weekStart = useStore((state: any) => state.weekStart);
@@ -272,7 +270,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
           : editingMultiple
             ? `Editing ${dataPoints.length} data points`
             : `Editing data point`,
-      headerStyle: themeVariant == "light" ? { backgroundColor: theme.colors.primary } : undefined,
+      headerStyle: theme.variant == "light" ? { backgroundColor: theme.primary } : undefined,
       headerTintColor: "#ffffff",
       headerRight: () => (
         <ButtonRow>
@@ -303,7 +301,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding" keyboardVerticalOffset={100}>
       <Hint hint="save_data_point" />
-      <SystemBars style={{ statusBar: "light", navigationBar: themeVariant == "light" ? "dark" : "light" }} />
+      <SystemBars style={{ statusBar: "light", navigationBar: theme.variant == "light" ? "dark" : "light" }} />
       <ScrollView>
         <SafeAreaView style={{ gap: 10, padding: 10 }} edges={["left", "right", "bottom"]}>
           <InputWrapper error={showErrors ? dateError : null} ref={dateInputRef}>
@@ -325,11 +323,11 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
                 />
               </Pressable>
               <Button onPress={showDatePicker} style={{ marginTop: 15 }}>
-                <MaterialCommunityIcons name="calendar" size={24} color={theme.colors.onSurface} />
+                <MaterialCommunityIcons name="calendar" size={24} color={theme.onSurface} />
               </Button>
             </View>
           </InputWrapper>
-          
+
           <InputWrapper>
             <TextInput
               placeholder="Note (optional)"
@@ -343,7 +341,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
 
           {activity.tags.length > 0 && (
             <View style={{ gap: 5 }}>
-              <Text style={{ color: theme.colors.onSurfaceVariant, fontSize: 16 }}>Tags:</Text>
+              <Text style={{ color: theme.onSurfaceVariant, fontSize: 16 }}>Tags:</Text>
               <TagSelector
                 activity={activity}
                 inputTags={inputTags}
@@ -394,7 +392,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   );
 };
 
-const getStyles = (theme: MD3Theme) =>
+const getStyles = (theme: Theme) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -409,12 +407,12 @@ const getStyles = (theme: MD3Theme) =>
       flexWrap: "wrap",
     },
     header: {
-      color: theme.colors.onSurfaceVariant,
+      color: theme.onSurfaceVariant,
       fontSize: 16,
     },
     noteInput: {
-      color: theme.colors.onSurface,
-      borderColor: theme.colors.outline,
+      color: theme.onSurface,
+      borderColor: theme.outline,
       borderWidth: 1,
       borderRadius: 5,
       padding: 10,

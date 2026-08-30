@@ -57,12 +57,12 @@ const getStyles = (theme: any) =>
     },
     label: {
       fontSize: 16,
-      color: theme.colors.onSurfaceVariant,
+      color: theme.onSurfaceVariant,
     },
     value: {
       fontSize: 24,
       fontWeight: "bold",
-      color: theme.colors.primary,
+      color: theme.primary,
     },
   });
 

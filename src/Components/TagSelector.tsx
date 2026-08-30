@@ -32,15 +32,15 @@ export const TagSelector = ({
               style={[
                 styles.chip,
                 {
-                  backgroundColor: selected ? palette[tag.color] : theme.colors.surface,
-                  borderColor: selected ? "transparent" : theme.colors.outline,
+                  backgroundColor: selected ? palette[tag.color] : theme.surface,
+                  borderColor: selected ? "transparent" : theme.outline,
                 },
               ]}
             >
               {({ pressed }) => (
                 <>
                   {pressed && <View style={styles.pressedOverlay} />}
-                  <Text style={[styles.label, { color: selected ? theme.colors.surface : palette[tag.color] }]}>
+                  <Text style={[styles.label, { color: selected ? theme.surface : palette[tag.color] }]}>
                     {tag.name}
                   </Text>
                 </>

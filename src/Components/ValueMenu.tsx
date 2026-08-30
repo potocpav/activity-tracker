@@ -4,24 +4,18 @@ import Menu from "./Menu";
 import { numericStatValues, StatValue } from "../Model/StoreTypes";
 import { valueToLabel } from "../Model/Activity";
 import { ChevronDownIcon, Button } from "./Element";
+import { Theme } from "../Model/Theme";
 
 interface ValueMenuProps {
   menuVisible: boolean;
   setMenuVisible: (visible: boolean) => void;
   value: StatValue;
   onChange: (value: StatValue) => void;
-  themeColors: any;
+  theme: Theme;
   valueList?: StatValue[];
 }
 
-const ValueMenu: React.FC<ValueMenuProps> = ({
-  menuVisible,
-  setMenuVisible,
-  value,
-  onChange,
-  themeColors,
-  valueList,
-}) => {
+const ValueMenu: React.FC<ValueMenuProps> = ({ menuVisible, setMenuVisible, value, onChange, theme, valueList }) => {
   return (
     <Menu
       visible={menuVisible}
@@ -29,8 +23,8 @@ const ValueMenu: React.FC<ValueMenuProps> = ({
       anchor={
         <Button onPress={() => setMenuVisible(true)}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Text style={{ marginRight: 10, color: themeColors.onSurface }}>{valueToLabel(value)}</Text>
-            <ChevronDownIcon color={themeColors.onSurface} />
+            <Text style={{ marginRight: 10, color: theme.onSurface }}>{valueToLabel(value)}</Text>
+            <ChevronDownIcon color={theme.onSurface} />
           </View>
         </Button>
       }

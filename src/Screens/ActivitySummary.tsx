@@ -94,7 +94,7 @@ const getStyles = (theme: any) =>
       flex: 1,
     },
     header: {
-      backgroundColor: theme.colors.elevation.level1,
+      backgroundColor: theme.elevation1,
       elevation: 2,
       marginHorizontal: 4,
       borderBottomLeftRadius: 4,
@@ -105,7 +105,7 @@ const getStyles = (theme: any) =>
     },
     activityDescription: {
       fontSize: 16,
-      color: theme.colors.onSurface,
+      color: theme.onSurface,
     },
     tagsRow: {
       padding: 10,
@@ -115,7 +115,7 @@ const getStyles = (theme: any) =>
     },
     sectionHeader: {
       fontSize: 16,
-      color: theme.colors.onSurface,
+      color: theme.onSurface,
       marginHorizontal: 8,
       marginTop: 16,
       marginBottom: 8,

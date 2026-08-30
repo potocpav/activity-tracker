@@ -37,11 +37,11 @@ const TagMenu: React.FC<TagMenuProps> = ({
           ) : (
             <Button onPress={() => setMenuVisible(true)}>
               {tags.length === 0 ? (
-                <MaterialCommunityIcons name="tag-outline" size={18} color={theme.colors.onSurfaceVariant} />
+                <MaterialCommunityIcons name="tag-outline" size={18} color={theme.onSurfaceVariant} />
               ) : (
-                <MaterialCommunityIcons name="tag" size={18} color={theme.colors.primary} />
+                <MaterialCommunityIcons name="tag" size={18} color={theme.primary} />
               )}
-              <ChevronDownIcon color={theme.colors.onSurfaceVariant} />
+              <ChevronDownIcon color={theme.onSurfaceVariant} />
             </Button>
           )
         }

@@ -35,9 +35,9 @@ const RenameDialog: React.FC<RenameDialogProps> = ({
     <TextField label={label} defaultValue={nameInput} onChangeText={onChangeName} />
     <SmallDialog.Actions>
       <ButtonRow>
-        {onDelete !== undefined && <DeleteButton onPress={onDelete} color={theme.colors.onSurface} />}
-        <CopyButton onPress={onClone} color={theme.colors.onSurface} />
-        <CheckButton onPress={onConfirm} color={theme.colors.onSurface} />
+        {onDelete !== undefined && <DeleteButton onPress={onDelete} color={theme.onSurface} />}
+        <CopyButton onPress={onClone} color={theme.onSurface} />
+        <CheckButton onPress={onConfirm} color={theme.onSurface} />
       </ButtonRow>
     </SmallDialog.Actions>
   </SmallDialog>

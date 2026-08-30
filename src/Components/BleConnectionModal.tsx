@@ -2,7 +2,7 @@ import React, { FC, useCallback } from "react";
 import { FlatList, ListRenderItemInfo, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Device } from "react-native-ble-plx";
 import useStore from "../Model/Store";
-import { useAppTheme, useThemeVariant } from "../Model/Theme";
+import { useAppTheme } from "../Model/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
 
@@ -12,7 +12,6 @@ type BleDeviceModalProps = {
 
 const BleDeviceModal: FC<BleDeviceModalProps> = ({ navigation }) => {
   const theme = useAppTheme();
-  const themeVariant = useThemeVariant();
   const allDevices = useStore((state: any) => state.allDevices);
   const connectToDevice = useStore((state: any) => state.connectToDevice);
 
@@ -25,12 +24,12 @@ const BleDeviceModal: FC<BleDeviceModalProps> = ({ navigation }) => {
 
   return (
     <SafeAreaView
-      style={[modalStyle.modalContent, { backgroundColor: theme.colors.surface }]}
+      style={[modalStyle.modalContent, { backgroundColor: theme.surface }]}
       edges={["left", "right", "bottom"]}
     >
-      <SystemBars style={themeVariant == "light" ? "dark" : "light"} />
-      <Text style={[modalStyle.modalTitleText, { color: theme.colors.onSurface }]}>Tap on a device to connect</Text>
-      <Text style={[modalStyle.instructionText, { color: theme.colors.onSurfaceVariant }]}>
+      <SystemBars style={theme.variant == "light" ? "dark" : "light"} />
+      <Text style={[modalStyle.modalTitleText, { color: theme.onSurface }]}>Tap on a device to connect</Text>
+      <Text style={[modalStyle.instructionText, { color: theme.onSurfaceVariant }]}>
         Make sure the green light is blinking on your Tindeq device.
       </Text>
       <FlatList
@@ -59,11 +58,8 @@ const DeviceModalListItem: FC<DeviceModalListItemProps> = (props) => {
   }, [navigation, connectToDevice, item.item]);
 
   return (
-    <TouchableOpacity
-      onPress={connectAndCloseModal}
-      style={[modalStyle.ctaButton, { backgroundColor: theme.colors.primary }]}
-    >
-      <Text style={[modalStyle.ctaButtonText, { color: theme.colors.onPrimary }]}>
+    <TouchableOpacity onPress={connectAndCloseModal} style={[modalStyle.ctaButton, { backgroundColor: theme.primary }]}>
+      <Text style={[modalStyle.ctaButtonText, { color: theme.onPrimary }]}>
         {item.item.localName ?? item.item.name ?? item.item.id}
       </Text>
     </TouchableOpacity>

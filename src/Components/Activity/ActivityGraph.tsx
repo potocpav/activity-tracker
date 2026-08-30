@@ -58,36 +58,36 @@ const ActivityGraph = ({ activityPath, graphIndex }: { activityPath: ActivityPat
     if (gType === "box") {
       return (
         <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <MaterialCommunityIcons name="chart-waterfall" size={24} color={theme.colors.onSurfaceVariant} />
-          <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Box</Text>
+          <MaterialCommunityIcons name="chart-waterfall" size={24} color={theme.onSurfaceVariant} />
+          <Text style={{ marginLeft: 6, color: theme.onSurfaceVariant }}>Box</Text>
         </View>
       );
     } else if (gType === "bar-count") {
       return (
         <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <MaterialCommunityIcons name="chart-bar" size={24} color={theme.colors.onSurfaceVariant} />
-          <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Count</Text>
+          <MaterialCommunityIcons name="chart-bar" size={24} color={theme.onSurfaceVariant} />
+          <Text style={{ marginLeft: 6, color: theme.onSurfaceVariant }}>Count</Text>
         </View>
       );
     } else if (gType === "bar-daily-mean") {
       return (
         <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <MaterialCommunityIcons name="chart-bar" size={24} color={theme.colors.onSurfaceVariant} />
-          <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Daily Mean</Text>
+          <MaterialCommunityIcons name="chart-bar" size={24} color={theme.onSurfaceVariant} />
+          <Text style={{ marginLeft: 6, color: theme.onSurfaceVariant }}>Daily Mean</Text>
         </View>
       );
     } else if (gType === "bar-sum") {
       return (
         <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <MaterialCommunityIcons name="chart-bar" size={24} color={theme.colors.onSurfaceVariant} />
-          <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Sum</Text>
+          <MaterialCommunityIcons name="chart-bar" size={24} color={theme.onSurfaceVariant} />
+          <Text style={{ marginLeft: 6, color: theme.onSurfaceVariant }}>Sum</Text>
         </View>
       );
     } else if (gType === "line-mean") {
       return (
         <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <MaterialCommunityIcons name="chart-line" size={24} color={theme.colors.onSurfaceVariant} />
-          <Text style={{ marginLeft: 6, color: theme.colors.onSurfaceVariant }}>Mean</Text>
+          <MaterialCommunityIcons name="chart-line" size={24} color={theme.onSurfaceVariant} />
+          <Text style={{ marginLeft: 6, color: theme.onSurfaceVariant }}>Mean</Text>
         </View>
       );
     }
@@ -147,7 +147,7 @@ const ActivityGraph = ({ activityPath, graphIndex }: { activityPath: ActivityPat
           }}
           visible={binMenuVisible}
           setVisible={setBinMenuVisible}
-          themeColors={theme.colors}
+          theme={theme}
         />
         {/* SubUnit menu */}
         <SubUnitMenu
@@ -156,7 +156,7 @@ const ActivityGraph = ({ activityPath, graphIndex }: { activityPath: ActivityPat
           setSubUnitName={(name) => setActivityGraph(activityPath, graphIndex, { ...graph, subUnit: name })}
           menuVisible={subUnitMenuVisible}
           setMenuVisible={setSubUnitMenuVisible}
-          themeColors={theme.colors}
+          theme={theme}
         />
         {/* Tags menu */}
         <TagMenu
@@ -175,7 +175,7 @@ const ActivityGraph = ({ activityPath, graphIndex }: { activityPath: ActivityPat
             <Button onPress={() => setGraphTypeMenuVisible(true)}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
                 {graphLabel(graph.graphType)}
-                <ChevronDownIcon color={theme.colors.onSurfaceVariant} />
+                <ChevronDownIcon color={theme.onSurfaceVariant} />
               </View>
             </Button>
           }
@@ -270,10 +270,10 @@ const StatBox = ({ theme, unit, stats, onPress }: { theme: any; unit: SubUnit; s
           left: 0,
           minHeight: 60,
           borderWidth: 1,
-          borderColor: theme.colors.outline,
+          borderColor: theme.outline,
           borderRadius: 8,
           padding: 8,
-          backgroundColor: theme.colors.surface,
+          backgroundColor: theme.surface,
           elevation: 1,
           flexDirection: "column",
           zIndex: 1,
@@ -282,12 +282,12 @@ const StatBox = ({ theme, unit, stats, onPress }: { theme: any; unit: SubUnit; s
         <Pressable style={{ flex: 1 }} onPress={onPress}>
           <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
             <View style={{ flex: 1, minWidth: 100 }}>
-              <Text style={{ color: theme.colors.onSurface }} numberOfLines={1}>
+              <Text style={{ color: theme.onSurface }} numberOfLines={1}>
                 Count: {Math.round(stats.count)}
               </Text>
             </View>
             <View style={{ flex: 1, minWidth: 100 }}>
-              <Text style={{ color: theme.colors.onSurface }} numberOfLines={1}>
+              <Text style={{ color: theme.onSurface }} numberOfLines={1}>
                 Mean: {isFinite(stats.mean) ? renderLongFormValue(stats.mean, unit) : "-"}
               </Text>
             </View>
@@ -295,7 +295,7 @@ const StatBox = ({ theme, unit, stats, onPress }: { theme: any; unit: SubUnit; s
           {stats.regression && (
             <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
               <View style={{ flex: 1, minWidth: 100 }}>
-                <Text style={{ color: theme.colors.onSurface }} numberOfLines={1}>
+                <Text style={{ color: theme.onSurface }} numberOfLines={1}>
                   {`${stats.regression.slope >= 0 ? "+" : ""}${renderLongFormValue(stats.regression.slope * 1e3 * 3600 * 24 * 30, unit)} per month`}
                 </Text>
               </View>
@@ -333,7 +333,7 @@ const SelectedRangeBox = ({
         borderBottomLeftRadius: index === selectedRange.max ? cornerRadius : 0,
         borderTopLeftRadius: index === selectedRange.max ? cornerRadius : 0,
         borderBottomRightRadius: index === selectedRange.min ? cornerRadius : 0,
-        borderColor: theme.colors.outline,
+        borderColor: theme.outline,
         borderWidth: 1,
         opacity: selectedRange.max >= index && selectedRange.min <= index ? 1 : 0,
       }}
@@ -371,7 +371,7 @@ const RegressionLine = ({
       <Line
         p1={vec(-view.width / 2, y0)}
         p2={vec((view.width * 3) / 2, y1)}
-        color={theme.colors.outline}
+        color={theme.outline}
         strokeWidth={2}
         strokeCap="round"
       />
@@ -532,7 +532,7 @@ const ActivityChart = ({ height, graph, dataPoints, activityUnit, weekStart, the
             view={view}
             value={value(item)}
             unit={unit}
-            color={theme.colors.primary}
+            color={theme.primary}
             fontScale={windowDimensions.fontScale}
           />
         </>
@@ -556,7 +556,7 @@ const ActivityChart = ({ height, graph, dataPoints, activityUnit, weekStart, the
               binSize={graph.binSize}
             />
           )}
-          <BoxChart view={view} values={item.values} color={theme.colors.primary} surfaceColor={theme.colors.surface} />
+          <BoxChart view={view} values={item.values} color={theme.primary} surfaceColor={theme.surface} />
         </>
       );
       itemBoundingBox = (item: any, itemWidthPx: number) =>
@@ -577,7 +577,7 @@ const ActivityChart = ({ height, graph, dataPoints, activityUnit, weekStart, the
       <FlatListChart
         height={height}
         unit={unit}
-        gridLineColor={theme.colors.onSurfaceVariant}
+        gridLineColor={theme.onSurfaceVariant}
         items={items}
         renderItem={renderItem}
         itemBoundingBox={itemBoundingBox}
@@ -600,7 +600,7 @@ const getStyles = (theme: any) =>
     },
     headerText: {
       fontSize: 16,
-      color: theme.colors.onSurface,
+      color: theme.onSurface,
     },
   });
 

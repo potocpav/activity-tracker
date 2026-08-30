@@ -2,8 +2,7 @@ import { View, ScrollView, Pressable, StyleSheet } from "react-native";
 import { ClimbingGrade, DistanceUnit, SubUnit, SubUnitType, TimeUnit, WeightUnit } from "../Model/StoreTypes";
 import { useState } from "react";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { useAppTheme } from "../Model/Theme";
-import { MD3Theme } from "react-native-paper/lib/typescript/types";
+import { useAppTheme, Theme } from "../Model/Theme";
 import {
   renderUnit,
   mapStringValue,
@@ -279,7 +278,7 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null; onChange:
                   <ListItem
                     key={subUnit.type}
                     title={title}
-                    titleColor={chosenUnitType === subUnit.type ? theme.colors.primary : theme.colors.onSurface}
+                    titleColor={chosenUnitType === subUnit.type ? theme.primary : theme.onSurface}
                     onPress={() => setChosenUnitType(subUnit.type)}
                     icon={icon}
                     description={description}
@@ -438,7 +437,7 @@ export const ValueEditor = ({
                         activityColor={activityColor}
                       />
                       <Button onPress={() => showTimePicker()}>
-                        <MaterialCommunityIcons name="timer" size={22} color={theme.colors.onSurface} />
+                        <MaterialCommunityIcons name="timer" size={22} color={theme.onSurface} />
                       </Button>
                     </>
                   );
@@ -454,13 +453,13 @@ export const ValueEditor = ({
                         activityColor={activityColor}
                       />
                       <Button onPress={() => resetTimer()}>
-                        <MaterialCommunityIcons name="reload" size={22} color={theme.colors.onSurface} />
+                        <MaterialCommunityIcons name="reload" size={22} color={theme.onSurface} />
                       </Button>
                       <Button onPress={() => toggleTimer(unit.unit)}>
                         <MaterialCommunityIcons
                           name={timerActive ? "pause" : "play"}
                           size={22}
-                          color={theme.colors.onSurface}
+                          color={theme.onSurface}
                         />
                       </Button>
                     </>
@@ -480,10 +479,10 @@ export const ValueEditor = ({
                     activityColor={activityColor}
                   />
                   <Button onPress={() => onChange(mapStringValue(unit, value, (v) => v - 1))}>
-                    <MinusIcon color={theme.colors.onSurface} />
+                    <MinusIcon color={theme.onSurface} />
                   </Button>
                   <Button onPress={() => onChange(mapStringValue(unit, value, (v) => v + 1))}>
-                    <PlusIcon color={theme.colors.onSurface} />
+                    <PlusIcon color={theme.onSurface} />
                   </Button>
                 </>
               );
@@ -518,7 +517,7 @@ export const ValueEditor = ({
   );
 };
 
-const getStyles = (theme: MD3Theme) =>
+const getStyles = (theme: Theme) =>
   StyleSheet.create({
     unitList: {
       gap: 10,

@@ -1,7 +1,6 @@
 import React, { useRef } from "react";
 import { FlatList, Pressable, StyleSheet, Text, useWindowDimensions } from "react-native";
-import { MD3Theme } from "react-native-paper/lib/typescript/types";
-import { useAppTheme, useWideDisplay } from "../Model/Theme";
+import { useAppTheme, useWideDisplay, Theme } from "../Model/Theme";
 import { CloseButton } from "./Element";
 import FullScreenDialog from "./FullScreenDialog";
 
@@ -73,7 +72,7 @@ const GradeSelection = ({ visible, options, value, activityColor, onSelect, onDi
   );
 };
 
-const getStyles = (theme: MD3Theme, itemHeight: number) =>
+const getStyles = (theme: Theme, itemHeight: number) =>
   StyleSheet.create({
     item: {
       flex: 1,
@@ -82,18 +81,18 @@ const getStyles = (theme: MD3Theme, itemHeight: number) =>
       paddingHorizontal: 16,
     },
     selectedItem: {
-      backgroundColor: theme.colors.primary,
+      backgroundColor: theme.primary,
     },
     unselectedItem: {
-      backgroundColor: theme.colors.surface,
+      backgroundColor: theme.surface,
     },
     selectedItemTitle: {
       fontSize: 16,
-      color: theme.colors.onPrimary,
+      color: theme.onPrimary,
     },
     unselectedItemTitle: {
       fontSize: 16,
-      color: theme.colors.onSurface,
+      color: theme.onSurface,
     },
   });
 

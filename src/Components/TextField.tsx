@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { StyleProp, StyleSheet, Text, TextInput, TextInputProps, View, ViewStyle } from "react-native";
-import { MD3Theme } from "react-native-paper/lib/typescript/types";
-import { useAppTheme } from "../Model/Theme";
+import { useAppTheme, Theme } from "../Model/Theme";
 
 // A labeled text input
 
@@ -31,7 +30,7 @@ export const TextField = ({
       {label !== undefined && <Text style={[styles.label, focused && styles.focusedLabel]}>{label}</Text>}
       <TextInput
         editable={editable}
-        placeholderTextColor={theme.colors.onSurfaceVariant}
+        placeholderTextColor={theme.onSurfaceVariant}
         onFocus={(e) => {
           setFocused(true);
           onFocus?.(e);
@@ -47,20 +46,20 @@ export const TextField = ({
   );
 };
 
-const getStyles = (theme: MD3Theme) =>
+const getStyles = (theme: Theme) =>
   StyleSheet.create({
     label: {
       fontSize: 12,
       marginBottom: 4,
-      color: theme.colors.onSurfaceVariant,
+      color: theme.onSurfaceVariant,
     },
     focusedLabel: {
-      color: theme.colors.primary,
+      color: theme.primary,
     },
     input: {
       fontSize: 16,
-      color: theme.colors.onSurface,
-      borderColor: theme.colors.outline,
+      color: theme.onSurface,
+      borderColor: theme.outline,
       borderWidth: 1,
       borderRadius: 5,
       paddingHorizontal: 10,
@@ -68,7 +67,7 @@ const getStyles = (theme: MD3Theme) =>
     },
     readOnlyInput: {},
     focusedInput: {
-      borderColor: theme.colors.primary,
+      borderColor: theme.primary,
       borderWidth: 2,
       paddingHorizontal: 9,
       paddingVertical: 7,

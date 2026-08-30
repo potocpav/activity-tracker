@@ -87,7 +87,7 @@ const ActivityCalendar = ({ navigation, activityPath, calendarIndex }: ActivityC
           setSubUnitName={(name) => setActivityCalendar(activityPath, calendarIndex, { ...calendar, subUnit: name })}
           menuVisible={subUnitMenuVisible}
           setMenuVisible={setSubUnitMenuVisible}
-          themeColors={theme.colors}
+          theme={theme}
         />
         {activity.unit !== null && (
           <ValueMenu
@@ -95,7 +95,7 @@ const ActivityCalendar = ({ navigation, activityPath, calendarIndex }: ActivityC
             onChange={(v: StatValue) => setActivityCalendar(activityPath, calendarIndex, { ...calendar, value: v })}
             menuVisible={valueMenuVisible}
             setMenuVisible={setValueMenuVisible}
-            themeColors={theme.colors}
+            theme={theme}
             valueList={["n_points", "sum", "mean", "max", "min", "last"]}
           />
         )}
@@ -139,7 +139,7 @@ const getStyles = (theme: any) =>
     },
     headerText: {
       fontSize: 16,
-      color: theme.colors.onSurface,
+      color: theme.onSurface,
     },
   });
 

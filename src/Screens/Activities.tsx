@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, useWindowDimensions, FlatList } from "react-nat
 import useStore from "../Model/Store";
 import { ActivityType, DataPoint, dateToDateList, Stat, ActivityTab, ActivityPath } from "../Model/StoreTypes";
 import { dayCmp, findZeroSlice, renderStatValue } from "../Model/Activity";
-import { useAppTheme, useThemePalette, useThemeVariant, useWideDisplay } from "../Model/Theme";
+import { useAppTheme, useThemePalette, useWideDisplay } from "../Model/Theme";
 import { useToday } from "../Model/useToday";
 import { SystemBars } from "react-native-edge-to-edge";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -316,7 +316,6 @@ const ActivityCard = ({
 
 const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   const theme = useAppTheme();
-  const themeVariant = useThemeVariant();
   const activities = useStore((state: any) => state.activities);
   const dismissHint = useStore((state: any) => state.dismissHint);
   const moveActivity = useStore((state: any) => state.moveActivity);
@@ -352,7 +351,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
               <Animated.View entering={FadeIn} exiting={FadeOut} style={{ flexDirection: "row" }}>
                 <ButtonRow>
                   <Button onPress={() => setSelectedActivities([])}>
-                    <MaterialCommunityIcons name="close" size={24} color={theme.colors.onSurface} />
+                    <MaterialCommunityIcons name="close" size={24} color={theme.onSurface} />
                   </Button>
                   {(currentTabId > 0 || selectedActivities.length < activities[currentTabId].activities.length) && (
                     <Button
@@ -361,7 +360,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
                         setSelectedActivities([]);
                       }}
                     >
-                      <MaterialCommunityIcons name="arrow-left" size={24} color={theme.colors.onSurface} />
+                      <MaterialCommunityIcons name="arrow-left" size={24} color={theme.onSurface} />
                     </Button>
                   )}
                   {(currentTabId < activities.length - 1 ||
@@ -372,7 +371,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
                         setSelectedActivities([]);
                       }}
                     >
-                      <MaterialCommunityIcons name="arrow-right" size={24} color={theme.colors.onSurface} />
+                      <MaterialCommunityIcons name="arrow-right" size={24} color={theme.onSurface} />
                     </Button>
                   )}
                 </ButtonRow>
@@ -387,7 +386,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
                     }
                   }}
                 >
-                  <Text style={{ color: theme.colors.onSurface, fontSize: 20 }}>
+                  <Text style={{ color: theme.onSurface, fontSize: 20 }}>
                     {activities[currentTabId]?.tabName ?? "Activities"}
                   </Text>
                 </Button>
@@ -408,7 +407,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
                         },
                       });
                     }}
-                    color={theme.colors.onSurface}
+                    color={theme.onSurface}
                   />
                   <Button
                     onPress={() => {
@@ -416,7 +415,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
                       navigation.navigate("Settings");
                     }}
                   >
-                    <MaterialCommunityIcons name="cog" size={24} color={theme.colors.onSurface} />
+                    <MaterialCommunityIcons name="cog" size={24} color={theme.onSurface} />
                   </Button>
                 </ButtonRow>
               </Animated.View>
@@ -440,7 +439,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
 
   return (
     <SafeAreaView style={[styles.container]} edges={["left", "right"]}>
-      <SystemBars style={themeVariant == "light" ? "dark" : "light"} />
+      <SystemBars style={theme.variant == "light" ? "dark" : "light"} />
       <Hint hint="hello" />
       <View style={{ position: "absolute", top: 100, left: 0, right: 0 }}>
         {activities.length >= 6 && <Hint hint="reorder_activities" />}
@@ -508,13 +507,13 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
         />
         <SmallDialog.Actions>
           <ButtonRow>
-            <CloseButton onPress={() => setActivityTabDialogVisible(false)} color={theme.colors.onSurface} />
+            <CloseButton onPress={() => setActivityTabDialogVisible(false)} color={theme.onSurface} />
             <CheckButton
               onPress={() => {
                 setActivityTabName(currentTabId, activityTabDialogNameInput);
                 setActivityTabDialogVisible(false);
               }}
-              color={theme.colors.onSurface}
+              color={theme.onSurface}
             />
           </ButtonRow>
         </SmallDialog.Actions>
@@ -532,7 +531,7 @@ const getStyles = (theme: any, wideDisplay: boolean, dimensions: any) =>
     },
     container: {
       flex: 1,
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.background,
       paddingTop: 2,
     },
     listContainer: {
@@ -540,7 +539,7 @@ const getStyles = (theme: any, wideDisplay: boolean, dimensions: any) =>
     },
     activityCard: {
       flex: 1,
-      backgroundColor: theme.colors.elevation.level1,
+      backgroundColor: theme.elevation1,
       elevation: 1,
       margin: 2,
       borderRadius: 2,

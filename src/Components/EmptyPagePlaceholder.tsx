@@ -11,7 +11,7 @@ const EmptyPagePlaceholder = ({ title, subtext }: { title: string; subtext: stri
 
   return (
     <View style={styles.emptyStateContainer}>
-      <MaterialCommunityIcons name="inbox" size={64} color={theme.colors.onSurfaceVariant} />
+      <MaterialCommunityIcons name="inbox" size={64} color={theme.onSurfaceVariant} />
       <Text style={styles.emptyStateText}>{title}</Text>
       <Text style={styles.emptyStateSubtext}>{subtext}</Text>
     </View>
@@ -30,12 +30,12 @@ const getStyles = (theme: any) =>
     emptyStateText: {
       fontSize: 24,
       fontWeight: "bold",
-      color: theme.colors.onSurfaceVariant,
+      color: theme.onSurfaceVariant,
       marginTop: 10,
     },
     emptyStateSubtext: {
       fontSize: 16,
-      color: theme.colors.onSurfaceVariant,
+      color: theme.onSurfaceVariant,
       marginTop: 5,
       textAlign: "center",
     },

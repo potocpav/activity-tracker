@@ -2,6 +2,7 @@ import React from "react";
 import { Text } from "react-native";
 import Menu from "./Menu";
 import { ChevronDownIcon, Button } from "./Element";
+import { Theme } from "../Model/Theme";
 
 interface SubUnitMenuProps {
   subUnitNames: string[] | null;
@@ -9,7 +10,7 @@ interface SubUnitMenuProps {
   setSubUnitName: (name: string) => void;
   menuVisible: boolean;
   setMenuVisible: (visible: boolean) => void;
-  themeColors: any;
+  theme: Theme;
 }
 
 const SubUnitMenu: React.FC<SubUnitMenuProps> = ({
@@ -18,7 +19,7 @@ const SubUnitMenu: React.FC<SubUnitMenuProps> = ({
   setSubUnitName,
   menuVisible,
   setMenuVisible,
-  themeColors,
+  theme,
 }) => {
   if (!subUnitNames || subUnitNames.length === 0) return null;
   return (
@@ -27,8 +28,8 @@ const SubUnitMenu: React.FC<SubUnitMenuProps> = ({
       onDismiss={() => setMenuVisible(false)}
       anchor={
         <Button onPress={() => setMenuVisible(true)}>
-          <Text style={{ color: themeColors.onSurface }}>{subUnitName}</Text>
-          <ChevronDownIcon color={themeColors.onSurface} />
+          <Text style={{ color: theme.onSurface }}>{subUnitName}</Text>
+          <ChevronDownIcon color={theme.onSurface} />
         </Button>
       }
     >

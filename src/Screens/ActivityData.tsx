@@ -18,7 +18,7 @@ import { RenderTags } from "../Components/Tags";
 import TagMenu from "../Components/TagMenu";
 import { renderLongFormValue } from "../Model/Unit";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { useThemePalette, useThemeVariant } from "../Model/Theme";
+import { useThemePalette } from "../Model/Theme";
 import { useAppTheme } from "../Model/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
@@ -114,16 +114,16 @@ const DataPointContainer = (props: {
     <Pressable
       onPress={props.onPress}
       onLongPress={props.onLongPress}
-      android_ripple={{ color: props.theme.colors.primary, foreground: true }}
+      android_ripple={{ color: props.theme.primary, foreground: true }}
       style={[
         {
           padding: 6,
-          backgroundColor: props.theme.colors.elevation.level2,
+          backgroundColor: props.theme.elevation2,
           margin: 4,
           borderRadius: 15,
           elevation: 2,
           borderWidth: 2,
-          borderColor: props.selected ? props.theme.colors.primary : "transparent",
+          borderColor: props.selected ? props.theme.primary : "transparent",
         },
         props.style,
       ]}
@@ -226,7 +226,7 @@ export const DataPointCardSingleContainer = (props: {
         >
           {props.children}
         </View>
-        <View key="divider" style={{ width: 0.5, height: "100%", backgroundColor: props.theme.colors.outline }} />
+        <View key="divider" style={{ width: 0.5, height: "100%", backgroundColor: props.theme.outline }} />
         <View key="content" style={{ flex: 1, gap: 6, justifyContent: "space-between" }}>
           {props.tags && (
             <View key="tags" style={{}}>
@@ -248,7 +248,7 @@ export const LabeledValue = (props: { label: string; children: React.ReactNode; 
   return (
     <View key={props.label} style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
       <View style={{ padding: 2 }}>
-        <Text style={{ color: props.theme.colors.onSurface, fontSize: 12, textAlign: "center" }}>{props.label}</Text>
+        <Text style={{ color: props.theme.onSurface, fontSize: 12, textAlign: "center" }}>{props.label}</Text>
       </View>
       <View style={{ padding: 2, paddingBottom: 4 }}>{props.children}</View>
     </View>
@@ -256,9 +256,7 @@ export const LabeledValue = (props: { label: string; children: React.ReactNode; 
 };
 
 export const TextValue = (props: { children: string; theme: any }) => {
-  return (
-    <Text style={{ color: props.theme.colors.onSurface, fontSize: 20, fontWeight: "bold" }}>{props.children}</Text>
-  );
+  return <Text style={{ color: props.theme.onSurface, fontSize: 20, fontWeight: "bold" }}>{props.children}</Text>;
 };
 
 export const DataPointCard = ({
@@ -305,7 +303,7 @@ export const DataPointCard = ({
     />
   );
 
-  const note = dataPoint.note && <Text style={{ color: theme.colors.onSurface }}>{dataPoint.note}</Text>;
+  const note = dataPoint.note && <Text style={{ color: theme.onSurface }}>{dataPoint.note}</Text>;
 
   const onPress = () => {
     if (selectModeActive) {
@@ -410,9 +408,9 @@ const DataPointSectionHeader = ({
   const styles = getStyles(theme);
   return (
     <View style={styles.sectionHeader}>
-      <Text style={{ color: theme.colors.onSurface }}>{formatDate(dateListToDate(date))}</Text>
+      <Text style={{ color: theme.onSurface }}>{formatDate(dateListToDate(date))}</Text>
       <Button onPress={() => toggleSelection(uuids)}>
-        <MaterialCommunityIcons name={toggleIcon} size={24} color={theme.colors.onSurfaceVariant} />
+        <MaterialCommunityIcons name={toggleIcon} size={24} color={theme.onSurfaceVariant} />
       </Button>
     </View>
   );
@@ -425,7 +423,6 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
   );
   const deleteActivityDataPoints = useStore((state: any) => state.deleteActivityDataPoints);
   const theme = useAppTheme(activity.color);
-  const themeVariant = useThemeVariant();
   const [selectedPointUuids, setSelectedPointUuids] = useState<string[]>([]);
   const selectModeActive = selectedPointUuids.length > 0;
   const today = dateToDateList(useToday());
@@ -591,7 +588,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
         : selectModeActive
           ? selectedPointUuids.length + " selected"
           : "All data",
-      headerStyle: themeVariant == "light" ? { backgroundColor: theme.colors.primary } : undefined,
+      headerStyle: theme.variant == "light" ? { backgroundColor: theme.primary } : undefined,
       headerTintColor: "#ffffff",
       headerBackVisible: !selectModeActive,
       headerRight: selectModeActive ? selectModeButtons : normalButtons,
@@ -600,7 +597,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
 
   return (
     <SafeAreaView style={[styles.container]} edges={["left", "right"]}>
-      <SystemBars style={{ statusBar: "light", navigationBar: themeVariant == "light" ? "dark" : "light" }} />
+      <SystemBars style={{ statusBar: "light", navigationBar: theme.variant == "light" ? "dark" : "light" }} />
       {sections.length === 0 ? (
         <EmptyPagePlaceholder title="No data" subtext="Tap the + button to create a data point" />
       ) : (
@@ -640,7 +637,7 @@ const getStyles = (theme: any) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.background,
     },
     sectionHeader: {
       padding: 5,
@@ -654,7 +651,7 @@ const getStyles = (theme: any) =>
       alignItems: "center",
       justifyContent: "flex-start",
 
-      backgroundColor: theme.colors.elevation.level2,
+      backgroundColor: theme.elevation2,
       elevation: 2,
       borderRadius: 2,
       marginBottom: 2,
@@ -667,7 +664,7 @@ const getStyles = (theme: any) =>
     },
     activityCard: {
       padding: 4,
-      backgroundColor: theme.colors.elevation.level2,
+      backgroundColor: theme.elevation2,
       margin: 4,
       borderRadius: 15,
       elevation: 2,

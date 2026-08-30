@@ -1,6 +1,5 @@
 import React, { useState, FC, useRef } from "react";
 import { View, Text, StyleSheet, ScrollView, Alert, KeyboardAvoidingView, Pressable, TextInput } from "react-native";
-import { MD3Theme } from "react-native-paper";
 import Menu from "../Components/Menu";
 import { ActivityType, SetTag, Tag, SubUnit, Unit, WeightUnit, State, ActivityPath } from "../Model/StoreTypes";
 import TextField from "../Components/TextField";
@@ -11,7 +10,7 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import DraggableFlatList from "react-native-draggable-flatlist";
 import ColorPicker from "../Components/ColorPicker";
 import TagDialog from "../Components/TagDialog";
-import { useAppTheme, useThemePalette, useThemeVariant } from "../Model/Theme";
+import { useAppTheme, useThemePalette, Theme } from "../Model/Theme";
 import { defaultCalendar, defaultGraphs, defaultStats, defaultBleScaleGraphs } from "../Model/DefaultActivity";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
@@ -40,7 +39,6 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   const activityPath: ActivityPath = route.params.activityPath;
   const activity: ActivityType | null =
     useStore((state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId]) ?? null;
-  const themeVariant = useThemeVariant();
   const palette = useThemePalette();
   const updateActivity = useStore((state: any) => state.updateActivity);
   const createActivity = useStore((state: any) => state.createActivity);
@@ -392,7 +390,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   React.useEffect(() => {
     navigation.setOptions({
       title: activity === null ? "New Activity" : activity.name,
-      headerStyle: themeVariant == "light" ? { backgroundColor: theme.colors.primary } : undefined,
+      headerStyle: theme.variant == "light" ? { backgroundColor: theme.primary } : undefined,
       headerTintColor: "#ffffff",
       headerRight: () => (
         <ButtonRow>
@@ -473,14 +471,14 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   };
 
   const editNoValue = () => (
-    <Text style={{ color: theme.colors.onSurfaceVariant, paddingBottom: 10 }}>
+    <Text style={{ color: theme.onSurfaceVariant, paddingBottom: 10 }}>
       e.g. Did you excercise? Did you play chess?
     </Text>
   );
 
   const editSingleValue = () => (
     <View style={{ gap: 10 }}>
-      <Text style={{ color: theme.colors.onSurfaceVariant }}>
+      <Text style={{ color: theme.onSurfaceVariant }}>
         e.g. How many kilometers did you run? How many pull-ups did you do?
       </Text>
       <InputWrapper
@@ -496,8 +494,8 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       </InputWrapper>
       <View style={{ flex: 1, flexDirection: "row", justifyContent: "center" }}>
         <Button onPress={() => setMultiUnitInput([...multiUnitInput, emptyMultiUnit])}>
-          <PlusIcon color={theme.colors.onSurface} />
-          <Text style={{ color: theme.colors.onSurface }}>Add Unit</Text>
+          <PlusIcon color={theme.onSurface} />
+          <Text style={{ color: theme.onSurface }}>Add Unit</Text>
         </Button>
       </View>
     </View>
@@ -505,7 +503,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
 
   const editMultipleValues = () => (
     <View style={{ gap: 10 }}>
-      <Text style={{ color: theme.colors.onSurfaceVariant }}>
+      <Text style={{ color: theme.onSurfaceVariant }}>
         e.g. How many kilometers did you run? How many pull-ups did you do?
       </Text>
       <View style={{ gap: 4 }}>
@@ -561,7 +559,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
                     setMultiUnitInput(multiUnitInput.slice(0, idx).concat(multiUnitInput.slice(idx + 1)));
                   }
                 }}
-                color={theme.colors.onSurface}
+                color={theme.onSurface}
               />
             </View>
           </View>
@@ -569,8 +567,8 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
         {multiUnitInput.length < 4 && (
           <View style={{ flex: 1, flexDirection: "row", justifyContent: "center" }}>
             <Button onPress={() => setMultiUnitInput([...multiUnitInput, emptyMultiUnit])}>
-              <PlusIcon color={theme.colors.onSurface} />
-              <Text style={{ color: theme.colors.onSurface }}>Add Unit</Text>
+              <PlusIcon color={theme.onSurface} />
+              <Text style={{ color: theme.onSurface }}>Add Unit</Text>
             </Button>
           </View>
         )}
@@ -580,7 +578,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding" keyboardVerticalOffset={100}>
-      <SystemBars style={{ statusBar: "light", navigationBar: themeVariant == "light" ? "dark" : "light" }} />
+      <SystemBars style={{ statusBar: "light", navigationBar: theme.variant == "light" ? "dark" : "light" }} />
       <View style={{ position: "absolute", top: 10, right: 0 }}>
         <Menu
           visible={specialMenuVisible}
@@ -621,7 +619,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
             <View>
               <TextInput
                 placeholder="Description (optional)"
-                placeholderTextColor={theme.colors.onSurfaceVariant}
+                placeholderTextColor={theme.onSurfaceVariant}
                 value={activityDescriptionInput}
                 onChangeText={setActivityDescriptionInput}
                 multiline
@@ -654,7 +652,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
                       },
                     ]}
                   >
-                    <Text style={[styles.chipLabel, { color: theme.colors.surface }]}>{item.name}</Text>
+                    <Text style={[styles.chipLabel, { color: theme.surface }]}>{item.name}</Text>
                   </Pressable>
                 )}
                 onDragEnd={(data) => {
@@ -674,13 +672,13 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
                   style={[
                     styles.chip,
                     {
-                      backgroundColor: theme.colors.surface,
+                      backgroundColor: theme.surface,
                       borderWidth: 1,
-                      borderColor: theme.colors.outline,
+                      borderColor: theme.outline,
                     },
                   ]}
                 >
-                  <Text style={[styles.chipLabel, { color: theme.colors.onSurfaceVariant }]}>+</Text>
+                  <Text style={[styles.chipLabel, { color: theme.onSurfaceVariant }]}>+</Text>
                 </Pressable>
               </View>
             </View>
@@ -786,7 +784,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
   );
 };
 
-const getStyles = (theme: MD3Theme) =>
+const getStyles = (theme: Theme) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -810,13 +808,13 @@ const getStyles = (theme: MD3Theme) =>
       paddingHorizontal: 10,
     },
     header: {
-      color: theme.colors.onSurfaceVariant,
+      color: theme.onSurfaceVariant,
       fontSize: 16,
       marginBottom: 5,
     },
     descriptionInput: {
-      color: theme.colors.onSurface,
-      borderColor: theme.colors.outline,
+      color: theme.onSurface,
+      borderColor: theme.outline,
       borderWidth: 1,
       borderRadius: 5,
       padding: 10,

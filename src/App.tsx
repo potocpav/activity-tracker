@@ -9,10 +9,9 @@ import EditDataPoint from "./Screens/EditDataPoint";
 import BleScaleInput from "./Screens/BleScaleInput";
 import EditActivity from "./Screens/EditActivity";
 import ThemeSelectionDialog from "./Screens/ThemeSelectionDialog";
-import { adaptNavigationTheme } from "react-native-paper";
 import ActivityData from "./Screens/ActivityData";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { useAppTheme, useThemeVariant } from "./Model/Theme";
+import { useAppTheme } from "./Model/Theme";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import EditStat from "./Screens/EditStat";
 import BleConnectionModal from "./Components/BleConnectionModal";
@@ -24,72 +23,35 @@ import "expo-font";
 // so data stays correct while avoiding wasted work behind modals / other tabs.
 enableFreeze(true);
 
-const { LightTheme, DarkTheme: PaperDarkTheme } = adaptNavigationTheme({
-  reactNavigationLight: DefaultTheme,
-  reactNavigationDark: DarkTheme,
-});
+// React Navigation insists on a fonts block; the app uses the system font throughout.
+const navigationFonts = {
+  regular: { fontFamily: "System", fontWeight: "400" as const },
+  medium: { fontFamily: "System", fontWeight: "500" as const },
+  bold: { fontFamily: "System", fontWeight: "700" as const },
+  heavy: { fontFamily: "System", fontWeight: "900" as const },
+};
 
 const App = () => {
   const Stack = createNativeStackNavigator();
   const theme = useAppTheme();
-  const themeVariant = useThemeVariant();
   const blackBackground = useStore((state: any) => state.blackBackground);
-  Appearance.setColorScheme(themeVariant);
+  Appearance.setColorScheme(theme.variant);
 
-  // Add missing fonts property to fix the TypeScript error
-  const navigationTheme =
-    themeVariant == "light"
-      ? {
-          ...LightTheme,
-          fonts: {
-            regular: {
-              fontFamily: "System",
-              fontWeight: "400" as const,
-            },
-            medium: {
-              fontFamily: "System",
-              fontWeight: "500" as const,
-            },
-            bold: {
-              fontFamily: "System",
-              fontWeight: "700" as const,
-            },
-            heavy: {
-              fontFamily: "System",
-              fontWeight: "900" as const,
-            },
-          },
-        }
-      : {
-          ...PaperDarkTheme,
-          colors: blackBackground
-            ? {
-                ...PaperDarkTheme.colors,
-                background: "#000000",
-                surface: "#000000",
-                surfaceVariant: "#000000",
-                card: "#000000",
-              }
-            : PaperDarkTheme.colors,
-          fonts: {
-            regular: {
-              fontFamily: "System",
-              fontWeight: "400" as const,
-            },
-            medium: {
-              fontFamily: "System",
-              fontWeight: "500" as const,
-            },
-            bold: {
-              fontFamily: "System",
-              fontWeight: "700" as const,
-            },
-            heavy: {
-              fontFamily: "System",
-              fontWeight: "900" as const,
-            },
-          },
-        };
+  // React Navigation's own colors, mapped from the app theme.
+  const navigationBase = theme.variant === "light" ? DefaultTheme : DarkTheme;
+  const navigationTheme = {
+    ...navigationBase,
+    colors: {
+      ...navigationBase.colors,
+      primary: theme.primary,
+      background: theme.background,
+      card: theme.variant === "dark" && blackBackground ? theme.surface : theme.elevation2,
+      text: theme.onSurface,
+      border: theme.outline,
+      notification: theme.error,
+    },
+    fonts: navigationFonts,
+  };
 
   return (
     <SafeAreaProvider>
@@ -98,14 +60,14 @@ const App = () => {
           <NavigationContainer theme={navigationTheme}>
             <Stack.Navigator
               screenOptions={
-                themeVariant == "dark" && blackBackground
+                theme.variant == "dark" && blackBackground
                   ? {
                       headerStyle: {
-                        backgroundColor: theme.colors.surface,
+                        backgroundColor: theme.surface,
                       },
                     }
-                  : themeVariant == "light"
-                    ? { headerStyle: { backgroundColor: theme.colors.surfaceVariant } }
+                  : theme.variant == "light"
+                    ? { headerStyle: { backgroundColor: theme.surfaceVariant } }
                     : {}
               }
             >

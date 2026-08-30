@@ -62,7 +62,7 @@ export const InputWrapper = ({ children, key, error, hint, containerStyle, ref }
       {hint && <Text style={{ fontSize: 12, opacity: 0.6 }}>{hint}</Text>}
       {error && (
         <Animated.View>
-          <Text style={{ fontSize: 12, color: theme.colors.error }}>{error}</Text>
+          <Text style={{ fontSize: 12, color: theme.error }}>{error}</Text>
         </Animated.View>
       )}
     </Animated.View>

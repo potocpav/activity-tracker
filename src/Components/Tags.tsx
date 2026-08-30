@@ -7,11 +7,8 @@ export const RenderTags = ({ tags, theme, palette }: { tags: Tag[]; theme: any; 
   return (
     <View style={styles.tagsContainer}>
       {tags.map((tag, index) => (
-        <View
-          key={index}
-          style={[styles.tag, { backgroundColor: palette[tag.color], borderColor: theme.colors.surface }]}
-        >
-          <Text style={[styles.tagText, { color: theme.colors.surface }]}>{tag.name}</Text>
+        <View key={index} style={[styles.tag, { backgroundColor: palette[tag.color], borderColor: theme.surface }]}>
+          <Text style={[styles.tagText, { color: theme.surface }]}>{tag.name}</Text>
         </View>
       ))}
     </View>

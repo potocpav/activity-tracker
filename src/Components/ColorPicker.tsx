@@ -31,8 +31,8 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ visible, palette, selectedCol
     >
       <Pressable style={StyleSheet.absoluteFill} onPress={onDismiss} />
       <View style={styles.centered} pointerEvents="box-none">
-        <View style={[styles.card, { backgroundColor: theme.colors.elevation.level3 }]}>
-          <Text style={[styles.title, { color: theme.colors.onSurface }]}>Pick a color</Text>
+        <View style={[styles.card, { backgroundColor: theme.elevation3 }]}>
+          <Text style={[styles.title, { color: theme.onSurface }]}>Pick a color</Text>
           <View style={styles.grid}>
             {rows.map((row, rowIx) => (
               <View key={rowIx} style={styles.row}>
@@ -50,12 +50,12 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ visible, palette, selectedCol
                         {
                           backgroundColor: palette[colorIx],
                           borderWidth: selected ? 2 : 1,
-                          borderColor: selected ? theme.colors.onSurface : theme.colors.onSurfaceVariant,
+                          borderColor: selected ? theme.onSurface : theme.onSurfaceVariant,
                           opacity: pressed ? 0.7 : 1,
                         },
                       ]}
                     >
-                      {selected ? <CheckIcon color={theme.colors.surface} /> : null}
+                      {selected ? <CheckIcon color={theme.surface} /> : null}
                     </Pressable>
                   );
                 })}

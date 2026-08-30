@@ -6,7 +6,7 @@ import { version, migrate } from "../Model/Migrations";
 import { File, Paths, EncodingType } from "expo-file-system";
 import * as DocumentPicker from "expo-document-picker";
 import * as Sharing from "expo-sharing";
-import { useThemeVariant } from "../Model/Theme";
+import { useAppTheme } from "../Model/Theme";
 import { Switch } from "../Components/Element";
 import { ListSection, ListItem, ListIcon } from "../Components/List";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -20,7 +20,7 @@ import * as Crypto from "expo-crypto";
 const Settings = () => {
   const navigation = useNavigation();
   const themeState = useStore((state: any) => state.theme);
-  const themeVariant = useThemeVariant();
+  const themeVariant = useAppTheme().variant;
   const blackBackground = useStore((state: any) => state.blackBackground);
   const setBlackBackground = useStore((state: any) => state.setBlackBackground);
   const weekStart = useStore((state: any) => state.weekStart);

@@ -2,6 +2,7 @@ import React from "react";
 import { Text } from "react-native";
 import Menu from "./Menu";
 import { ChevronDownIcon, Button } from "./Element";
+import { Theme } from "../Model/Theme";
 
 export interface DropdownMenuOption {
   key: string;
@@ -15,7 +16,7 @@ interface DropdownMenuProps {
   visible: boolean;
   setVisible: (visible: boolean) => void;
   label?: string;
-  themeColors: any;
+  theme: Theme;
 }
 
 const DropdownMenu: React.FC<DropdownMenuProps> = ({
@@ -25,7 +26,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
   visible,
   setVisible,
   label,
-  themeColors,
+  theme,
 }) => {
   const selectedLabel = options.find((o) => o.key === selectedKey)?.label || label || "(select)";
   return (
@@ -34,8 +35,8 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
       onDismiss={() => setVisible(false)}
       anchor={
         <Button onPress={() => setVisible(true)}>
-          <Text style={{ color: themeColors.onSurfaceVariant }}>{selectedLabel}</Text>
-          <ChevronDownIcon color={themeColors.onSurfaceVariant} />
+          <Text style={{ color: theme.onSurfaceVariant }}>{selectedLabel}</Text>
+          <ChevronDownIcon color={theme.onSurfaceVariant} />
         </Button>
       }
     >

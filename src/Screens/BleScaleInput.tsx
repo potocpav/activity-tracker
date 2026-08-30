@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { StyleSheet, Text, Platform, View, AppState, useWindowDimensions } from "react-native";
 import useStore from "../Model/Store";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { useAppTheme, useThemePalette, useThemeVariant } from "../Model/Theme";
+import { useAppTheme, useThemePalette, Theme } from "../Model/Theme";
 import { useToday } from "../Model/useToday";
 import {
   ActivityType,
@@ -14,7 +14,6 @@ import {
   Unit,
   SubUnit,
 } from "../Model/StoreTypes";
-import { MD3Theme } from "react-native-paper";
 import { matchFont, Points, Text as SkiaText, vec, Canvas, Color, SkFont } from "@shopify/react-native-skia";
 import Animated, {
   useSharedValue,
@@ -109,7 +108,6 @@ const BleScaleInputInner: React.FC<BleScaleInputInnerProps> = ({
   const { activityPath } = route.params;
   const appendActivityDataPoint = useStore((state: any) => state.appendActivityDataPoint);
   const theme = useAppTheme(activity.color);
-  const themeVariant = useThemeVariant();
   const palette = useThemePalette();
   const today = dateToDateList(useToday());
 
@@ -478,7 +476,7 @@ const BleScaleInputInner: React.FC<BleScaleInputInnerProps> = ({
 
   React.useEffect(() => {
     navigation.setOptions({
-      headerStyle: themeVariant == "light" ? { backgroundColor: theme.colors.primary } : undefined,
+      headerStyle: theme.variant == "light" ? { backgroundColor: theme.primary } : undefined,
       headerTintColor: "#ffffff",
       headerRight: () => {
         switch (connectionStatus()) {
@@ -559,10 +557,10 @@ const BleScaleInputInner: React.FC<BleScaleInputInnerProps> = ({
       </View>
 
       <View style={{ flex: 1, marginRight: 8 }}>
-        <SkiaChart gridLineColor={theme.colors.outline} view={view} viewportShared={viewport}>
-          <Points mode="polygon" points={linePoints} color={theme.colors.primary} strokeWidth={1} />
-          <Points mode="polygon" points={currentPullPoints} color={theme.colors.secondary} strokeWidth={2} />
-          <Points mode="polygon" points={pastPullsPoints} color={theme.colors.secondary} strokeWidth={2} />
+        <SkiaChart gridLineColor={theme.outline} view={view} viewportShared={viewport}>
+          <Points mode="polygon" points={linePoints} color={theme.primary} strokeWidth={1} />
+          <Points mode="polygon" points={currentPullPoints} color={theme.secondary} strokeWidth={2} />
+          <Points mode="polygon" points={pastPullsPoints} color={theme.secondary} strokeWidth={2} />
         </SkiaChart>
       </View>
     </>
@@ -572,20 +570,15 @@ const BleScaleInputInner: React.FC<BleScaleInputInnerProps> = ({
     <View style={styles.measurementRow}>
       <View style={styles.measurementColumn}>
         <Text style={styles.measurementLabel}>Weight</Text>
-        <CenteredAnimatedText
-          longestText="000.00 kg"
-          text={currentWeight}
-          font={largeFont}
-          color={theme.colors.primary}
-        />
+        <CenteredAnimatedText longestText="000.00 kg" text={currentWeight} font={largeFont} color={theme.primary} />
       </View>
       <View style={styles.measurementColumn}>
         <Text style={styles.measurementLabel}>Time</Text>
-        <CenteredAnimatedText longestText="0:00:00" text={totalTime} font={largeFont} color={theme.colors.primary} />
+        <CenteredAnimatedText longestText="0:00:00" text={totalTime} font={largeFont} color={theme.primary} />
       </View>
       <View style={styles.measurementColumn}>
         <Text style={styles.measurementLabel}>Rest</Text>
-        <CenteredAnimatedText longestText="00:00" text={restTime} font={largeFont} color={theme.colors.primary} />
+        <CenteredAnimatedText longestText="00:00" text={restTime} font={largeFont} color={theme.primary} />
       </View>
     </View>
   );
@@ -609,7 +602,7 @@ const BleScaleInputInner: React.FC<BleScaleInputInnerProps> = ({
                 // tags={undefined}
                 note={undefined}
                 theme={theme}
-                style={{ flex: 1, borderWidth: 1, borderColor: theme.colors.primary }}
+                style={{ flex: 1, borderWidth: 1, borderColor: theme.primary }}
                 selected={false}
                 enableSwipeToDelete={false}
               >
@@ -618,7 +611,7 @@ const BleScaleInputInner: React.FC<BleScaleInputInnerProps> = ({
                     longestText="000"
                     text={`${pastDataPoints.length - index}`}
                     font={largeFont}
-                    color={theme.colors.primary}
+                    color={theme.primary}
                   />
                 </LabeledValue>
                 <LabeledValue label="Weight" theme={theme}>
@@ -626,16 +619,11 @@ const BleScaleInputInner: React.FC<BleScaleInputInnerProps> = ({
                     longestText="000.00 kg"
                     text={pullWeight}
                     font={largeFont}
-                    color={theme.colors.primary}
+                    color={theme.primary}
                   />
                 </LabeledValue>
                 <LabeledValue label="Time" theme={theme}>
-                  <CenteredAnimatedText
-                    longestText="00:00"
-                    text={pullTime}
-                    font={largeFont}
-                    color={theme.colors.primary}
-                  />
+                  <CenteredAnimatedText longestText="00:00" text={pullTime} font={largeFont} color={theme.primary} />
                 </LabeledValue>
               </DataPointCardMultiContainer>
             </Animated.View>
@@ -664,7 +652,7 @@ const BleScaleInputInner: React.FC<BleScaleInputInnerProps> = ({
     return (
       <>
         <SafeAreaView key="portrait" style={{ marginTop: 8, height: "70%" }} edges={["left", "right", "bottom"]}>
-          <SystemBars style={{ statusBar: "light", navigationBar: themeVariant == "light" ? "dark" : "light" }} />
+          <SystemBars style={{ statusBar: "light", navigationBar: theme.variant == "light" ? "dark" : "light" }} />
           {buttonsAndChart}
           {statusDisplay}
         </SafeAreaView>
@@ -679,9 +667,9 @@ const BleScaleInputInner: React.FC<BleScaleInputInnerProps> = ({
           useBottomSafeAreaPadding
           disableDragBeyondMinimumSnapPoint
           safeAreaInsets={insets}
-          indicatorStyle={{ backgroundColor: theme.colors.outline }}
+          indicatorStyle={{ backgroundColor: theme.outline }}
           containerStyle={{
-            backgroundColor: theme.colors.elevation.level1,
+            backgroundColor: theme.elevation1,
             paddingLeft: insets.left,
             paddingRight: insets.right,
           }}
@@ -698,7 +686,7 @@ const BleScaleInputInner: React.FC<BleScaleInputInnerProps> = ({
           style={{ paddingTop: 8, flexDirection: "row", height: "100%" }}
           edges={["left", "right", "bottom"]}
         >
-          <SystemBars style={{ statusBar: "light", navigationBar: themeVariant == "light" ? "dark" : "light" }} />
+          <SystemBars style={{ statusBar: "light", navigationBar: theme.variant == "light" ? "dark" : "light" }} />
           <View style={{ flex: 1, paddingBottom: 4 }}>{buttonsAndChart}</View>
           <View style={{ flex: 1 }}>
             {statusDisplay}
@@ -710,7 +698,7 @@ const BleScaleInputInner: React.FC<BleScaleInputInnerProps> = ({
   }
 };
 
-const getStyles = (theme: MD3Theme) =>
+const getStyles = (theme: Theme) =>
   StyleSheet.create({
     container: {
       height: "70%",
@@ -743,7 +731,7 @@ const getStyles = (theme: MD3Theme) =>
     measurementLabel: {
       textAlign: "center",
       fontSize: 16,
-      color: theme.colors.outline,
+      color: theme.outline,
     },
   });
 

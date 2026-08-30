@@ -1,8 +1,7 @@
 import React from "react";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { MD3Theme } from "react-native-paper/lib/typescript/types";
-import { useAppTheme } from "../Model/Theme";
+import { useAppTheme, Theme } from "../Model/Theme";
 
 // Material 3 style segmented buttons: one connected row of Pressables, the selected
 // segment filled with secondaryContainer.
@@ -31,10 +30,10 @@ export const SegmentedButtons = ({ value, onValueChange, buttons }: SegmentedBut
       {buttons.map((button, index) => {
         const selected = button.value === value;
         const contentColor = button.disabled
-          ? theme.colors.onSurfaceDisabled
+          ? theme.onSurfaceDisabled
           : selected
-            ? theme.colors.onSecondaryContainer
-            : theme.colors.onSurface;
+            ? theme.onSecondaryContainer
+            : theme.onSurface;
 
         return (
           <Pressable
@@ -57,12 +56,12 @@ export const SegmentedButtons = ({ value, onValueChange, buttons }: SegmentedBut
   );
 };
 
-const getStyles = (theme: MD3Theme) =>
+const getStyles = (theme: Theme) =>
   StyleSheet.create({
     row: {
       flexDirection: "row",
       borderWidth: 1,
-      borderColor: theme.colors.outline,
+      borderColor: theme.outline,
       borderRadius: 20,
       overflow: "hidden",
     },
@@ -78,10 +77,10 @@ const getStyles = (theme: MD3Theme) =>
     },
     dividedSegment: {
       borderLeftWidth: 1,
-      borderLeftColor: theme.colors.outline,
+      borderLeftColor: theme.outline,
     },
     selectedSegment: {
-      backgroundColor: theme.colors.secondaryContainer,
+      backgroundColor: theme.secondaryContainer,
     },
     label: {
       fontSize: 14,

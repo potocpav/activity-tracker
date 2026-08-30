@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useAppTheme, useThemeVariant } from "../Model/Theme";
+import { useAppTheme } from "../Model/Theme";
 
 const SCREEN_MARGIN = 8;
 const MIN_WIDTH = 200;
@@ -35,7 +35,7 @@ interface MenuItemProps {
 
 const MenuItem: React.FC<MenuItemProps> = ({ onPress, title, leadingIcon, trailingIcon, titleStyle, disabled }) => {
   const theme = useAppTheme();
-  const contentColor = disabled ? theme.colors.onSurfaceDisabled : theme.colors.onSurfaceVariant;
+  const contentColor = disabled ? theme.onSurfaceDisabled : theme.onSurfaceVariant;
   return (
     <Pressable onPress={onPress} disabled={disabled} android_ripple={{ foreground: true }} style={styles.item}>
       {({ pressed }) => (
@@ -48,10 +48,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ onPress, title, leadingIcon, traili
             {typeof title === "string" || typeof title === "number" ? (
               <Text
                 numberOfLines={1}
-                style={[
-                  { fontSize: 16, color: disabled ? theme.colors.onSurfaceDisabled : theme.colors.onSurface },
-                  titleStyle,
-                ]}
+                style={[{ fontSize: 16, color: disabled ? theme.onSurfaceDisabled : theme.onSurface }, titleStyle]}
               >
                 {title}
               </Text>
@@ -77,7 +74,6 @@ interface MenuProps {
 
 const MenuBase: React.FC<MenuProps> = ({ visible, onDismiss, anchor, children }) => {
   const theme = useAppTheme();
-  const themeVariant = useThemeVariant();
   const insets = useSafeAreaInsets();
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const anchorRef = useRef<View>(null);
@@ -148,7 +144,7 @@ const MenuBase: React.FC<MenuProps> = ({ visible, onDismiss, anchor, children })
             style={[
               styles.shadow,
               {
-                backgroundColor: theme.colors.elevation.level2,
+                backgroundColor: theme.elevation2,
                 maxHeight,
                 top: position?.top ?? 0,
                 left: position?.left,

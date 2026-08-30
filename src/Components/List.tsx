@@ -1,8 +1,7 @@
 import React from "react";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { MD3Theme } from "react-native-paper/lib/typescript/types";
-import { useAppTheme } from "../Model/Theme";
+import { useAppTheme, Theme } from "../Model/Theme";
 
 // Settings-style list rows: a leading icon, a title with an optional description, and
 // optional trailing content. Rows are a single flat row of padding rather than Paper's
@@ -12,7 +11,7 @@ export type IconName = React.ComponentProps<typeof MaterialCommunityIcons>["name
 
 export const ListIcon = ({ name, color }: { name: IconName; color?: string }) => {
   const theme = useAppTheme();
-  return <MaterialCommunityIcons name={name} size={24} color={color ?? theme.colors.onSurfaceVariant} />;
+  return <MaterialCommunityIcons name={name} size={24} color={color ?? theme.onSurfaceVariant} />;
 };
 
 export const ListSection = ({ title, children }: { title?: string; children: React.ReactNode }) => {
@@ -80,7 +79,7 @@ export const ListAccordion = ({
   );
 };
 
-const getStyles = (theme: MD3Theme) =>
+const getStyles = (theme: Theme) =>
   StyleSheet.create({
     section: {
       marginVertical: 8,
@@ -90,7 +89,7 @@ const getStyles = (theme: MD3Theme) =>
       paddingVertical: 12,
       fontSize: 14,
       fontWeight: "500",
-      color: theme.colors.primary,
+      color: theme.primary,
     },
     row: {
       flexDirection: "row",
@@ -104,12 +103,12 @@ const getStyles = (theme: MD3Theme) =>
     },
     title: {
       fontSize: 16,
-      color: theme.colors.onSurface,
+      color: theme.onSurface,
     },
     description: {
       marginTop: 2,
       fontSize: 14,
-      color: theme.colors.onSurfaceVariant,
+      color: theme.onSurfaceVariant,
     },
     accordionBody: {
       paddingHorizontal: 16,

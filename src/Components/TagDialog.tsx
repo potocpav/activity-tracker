@@ -66,8 +66,8 @@ const TagDialog: React.FC<TagDialogProps> = ({
       />
       <SmallDialog.Actions>
         <ButtonRow>
-          <DeleteButton onPress={onDelete} color={theme.colors.onSurface} />
-          <CheckButton onPress={onUpdate} color={theme.colors.onSurface} />
+          <DeleteButton onPress={onDelete} color={theme.onSurface} />
+          <CheckButton onPress={onUpdate} color={theme.onSurface} />
         </ButtonRow>
       </SmallDialog.Actions>
     </SmallDialog>

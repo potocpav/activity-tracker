@@ -17,7 +17,7 @@ import SubUnitMenu from "../Components/SubUnitMenu";
 import DropdownMenu from "../Components/DropdownMenu";
 import StatView from "../Components/StatView";
 import TextField from "../Components/TextField";
-import { useAppTheme, useThemeVariant } from "../Model/Theme";
+import { useAppTheme } from "../Model/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
 import { ButtonRow, CheckButton, CopyButton, DeleteButton } from "../Components/Element";
@@ -29,7 +29,6 @@ export const EditStat = ({ navigation, route }: { navigation: any; route: any })
   );
   const stat = activity.stats[statId];
   const theme = useAppTheme(activity.color);
-  const themeVariant = useThemeVariant();
   const cloneActivityStat = useStore((state: any) => state.cloneActivityStat);
   const setActivityStat = useStore((state: any) => state.setActivityStat);
   const deleteActivityStat = useStore((state: any) => state.deleteActivityStat);
@@ -109,7 +108,7 @@ export const EditStat = ({ navigation, route }: { navigation: any; route: any })
 
   React.useEffect(() => {
     navigation.setOptions({
-      headerStyle: themeVariant == "light" ? { backgroundColor: theme.colors.primary } : undefined,
+      headerStyle: theme.variant == "light" ? { backgroundColor: theme.primary } : undefined,
       headerTintColor: "#ffffff",
       headerRight: () => (
         <ButtonRow>
@@ -123,7 +122,7 @@ export const EditStat = ({ navigation, route }: { navigation: any; route: any })
 
   return (
     <Fragment>
-      <SystemBars style={{ statusBar: "light", navigationBar: themeVariant == "light" ? "dark" : "light" }} />
+      <SystemBars style={{ statusBar: "light", navigationBar: theme.variant == "light" ? "dark" : "light" }} />
       <ScrollView>
         <SafeAreaView edges={["left", "right", "bottom"]}>
           <View
@@ -131,7 +130,7 @@ export const EditStat = ({ navigation, route }: { navigation: any; route: any })
               flexDirection: "row",
               justifyContent: "center",
               elevation: 2,
-              backgroundColor: theme.colors.elevation.level1,
+              backgroundColor: theme.elevation1,
               marginBottom: 10,
               marginHorizontal: 4,
             }}
@@ -166,7 +165,7 @@ export const EditStat = ({ navigation, route }: { navigation: any; route: any })
               visible={periodMenuVisible}
               setVisible={setPeriodMenuVisible}
               label="Period"
-              themeColors={theme.colors}
+              theme={theme}
             />
 
             {/* SubUnit menu */}
@@ -176,7 +175,7 @@ export const EditStat = ({ navigation, route }: { navigation: any; route: any })
               setSubUnitName={(name) => setInputSubUnit(name)}
               menuVisible={subUnitMenuVisible}
               setMenuVisible={setSubUnitMenuVisible}
-              themeColors={theme.colors}
+              theme={theme}
             />
 
             {/* Value */}
@@ -187,7 +186,7 @@ export const EditStat = ({ navigation, route }: { navigation: any; route: any })
               visible={valueMenuVisible}
               setVisible={setValueMenuVisible}
               label="Value"
-              themeColors={theme.colors}
+              theme={theme}
             />
 
             {/* Tags */}

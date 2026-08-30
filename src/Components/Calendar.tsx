@@ -77,20 +77,18 @@ const WeekColumnImpl: React.FC<WeekColumnProps> = ({
       <View style={styles.monthLabelContainer}>
         {itemWeekStart.getDate() <= 7 && itemWeekStart.getMonth() > 0 && (
           <Text
-            style={[styles.monthLabel, { color: theme.colors.onSurfaceVariant }]}
+            style={[styles.monthLabel, { color: theme.onSurfaceVariant }]}
           >{`${itemWeekStart.toLocaleDateString("en-US", { month: "short" })}`}</Text>
         )}
         {itemWeekStart.getDate() <= 7 && itemWeekStart.getMonth() == 0 && (
           <Text
-            style={[styles.monthLabel, { color: theme.colors.onSurfaceVariant }]}
+            style={[styles.monthLabel, { color: theme.onSurfaceVariant }]}
           >{`${itemWeekStart.toLocaleDateString("en-US", { year: "numeric" })}`}</Text>
         )}
       </View>
       {dayValues.map(({ day, hasData, hasFilteredData, value, isWeekend }, dayIdx) => {
         const isToday = cmpDateList(dateToDateList(today), day) === 0;
-        const bgColor = hasData ? dayBackground : isWeekend ?
-          "#888888" :
-          "#888888";
+        const bgColor = hasData ? dayBackground : isWeekend ? "#888888" : "#888888";
         return (
           <TouchableOpacity
             key={dayIdx}
@@ -117,12 +115,7 @@ const WeekColumnImpl: React.FC<WeekColumnProps> = ({
             activeOpacity={0.3}
           >
             {dayIdx == 0 && (
-              <Text
-                style={[
-                  styles.dayNumber,
-                  { color: theme.colors.outline, backgroundColor: theme.colors.background, zIndex: 10 },
-                ]}
-              >
+              <Text style={[styles.dayNumber, { color: theme.outline, backgroundColor: theme.background, zIndex: 10 }]}>
                 {day[2]}
               </Text>
             )}
@@ -134,22 +127,24 @@ const WeekColumnImpl: React.FC<WeekColumnProps> = ({
                 // opacity: hasFilteredData ? 1 : hasData ? (isWeekend ? 0.6 : 0.4) : isWeekend ? 0.5 : 0.3,
               }}
             >
-              <View style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: hasData ? dayBackground : "#888888",
-                opacity: hasFilteredData ? 1 : hasData ? (isWeekend ? 0.6 : 0.4) : isWeekend ? 0.5 : 0.3,
-                borderRadius: 8,
-                alignItems: "center",
-                justifyContent: "center",
-                // borderWidth: 1,
-              }}>
+              <View
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: hasData ? dayBackground : "#888888",
+                  opacity: hasFilteredData ? 1 : hasData ? (isWeekend ? 0.6 : 0.4) : isWeekend ? 0.5 : 0.3,
+                  borderRadius: 8,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  // borderWidth: 1,
+                }}
+              >
                 {hasFilteredData && (
                   <Text
-                    style={[styles.value, { color: theme.colors.background }]}
+                    style={[styles.value, { color: theme.background }]}
                     numberOfLines={1}
                     adjustsFontSizeToFit
                     minimumFontScale={0.5}
@@ -162,26 +157,30 @@ const WeekColumnImpl: React.FC<WeekColumnProps> = ({
                   </Text>
                 )}
               </View>
-              <View style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                borderRadius: 8,
-                borderColor: isToday ? theme.colors.primary : "transparent",
-                borderWidth: isToday ? 2 : 0,
-              }}>
-                <View style={{
+              <View
+                style={{
                   position: "absolute",
                   top: 0,
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  borderRadius: 6,
-                  borderColor: isToday ? theme.colors.background : "transparent",
-                  borderWidth: isToday ? 1.5 : 0,
-                }} />
+                  borderRadius: 8,
+                  borderColor: isToday ? theme.primary : "transparent",
+                  borderWidth: isToday ? 2 : 0,
+                }}
+              >
+                <View
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    borderRadius: 6,
+                    borderColor: isToday ? theme.background : "transparent",
+                    borderWidth: isToday ? 1.5 : 0,
+                  }}
+                />
               </View>
             </View>
           </TouchableOpacity>
@@ -233,7 +232,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, 
   );
   const calendar = activity.calendars[calendarIndex];
   const theme = useAppTheme(activity.color);
-  const dayBackground = theme.colors.primary;
+  const dayBackground = theme.primary;
   const weekStart = useStore((state: any) => state.weekStart);
   const dimensions = useWindowDimensions();
 

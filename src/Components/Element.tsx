@@ -2,16 +2,16 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { View, Pressable, StyleProp, StyleSheet, Switch as RNSwitch, Text, ViewStyle } from "react-native";
 import { useAppTheme } from "../Model/Theme";
 
-// MD3 theme colors are "rgba(r, g, b, 1)" strings; restate one with a different alpha.
-const withAlpha = (color: string, alpha: number): string => {
-  const match = color.match(/^rgba?\(([^,]+),([^,]+),([^,)]+)/);
-  if (!match) return color;
-  return `rgba(${match[1].trim()}, ${match[2].trim()}, ${match[3].trim()}, ${alpha})`;
-};
+// Theme colors are "#RRGGBB"; restate one with an alpha channel appended.
+const withAlpha = (color: string, alpha: number): string =>
+  color.slice(0, 7) +
+  Math.round(alpha * 255)
+    .toString(16)
+    .padStart(2, "0");
 
 export const Divider = ({ style }: { style?: StyleProp<ViewStyle> }) => {
   const theme = useAppTheme();
-  return <View style={[{ height: StyleSheet.hairlineWidth, backgroundColor: theme.colors.outlineVariant }, style]} />;
+  return <View style={[{ height: StyleSheet.hairlineWidth, backgroundColor: theme.outlineVariant }, style]} />;
 };
 
 export const Switch = ({ value, onValueChange }: { value: boolean; onValueChange: (value: boolean) => void }) => {
@@ -20,10 +20,10 @@ export const Switch = ({ value, onValueChange }: { value: boolean; onValueChange
     <RNSwitch
       value={value}
       onValueChange={onValueChange}
-      thumbColor={value ? theme.colors.primary : theme.dark ? "#bdbdbd" : "#fafafa"}
+      thumbColor={value ? theme.primary : theme.variant === "dark" ? "#bdbdbd" : "#fafafa"}
       trackColor={{
-        true: withAlpha(theme.colors.primary, 0.4),
-        false: theme.dark ? "#616161" : "rgb(178, 175, 177)",
+        true: withAlpha(theme.primary, 0.4),
+        false: theme.variant === "dark" ? "#616161" : "rgb(178, 175, 177)",
       }}
     />
   );
@@ -41,7 +41,7 @@ export const RadioButton = ({
   style?: StyleProp<ViewStyle>;
 }) => {
   const theme = useAppTheme();
-  const color = selected ? theme.colors.primary : theme.colors.onSurfaceVariant;
+  const color = selected ? theme.primary : theme.onSurfaceVariant;
   return (
     <Pressable
       onPress={onPress}
@@ -59,9 +59,7 @@ export const RadioButton = ({
         style,
       ]}
     >
-      <Text style={{ flexGrow: 1, flexShrink: 1, fontSize: 16, lineHeight: 24, color: theme.colors.onSurface }}>
-        {label}
-      </Text>
+      <Text style={{ flexGrow: 1, flexShrink: 1, fontSize: 16, lineHeight: 24, color: theme.onSurface }}>{label}</Text>
       <View
         style={{
           width: 20,
@@ -126,9 +124,9 @@ export const ColorButton = ({ color, onPress }: { color: number; onPress: () => 
           width: 40,
           height: 40,
           borderRadius: 12,
-          backgroundColor: theme.colors.primary,
+          backgroundColor: theme.primary,
           borderWidth: 1,
-          borderColor: theme.colors.outline,
+          borderColor: theme.outline,
         }}
       />
     </Button>

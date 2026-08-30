@@ -1,7 +1,6 @@
 import { Text, StyleSheet, View } from "react-native";
 import { useState } from "react";
-import { useAppTheme } from "../Model/Theme";
-import { MD3Theme } from "react-native-paper";
+import { useAppTheme, Theme } from "../Model/Theme";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { Svg, Path } from "react-native-svg";
 import { HintType, hintDependencyChains } from "../Model/StoreTypes";
@@ -102,11 +101,11 @@ const Hint = ({ hint, inline }: { hint: HintType; inline?: boolean }) => {
               viewBox={`0 0 ${width} ${height + TOP}`}
             >
               {/* <Rect x="0" y={TOP} width={width} height={height} rx="10" ry="10"
-            stroke={theme.colors.onSurface} strokeWidth="1" fill={theme.colors.primary} /> */}
+            stroke={theme.onSurface} strokeWidth="1" fill={theme.primary} /> */}
 
               <Path
                 d={`M0,${TOP + R} A${R},${R} 0 0 1 ${R},${TOP} L${W * arrowPos + ARROW_LIM},${TOP} L${W * arrowPos + ARROW_LIM + ARROW_W},${0} L${W * arrowPos + ARROW_LIM + ARROW_W * 2},${TOP} L${width - R},${TOP} A${R},${R} 0 0 1 ${width},${TOP + R} L${width},${height + TOP - R} A${R},${R} 0 0 1 ${width - R},${height + TOP} L${R},${height + TOP} A${R},${R} 0 0 1 0,${height + TOP - R} Z`}
-                fill={theme.colors.primary}
+                fill={theme.primary}
                 strokeWidth={1}
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -126,7 +125,7 @@ const Hint = ({ hint, inline }: { hint: HintType; inline?: boolean }) => {
                 dismissHint(hint);
               }}
             >
-              <Text style={{ color: theme.colors.surface }}>Dismiss</Text>
+              <Text style={{ color: theme.surface }}>Dismiss</Text>
             </Button>
           </View>
         </Animated.View>
@@ -135,7 +134,7 @@ const Hint = ({ hint, inline }: { hint: HintType; inline?: boolean }) => {
   );
 };
 
-const getStyles = (theme: MD3Theme, insets: EdgeInsets) =>
+const getStyles = (theme: Theme, insets: EdgeInsets) =>
   StyleSheet.create({
     hintContainer: {
       padding: 5,
@@ -147,7 +146,7 @@ const getStyles = (theme: MD3Theme, insets: EdgeInsets) =>
       zIndex: 1000,
     },
     hintText: {
-      color: theme.colors.surface,
+      color: theme.surface,
     },
   });
 
