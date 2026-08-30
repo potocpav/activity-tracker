@@ -532,7 +532,7 @@ const getStyles = (theme: any, wideDisplay: boolean, dimensions: any) =>
     },
     container: {
       flex: 1,
-      backgroundColor: theme.colors.elevation.background,
+      backgroundColor: theme.colors.background,
       paddingTop: 2,
     },
     listContainer: {

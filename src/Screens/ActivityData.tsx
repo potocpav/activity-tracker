@@ -640,7 +640,7 @@ const getStyles = (theme: any) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.colors.elevation.background,
+      backgroundColor: theme.colors.background,
     },
     sectionHeader: {
       padding: 5,

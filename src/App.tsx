@@ -9,7 +9,7 @@ import EditDataPoint from "./Screens/EditDataPoint";
 import BleScaleInput from "./Screens/BleScaleInput";
 import EditActivity from "./Screens/EditActivity";
 import ThemeSelectionDialog from "./Screens/ThemeSelectionDialog";
-import { PaperProvider, MD3LightTheme, MD3DarkTheme, adaptNavigationTheme } from "react-native-paper";
+import { adaptNavigationTheme } from "react-native-paper";
 import ActivityData from "./Screens/ActivityData";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useAppTheme, useThemeVariant } from "./Model/Theme";
@@ -29,40 +29,12 @@ const { LightTheme, DarkTheme: PaperDarkTheme } = adaptNavigationTheme({
   reactNavigationDark: DarkTheme,
 });
 
-const MD3BlackTheme = {
-  ...MD3DarkTheme,
-  colors: {
-    ...MD3DarkTheme.colors,
-    background: "#000000",
-    surface: "#000000",
-    surfaceVariant: "#000000",
-    elevation: {
-      ...MD3DarkTheme.colors.elevation,
-      level1: "#000000",
-      level2: "#222222",
-    },
-  },
-};
-
 const App = () => {
-  const themeVariant = useThemeVariant();
-  const blackBackground = useStore((state: any) => state.blackBackground);
-  Appearance.setColorScheme(themeVariant);
-
-  return (
-    <SafeAreaProvider>
-      <PaperProvider theme={themeVariant == "light" ? MD3LightTheme : blackBackground ? MD3BlackTheme : MD3DarkTheme}>
-        <SubApp />
-      </PaperProvider>
-    </SafeAreaProvider>
-  );
-};
-
-const SubApp = () => {
   const Stack = createNativeStackNavigator();
   const theme = useAppTheme();
   const themeVariant = useThemeVariant();
   const blackBackground = useStore((state: any) => state.blackBackground);
+  Appearance.setColorScheme(themeVariant);
 
   // Add missing fonts property to fix the TypeScript error
   const navigationTheme =
@@ -120,48 +92,50 @@ const SubApp = () => {
         };
 
   return (
-    <GestureHandlerRootView>
-      <View style={[styles.container]}>
-        <NavigationContainer theme={navigationTheme}>
-          <Stack.Navigator
-            screenOptions={
-              themeVariant == "dark" && blackBackground
-                ? {
-                    headerStyle: {
-                      backgroundColor: theme.colors.surface,
-                    },
-                  }
-                : themeVariant == "light"
-                  ? { headerStyle: { backgroundColor: theme.colors.surfaceVariant } }
-                  : {}
-            }
-          >
-            <Stack.Group>
-              <Stack.Screen name="Activities" component={Activities} options={{ title: "Activities" }} />
-              <Stack.Screen name="Activity" component={Activity} />
-              <Stack.Screen name="ActivityData" component={ActivityData} options={{ title: "Data Points" }} />
-              <Stack.Screen name="Settings" component={Settings} options={{ title: "Settings" }} />
-            </Stack.Group>
-            <Stack.Group screenOptions={{ presentation: "modal" }}>
-              <Stack.Screen name="EditDataPoint" component={EditDataPoint} options={{ title: "Edit Data Point" }} />
-              <Stack.Screen name="BleScaleInput" component={BleScaleInput} options={{ title: "Progressor" }} />
-              <Stack.Screen
-                name="BleConnectionModal"
-                component={BleConnectionModal}
-                options={{ title: "Connect Device" }}
-              />
-              <Stack.Screen name="EditActivity" component={EditActivity} options={{ title: "Edit Activity" }} />
-              <Stack.Screen
-                name="ThemeSelection"
-                component={ThemeSelectionDialog}
-                options={{ title: "Select Theme" }}
-              />
-              <Stack.Screen name="EditStat" component={EditStat} options={{ title: "Edit Stat" }} />
-            </Stack.Group>
-          </Stack.Navigator>
-        </NavigationContainer>
-      </View>
-    </GestureHandlerRootView>
+    <SafeAreaProvider>
+      <GestureHandlerRootView>
+        <View style={[styles.container]}>
+          <NavigationContainer theme={navigationTheme}>
+            <Stack.Navigator
+              screenOptions={
+                themeVariant == "dark" && blackBackground
+                  ? {
+                      headerStyle: {
+                        backgroundColor: theme.colors.surface,
+                      },
+                    }
+                  : themeVariant == "light"
+                    ? { headerStyle: { backgroundColor: theme.colors.surfaceVariant } }
+                    : {}
+              }
+            >
+              <Stack.Group>
+                <Stack.Screen name="Activities" component={Activities} options={{ title: "Activities" }} />
+                <Stack.Screen name="Activity" component={Activity} />
+                <Stack.Screen name="ActivityData" component={ActivityData} options={{ title: "Data Points" }} />
+                <Stack.Screen name="Settings" component={Settings} options={{ title: "Settings" }} />
+              </Stack.Group>
+              <Stack.Group screenOptions={{ presentation: "modal" }}>
+                <Stack.Screen name="EditDataPoint" component={EditDataPoint} options={{ title: "Edit Data Point" }} />
+                <Stack.Screen name="BleScaleInput" component={BleScaleInput} options={{ title: "Progressor" }} />
+                <Stack.Screen
+                  name="BleConnectionModal"
+                  component={BleConnectionModal}
+                  options={{ title: "Connect Device" }}
+                />
+                <Stack.Screen name="EditActivity" component={EditActivity} options={{ title: "Edit Activity" }} />
+                <Stack.Screen
+                  name="ThemeSelection"
+                  component={ThemeSelectionDialog}
+                  options={{ title: "Select Theme" }}
+                />
+                <Stack.Screen name="EditStat" component={EditStat} options={{ title: "Edit Stat" }} />
+              </Stack.Group>
+            </Stack.Navigator>
+          </NavigationContainer>
+        </View>
+      </GestureHandlerRootView>
+    </SafeAreaProvider>
   );
 };
 
