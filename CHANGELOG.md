@@ -40,10 +40,11 @@
 
 # Changelog
 
-### 3.6.0
+### 3.6.0 (upcoming)
 
-- Improve taking long notes to enable the diary use-case
-- Improve dialogs and keyboard avoidance
+- Removed the react-native-paper dependency
+- Improved taking long notes to enable the diary use-case
+- Improved dialogs and keyboard avoidance
 
 ### 3.5.0
 

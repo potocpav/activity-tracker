@@ -1,5 +1,4 @@
 import { View, ScrollView, Pressable, StyleSheet } from "react-native";
-import { List } from "react-native-paper";
 import { ClimbingGrade, DistanceUnit, SubUnit, SubUnitType, TimeUnit, WeightUnit } from "../Model/StoreTypes";
 import { useState } from "react";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
@@ -22,13 +21,14 @@ import FullScreenDialog from "./FullScreenDialog";
 import { CheckButton, MinusIcon, PlusIcon, Button } from "./Element";
 import TextField from "./TextField";
 import SegmentedButtons from "./SegmentedButtons";
+import { ListAccordion, ListItem, IconName } from "./List";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 
 const subUnitProps = (
   subUnitType: SubUnitType,
   allUnits: SubUnit[],
   setAllUnits: (units: SubUnit[]) => void,
-): { title: string; icon: string; description: string | null; children: React.ReactNode | null } => {
+): { title: string; icon: IconName; description: string | null; children: React.ReactNode | null } => {
   switch (subUnitType) {
     case "count":
       return {
@@ -263,25 +263,25 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null; onChange:
               const { title, icon, description, children } = subUnitProps(subUnit.type, allUnits, setAllUnits);
               if (children) {
                 return (
-                  <List.Accordion
+                  <ListAccordion
                     key={subUnit.type}
                     title={title}
-                    left={() => <List.Icon icon={icon} />}
+                    icon={icon}
                     description={description}
                     expanded={chosenUnitType === subUnit.type}
                     onPress={() => setChosenUnitType(chosenUnitType === subUnit.type ? null : subUnit.type)}
                   >
                     {children}
-                  </List.Accordion>
+                  </ListAccordion>
                 );
               } else {
                 return (
-                  <List.Item
+                  <ListItem
                     key={subUnit.type}
                     title={title}
-                    titleStyle={chosenUnitType === subUnit.type ? styles.chosenUnitTitle : styles.unitTitle}
+                    titleColor={chosenUnitType === subUnit.type ? theme.colors.primary : theme.colors.onSurface}
                     onPress={() => setChosenUnitType(subUnit.type)}
-                    left={() => <List.Icon icon={icon} />}
+                    icon={icon}
                     description={description}
                   />
                 );
@@ -523,11 +523,5 @@ const getStyles = (theme: MD3Theme) =>
     unitList: {
       gap: 10,
       padding: 10,
-    },
-    unitTitle: {
-      color: theme.colors.onSurface,
-    },
-    chosenUnitTitle: {
-      color: theme.colors.primary,
     },
   });

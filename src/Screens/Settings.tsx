@@ -1,14 +1,14 @@
 import { Fragment } from "react";
 import { ScrollView, ToastAndroid, Alert, Linking } from "react-native";
-import { List } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import useStore, { partialize } from "../Model/Store";
 import { version, migrate } from "../Model/Migrations";
 import { File, Paths, EncodingType } from "expo-file-system";
 import * as DocumentPicker from "expo-document-picker";
 import * as Sharing from "expo-sharing";
-import { useAppTheme, useThemeVariant } from "../Model/Theme";
+import { useThemeVariant } from "../Model/Theme";
 import { Switch } from "../Components/Element";
+import { ListSection, ListItem, ListIcon } from "../Components/List";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { allHints, ActivityType, DateList, Unit, ActivityTab, stripUuids, generateUuids } from "../Model/StoreTypes";
 import { cmpDateList } from "../Model/Activity";
@@ -180,101 +180,95 @@ const Settings = () => {
       <SystemBars style={themeVariant == "light" ? "dark" : "light"} />
       <ScrollView showsVerticalScrollIndicator={false}>
         <SafeAreaView style={{}} edges={["left", "right", "bottom"]}>
-          <List.Section>
-            <List.Subheader>Interface</List.Subheader>
-            <List.Item
+          <ListSection title="Interface">
+            <ListItem
               title="Theme"
               description={`Current theme: ${themeState === "system" ? "System" : themeState === "light" ? "Light" : "Dark"}`}
               onPress={openThemeSelection}
-              left={(props) => <List.Icon {...props} icon="theme-light-dark" />}
-              right={(props) => <List.Icon {...props} icon="chevron-right" />}
+              icon="theme-light-dark"
+              right={<ListIcon name="chevron-right" />}
             />
-            <List.Item
+            <ListItem
               title="Use pure black in dark theme"
               description="Replaces gray backgrounds with pure black in dark theme. Reduces battery usage in phones with AMOLED screens."
               onPress={() => setBlackBackground(!blackBackground)}
-              left={(props) => <List.Icon {...props} icon="brightness-6" />}
-              right={() => (
-                <Switch value={blackBackground} onValueChange={() => setBlackBackground(!blackBackground)} />
-              )}
+              icon="brightness-6"
+              right={<Switch value={blackBackground} onValueChange={() => setBlackBackground(!blackBackground)} />}
             />
-            <List.Item
+            <ListItem
               title="First day of the week"
               description={weekStart == "sunday" ? "Sunday" : "Monday"}
               onPress={() => setWeekStart(weekStart == "sunday" ? "monday" : "sunday")}
-              left={(props) => <List.Icon {...props} icon="calendar" />}
+              icon="calendar"
             />
-          </List.Section>
+          </ListSection>
 
-          <List.Section>
-            <List.Subheader>Data</List.Subheader>
-            <List.Item
+          <ListSection title="Data">
+            <ListItem
               title="Data Export"
               description="Generate a backup file that contains all your data. This file can be imported back."
-              left={(props) => <List.Icon {...props} icon="upload" />}
+              icon="upload"
               onPress={exportData}
             />
-            <List.Item
+            <ListItem
               title="Data Import"
               description="Import data from a backup file. This will overwrite all existing data."
-              left={(props) => <List.Icon {...props} icon="download" />}
+              icon="download"
               onPress={importData}
             />
-            <List.Item
+            <ListItem
               title="Import from Loop Habit Tracker"
               description="Import habits from a Loop Habit Tracker backup file."
-              left={(props) => <List.Icon {...props} icon="refresh" />}
+              icon="refresh"
               onPress={importLoopHabitTrackerData}
             />
-          </List.Section>
+          </ListSection>
 
-          <List.Section>
-            <List.Subheader>Help</List.Subheader>
-            <List.Item
+          <ListSection title="Help">
+            <ListItem
               title="Show hints"
               description="Show hints to help you use the app."
               onPress={() => setShowHints(!showHints)}
-              left={(props) => <List.Icon {...props} icon="lightbulb" />}
-              right={() => <Switch value={showHints} onValueChange={() => setShowHints(!showHints)} />}
+              icon="lightbulb"
+              right={<Switch value={showHints} onValueChange={() => setShowHints(!showHints)} />}
             />
-            <List.Item
+            <ListItem
               title="Activate all hints"
               description="Re-activate dismissed hints."
               onPress={activateAllHints}
-              left={(props) => <List.Icon {...props} icon="lightbulb-group" />}
-              right={(props) => (activeHints.length === allHints.length ? <List.Icon {...props} icon="check" /> : null)}
+              icon="lightbulb-group"
+              right={activeHints.length === allHints.length ? <ListIcon name="check" /> : null}
             />
-          </List.Section>
+          </ListSection>
 
-          <List.Section>
-            <List.Subheader>Links</List.Subheader>
-            <List.Item
+          <ListSection title="Links">
+            <ListItem
               title="FAQ"
-              left={(props) => <List.Icon {...props} icon="help-circle" />}
-              right={(props) => <List.Icon {...props} icon="chevron-right" />}
+              icon="help-circle"
+              right={<ListIcon name="chevron-right" />}
               onPress={() => Linking.openURL("https://potocpav.github.io/activity-tracker/faq")}
             />
-            <List.Item
+            <ListItem
               title="Privacy Policy"
-              left={(props) => <List.Icon {...props} icon="shield-lock" />}
-              right={(props) => <List.Icon {...props} icon="chevron-right" />}
+              icon="shield-lock"
+              right={<ListIcon name="chevron-right" />}
               onPress={() => Linking.openURL("https://potocpav.github.io/activity-tracker/privacy")}
             />
-            <List.Item
+            <ListItem
               title="Google Play"
-              left={(props) => <List.Icon {...props} icon="google-play" />}
-              right={(props) => <List.Icon {...props} icon="chevron-right" />}
+              icon="google-play"
+              right={<ListIcon name="chevron-right" />}
               onPress={() =>
                 Linking.openURL("https://play.google.com/store/apps/details?id=com.pavelpotocek.activitytracker")
               }
             />
-            <List.Item
+            <ListItem
               title="Visit us on GitHub"
-              left={(props) => <List.Icon {...props} icon="github" />}
-              right={(props) => <List.Icon {...props} icon="chevron-right" />}
+              icon="github"
+              right={<ListIcon name="chevron-right" />}
               onPress={() => Linking.openURL("https://github.com/potocpav/activity-tracker")}
             />
-          </List.Section>
+          </ListSection>
         </SafeAreaView>
       </ScrollView>
     </Fragment>

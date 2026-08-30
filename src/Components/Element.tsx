@@ -47,15 +47,14 @@ export const RadioButton = ({
       onPress={onPress}
       accessibilityRole="radio"
       accessibilityState={{ checked: selected }}
-      android_ripple={{ color: withAlpha(theme.colors.primary, 0.32) }}
-      style={({ pressed }) => [
+      android_ripple={{ foreground: true }}
+      style={[
         {
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "space-between",
           paddingVertical: 8,
           paddingHorizontal: 16,
-          backgroundColor: pressed ? "rgba(128, 128, 128, 0.2)" : undefined,
         },
         style,
       ]}
@@ -108,28 +107,13 @@ export const Button = ({
         alignItems: "center",
         justifyContent: "center",
         gap: 8,
+        // keeps the ripple inside the rounded shape
+        overflow: "hidden",
       },
       style,
     ]}
   >
-    {({ pressed }) => (
-      <>
-        {pressed && (
-          <View
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              borderRadius: 20,
-              backgroundColor: "rgba(128, 128, 128, 0.2)",
-            }}
-          />
-        )}
-        {children}
-      </>
-    )}
+    {children}
   </Pressable>
 );
 

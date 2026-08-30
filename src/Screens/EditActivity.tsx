@@ -670,7 +670,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
                     setTagDialogNameInput("");
                     setTagDialogColorInput(Math.floor(Math.random() * palette.length));
                   }}
-                  android_ripple={{ color: theme.colors.surfaceVariant }}
+                  android_ripple={{ foreground: true }}
                   style={[
                     styles.chip,
                     {
