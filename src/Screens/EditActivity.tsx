@@ -1,9 +1,8 @@
 import React, { useState, FC, useRef } from "react";
-import { View, Text, StyleSheet, ScrollView, Alert, KeyboardAvoidingView, TextInput } from "react-native";
+import { View, Text, StyleSheet, ScrollView, Alert, KeyboardAvoidingView, Pressable, TextInput } from "react-native";
 import { MD3Theme } from "react-native-paper";
 import Menu from "../Components/Menu";
 import { ActivityType, SetTag, Tag, SubUnit, Unit, WeightUnit, State, ActivityPath } from "../Model/StoreTypes";
-import { Chip } from "react-native-paper";
 import TextField from "../Components/TextField";
 import SegmentedButtons from "../Components/SegmentedButtons";
 import { stringToNumber } from "../Model/Unit";
@@ -638,24 +637,25 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
                 horizontal={true}
                 keyExtractor={(item: SetTag) => item.name}
                 renderItem={({ item, drag, isActive }: { item: SetTag; drag: () => void; isActive: boolean }) => (
-                  <Chip
+                  <Pressable
                     onPress={() => {
                       setTagDialogVisible(true);
                       setTagDialogName(item.name);
                       setTagDialogNameInput(item.name);
                       setTagDialogColorInput(item.color);
                     }}
-                    textStyle={{ color: theme.colors.surface }}
-                    style={{
-                      backgroundColor: palette[item.color],
-                      marginRight: 8,
-                      marginBottom: 8,
-                      opacity: isActive ? 0.7 : 1,
-                    }}
                     onLongPress={drag}
+                    android_ripple={{ color: "rgba(255, 255, 255, 0.3)" }}
+                    style={[
+                      styles.chip,
+                      {
+                        backgroundColor: palette[item.color],
+                        opacity: isActive ? 0.7 : 1,
+                      },
+                    ]}
                   >
-                    {item.name}
-                  </Chip>
+                    <Text style={[styles.chipLabel, { color: theme.colors.surface }]}>{item.name}</Text>
+                  </Pressable>
                 )}
                 onDragEnd={(data) => {
                   setTagState(data.data);
@@ -663,21 +663,25 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
                 contentContainerStyle={{ flexDirection: "row" }}
               />
               <View style={{ flexDirection: "row" }}>
-                <Chip
+                <Pressable
                   onPress={() => {
                     setTagDialogVisible(true);
                     setTagDialogName("");
                     setTagDialogNameInput("");
                     setTagDialogColorInput(Math.floor(Math.random() * palette.length));
                   }}
-                  mode="outlined"
-                  style={{
-                    marginRight: 8,
-                    marginBottom: 8,
-                  }}
+                  android_ripple={{ color: theme.colors.surfaceVariant }}
+                  style={[
+                    styles.chip,
+                    {
+                      backgroundColor: theme.colors.surface,
+                      borderWidth: 1,
+                      borderColor: theme.colors.outline,
+                    },
+                  ]}
                 >
-                  +
-                </Chip>
+                  <Text style={[styles.chipLabel, { color: theme.colors.onSurfaceVariant }]}>+</Text>
+                </Pressable>
               </View>
             </View>
 
@@ -786,6 +790,20 @@ const getStyles = (theme: MD3Theme) =>
   StyleSheet.create({
     container: {
       flex: 1,
+    },
+    chip: {
+      borderRadius: 8,
+      paddingHorizontal: 16,
+      paddingVertical: 6,
+      marginRight: 8,
+      marginBottom: 8,
+      overflow: "hidden",
+    },
+    chipLabel: {
+      fontSize: 14,
+      lineHeight: 20,
+      fontWeight: "500",
+      letterSpacing: 0.1,
     },
     content: {
       flex: 1,
