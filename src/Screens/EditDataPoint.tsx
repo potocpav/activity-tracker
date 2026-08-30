@@ -316,7 +316,6 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
                     opacity: pressed ? 0.7 : 1,
                   },
                 ]}
-                // android_ripple={{ color: theme.colors.onSurface, foreground: false }}
               >
                 <TextField
                   label="Date"
@@ -331,6 +330,16 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
             </View>
           </InputWrapper>
           
+          <InputWrapper>
+            <TextInput
+              placeholder="Note (optional)"
+              value={inputNote}
+              onChangeText={setInputNote}
+              multiline
+              numberOfLines={Infinity}
+              style={styles.noteInput}
+            />
+          </InputWrapper>
 
           {activity.tags.length > 0 && (
             <View style={{ gap: 5 }}>
