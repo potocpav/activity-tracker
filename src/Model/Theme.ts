@@ -2,6 +2,13 @@ import useStore from "./Store";
 import { darkPalette, lightPalette } from "./Color";
 import { useColorScheme, useWindowDimensions } from "react-native";
 
+// Restate a "#RRGGBB" color with an alpha channel appended.
+export const withAlpha = (color: string, alpha: number): string =>
+  color.slice(0, 7) +
+  Math.round(alpha * 255)
+    .toString(16)
+    .padStart(2, "0");
+
 // The app's colors, flat: a theme holds nothing but colors and the variant it belongs
 // to, so there is nothing to nest them under. The values are the Material Design 3
 // baseline palette, previously reached through react-native-paper's MD3 themes.
@@ -10,8 +17,6 @@ export type Theme = {
   primary: string;
   onPrimary: string;
   secondary: string;
-  secondaryContainer: string;
-  onSecondaryContainer: string;
   background: string;
   surface: string;
   surfaceVariant: string;
@@ -38,8 +43,6 @@ export const lightTheme: Theme = {
   primary: "#6750A4",
   onPrimary: "#FFFFFF",
   secondary: "#625B71",
-  secondaryContainer: "#E8DEF8",
-  onSecondaryContainer: "#1D192B",
   background: "#FFFBFE",
   surface: "#FFFBFE",
   surfaceVariant: "#E7E0EC",
@@ -61,8 +64,6 @@ export const darkTheme: Theme = {
   primary: "#D0BCFF",
   onPrimary: "#381E72",
   secondary: "#CCC2DC",
-  secondaryContainer: "#4A4458",
-  onSecondaryContainer: "#E8DEF8",
   background: "#1C1B1F",
   surface: "#1C1B1F",
   surfaceVariant: "#49454F",

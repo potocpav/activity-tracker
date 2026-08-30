@@ -486,6 +486,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
         ref={(el) => (multiUnitInput[0].unitRef = el)}
       >
         <UnitEditor
+          activityColor={selectedColor}
           unit={multiUnitInput[0].unit}
           onChange={(unit: SubUnit | null) => {
             setMultiUnitInput([{ ...multiUnitInput[0], unit: unit }]);
@@ -533,6 +534,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
               containerStyle={{ flex: 1 }}
             >
               <UnitEditor
+                activityColor={selectedColor}
                 unit={val.unit}
                 onChange={(unit: SubUnit | null) => {
                   // Update unit

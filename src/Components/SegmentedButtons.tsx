@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useAppTheme, Theme } from "../Model/Theme";
 
 // Material 3 style segmented buttons: one connected row of Pressables, the selected
-// segment filled with secondaryContainer.
+// segment picked out by a neutral raised fill.
 //
 // Selection is optional: pass value/onValueChange for a picker, or give each button its
 // own onPress to use the row as plain connected actions with nothing ever selected.
@@ -29,11 +29,7 @@ export const SegmentedButtons = ({ value, onValueChange, buttons }: SegmentedBut
     <View style={styles.row}>
       {buttons.map((button, index) => {
         const selected = button.value === value;
-        const contentColor = button.disabled
-          ? theme.onSurfaceDisabled
-          : selected
-            ? theme.onSecondaryContainer
-            : theme.onSurface;
+        const contentColor = button.disabled ? theme.onSurfaceDisabled : theme.onSurface;
 
         return (
           <Pressable
@@ -80,7 +76,7 @@ const getStyles = (theme: Theme) =>
       borderLeftColor: theme.outline,
     },
     selectedSegment: {
-      backgroundColor: theme.secondaryContainer,
+      backgroundColor: theme.elevation2,
     },
     label: {
       fontSize: 14,

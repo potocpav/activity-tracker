@@ -1,13 +1,6 @@
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { View, Pressable, StyleProp, StyleSheet, Switch as RNSwitch, Text, ViewStyle } from "react-native";
-import { useAppTheme } from "../Model/Theme";
-
-// Theme colors are "#RRGGBB"; restate one with an alpha channel appended.
-const withAlpha = (color: string, alpha: number): string =>
-  color.slice(0, 7) +
-  Math.round(alpha * 255)
-    .toString(16)
-    .padStart(2, "0");
+import { useAppTheme, withAlpha } from "../Model/Theme";
 
 export const Divider = ({ style }: { style?: StyleProp<ViewStyle> }) => {
   const theme = useAppTheme();

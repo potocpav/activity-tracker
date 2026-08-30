@@ -201,9 +201,17 @@ const subUnitProps = (
   }
 };
 
-export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null; onChange: (unit: SubUnit | null) => void }) => {
+export const UnitEditor = ({
+  unit,
+  activityColor,
+  onChange,
+}: {
+  unit: SubUnit | null;
+  activityColor?: number;
+  onChange: (unit: SubUnit | null) => void;
+}) => {
   const [unitDialogVisible, setUnitDialogVisible] = useState(false);
-  const theme = useAppTheme();
+  const theme = useAppTheme(activityColor);
   const styles = getStyles(theme);
 
   const [chosenUnitType, setChosenUnitType] = useState<SubUnitType | null>(unit?.type ?? null);
@@ -244,6 +252,7 @@ export const UnitEditor = ({ unit, onChange }: { unit: SubUnit | null; onChange:
       <FullScreenDialog
         visible={unitDialogVisible}
         title="Select Unit"
+        activityColor={activityColor}
         onDismiss={() => setUnitDialogVisible(false)}
         headerRight={
           <CheckButton
