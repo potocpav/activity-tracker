@@ -66,8 +66,7 @@ const getStyles = (theme: MD3Theme) =>
       paddingHorizontal: 10,
       paddingVertical: 8,
     },
-    readOnlyInput: {
-    },
+    readOnlyInput: {},
     focusedInput: {
       borderColor: theme.colors.primary,
       borderWidth: 2,

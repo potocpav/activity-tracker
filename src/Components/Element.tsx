@@ -21,14 +21,17 @@ export const Button = ({
     onPress={onPress}
     onLongPress={onLongPress}
     android_ripple={{ foreground: true }}
-    style={[{
-      padding: 10,
-      borderRadius: 20,
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 8,
-    }, style]}
+    style={[
+      {
+        padding: 10,
+        borderRadius: 20,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 8,
+      },
+      style,
+    ]}
   >
     {({ pressed }) => (
       <>

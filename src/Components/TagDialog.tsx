@@ -42,12 +42,17 @@ const TagDialog: React.FC<TagDialogProps> = ({
 
   return (
     <SmallDialog visible={visible} onDismiss={onDismiss} theme={theme}>
-        <InputWrapper error={nameError} ref={nameInputRef}>
-          <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 14 }}>
-            <TextField label="Tag Name" defaultValue={nameInput} onChangeText={onChangeName} containerStyle={{ flex: 1 }} />
-            <ColorButton color={color} onPress={() => setColorPickerVisible(true)} />
-          </View>
-        </InputWrapper>
+      <InputWrapper error={nameError} ref={nameInputRef}>
+        <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 14 }}>
+          <TextField
+            label="Tag Name"
+            defaultValue={nameInput}
+            onChangeText={onChangeName}
+            containerStyle={{ flex: 1 }}
+          />
+          <ColorButton color={color} onPress={() => setColorPickerVisible(true)} />
+        </View>
+      </InputWrapper>
       <ColorPicker
         visible={colorPickerVisible}
         palette={palette}

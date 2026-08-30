@@ -1,0 +1,82 @@
+import React from "react";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { MD3Theme } from "react-native-paper/lib/typescript/types";
+import { useAppTheme } from "../Model/Theme";
+
+// Material 3 style segmented buttons: one connected row of Pressables, the selected
+// segment filled with secondaryContainer.
+
+type SegmentedButtonsProps = {
+  value: string;
+  onValueChange: (value: string) => void;
+  buttons: {
+    value: string;
+    label: string;
+    icon?: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
+  }[];
+};
+
+export const SegmentedButtons = ({ value, onValueChange, buttons }: SegmentedButtonsProps) => {
+  const theme = useAppTheme();
+  const styles = getStyles(theme);
+
+  return (
+    <View style={styles.row}>
+      {buttons.map((button, index) => {
+        const selected = button.value === value;
+        const contentColor = selected ? theme.colors.onSecondaryContainer : theme.colors.onSurface;
+
+        return (
+          <Pressable
+            key={button.value}
+            onPress={() => onValueChange(button.value)}
+            accessibilityRole="button"
+            accessibilityState={{ selected }}
+            android_ripple={{ foreground: true }}
+            style={[styles.segment, index > 0 && styles.dividedSegment, selected && styles.selectedSegment]}
+          >
+            {button.icon !== undefined && <MaterialCommunityIcons name={button.icon} size={18} color={contentColor} />}
+            <Text style={[styles.label, { color: contentColor }]} numberOfLines={1}>
+              {button.label}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+};
+
+const getStyles = (theme: MD3Theme) =>
+  StyleSheet.create({
+    row: {
+      flexDirection: "row",
+      borderWidth: 1,
+      borderColor: theme.colors.outline,
+      borderRadius: 20,
+      overflow: "hidden",
+    },
+    segment: {
+      flex: 1,
+      // plus the row's 1px border top and bottom, for the 40dp Material 3 height
+      minHeight: 38,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+      paddingHorizontal: 8,
+    },
+    dividedSegment: {
+      borderLeftWidth: 1,
+      borderLeftColor: theme.colors.outline,
+    },
+    selectedSegment: {
+      backgroundColor: theme.colors.secondaryContainer,
+    },
+    label: {
+      fontSize: 14,
+      fontWeight: "500",
+    },
+  });
+
+export default SegmentedButtons;

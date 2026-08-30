@@ -58,13 +58,13 @@ export const InputWrapper = ({ children, key, error, hint, containerStyle, ref }
 
   return (
     <Animated.View key={key} ref={animatedRef} style={[animatedStyle, containerStyle]}>
-        {children}
-        {hint && <Text style={{ fontSize: 12, opacity: 0.6 }}>{hint}</Text>}
-        {error && (
-          <Animated.View>
-            <Text style={{ fontSize: 12, color: theme.colors.error }}>{error}</Text>
-          </Animated.View>
-        )}
+      {children}
+      {hint && <Text style={{ fontSize: 12, opacity: 0.6 }}>{hint}</Text>}
+      {error && (
+        <Animated.View>
+          <Text style={{ fontSize: 12, color: theme.colors.error }}>{error}</Text>
+        </Animated.View>
+      )}
     </Animated.View>
   );
 };

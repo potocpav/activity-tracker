@@ -516,7 +516,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
               error={showErrors ? multiUnitInput[idx].nameError : null}
               ref={(el) => (multiUnitInput[idx].nameRef = el)}
               containerStyle={{ flex: 1 }}
-              >
+            >
               <TextField
                 label="Name"
                 value={val.name}
@@ -697,9 +697,9 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
                       multiUnitInput.map((u, idx) =>
                         idx === 0
                           ? {
-                            ...u,
-                            unit: { type: "weight", unit: value as WeightUnit },
-                          }
+                              ...u,
+                              unit: { type: "weight", unit: value as WeightUnit },
+                            }
                           : u,
                       ),
                     );
@@ -730,8 +730,8 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
                     value={unitMode ?? ""}
                     onValueChange={(value) => setUnitMode(value as "yes_no" | "measurable" | null)} // TODO: fix this
                     buttons={[
-                      { value: "yes_no", label: "Yes or No" },
-                      { value: "measurable", label: "Measurable" },
+                      { value: "yes_no", label: "Yes or No", icon: "checkbox-marked-outline" },
+                      { value: "measurable", label: "Measurable", icon: "numeric" },
                     ]}
                   />
                 </InputWrapper>

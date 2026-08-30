@@ -501,11 +501,11 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
         onDismiss={() => setActivityTabDialogVisible(false)}
         theme={theme}
       >
-          <TextField
-            label="Tab Name"
-            defaultValue={activityTabDialogNameInput}
-            onChangeText={setActivityTabDialogNameInput}
-          />
+        <TextField
+          label="Tab Name"
+          defaultValue={activityTabDialogNameInput}
+          onChangeText={setActivityTabDialogNameInput}
+        />
         <SmallDialog.Actions>
           <ButtonRow>
             <CloseButton onPress={() => setActivityTabDialogVisible(false)} color={theme.colors.onSurface} />

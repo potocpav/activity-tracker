@@ -1,5 +1,5 @@
 import { View, ScrollView, Pressable, StyleSheet } from "react-native";
-import { List, SegmentedButtons } from "react-native-paper";
+import { List } from "react-native-paper";
 import { ClimbingGrade, DistanceUnit, SubUnit, SubUnitType, TimeUnit, WeightUnit } from "../Model/StoreTypes";
 import { useState } from "react";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
@@ -21,6 +21,7 @@ import GradeSelection from "./GradeSelection";
 import FullScreenDialog from "./FullScreenDialog";
 import { CheckButton, MinusIcon, PlusIcon, Button } from "./Element";
 import TextField from "./TextField";
+import SegmentedButtons from "./SegmentedButtons";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 
 const subUnitProps = (

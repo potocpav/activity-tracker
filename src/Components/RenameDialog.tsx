@@ -32,7 +32,7 @@ const RenameDialog: React.FC<RenameDialogProps> = ({
   theme,
 }) => (
   <SmallDialog visible={visible} onDismiss={onDismiss} theme={theme}>
-      <TextField label={label} defaultValue={nameInput} onChangeText={onChangeName} />
+    <TextField label={label} defaultValue={nameInput} onChangeText={onChangeName} />
     <SmallDialog.Actions>
       <ButtonRow>
         {onDelete !== undefined && <DeleteButton onPress={onDelete} color={theme.colors.onSurface} />}
