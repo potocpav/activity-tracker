@@ -24,8 +24,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
 import EmptyPagePlaceholder from "../Components/EmptyPagePlaceholder";
 import Inset from "../Components/SafeAreaInset";
-import { ButtonRow, DeleteIcon, Button } from "../Components/Element";
-import { Divider } from "react-native-paper";
+import { ButtonRow, DeleteIcon, Button, Divider } from "../Components/Element";
 import { Gesture, GestureDetector, Pressable } from "react-native-gesture-handler";
 import Animated, {
   useAnimatedReaction,

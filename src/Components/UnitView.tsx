@@ -422,7 +422,7 @@ export const ValueEditor = ({
 
   return (
     <InputWrapper error={error} ref={inputWrapperRef}>
-      <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 8, marginVertical: 4 }}>
+      <View style={{ flex: 1, flexDirection: "row", alignItems: "flex-end", gap: 8, marginVertical: 4 }}>
         {(() => {
           switch (unit.type) {
             case "time":

@@ -1,6 +1,5 @@
 import { Fragment } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { Divider } from "react-native-paper";
 import useStore from "../Model/Store";
 import { ActivityPath, ActivityType, CalendarProps, GraphProps, Stat, State } from "../Model/StoreTypes";
 import { RenderTags } from "../Components/Tags";
@@ -10,6 +9,7 @@ import StatView from "../Components/StatView";
 import { useAppTheme, useThemePalette } from "../Model/Theme";
 import Animated, { LinearTransition } from "react-native-reanimated";
 import Hint from "../Components/Hint";
+import { Divider } from "../Components/Element";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const ActivitySummary = ({ navigation, activityPath }: { navigation: any; activityPath: ActivityPath }) => {

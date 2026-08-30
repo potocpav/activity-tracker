@@ -295,6 +295,9 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
     ...inputValues.map((inputValue: any) => inputValue.value[0]),
     inputTags,
     inputNote,
+    dateError,
+    emptyValueError,
+    inputValueErrors,
   ]);
 
   return (
@@ -304,7 +307,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
       <ScrollView>
         <SafeAreaView style={{ gap: 10, padding: 10 }} edges={["left", "right", "bottom"]}>
           <InputWrapper error={showErrors ? dateError : null} ref={dateInputRef}>
-            <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <View style={{ flex: 1, flexDirection: "row", alignItems: "flex-start", gap: 10 }}>
               <Pressable
                 onPress={showDatePicker}
                 style={({ pressed }) => [
@@ -322,22 +325,12 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
                   value={inputDate ? inputDate.toLocaleDateString(locale) : "Select date"}
                 />
               </Pressable>
-              <Button onPress={showDatePicker}>
+              <Button onPress={showDatePicker} style={{ marginTop: 15 }}>
                 <MaterialCommunityIcons name="calendar" size={24} color={theme.colors.onSurface} />
               </Button>
             </View>
           </InputWrapper>
-
-          <InputWrapper>
-            <TextInput
-              placeholder="Note (optional)"
-              value={inputNote}
-              onChangeText={setInputNote}
-              multiline
-              numberOfLines={Infinity}
-              style={styles.noteInput}
-            />
-          </InputWrapper>
+          
 
           {activity.tags.length > 0 && (
             <View style={{ gap: 5 }}>

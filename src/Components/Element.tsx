@@ -1,6 +1,11 @@
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { View, Pressable, StyleProp, ViewStyle } from "react-native";
+import { View, Pressable, StyleProp, StyleSheet, ViewStyle } from "react-native";
 import { useAppTheme } from "../Model/Theme";
+
+export const Divider = ({ style }: { style?: StyleProp<ViewStyle> }) => {
+  const theme = useAppTheme();
+  return <View style={[{ height: StyleSheet.hairlineWidth, backgroundColor: theme.colors.outlineVariant }, style]} />;
+};
 
 export const ButtonRow = ({ children }: { children: React.ReactNode }) => (
   <View style={{ gap: 4, flexDirection: "row", alignItems: "center" }}>{children}</View>

@@ -33,22 +33,10 @@
   - [o] Remove React Native Paper dependency
   - [x] Scroll climbing grade picker to the selected grade more reliably
   - [x] Keyboard avoidance in Edit Activity and other screens
-- [x] Bugfixes
-  - [x] Fix header color in Select Grade dialog in dark themes, and fix selected grade text color in dark themes
-  - [x] Make Select unit dialog header and styling work similarly to Select Grade dialog
-  - [ ] Fix all the padding issues for text fields
-    - UnitView.tsx:425 (marginVertical: 4, gap 8) — all five unit fields
-    - EditActivity.tsx:607 — Activity Name + ColorButton
-    - EditActivity.tsx:709 — Minimum Weight + SegmentedButtons
-    - EditDataPoint.tsx:298 — Date + calendar Button
+- [ ] Remove react native paper dependency
+  - [ ] Hand roll the color schema instead of relying on react native paper
+  - [ ] Clean up the highlight schema, and introduce onHighlight etc.
   - [ ] Remove repeated Name, Unit headers in EditActivity with multiple units
-
-- [o] Test
-  - [x] Rows in GradeSelection dialog, including selection
-  - [x] TextInput in RenameDialog, 
-  - [x] TagDialog (in edit activity), 
-  - [x] Rename Graph and Rename Calendar dialogs, 
-  - [x] Fix Edit Stat dialog
 
 # Changelog
 

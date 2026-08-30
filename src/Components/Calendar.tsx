@@ -71,6 +71,7 @@ const WeekColumnImpl: React.FC<WeekColumnProps> = ({
   const dismissHint = useStore((state: any) => state.dismissHint);
   const nowMs = now.getTime();
   const itemWeekStart = binTime("week", nowMs, -weekIdx, weekStart);
+  const today = useToday();
   return (
     <View style={styles.weekColumn}>
       <View style={styles.monthLabelContainer}>
@@ -85,66 +86,107 @@ const WeekColumnImpl: React.FC<WeekColumnProps> = ({
           >{`${itemWeekStart.toLocaleDateString("en-US", { year: "numeric" })}`}</Text>
         )}
       </View>
-      {dayValues.map(({ day, hasData, hasFilteredData, value, isWeekend }, dayIdx) => (
-        <TouchableOpacity
-          key={dayIdx}
-          onLongPress={() => {
-            if (unitType === "none") {
-              dismissHint("quick_check_daily_activity");
-              if (hasFilteredData) {
-                deleteActivityDataPointByDate(activityPath, day, tagFilters);
-              } else {
-                updateActivityDataPoint(activityPath, undefined, { date: day, tags: positiveTags });
+      {dayValues.map(({ day, hasData, hasFilteredData, value, isWeekend }, dayIdx) => {
+        const isToday = cmpDateList(dateToDateList(today), day) === 0;
+        const bgColor = hasData ? dayBackground : isWeekend ?
+          "#888888" :
+          "#888888";
+        return (
+          <TouchableOpacity
+            key={dayIdx}
+            onLongPress={() => {
+              if (unitType === "none") {
+                dismissHint("quick_check_daily_activity");
+                if (hasFilteredData) {
+                  deleteActivityDataPointByDate(activityPath, day, tagFilters);
+                } else {
+                  updateActivityDataPoint(activityPath, undefined, { date: day, tags: positiveTags });
+                }
               }
-            }
-          }}
-          onPress={() => {
-            if (hasData) {
-              navigation.navigate("ActivityData", { activityPath, day });
-            } else {
-              navigation.navigate("EditDataPoint", {
-                activityPath,
-                inputData: { type: "new", dataPoint: { date: day, tags: positiveTags } },
-              });
-            }
-          }}
-          activeOpacity={0.3}
-        >
-          {dayIdx == 0 && (
-            <Text
-              style={[
-                styles.dayNumber,
-                { color: theme.colors.outline, backgroundColor: theme.colors.background, zIndex: 10 },
-              ]}
-            >
-              {day[2]}
-            </Text>
-          )}
-
-          <View
-            style={{
-              ...styles.daySquareInternal,
-              backgroundColor: hasData ? dayBackground : "#888888",
-              opacity: hasFilteredData ? 1 : hasData ? (isWeekend ? 0.6 : 0.4) : isWeekend ? 0.5 : 0.3,
             }}
+            onPress={() => {
+              if (hasData) {
+                navigation.navigate("ActivityData", { activityPath, day });
+              } else {
+                navigation.navigate("EditDataPoint", {
+                  activityPath,
+                  inputData: { type: "new", dataPoint: { date: day, tags: positiveTags } },
+                });
+              }
+            }}
+            activeOpacity={0.3}
           >
-            {hasFilteredData && (
+            {dayIdx == 0 && (
               <Text
-                style={[styles.value, { color: theme.colors.background }]}
-                numberOfLines={1}
-                adjustsFontSizeToFit
-                minimumFontScale={0.5}
+                style={[
+                  styles.dayNumber,
+                  { color: theme.colors.outline, backgroundColor: theme.colors.background, zIndex: 10 },
+                ]}
               >
-                {value !== null
-                  ? unitType === "none" && value === 1
-                    ? "✓"
-                    : renderShortFormValue(value, subUnit)
-                  : "-"}
+                {day[2]}
               </Text>
             )}
-          </View>
-        </TouchableOpacity>
-      ))}
+
+            <View
+              style={{
+                ...styles.daySquareInternal,
+                // backgroundColor: hasData ? dayBackground : "#888888",
+                // opacity: hasFilteredData ? 1 : hasData ? (isWeekend ? 0.6 : 0.4) : isWeekend ? 0.5 : 0.3,
+              }}
+            >
+              <View style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: hasData ? dayBackground : "#888888",
+                opacity: hasFilteredData ? 1 : hasData ? (isWeekend ? 0.6 : 0.4) : isWeekend ? 0.5 : 0.3,
+                borderRadius: 8,
+                alignItems: "center",
+                justifyContent: "center",
+                // borderWidth: 1,
+              }}>
+                {hasFilteredData && (
+                  <Text
+                    style={[styles.value, { color: theme.colors.background }]}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.5}
+                  >
+                    {value !== null
+                      ? unitType === "none" && value === 1
+                        ? "✓"
+                        : renderShortFormValue(value, subUnit)
+                      : "-"}
+                  </Text>
+                )}
+              </View>
+              <View style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                borderRadius: 8,
+                borderColor: isToday ? theme.colors.primary : "transparent",
+                borderWidth: isToday ? 2 : 0,
+              }}>
+                <View style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  borderRadius: 6,
+                  borderColor: isToday ? theme.colors.background : "transparent",
+                  borderWidth: isToday ? 1.5 : 0,
+                }} />
+              </View>
+            </View>
+          </TouchableOpacity>
+        );
+      })}
     </View>
   );
 };
@@ -313,10 +355,7 @@ const getStyles = (itemWidth: number, dimensions: any) =>
     daySquareInternal: {
       width: itemWidth - ITEM_MARGIN,
       height: itemWidth - ITEM_MARGIN,
-      borderRadius: 8,
       marginBottom: ITEM_MARGIN,
-      alignItems: "center",
-      justifyContent: "center",
       paddingHorizontal: 3,
     },
     dayNumber: {
