@@ -1,4 +1,4 @@
-import React, { Fragment } from "react";
+import { Fragment } from "react";
 import { ScrollView, ToastAndroid, Alert, Linking } from "react-native";
 import { List, Switch } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";

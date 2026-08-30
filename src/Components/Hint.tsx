@@ -51,7 +51,7 @@ const hintInfo = (hint: HintType) => {
       };
     case "save_data_point":
       return {
-        text: ["Save the data point (✓), or save and immediately start editing a new one (✓+) when ready"],
+        text: ["Save the data point (✓), or save and clone (✓+)"],
         arrowPos: 1.0,
       };
   }
