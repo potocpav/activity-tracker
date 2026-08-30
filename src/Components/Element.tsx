@@ -1,10 +1,32 @@
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { View, Pressable, StyleProp, StyleSheet, ViewStyle } from "react-native";
+import { View, Pressable, StyleProp, StyleSheet, Switch as RNSwitch, ViewStyle } from "react-native";
 import { useAppTheme } from "../Model/Theme";
+
+// MD3 theme colors are "rgba(r, g, b, 1)" strings; restate one with a different alpha.
+const withAlpha = (color: string, alpha: number): string => {
+  const match = color.match(/^rgba?\(([^,]+),([^,]+),([^,)]+)/);
+  if (!match) return color;
+  return `rgba(${match[1].trim()}, ${match[2].trim()}, ${match[3].trim()}, ${alpha})`;
+};
 
 export const Divider = ({ style }: { style?: StyleProp<ViewStyle> }) => {
   const theme = useAppTheme();
   return <View style={[{ height: StyleSheet.hairlineWidth, backgroundColor: theme.colors.outlineVariant }, style]} />;
+};
+
+export const Switch = ({ value, onValueChange }: { value: boolean; onValueChange: (value: boolean) => void }) => {
+  const theme = useAppTheme();
+  return (
+    <RNSwitch
+      value={value}
+      onValueChange={onValueChange}
+      thumbColor={value ? theme.colors.primary : theme.dark ? "#bdbdbd" : "#fafafa"}
+      trackColor={{
+        true: withAlpha(theme.colors.primary, 0.4),
+        false: theme.dark ? "#616161" : "rgb(178, 175, 177)",
+      }}
+    />
+  );
 };
 
 export const ButtonRow = ({ children }: { children: React.ReactNode }) => (

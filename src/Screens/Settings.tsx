@@ -1,6 +1,6 @@
 import { Fragment } from "react";
 import { ScrollView, ToastAndroid, Alert, Linking } from "react-native";
-import { List, Switch } from "react-native-paper";
+import { List } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import useStore, { partialize } from "../Model/Store";
 import { version, migrate } from "../Model/Migrations";
@@ -8,6 +8,7 @@ import { File, Paths, EncodingType } from "expo-file-system";
 import * as DocumentPicker from "expo-document-picker";
 import * as Sharing from "expo-sharing";
 import { useAppTheme, useThemeVariant } from "../Model/Theme";
+import { Switch } from "../Components/Element";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { allHints, ActivityType, DateList, Unit, ActivityTab, stripUuids, generateUuids } from "../Model/StoreTypes";
 import { cmpDateList } from "../Model/Activity";
