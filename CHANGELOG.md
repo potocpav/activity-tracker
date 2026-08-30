@@ -30,6 +30,7 @@
   - [ ] BLE Input font size debugging
   - [ ] Unit conversions: kg <-> lbs, etc. This could include the ability to input values in different units - useful for climbing grades.
   - [ ] Desktop shortcuts for activities
+  - [ ] Show a small dot in calendar where a note is present
   - [o] Remove React Native Paper dependency
   - [x] Scroll climbing grade picker to the selected grade more reliably
   - [x] Keyboard avoidance in Edit Activity and other screens

@@ -21,7 +21,7 @@ export const defaultStats = (unit: Unit): Stat[] => {
         label: "Last 30 Days",
         value: "daily_mean",
         subUnit: null,
-        period: "all_time",
+        period: "last_30_days",
         tagFilters: [],
       },
     ];
