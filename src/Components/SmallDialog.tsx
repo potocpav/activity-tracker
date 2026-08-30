@@ -36,7 +36,6 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   card: {
-    width: "100%",
     maxWidth: 560,
     borderRadius: 28,
     paddingTop: 24,
@@ -46,6 +45,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 6 },
+    width: "100%",
   },
   actions: {
     flexDirection: "row",

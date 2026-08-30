@@ -1,5 +1,5 @@
 import { useRef, useImperativeHandle } from "react";
-import { View, Text } from "react-native";
+import { View, Text, StyleProp, ViewStyle } from "react-native";
 import Animated, {
   useSharedValue,
   withSequence,
@@ -14,6 +14,7 @@ type InputWrapperProps = {
   key?: string;
   error?: string | null;
   hint?: string;
+  containerStyle?: StyleProp<ViewStyle>;
   ref?: React.RefObject<InputWrapperRef> | ((el: InputWrapperRef) => void);
 };
 
@@ -26,7 +27,7 @@ export type InputWrapperRef =
 const TIME = 100;
 const OFFSET = 2;
 
-export const InputWrapper = ({ children, key, error, hint, ref }: InputWrapperProps) => {
+export const InputWrapper = ({ children, key, error, hint, containerStyle, ref }: InputWrapperProps) => {
   const theme = useAppTheme();
   const offset = useSharedValue<number>(0);
 
@@ -56,8 +57,7 @@ export const InputWrapper = ({ children, key, error, hint, ref }: InputWrapperPr
   }));
 
   return (
-    <Animated.View key={key} ref={animatedRef} style={[animatedStyle, { flex: 1 }]}>
-      <View style={{ flex: 1 }}>
+    <Animated.View key={key} ref={animatedRef} style={[animatedStyle, containerStyle]}>
         {children}
         {hint && <Text style={{ fontSize: 12, opacity: 0.6 }}>{hint}</Text>}
         {error && (
@@ -65,7 +65,6 @@ export const InputWrapper = ({ children, key, error, hint, ref }: InputWrapperPr
             <Text style={{ fontSize: 12, color: theme.colors.error }}>{error}</Text>
           </Animated.View>
         )}
-      </View>
     </Animated.View>
   );
 };

@@ -1,10 +1,11 @@
 import React, { useState, FC, useRef } from "react";
 import { View, Text, StyleSheet, ScrollView, Alert, KeyboardAvoidingView, TextInput } from "react-native";
-import { SegmentedButtons, MD3Theme } from "react-native-paper";
+import { MD3Theme } from "react-native-paper";
 import Menu from "../Components/Menu";
 import { ActivityType, SetTag, Tag, SubUnit, Unit, WeightUnit, State, ActivityPath } from "../Model/StoreTypes";
 import { Chip } from "react-native-paper";
 import TextField from "../Components/TextField";
+import SegmentedButtons from "../Components/SegmentedButtons";
 import { stringToNumber } from "../Model/Unit";
 import useStore from "../Model/Store";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
@@ -510,14 +511,16 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       </Text>
       <View style={{ gap: 4 }}>
         {multiUnitInput.map((val, idx) => (
-          <View key={idx} style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+          <View key={idx} style={{ flexDirection: "row", alignItems: "flex-start", gap: 10 }}>
             <InputWrapper
               error={showErrors ? multiUnitInput[idx].nameError : null}
               ref={(el) => (multiUnitInput[idx].nameRef = el)}
-            >
+              containerStyle={{ flex: 1 }}
+              >
               <TextField
                 label="Name"
                 value={val.name}
+                containerStyle={{ flex: 1 }}
                 onChangeText={(text) => {
                   // Update sub-unit name
                   const newVals = [...multiUnitInput];
@@ -530,6 +533,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
             <InputWrapper
               error={showErrors ? multiUnitInput[idx].unitError : null}
               ref={(el) => (multiUnitInput[idx].unitRef = el)}
+              containerStyle={{ flex: 1 }}
             >
               <UnitEditor
                 unit={val.unit}
@@ -541,7 +545,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
                 }}
               />
             </InputWrapper>
-            <View>
+            <View style={{ paddingTop: 15 }}>
               <DeleteButton
                 onPress={() => {
                   if (multiUnitInput.length >= 3) {
@@ -602,19 +606,18 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
       <ScrollView>
         <SafeAreaView edges={["left", "right", "bottom"]}>
           <View style={{ padding: 10, gap: 12 }}>
-            <View>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <InputWrapper error={showErrors ? activityNameError : null} ref={activityNameInputRef}>
-                  <TextField
-                    label="Activity Name"
-                    value={activityNameInput}
-                    onChangeText={setActivityNameInput}
-                    activityColor={selectedColor}
-                  />
-                </InputWrapper>
+            <InputWrapper error={showErrors ? activityNameError : null} ref={activityNameInputRef}>
+              <View style={{ flex: 1, flexDirection: "row", alignItems: "flex-end", gap: 14 }}>
+                <TextField
+                  containerStyle={{ flex: 1 }}
+                  label="Activity Name"
+                  value={activityNameInput}
+                  onChangeText={setActivityNameInput}
+                  activityColor={selectedColor}
+                />
                 <ColorButton color={selectedColor} onPress={() => setColorDialogVisible(true)} />
               </View>
-            </View>
+            </InputWrapper>
 
             <View>
               <TextInput
@@ -694,9 +697,9 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
                       multiUnitInput.map((u, idx) =>
                         idx === 0
                           ? {
-                              ...u,
-                              unit: { type: "weight", unit: value as WeightUnit },
-                            }
+                            ...u,
+                            unit: { type: "weight", unit: value as WeightUnit },
+                          }
                           : u,
                       ),
                     );
@@ -727,16 +730,8 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
                     value={unitMode ?? ""}
                     onValueChange={(value) => setUnitMode(value as "yes_no" | "measurable" | null)} // TODO: fix this
                     buttons={[
-                      {
-                        value: "yes_no",
-                        label: "Yes or No",
-                        icon: "checkbox-marked-outline",
-                      },
-                      {
-                        value: "measurable",
-                        label: "Measurable",
-                        icon: "numeric",
-                      },
+                      { value: "yes_no", label: "Yes or No" },
+                      { value: "measurable", label: "Measurable" },
                     ]}
                   />
                 </InputWrapper>

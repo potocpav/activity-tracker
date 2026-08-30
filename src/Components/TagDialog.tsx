@@ -42,25 +42,23 @@ const TagDialog: React.FC<TagDialogProps> = ({
 
   return (
     <SmallDialog visible={visible} onDismiss={onDismiss} theme={theme}>
-      <View style={styles.content}>
         <InputWrapper error={nameError} ref={nameInputRef}>
-          <TextField label="Tag Name" defaultValue={nameInput} onChangeText={onChangeName} />
+          <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 14 }}>
+            <TextField label="Tag Name" defaultValue={nameInput} onChangeText={onChangeName} containerStyle={{ flex: 1 }} />
+            <ColorButton color={color} onPress={() => setColorPickerVisible(true)} />
+          </View>
         </InputWrapper>
-        <View>
-          <ColorButton color={color} onPress={() => setColorPickerVisible(true)} />
-        </View>
-        <ColorPicker
-          visible={colorPickerVisible}
-          palette={palette}
-          selectedColor={color}
-          onSelect={(colorIx) => {
-            onChangeColor(colorIx);
-            setColorPickerVisible(false);
-          }}
-          onDismiss={() => setColorPickerVisible(false)}
-          theme={theme}
-        />
-      </View>
+      <ColorPicker
+        visible={colorPickerVisible}
+        palette={palette}
+        selectedColor={color}
+        onSelect={(colorIx) => {
+          onChangeColor(colorIx);
+          setColorPickerVisible(false);
+        }}
+        onDismiss={() => setColorPickerVisible(false)}
+        theme={theme}
+      />
       <SmallDialog.Actions>
         <ButtonRow>
           <DeleteButton onPress={onDelete} color={theme.colors.onSurface} />
@@ -73,7 +71,8 @@ const TagDialog: React.FC<TagDialogProps> = ({
 
 const styles = StyleSheet.create({
   content: {
-    flexDirection: "row",
+    flex: 1,
+    flexDirection: "column",
     alignItems: "flex-start",
     gap: 10,
   },

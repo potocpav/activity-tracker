@@ -66,12 +66,8 @@ const getStyles = (theme: MD3Theme) =>
       paddingHorizontal: 10,
       paddingVertical: 8,
     },
-    // Read-only fields (the unit / grade / date pickers) keep the value at full
-    // contrast but drop the outline back, so they don't invite typing.
     readOnlyInput: {
     },
-    // The thicker outline eats one pixel of padding on each side, so focusing a
-    // field doesn't shift its contents.
     focusedInput: {
       borderColor: theme.colors.primary,
       borderWidth: 2,

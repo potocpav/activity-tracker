@@ -1,5 +1,5 @@
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { View, Pressable } from "react-native";
+import { View, Pressable, StyleProp, ViewStyle } from "react-native";
 import { useAppTheme } from "../Model/Theme";
 
 export const ButtonRow = ({ children }: { children: React.ReactNode }) => (
@@ -9,24 +9,26 @@ export const ButtonRow = ({ children }: { children: React.ReactNode }) => (
 export const Button = ({
   onPress,
   onLongPress,
+  style,
   children,
 }: {
   onPress: () => void;
   onLongPress?: () => void;
+  style?: StyleProp<ViewStyle>;
   children: React.ReactNode;
 }) => (
   <Pressable
     onPress={onPress}
     onLongPress={onLongPress}
     android_ripple={{ foreground: true }}
-    style={{
+    style={[{
       padding: 10,
       borderRadius: 20,
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
       gap: 8,
-    }}
+    }, style]}
   >
     {({ pressed }) => (
       <>
@@ -52,15 +54,15 @@ export const Button = ({
 export const ColorButton = ({ color, onPress }: { color: number; onPress: () => void }) => {
   const theme = useAppTheme(color);
   return (
-    <Button onPress={onPress}>
+    <Button onPress={onPress} style={{ padding: 0 }}>
       <View
         style={{
-          width: 35,
-          height: 35,
+          width: 40,
+          height: 40,
           borderRadius: 12,
           backgroundColor: theme.colors.primary,
           borderWidth: 1,
-          borderColor: theme.colors.onBackground,
+          borderColor: theme.colors.outline,
         }}
       />
     </Button>
