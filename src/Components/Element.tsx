@@ -1,5 +1,5 @@
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { View, Pressable, StyleProp, StyleSheet, Switch as RNSwitch, ViewStyle } from "react-native";
+import { View, Pressable, StyleProp, StyleSheet, Switch as RNSwitch, Text, ViewStyle } from "react-native";
 import { useAppTheme } from "../Model/Theme";
 
 // MD3 theme colors are "rgba(r, g, b, 1)" strings; restate one with a different alpha.
@@ -26,6 +26,58 @@ export const Switch = ({ value, onValueChange }: { value: boolean; onValueChange
         false: theme.dark ? "#616161" : "rgb(178, 175, 177)",
       }}
     />
+  );
+};
+
+export const RadioButton = ({
+  label,
+  selected,
+  onPress,
+  style,
+}: {
+  label: string;
+  selected: boolean;
+  onPress: () => void;
+  style?: StyleProp<ViewStyle>;
+}) => {
+  const theme = useAppTheme();
+  const color = selected ? theme.colors.primary : theme.colors.onSurfaceVariant;
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="radio"
+      accessibilityState={{ checked: selected }}
+      android_ripple={{ color: withAlpha(theme.colors.primary, 0.32) }}
+      style={({ pressed }) => [
+        {
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingVertical: 8,
+          paddingHorizontal: 16,
+          backgroundColor: pressed ? "rgba(128, 128, 128, 0.2)" : undefined,
+        },
+        style,
+      ]}
+    >
+      <Text style={{ flexGrow: 1, flexShrink: 1, fontSize: 16, lineHeight: 24, color: theme.colors.onSurface }}>
+        {label}
+      </Text>
+      <View
+        style={{
+          width: 20,
+          height: 20,
+          margin: 8,
+          borderRadius: 10,
+          borderWidth: 2,
+          borderColor: color,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {selected && <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: color }} />}
+      </View>
+    </Pressable>
   );
 };
 
