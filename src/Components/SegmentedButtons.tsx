@@ -6,14 +6,19 @@ import { useAppTheme } from "../Model/Theme";
 
 // Material 3 style segmented buttons: one connected row of Pressables, the selected
 // segment filled with secondaryContainer.
+//
+// Selection is optional: pass value/onValueChange for a picker, or give each button its
+// own onPress to use the row as plain connected actions with nothing ever selected.
 
 type SegmentedButtonsProps = {
-  value: string;
-  onValueChange: (value: string) => void;
+  value?: string;
+  onValueChange?: (value: string) => void;
   buttons: {
     value: string;
     label: string;
     icon?: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
+    onPress?: () => void;
+    disabled?: boolean;
   }[];
 };
 
@@ -25,14 +30,19 @@ export const SegmentedButtons = ({ value, onValueChange, buttons }: SegmentedBut
     <View style={styles.row}>
       {buttons.map((button, index) => {
         const selected = button.value === value;
-        const contentColor = selected ? theme.colors.onSecondaryContainer : theme.colors.onSurface;
+        const contentColor = button.disabled
+          ? theme.colors.onSurfaceDisabled
+          : selected
+            ? theme.colors.onSecondaryContainer
+            : theme.colors.onSurface;
 
         return (
           <Pressable
             key={button.value}
-            onPress={() => onValueChange(button.value)}
+            onPress={() => (button.onPress ? button.onPress() : onValueChange?.(button.value))}
+            disabled={button.disabled}
             accessibilityRole="button"
-            accessibilityState={{ selected }}
+            accessibilityState={{ selected, disabled: button.disabled }}
             android_ripple={{ foreground: true }}
             style={[styles.segment, index > 0 && styles.dividedSegment, selected && styles.selectedSegment]}
           >

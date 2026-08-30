@@ -14,7 +14,7 @@ import {
   Unit,
   SubUnit,
 } from "../Model/StoreTypes";
-import { MD3Theme, Button as PaperButton } from "react-native-paper";
+import { MD3Theme } from "react-native-paper";
 import { matchFont, Points, Text as SkiaText, vec, Canvas, Color, SkFont } from "@shopify/react-native-skia";
 import Animated, {
   useSharedValue,
@@ -30,6 +30,7 @@ import SkiaChart, { xToCanvas, yToCanvas, Viewport } from "../Components/Chart/S
 import { SystemBars } from "react-native-edge-to-edge";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Button } from "../Components/Element";
+import SegmentedButtons from "../Components/SegmentedButtons";
 import ActionSheet, { ActionSheetRef, FlatList } from "react-native-actions-sheet";
 import { DataPointCard, DataPointCardMultiContainer, LabeledValue, TextValue } from "./ActivityData";
 import { dayCmp, findZeroSlice } from "../Model/Activity";
@@ -515,47 +516,35 @@ const BleScaleInputInner: React.FC<BleScaleInputInnerProps> = ({
     <>
       {/* Control Buttons Section */}
       <View style={styles.buttonRow}>
-        {workoutState === null ? (
-          <PaperButton style={{ flex: 1 }} mode="outlined" icon="play" onPress={onPlay}>
-            <Text>Start</Text>
-          </PaperButton>
-        ) : (
-          <PaperButton style={{ flex: 1 }} mode="outlined" icon="refresh" onPress={onReset}>
-            <Text>Reset</Text>
-          </PaperButton>
-        )}
-        {recordingState === "stopped" ? (
-          <PaperButton
-            style={{ flex: 1 }}
-            mode="outlined"
-            icon="record"
-            disabled={connectionStatus() !== "connected"}
-            onPress={onRecord}
-          >
-            <Text>Record</Text>
-          </PaperButton>
-        ) : (
-          <PaperButton
-            style={{ flex: 1 }}
-            mode="outlined"
-            icon="pause"
-            disabled={connectionStatus() !== "connected"}
-            onPress={onPause}
-          >
-            <Text>Pause</Text>
-          </PaperButton>
-        )}
-        <PaperButton
-          style={{ flex: 1 }}
-          mode="outlined"
-          icon="scale-balance"
-          disabled={connectionStatus() !== "connected" || recordingState === "recording"}
-          onPress={() => {
-            tareScale();
-          }}
-        >
-          <Text>Tare</Text>
-        </PaperButton>
+        <SegmentedButtons
+          buttons={[
+            workoutState === null
+              ? { value: "start", label: "Start", icon: "play", onPress: onPlay }
+              : { value: "reset", label: "Reset", icon: "refresh", onPress: onReset },
+            recordingState === "stopped"
+              ? {
+                  value: "record",
+                  label: "Record",
+                  icon: "record",
+                  onPress: onRecord,
+                  disabled: connectionStatus() !== "connected",
+                }
+              : {
+                  value: "pause",
+                  label: "Pause",
+                  icon: "pause",
+                  onPress: onPause,
+                  disabled: connectionStatus() !== "connected",
+                },
+            {
+              value: "tare",
+              label: "Tare",
+              icon: "scale-balance",
+              onPress: () => tareScale(),
+              disabled: connectionStatus() !== "connected" || recordingState === "recording",
+            },
+          ]}
+        />
       </View>
 
       <View style={{ paddingTop: 8, paddingBottom: 4 }}>
@@ -728,8 +717,6 @@ const getStyles = (theme: MD3Theme) =>
       marginTop: 8,
     },
     buttonRow: {
-      flexDirection: "row",
-      gap: 8,
       marginHorizontal: 8,
     },
     weightSection: {
