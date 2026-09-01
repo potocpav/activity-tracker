@@ -61,6 +61,8 @@ export type RatingUnit =
       scale: "A-F" | "1-5";
     };
 
+export type RatingUnitType = "stars" | "likert-scale" | "nrs-11" | "rpe" | "hedonic-scale" | "grading";
+
 export type SubUnitType =
   "number" | "count" | "percentage" | "distance" | "weight" | "time" | "climbing_grade" | "rating";
 

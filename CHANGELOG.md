@@ -34,18 +34,23 @@
   - [o] Remove React Native Paper dependency
   - [x] Scroll climbing grade picker to the selected grade more reliably
   - [x] Keyboard avoidance in Edit Activity and other screens
-- [ ] Remove react native paper dependency
-  - [ ] Hand roll the color schema instead of relying on react native paper
-  - [ ] Clean up the highlight schema, and introduce onHighlight etc.
-  - [ ] Remove repeated Name, Unit headers in EditActivity with multiple units
+- [x] Remove react native paper dependency
+  - [x] Hand roll the color schema instead of relying on react native paper
+  - [x] Clean up the highlight schema, and introduce onHighlight etc.
+  - [x] Remove repeated Name, Unit headers in EditActivity with multiple units
 
 # Changelog
 
-### 3.6.0 (upcoming)
+### 3.6.1
+
+- Fixed a bug which could cause data loss
+
+### 3.6.0
 
 - Removed the react-native-paper dependency
 - Improved taking long notes to enable the diary use-case
 - Improved dialogs and keyboard avoidance
+- Fixed several bugs
 
 ### 3.5.0
 

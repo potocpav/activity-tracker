@@ -28,7 +28,7 @@ export const TagSelector = ({
               onPress={() => toggleInputTag(tag.name)}
               accessibilityRole="button"
               accessibilityState={{ selected }}
-              android_ripple={{ foreground: true }}
+              android_ripple={{ foreground: true, color: theme.elevation3 }}
               style={[
                 styles.chip,
                 {

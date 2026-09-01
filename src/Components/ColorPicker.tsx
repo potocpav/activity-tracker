@@ -44,7 +44,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ visible, palette, selectedCol
                       onPress={() => onSelect(colorIx)}
                       accessibilityRole="button"
                       accessibilityState={{ selected }}
-                      android_ripple={{ color: "rgba(255, 255, 255, 0.3)", borderless: false }}
+                      android_ripple={{ foreground: true, color: theme.elevation3 }}
                       style={({ pressed }) => [
                         styles.swatch,
                         {

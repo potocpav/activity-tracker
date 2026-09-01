@@ -2,7 +2,7 @@
   "expo": {
     "name": "Activities",
     "slug": "activity-tracker",
-    "version": "3.5.0",
+    "version": "3.6.1",
     "icon": "./assets/icon.png",
     "experiments": {
       "reactCompiler": true

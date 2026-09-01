@@ -308,12 +308,8 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
             <View style={{ flex: 1, flexDirection: "row", alignItems: "flex-start", gap: 10 }}>
               <Pressable
                 onPress={showDatePicker}
-                style={({ pressed }) => [
-                  {
-                    flex: 1,
-                    opacity: pressed ? 0.7 : 1,
-                  },
-                ]}
+                android_ripple={{ foreground: true, color: theme.elevation3 }}
+                style={{ flex: 1 }}
               >
                 <TextField
                   label="Date"

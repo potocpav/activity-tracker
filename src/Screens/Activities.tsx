@@ -38,6 +38,7 @@ import { Gesture, GestureDetector, Pressable } from "react-native-gesture-handle
 import { scheduleOnRN } from "react-native-worklets";
 import SmallDialog from "../Components/SmallDialog";
 import TextField from "../Components/TextField";
+import * as Crypto from "expo-crypto";
 
 type ActivitiesProps = {
   navigation: any;
@@ -217,7 +218,7 @@ const ActivityCard = ({
             toggleSelected();
           }
         }}
-        android_ripple={{ foreground: true }}
+        android_ripple={{ foreground: true, color: theme.elevation3 }}
         style={styles.activityRow}
       >
         <View style={styles.activityTitleContainer}>
@@ -278,7 +279,7 @@ const ActivityCard = ({
             if (todayNPoints > 0) {
               deleteActivityDataPoint(activityPath, end - 1);
             } else {
-              updateActivityDataPoint(activityPath, undefined, { date: today });
+              updateActivityDataPoint(activityPath, undefined, { date: today, uuid: Crypto.randomUUID(), });
             }
           }
         }}

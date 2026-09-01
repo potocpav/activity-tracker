@@ -1,5 +1,7 @@
 import React from "react";
 import { KeyboardAvoidingView, Modal, Pressable, StyleSheet, View } from "react-native";
+import { EdgeInsets, useSafeAreaInsets } from "react-native-safe-area-context";
+import { Theme } from "../Model/Theme";
 
 interface SmallDialogProps {
   visible: boolean;
@@ -8,49 +10,58 @@ interface SmallDialogProps {
   children: React.ReactNode;
 }
 
-const SmallDialogBase: React.FC<SmallDialogProps> = ({ visible, onDismiss, theme, children }) => (
-  <Modal
-    visible={visible}
-    animationType="fade"
-    backdropColor={"rgba(0, 0, 0, 0.0)"}
-    onRequestClose={onDismiss}
-    statusBarTranslucent
-    navigationBarTranslucent
-  >
-    <Pressable style={StyleSheet.absoluteFill} onPress={onDismiss} />
-    <KeyboardAvoidingView style={styles.centered} behavior="padding" pointerEvents="box-none">
-      <View style={[styles.card, { backgroundColor: theme.elevation3 }]}>{children}</View>
-    </KeyboardAvoidingView>
-  </Modal>
-);
+const SmallDialogBase: React.FC<SmallDialogProps> = ({ visible, onDismiss, theme, children }) => {
+  const insets = useSafeAreaInsets();
+  const styles = getStyles(theme, insets);
+  return (
+
+    <Modal
+      visible={visible}
+      animationType="fade"
+      backdropColor={"rgba(0, 0, 0, 0.0)"}
+      onRequestClose={onDismiss}
+      statusBarTranslucent
+      navigationBarTranslucent
+    >
+      <Pressable style={StyleSheet.absoluteFill} onPress={onDismiss} />
+      {/* <SafeAreaView style={{ flex: 1 }}> */}
+      <KeyboardAvoidingView style={styles.centered} behavior="padding" pointerEvents="box-none">
+        <View style={[styles.card, { backgroundColor: theme.elevation3 }]}>{children}</View>
+      </KeyboardAvoidingView>
+      {/* </SafeAreaView> */}
+    </Modal>
+  );
+};
 
 const SmallDialogActions = ({ children }: { children: React.ReactNode }) => (
-  <View style={styles.actions}>{children}</View>
+  <View style={actionsStyles.actions}>{children}</View>
 );
 
-const styles = StyleSheet.create({
+const getStyles = (theme: Theme, insets: EdgeInsets) => StyleSheet.create({
   centered: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 24,
+    paddingTop: insets.top + 24,
+    paddingBottom: insets.bottom + 24,
+    paddingLeft: insets.left + 24,
+    paddingRight: insets.right + 24,
   },
   card: {
     maxWidth: 560,
+    maxHeight: "80%",
     borderRadius: 28,
-    paddingTop: 24,
-    paddingHorizontal: 24,
+    padding: 24,
+    paddingBottom: 16,
     elevation: 24,
-    shadowColor: "#000000",
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
     width: "100%",
   },
+});
+
+const actionsStyles = StyleSheet.create({
   actions: {
     flexDirection: "row",
     justifyContent: "flex-end",
-    paddingBottom: 16,
     paddingTop: 8,
   },
 });

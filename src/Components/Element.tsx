@@ -40,7 +40,7 @@ export const RadioButton = ({
       onPress={onPress}
       accessibilityRole="radio"
       accessibilityState={{ checked: selected }}
-      android_ripple={{ foreground: true }}
+      android_ripple={{ foreground: true, color: theme.elevation3 }}
       style={[
         {
           flexDirection: "row",
@@ -85,28 +85,31 @@ export const Button = ({
   onLongPress?: () => void;
   style?: StyleProp<ViewStyle>;
   children: React.ReactNode;
-}) => (
-  <Pressable
-    onPress={onPress}
-    onLongPress={onLongPress}
-    android_ripple={{ foreground: true }}
-    style={[
-      {
-        padding: 10,
-        borderRadius: 20,
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 8,
-        // keeps the ripple inside the rounded shape
-        overflow: "hidden",
-      },
-      style,
-    ]}
-  >
-    {children}
-  </Pressable>
-);
+}) => {
+  const theme = useAppTheme();
+  return (
+    <Pressable
+      onPress={onPress}
+      onLongPress={onLongPress}
+      android_ripple={{ foreground: true, color: theme.elevation3 }}
+      style={[
+        {
+          padding: 10,
+          borderRadius: 20,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 8,
+          // keeps the ripple inside the rounded shape
+          overflow: "hidden",
+        },
+        style,
+      ]}
+    >
+      {children}
+    </Pressable>
+  );
+};
 
 export const ColorButton = ({ color, onPress }: { color: number; onPress: () => void }) => {
   const theme = useAppTheme(color);
@@ -116,7 +119,7 @@ export const ColorButton = ({ color, onPress }: { color: number; onPress: () => 
         style={{
           width: 40,
           height: 40,
-          borderRadius: 12,
+          borderRadius: 20,
           backgroundColor: theme.primary,
           borderWidth: 1,
           borderColor: theme.outline,

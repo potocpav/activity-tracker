@@ -645,7 +645,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
                       setTagDialogColorInput(item.color);
                     }}
                     onLongPress={drag}
-                    android_ripple={{ color: "rgba(255, 255, 255, 0.3)" }}
+                    android_ripple={{ foreground: true, color: theme.elevation3 }}
                     style={[
                       styles.chip,
                       {
@@ -670,7 +670,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
                     setTagDialogNameInput("");
                     setTagDialogColorInput(Math.floor(Math.random() * palette.length));
                   }}
-                  android_ripple={{ foreground: true }}
+                  android_ripple={{ foreground: true, color: theme.elevation3 }}
                   style={[
                     styles.chip,
                     {

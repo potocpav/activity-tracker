@@ -37,7 +37,11 @@ const MenuItem: React.FC<MenuItemProps> = ({ onPress, title, leadingIcon, traili
   const theme = useAppTheme();
   const contentColor = disabled ? theme.onSurfaceDisabled : theme.onSurfaceVariant;
   return (
-    <Pressable onPress={onPress} disabled={disabled} android_ripple={{ foreground: true }} style={styles.item}>
+    <Pressable 
+      onPress={onPress} 
+      disabled={disabled} 
+      android_ripple={{ foreground: true, color: theme.elevation3 }} 
+      style={styles.item}>
       {({ pressed }) => (
         <>
           {pressed && <View style={styles.pressedOverlay} />}

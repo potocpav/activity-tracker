@@ -11,13 +11,13 @@ import {
   statValueUnit,
   ActivityPath,
   State,
-  CalendarProps,
 } from "../Model/StoreTypes";
 import { findZeroSlice, dayCmp, cmpDateList, extractStatValue, extractValue, binTime } from "../Model/Activity";
 import useStore from "../Model/Store";
 import { useAppTheme } from "../Model/Theme";
 import { useToday } from "../Model/useToday";
 import { renderShortFormValue } from "../Model/Unit";
+import * as Crypto from "expo-crypto";
 
 type CalendarComponentProps = {
   navigation: any;
@@ -98,7 +98,7 @@ const WeekColumnImpl: React.FC<WeekColumnProps> = ({
                 if (hasFilteredData) {
                   deleteActivityDataPointByDate(activityPath, day, tagFilters);
                 } else {
-                  updateActivityDataPoint(activityPath, undefined, { date: day, tags: positiveTags });
+                  updateActivityDataPoint(activityPath, undefined, { date: day, tags: positiveTags, uuid: Crypto.randomUUID(), });
                 }
               }
             }}

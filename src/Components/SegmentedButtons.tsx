@@ -38,7 +38,7 @@ export const SegmentedButtons = ({ value, onValueChange, buttons }: SegmentedBut
             disabled={button.disabled}
             accessibilityRole="button"
             accessibilityState={{ selected, disabled: button.disabled }}
-            android_ripple={{ foreground: true }}
+            android_ripple={{ foreground: true, color: theme.elevation3 }}
             style={[styles.segment, index > 0 && styles.dividedSegment, selected && styles.selectedSegment]}
           >
             {button.icon !== undefined && <MaterialCommunityIcons name={button.icon} size={18} color={contentColor} />}
@@ -76,7 +76,7 @@ const getStyles = (theme: Theme) =>
       borderLeftColor: theme.outline,
     },
     selectedSegment: {
-      backgroundColor: theme.elevation2,
+      backgroundColor: theme.elevation3,
     },
     label: {
       fontSize: 14,

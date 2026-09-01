@@ -58,7 +58,7 @@ const GradeSelection = ({ visible, options, value, activityColor, onSelect, onDi
           <Pressable
             style={[styles.item, value === item ? styles.selectedItem : styles.unselectedItem]}
             key={item}
-            android_ripple={{ foreground: true }}
+            android_ripple={{ foreground: true, color: theme.elevation3 }}
             onPress={() => {
               onSelect(item);
               onDismiss();

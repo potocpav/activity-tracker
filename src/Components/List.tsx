@@ -42,10 +42,10 @@ export const ListItem = ({ title, description, icon, titleColor, right, onPress 
       onPress={onPress}
       disabled={onPress === undefined}
       accessibilityRole="button"
-      android_ripple={{ foreground: true }}
+      android_ripple={{ foreground: true, color: theme.elevation3 }}
       style={styles.row}
     >
-      {icon !== undefined && <ListIcon name={icon} />}
+      {icon !== undefined && <ListIcon name={icon} color={titleColor} />}
       <View style={styles.content}>
         <Text style={[styles.title, titleColor !== undefined && { color: titleColor }]}>{title}</Text>
         {description ? <Text style={styles.description}>{description}</Text> : null}
@@ -57,6 +57,7 @@ export const ListItem = ({ title, description, icon, titleColor, right, onPress 
 
 export const ListAccordion = ({
   title,
+  titleColor,
   description,
   icon,
   expanded,
@@ -69,10 +70,11 @@ export const ListAccordion = ({
     <View>
       <ListItem
         title={title}
+        titleColor={titleColor}
         description={description}
         icon={icon}
         onPress={onPress}
-        right={<ListIcon name={expanded ? "chevron-up" : "chevron-down"} />}
+        right={<ListIcon name={expanded ? "chevron-up" : "chevron-down"} color={titleColor} />}
       />
       {expanded && <View style={styles.accordionBody}>{children}</View>}
     </View>
