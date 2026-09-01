@@ -5,7 +5,7 @@
   - [ ] Remove wing tabs when no activities exist
   - [ ] Animate title on tab changes
   - [ ] Navigate to the new tab on Loop Habits import
-- [ ] Handle large number of data points
+- [o] Handle large number of data points
   - [x] Bulk selection
   - [ ] Bulk editing
   - [ ] Bulk deletion
@@ -21,27 +21,24 @@
   - [ ] Debug BLE Input performance
 - [ ] Optimize for tablets
 - [ ] Authenticated activities
-- [x] Add ratings
+- [o] Add ratings
   - [x] Easy, Moderate, Hard, Very Hard, Max
   - [x] 1-5 stars
   - [x] 1-10 points
-  - [ ] Tweak colors
   - [ ] Improve value display
+  - [ ] Tweak colors
 - [ ] Minor features
   - [ ] Remember last tags for each activity
   - [ ] BLE Input font size debugging
   - [ ] Unit conversions: kg <-> lbs, etc. This could include the ability to input values in different units - useful for climbing grades.
   - [ ] Desktop shortcuts for activities
   - [ ] Show a small dot in calendar where a note is present
-  - [o] Remove React Native Paper dependency
-  - [x] Scroll climbing grade picker to the selected grade more reliably
-  - [x] Keyboard avoidance in Edit Activity and other screens
-- [x] Remove react native paper dependency
-  - [x] Hand roll the color schema instead of relying on react native paper
-  - [x] Clean up the highlight schema, and introduce onHighlight etc.
-  - [x] Remove repeated Name, Unit headers in EditActivity with multiple units
 
 # Changelog
+
+### 3.7.0
+
+- Add ratings
 
 ### 3.6.1
 
