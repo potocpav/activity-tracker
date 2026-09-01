@@ -1,4 +1,4 @@
-import { Unit, SubUnit } from "./StoreTypes";
+import { Unit, SubUnit, RatingUnit } from "./StoreTypes";
 
 export const isSummable = (unit: SubUnit): boolean => {
   switch (unit.type) {
@@ -558,6 +558,131 @@ export const vScaleGrades = [...Array(17).keys()]
     return [`V${g}`, `V${g}/V${g + 1}`];
   })
   .flat(Infinity) as string[];
+
+// The points of a rating scale that is a fixed set of steps, in ascending order: the
+// value stored, the label it is shown under, and what that step means. Scales leave some
+// of their steps unnamed (the even Borg numbers, for instance), hence the null.
+//
+// Star ratings are not here: they are a count of stars rather than a set of named steps.
+export type RatingScalePoint = { value: number; label: string; description: string | null };
+
+const numberedPoints = (labels: (string | null)[], firstValue: number): RatingScalePoint[] =>
+  labels.map((description, index) => ({
+    value: firstValue + index,
+    label: (firstValue + index).toString(),
+    description,
+  }));
+
+export const ratingScalePoints = (unit: Exclude<RatingUnit, { rating: "stars" }>): RatingScalePoint[] => {
+  switch (unit.rating) {
+    case "likert-scale":
+      switch (unit.levels) {
+        case 5:
+          return numberedPoints(["Strongly disagree", "Disagree", "Neutral", "Agree", "Strongly agree"], 1);
+        case 7:
+          return numberedPoints(
+            [
+              "Strongly disagree",
+              "Disagree",
+              "Somewhat disagree",
+              "Neutral",
+              "Somewhat agree",
+              "Agree",
+              "Strongly agree",
+            ],
+            1,
+          );
+      }
+    case "nrs-11":
+      return numberedPoints(
+        [
+          "No pain",
+          "Mild pain",
+          "Mild pain",
+          "Mild pain",
+          "Moderate pain",
+          "Moderate pain",
+          "Moderate pain",
+          "Severe pain",
+          "Severe pain",
+          "Severe pain",
+          "Worst pain imaginable",
+        ],
+        0,
+      );
+    case "rpe":
+      switch (unit.rpe) {
+        // The Borg RPE scale, where only the odd numbers are named.
+        case 6:
+          return numberedPoints(
+            [
+              "No exertion at all",
+              "Extremely light",
+              null,
+              "Very light",
+              null,
+              "Light",
+              null,
+              "Somewhat hard",
+              null,
+              "Hard",
+              null,
+              "Very hard",
+              null,
+              "Extremely hard",
+              "Maximal exertion",
+            ],
+            6,
+          );
+        // The Borg CR10 scale.
+        case 10:
+          return numberedPoints(
+            [
+              "Rest",
+              "Very easy",
+              "Easy",
+              "Moderate",
+              "Somewhat hard",
+              "Hard",
+              null,
+              "Very hard",
+              null,
+              null,
+              "Maximal",
+            ],
+            0,
+          );
+      }
+    case "hedonic-scale":
+      switch (unit.levels) {
+        case 5:
+          return numberedPoints(
+            ["Dislike very much", "Dislike", "Neither like nor dislike", "Like", "Like very much"],
+            1,
+          );
+        case 7:
+          return numberedPoints(
+            [
+              "Dislike very much",
+              "Dislike moderately",
+              "Dislike slightly",
+              "Neither like nor dislike",
+              "Like slightly",
+              "Like moderately",
+              "Like very much",
+            ],
+            1,
+          );
+      }
+    // Both grading systems run from best to worst, so they share their descriptions and
+    // differ only in what each grade is called.
+    case "grading": {
+      const descriptions = ["Excellent", "Good", "Satisfactory", "Sufficient", "Fail"];
+      const labels = unit.scale === "A-F" ? ["A", "B", "C", "D", "F"] : ["1", "2", "3", "4", "5"];
+      return labels.map((label, index) => ({ value: index + 1, label, description: descriptions[index] }));
+    }
+  }
+};
 
 export const mapStringValue = (unit: SubUnit, value: string, fn: (value: number) => number): string => {
   return numberToString(fn(stringToNumber(value, unit) ?? 0), unit);

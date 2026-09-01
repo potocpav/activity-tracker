@@ -16,6 +16,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import {
   renderUnit,
   mapStringValue,
+  ratingScalePoints,
   uiaaGrades,
   vScaleGrades,
   numberToString,
@@ -27,9 +28,11 @@ import {
 import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
 import GradeSelection from "./GradeSelection";
 import FullScreenDialog from "./FullScreenDialog";
-import { CheckButton, MinusIcon, PlusIcon, Button, Switch } from "./Element";
+import { CheckButton, CloseButton, MinusIcon, PlusIcon, Button, Switch } from "./Element";
 import TextField from "./TextField";
 import SegmentedButtons from "./SegmentedButtons";
+import Slider from "./Slider";
+import StarRating from "./StarRating";
 import { ListAccordion, ListItem, IconName, ListIcon } from "./List";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import SmallDialog from "./SmallDialog";
@@ -80,6 +83,85 @@ const SwitchRow = ({
   );
 };
 
+// A slider over the steps of a rating scale, with the meaning of the chosen step spelled
+// out underneath it.
+const RatingScaleSlider = ({
+  ratingUnit,
+  value,
+  onChange,
+  activityColor,
+}: {
+  ratingUnit: Exclude<RatingUnit, { rating: "stars" }>;
+  value: number | null;
+  onChange: (value: number) => void;
+  activityColor?: number;
+}) => {
+  const theme = useAppTheme(activityColor);
+
+  // A value from another scale (the unit was changed under an existing value, or the
+  // preview outlived a change of levels) is shown as the nearest step of this one.
+  const points = ratingScalePoints(ratingUnit);
+  const min = points[0].value;
+  const max = points[points.length - 1].value;
+  const chosen =
+    value === null
+      ? undefined
+      : points.find((point) => point.value === Math.round(Math.min(max, Math.max(min, value))));
+
+  return (
+    <View>
+      <Slider min={min} max={max} value={value} onChange={onChange} activityColor={activityColor} />
+      <Text style={{ minHeight: 22, textAlign: "center", fontSize: 14, color: theme.onSurfaceVariant }}>
+        {chosen !== undefined && (
+          <>
+            <Text style={{ fontSize: 16, color: theme.onSurface }}>{chosen.label}</Text>
+            {chosen.description !== null && ` \u00b7 ${chosen.description}`}
+          </>
+        )}
+      </Text>
+    </View>
+  );
+};
+
+// The widget for rating something on a given scale: a row of stars or a slider over the
+// scale's steps, with a button on the right that takes the rating back to no value at all
+// (as opposed to the lowest one the scale offers).
+export const RatingInput = ({
+  ratingUnit,
+  value,
+  onChange,
+  activityColor,
+}: {
+  ratingUnit: RatingUnit;
+  value: number | null;
+  onChange: (value: number | null) => void;
+  activityColor?: number;
+}) => {
+  const theme = useAppTheme(activityColor);
+
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+      <View style={{ flex: 1 }}>
+        {ratingUnit.rating === "stars" ? (
+          <StarRating
+            stars={ratingUnit.stars}
+            halfStars={ratingUnit.half_stars}
+            value={value}
+            onChange={onChange}
+            activityColor={activityColor}
+          />
+        ) : (
+          <RatingScaleSlider ratingUnit={ratingUnit} value={value} onChange={onChange} activityColor={activityColor} />
+        )}
+      </View>
+      <CloseButton
+        onPress={() => onChange(null)}
+        color={value === null ? theme.onSurfaceDisabled : theme.onSurfaceVariant}
+      />
+    </View>
+  );
+};
+
 // The parameters of one rating scale, i.e. the fields of the chosen RatingUnit constructor.
 const RatingUnitConfig = ({
   ratingUnit,
@@ -88,86 +170,106 @@ const RatingUnitConfig = ({
   ratingUnit: RatingUnit;
   onChange: (ratingUnit: RatingUnit) => void;
 }) => {
-  switch (ratingUnit.rating) {
-    case "stars":
-      return (
-        <>
-          <ConfigLabel label="Number of stars" />
-          <SegmentedButtons
-            value={ratingUnit.stars.toString()}
-            onValueChange={(value) => onChange({ ...ratingUnit, stars: Number(value) as 3 | 5 | 10 })}
-            buttons={[
-              { value: "3", label: "3" },
-              { value: "5", label: "5" },
-              { value: "10", label: "10" },
-            ]}
-          />
-          <SwitchRow
-            label="Half stars"
-            value={ratingUnit.half_stars}
-            onValueChange={(half_stars) => onChange({ ...ratingUnit, half_stars })}
-          />
-        </>
-      );
-    case "likert-scale":
-      return (
-        <>
-          <ConfigLabel label="Levels of agreement" />
-          <SegmentedButtons
-            value={ratingUnit.levels.toString()}
-            onValueChange={(value) => onChange({ ...ratingUnit, levels: Number(value) as 5 | 7 })}
-            buttons={[
-              { value: "5", label: "5" },
-              { value: "7", label: "7" },
-            ]}
-          />
-        </>
-      );
-    case "nrs-11":
-      return <ConfigLabel label="Fixed scale from 0 (no pain) to 10 (worst pain)" />;
-    case "rpe":
-      return (
-        <>
-          <ConfigLabel label="Scale range" />
-          <SegmentedButtons
-            value={ratingUnit.rpe.toString()}
-            onValueChange={(value) => onChange({ ...ratingUnit, rpe: Number(value) as 6 | 10 })}
-            buttons={[
-              { value: "6", label: "Borg 6\u201320" },
-              { value: "10", label: "CR10 0\u201310" },
-            ]}
-          />
-        </>
-      );
-    case "hedonic-scale":
-      return (
-        <>
-          <ConfigLabel label="Levels of pleasure" />
-          <SegmentedButtons
-            value={ratingUnit.levels.toString()}
-            onValueChange={(value) => onChange({ ...ratingUnit, levels: Number(value) as 5 | 7 })}
-            buttons={[
-              { value: "5", label: "5" },
-              { value: "7", label: "7" },
-            ]}
-          />
-        </>
-      );
-    case "grading":
-      return (
-        <>
-          <ConfigLabel label="Grading system" />
-          <SegmentedButtons
-            value={ratingUnit.scale}
-            onValueChange={(value) => onChange({ ...ratingUnit, scale: value as "A-F" | "1-5" })}
-            buttons={[
-              { value: "A-F", label: "A\u2013F" },
-              { value: "1-5", label: "1\u20135" },
-            ]}
-          />
-        </>
-      );
-  }
+  // The preview is a working widget, so it carries a value of its own to show off. It
+  // starts halfway up the scale, where there is the most to see.
+  const [previewValue, setPreviewValue] = useState<number | null>(() => {
+    if (ratingUnit.rating === "stars") {
+      return Math.ceil(ratingUnit.stars / 2);
+    }
+    const points = ratingScalePoints(ratingUnit);
+    return points[Math.floor(points.length / 2)].value;
+  });
+
+  const parameters = (() => {
+    switch (ratingUnit.rating) {
+      case "stars":
+        return (
+          <>
+            <ConfigLabel label="Number of stars" />
+            <SegmentedButtons
+              value={ratingUnit.stars.toString()}
+              onValueChange={(value) => onChange({ ...ratingUnit, stars: Number(value) as 3 | 5 | 10 })}
+              buttons={[
+                { value: "3", label: "3" },
+                { value: "5", label: "5" },
+                { value: "10", label: "10" },
+              ]}
+            />
+            <SwitchRow
+              label="Half stars"
+              value={ratingUnit.half_stars}
+              onValueChange={(half_stars) => onChange({ ...ratingUnit, half_stars })}
+            />
+          </>
+        );
+      case "likert-scale":
+        return (
+          <>
+            <ConfigLabel label="Levels of agreement" />
+            <SegmentedButtons
+              value={ratingUnit.levels.toString()}
+              onValueChange={(value) => onChange({ ...ratingUnit, levels: Number(value) as 5 | 7 })}
+              buttons={[
+                { value: "5", label: "5" },
+                { value: "7", label: "7" },
+              ]}
+            />
+          </>
+        );
+      case "nrs-11":
+        return <ConfigLabel label="Fixed scale from 0 (no pain) to 10 (worst pain)" />;
+      case "rpe":
+        return (
+          <>
+            <ConfigLabel label="Scale range" />
+            <SegmentedButtons
+              value={ratingUnit.rpe.toString()}
+              onValueChange={(value) => onChange({ ...ratingUnit, rpe: Number(value) as 6 | 10 })}
+              buttons={[
+                { value: "6", label: "Borg 6\u201320" },
+                { value: "10", label: "CR10 0\u201310" },
+              ]}
+            />
+          </>
+        );
+      case "hedonic-scale":
+        return (
+          <>
+            <ConfigLabel label="Levels of pleasure" />
+            <SegmentedButtons
+              value={ratingUnit.levels.toString()}
+              onValueChange={(value) => onChange({ ...ratingUnit, levels: Number(value) as 5 | 7 })}
+              buttons={[
+                { value: "5", label: "5" },
+                { value: "7", label: "7" },
+              ]}
+            />
+          </>
+        );
+      case "grading":
+        return (
+          <>
+            <ConfigLabel label="Grading system" />
+            <SegmentedButtons
+              value={ratingUnit.scale}
+              onValueChange={(value) => onChange({ ...ratingUnit, scale: value as "A-F" | "1-5" })}
+              buttons={[
+                { value: "A-F", label: "A\u2013F" },
+                { value: "1-5", label: "1\u20135" },
+              ]}
+            />
+          </>
+        );
+    }
+  })();
+
+  return (
+    <>
+      {parameters}
+      <ConfigLabel label="Preview" />
+      <RatingInput ratingUnit={ratingUnit} value={previewValue} onChange={setPreviewValue} />
+    </>
+  );
 };
 
 const subUnitProps = (
@@ -726,6 +828,18 @@ export const ValueEditor = ({
                     <PlusIcon color={theme.onSurface} />
                   </Button>
                 </>
+              );
+            case "rating":
+              return (
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 12, marginBottom: 4, color: theme.onSurfaceVariant }}>{label}</Text>
+                  <RatingInput
+                    ratingUnit={unit}
+                    value={stringToNumber(value, unit)}
+                    onChange={(rating) => onChange(numberToString(rating, unit))}
+                    activityColor={activityColor}
+                  />
+                </View>
               );
             case "climbing_grade":
               switch (unit.grade) {

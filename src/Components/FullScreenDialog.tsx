@@ -1,6 +1,7 @@
 import React from "react";
 import { KeyboardAvoidingView, Modal, StyleSheet, Text, View } from "react-native";
 import { EdgeInsets, useSafeAreaInsets } from "react-native-safe-area-context";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useAppTheme, Theme } from "../Model/Theme";
 import { Button } from "./Element";
@@ -8,6 +9,10 @@ import { Button } from "./Element";
 // Full-screen modal with a colored header: a back button, a title, and an optional
 // action on the right (confirm, clear, ...). The children fill the rest of the screen.
 // Used by GradeSelection and by UnitView's unit picker.
+//
+// A Modal renders in a native view tree of its own, outside the app's gesture root, so it
+// brings its own: without it, gesture-handler widgets among the children (the rating
+// slider and stars, say) never see a touch.
 
 type FullScreenDialogProps = {
   visible: boolean;
@@ -41,20 +46,22 @@ const FullScreenDialog = ({
       statusBarTranslucent={true}
       navigationBarTranslucent={true}
     >
-      <KeyboardAvoidingView style={styles.container} behavior="padding" keyboardVerticalOffset={-20}>
-        <View style={styles.header}>
-          <View style={styles.headerContent}>
-            <Button onPress={onDismiss}>
-              <MaterialCommunityIcons name="arrow-left" size={24} color={theme.onHeader} />
-            </Button>
-            <View style={styles.titleContainer}>
-              <Text style={styles.title}>{title}</Text>
+      <GestureHandlerRootView style={styles.container}>
+        <KeyboardAvoidingView style={styles.container} behavior="padding" keyboardVerticalOffset={-20}>
+          <View style={styles.header}>
+            <View style={styles.headerContent}>
+              <Button onPress={onDismiss}>
+                <MaterialCommunityIcons name="arrow-left" size={24} color={theme.onHeader} />
+              </Button>
+              <View style={styles.titleContainer}>
+                <Text style={styles.title}>{title}</Text>
+              </View>
+              {headerRight}
             </View>
-            {headerRight}
           </View>
-        </View>
-        <View style={styles.content}>{children}</View>
-      </KeyboardAvoidingView>
+          <View style={styles.content}>{children}</View>
+        </KeyboardAvoidingView>
+      </GestureHandlerRootView>
     </Modal>
   );
 };
