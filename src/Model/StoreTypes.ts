@@ -38,7 +38,7 @@ export type SubUnit =
 export type RatingUnit =
   | {
       rating: "stars";
-      stars: 3 | 5 | 10;
+      stars: 3 | 5;
       half_stars: boolean;
     }
   | {

@@ -188,11 +188,10 @@ const RatingUnitConfig = ({
             <ConfigLabel label="Number of stars" />
             <SegmentedButtons
               value={ratingUnit.stars.toString()}
-              onValueChange={(value) => onChange({ ...ratingUnit, stars: Number(value) as 3 | 5 | 10 })}
+              onValueChange={(value) => onChange({ ...ratingUnit, stars: Number(value) as 3 | 5 })}
               buttons={[
                 { value: "3", label: "3" },
                 { value: "5", label: "5" },
-                { value: "10", label: "10" },
               ]}
             />
             <SwitchRow
@@ -226,8 +225,8 @@ const RatingUnitConfig = ({
               value={ratingUnit.rpe.toString()}
               onValueChange={(value) => onChange({ ...ratingUnit, rpe: Number(value) as 6 | 10 })}
               buttons={[
-                { value: "6", label: "Borg 6\u201320" },
-                { value: "10", label: "CR10 0\u201310" },
+                { value: "10", label: "Borg 0-10" },
+                { value: "6", label: "Borg 6-20" },
               ]}
             />
           </>

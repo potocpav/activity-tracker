@@ -88,7 +88,6 @@ const WeekColumnImpl: React.FC<WeekColumnProps> = ({
       </View>
       {dayValues.map(({ day, hasData, hasFilteredData, value, isWeekend }, dayIdx) => {
         const isToday = cmpDateList(dateToDateList(today), day) === 0;
-        const bgColor = hasData ? dayBackground : isWeekend ? "#888888" : "#888888";
         return (
           <TouchableOpacity
             key={dayIdx}
@@ -121,11 +120,7 @@ const WeekColumnImpl: React.FC<WeekColumnProps> = ({
             )}
 
             <View
-              style={{
-                ...styles.daySquareInternal,
-                // backgroundColor: hasData ? dayBackground : "#888888",
-                // opacity: hasFilteredData ? 1 : hasData ? (isWeekend ? 0.6 : 0.4) : isWeekend ? 0.5 : 0.3,
-              }}
+              style={styles.daySquareInternal}
             >
               <View
                 style={{
@@ -355,7 +350,6 @@ const getStyles = (itemWidth: number, dimensions: any) =>
       width: itemWidth - ITEM_MARGIN,
       height: itemWidth - ITEM_MARGIN,
       marginBottom: ITEM_MARGIN,
-      paddingHorizontal: 3,
     },
     dayNumber: {
       position: "absolute",

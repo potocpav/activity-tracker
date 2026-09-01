@@ -217,7 +217,7 @@ export const DataPointCardSingleContainer = (props: {
         <View
           key="children"
           style={{
-            width: props.variant === "single" ? ITEM_HEIGHT * 1.5 : ITEM_HEIGHT * 0.8,
+            width: props.variant === "single" ? ITEM_HEIGHT * 1.6 : ITEM_HEIGHT * 0.8,
             flexDirection: "row",
             gap: 6,
             alignItems: "flex-start",

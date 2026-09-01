@@ -389,7 +389,59 @@ export const renderShortFormValue = (value: number, unit: SubUnit): string => {
         return renderShortFormNumber(Math.round(value)) + "%";
       }
     case "rating":
-      return renderShortFormNumber(Math.round(value * 10) / 10); // TODO: render better
+      switch (unit.rating) {
+        case "stars":
+          if (value == 1) {
+            return "★";
+          } else if (value == 2) {
+            return "★★";
+          } else if (value == 3) {
+            return "★★★";
+          } else {
+            return renderShortFormNumber(Math.round(value * 10) / 10) + (value % 1 === 0 ? "★" : "");
+          }
+        case "likert-scale":
+          return renderShortFormNumber(value);
+        case "nrs-11":
+          return renderShortFormNumber(value);
+        case "rpe":
+          return renderShortFormNumber(value);
+        case "hedonic-scale":
+          return renderShortFormNumber(value);
+        case "grading":
+          switch (unit.scale) {
+            case "A-F":
+              if (value < 0.75) {
+                return "A+";
+              } else if (value < 1.25) {
+                return "A";
+              } else if (value < 1.75) {
+                return "A/B";
+              } else if (value < 2.25) {
+                return "B";
+              } else if (value < 2.75) {
+                return "B/C";
+              } else if (value < 3.25) {
+                return "C";
+              } else if (value < 3.75) {
+                return "C/D";
+              } else if (value < 4.25) {
+                return "D";
+              } else if (value < 4.75) {
+                return "D/E";
+              } else if (value < 5.25) {
+                return "E";
+              } else if (value < 5.75) {
+                return "E/F";
+              } else if (value < 6.25) {
+                return "F";
+              } else {
+                return "F-";
+              }
+            case "1-5":
+              return renderShortFormNumber(value);
+          }
+      }
     case "distance":
       return renderShortFormNumber(value);
     case "weight":
@@ -434,7 +486,32 @@ export const renderLongFormValue = (value: number, unit: SubUnit): string => {
     case "percentage":
       return renderLongFormNumber(value) + " %";
     case "rating":
-      return renderLongFormNumber(value); // TODO: render better
+      switch (unit.rating) {
+        case "stars":
+          if (value == 1) {
+            return "★";
+          } else if (value == 2) {
+            return "★★";
+          } else if (value == 3) {
+            return "★★★";
+          } else if (value == 4) {
+            return "★★★★";
+          } else if (value == 5) {
+            return "★★★★★";
+          } else {
+            return renderShortFormNumber(Math.round(value * 10) / 10) + " ★";
+          }
+        case "likert-scale":
+          return renderLongFormNumber(value);
+        case "nrs-11":
+          return renderLongFormNumber(value);
+        case "rpe":
+          return renderLongFormNumber(value);
+        case "hedonic-scale":
+          return renderLongFormNumber(value);
+        case "grading":
+          return renderShortFormValue(value, unit);
+      }
     case "distance":
       return `${renderLongFormNumber(value)} ${unit.unit}`;
     case "weight":
@@ -624,7 +701,7 @@ export const ratingScalePoints = (unit: Exclude<RatingUnit, { rating: "stars" }>
       );
     case "rpe":
       switch (unit.rpe) {
-        // The Borg RPE scale, where only the odd numbers are named.
+        // The Borg RPE scale
         case 6:
           return numberedPoints(
             [
@@ -694,9 +771,27 @@ export const ratingScalePoints = (unit: Exclude<RatingUnit, { rating: "stars" }>
     // Both grading systems run from best to worst, so they share their descriptions and
     // differ only in what each grade is called.
     case "grading": {
-      const descriptions = ["Excellent", "Good", "Satisfactory", "Sufficient", "Fail"];
-      const labels = unit.scale === "A-F" ? ["A", "B", "C", "D", "F"] : ["1", "2", "3", "4", "5"];
-      return labels.map((label, index) => ({ value: index + 1, label, description: descriptions[index] }));
+      switch (unit.scale) {
+        case "A-F": {
+          return [
+            { value: 1, label: "A", description: "Excellent" },
+            { value: 2, label: "B", description: "Very Good" },
+            { value: 3, label: "C", description: "Good" },
+            { value: 4, label: "D", description: "Satisfactory" },
+            { value: 5, label: "E", description: "Passable" },
+            { value: 6, label: "F", description: "Fail" },
+          ];
+        }
+        case "1-5": {
+          return [
+            { value: 1, label: "1", description: "Excellent" },
+            { value: 2, label: "2", description: "Good" },
+            { value: 3, label: "3", description: "Satisfactory" },
+            { value: 4, label: "4", description: "Sufficient" },
+            { value: 5, label: "5", description: "Fail" },
+          ];
+        }
+      }
     }
   }
 };
