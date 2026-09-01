@@ -21,10 +21,12 @@
   - [ ] Debug BLE Input performance
 - [ ] Optimize for tablets
 - [ ] Authenticated activities
-- [o] Add ratings
-  - [o] Easy, Moderate, Hard, Very Hard, Max
-  - [o] 1-5 stars
-  - [o] 1-10 points
+- [x] Add ratings
+  - [x] Easy, Moderate, Hard, Very Hard, Max
+  - [x] 1-5 stars
+  - [x] 1-10 points
+  - [ ] Tweak colors
+  - [ ] Improve value display
 - [ ] Minor features
   - [ ] Remember last tags for each activity
   - [ ] BLE Input font size debugging

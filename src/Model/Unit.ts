@@ -472,7 +472,20 @@ export const renderUnit = (unit: SubUnit): string => {
     case "percentage":
       return "Percentage";
     case "rating":
-      return "Rating";
+      switch (unit.rating) {
+        case "stars":
+          return "Stars";
+        case "likert-scale":
+          return "Likert Scale";
+        case "nrs-11":
+          return "NRS-11";
+        case "rpe":
+          return "RPE";
+        case "hedonic-scale":
+          return "Hedonic Scale";
+        case "grading":
+          return "Grading";
+      }
     case "distance":
       return `Distance (${unit.unit})`;
     case "weight":
@@ -560,13 +573,12 @@ export const vScaleGrades = [...Array(17).keys()]
   .flat(Infinity) as string[];
 
 // The points of a rating scale that is a fixed set of steps, in ascending order: the
-// value stored, the label it is shown under, and what that step means. Scales leave some
-// of their steps unnamed (the even Borg numbers, for instance), hence the null.
+// value stored, the label it is shown under, and what that step means.
 //
 // Star ratings are not here: they are a count of stars rather than a set of named steps.
-export type RatingScalePoint = { value: number; label: string; description: string | null };
+export type RatingScalePoint = { value: number; label: string; description: string };
 
-const numberedPoints = (labels: (string | null)[], firstValue: number): RatingScalePoint[] =>
+const numberedPoints = (labels: (string)[], firstValue: number): RatingScalePoint[] =>
   labels.map((description, index) => ({
     value: firstValue + index,
     label: (firstValue + index).toString(),
@@ -618,17 +630,17 @@ export const ratingScalePoints = (unit: Exclude<RatingUnit, { rating: "stars" }>
             [
               "No exertion at all",
               "Extremely light",
-              null,
+              "Extremely light",
               "Very light",
-              null,
+              "Very light",
               "Light",
-              null,
+              "Light",
               "Somewhat hard",
-              null,
+              "Somewhat hard",
               "Hard",
-              null,
+              "Hard",
               "Very hard",
-              null,
+              "Very hard",
               "Extremely hard",
               "Maximal exertion",
             ],
@@ -644,10 +656,10 @@ export const ratingScalePoints = (unit: Exclude<RatingUnit, { rating: "stars" }>
               "Moderate",
               "Somewhat hard",
               "Hard",
-              null,
+              "Hard",
               "Very hard",
-              null,
-              null,
+              "Very hard",
+              "Very hard",
               "Maximal",
             ],
             0,
@@ -657,7 +669,12 @@ export const ratingScalePoints = (unit: Exclude<RatingUnit, { rating: "stars" }>
       switch (unit.levels) {
         case 5:
           return numberedPoints(
-            ["Dislike very much", "Dislike", "Neither like nor dislike", "Like", "Like very much"],
+            ["Dislike very much", 
+              "Dislike", 
+              "Neither like nor dislike", 
+              "Like",
+               "Like very much"
+              ],
             1,
           );
         case 7:

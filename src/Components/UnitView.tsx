@@ -84,7 +84,7 @@ const SwitchRow = ({
 };
 
 // A slider over the steps of a rating scale, with the meaning of the chosen step spelled
-// out underneath it.
+// out above it, clear of the thumb the finger is resting on.
 const RatingScaleSlider = ({
   ratingUnit,
   value,
@@ -110,7 +110,6 @@ const RatingScaleSlider = ({
 
   return (
     <View>
-      <Slider min={min} max={max} value={value} onChange={onChange} activityColor={activityColor} />
       <Text style={{ minHeight: 22, textAlign: "center", fontSize: 14, color: theme.onSurfaceVariant }}>
         {chosen !== undefined && (
           <>
@@ -119,6 +118,7 @@ const RatingScaleSlider = ({
           </>
         )}
       </Text>
+      <Slider min={min} max={max} value={value} onChange={onChange} activityColor={activityColor} />
     </View>
   );
 };
