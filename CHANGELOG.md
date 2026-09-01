@@ -36,22 +36,22 @@
 
 # Changelog
 
-### 3.7.0
+### 3.7.0 (planned)
 
 - Add ratings
 
-### 3.6.1
+### 3.6.1 (2026-08-30)
 
 - Fixed a bug which could cause data loss
 
-### 3.6.0
+### 3.6.0 (2026-08-30)
 
 - Removed the react-native-paper dependency
 - Improved taking long notes to enable the diary use-case
 - Improved dialogs and keyboard avoidance
 - Fixed several bugs
 
-### 3.5.0
+### 3.5.0 (2026-08-26)
 
 - Upgrade to Expo SDK 57
 - Import Loop Habit Tracker data into a new tab
@@ -59,11 +59,11 @@
 - Fixed a crash on duplicated point handling
 - More robust context menus
 
-### 3.4.1
+### 3.4.1 (2026-01-01)
 
 - Remove Tindeq Progressor from experimental features
 
-### 3.4.0
+### 3.4.0 (2025-12-21)
 
 - Add French and Font slash grades
 - Multiline data point notes
@@ -71,12 +71,12 @@
 - Fix a bug in "Daily %" calculations 
 - Fix a bug with the last month of the year being excluded from statistics
 
-### 3.3.1
+### 3.3.1 (2025-11-30)
 
 - Renaming activity tabs
 - Fix a screen navigation bug
 
-### 3.3.0
+### 3.3.0 (2025-10-23)
 
 - Activity tabs
 - New data point list design 
@@ -84,7 +84,7 @@
 - Polish Bluetooth integration with Tindeq Progressor
 - Allow duplicate activity names
 
-### 3.2.0
+### 3.2.0 (2025-10-13)
 
 - Fix data import (3.1.0 bug)
 - Replace Date picker with a native widget
@@ -92,14 +92,14 @@
 - Add chart mode "Points" where every data point is displayed individually
 - Improve default graph display
 
-### 3.1.0
+### 3.1.0 (2025-10-10)
 
 - Import data from [Loop Habit Tracker](https://loophabits.org/)
 - Add statistics and regression line to selected ranges in graphs
 - Experimental [Tindeq Progressor](https://tindeq.com/product/progressor/) support
 - New icons, UX tweaks
 
-### 3.0.0
+### 3.0.0 (2025-09-29)
 
 - Improve graph scrolling
 - Properly display units in graphs
@@ -109,19 +109,19 @@
 - Add links to Google Play, FAQ and Privacy Policy in Settings
 - Add percentage units
 
-### 2.4.0
+### 2.4.0 (2025-09-22)
 
 - Redesign unit selection dialog
 - Add YDS, French and Font climbing grade systems
 - Introduce new weight and distance units
 
-### 2.3.1
+### 2.3.1 (2025-09-19)
 
 - Fix crash when adding a third measurement unit
 - Prevent content from being cut off by the system bars
 - Various improvements and fixes based on user feedback
 
-### 2.2.1
+### 2.2.1 (2025-09-11)
 
 - General improvments based on user feedback
 - JSON import validation & data point sorting
