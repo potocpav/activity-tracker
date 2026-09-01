@@ -7,7 +7,7 @@ import {
   TimeUnit,
   WeightUnit,
   RatingUnit,
-  RatingUnitType
+  RatingUnitType,
 } from "../Model/StoreTypes";
 import { useState } from "react";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
@@ -27,7 +27,7 @@ import {
 import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
 import GradeSelection from "./GradeSelection";
 import FullScreenDialog from "./FullScreenDialog";
-import { CheckButton, MinusIcon, PlusIcon, Button } from "./Element";
+import { CheckButton, MinusIcon, PlusIcon, Button, Switch } from "./Element";
 import TextField from "./TextField";
 import SegmentedButtons from "./SegmentedButtons";
 import { ListAccordion, ListItem, IconName, ListIcon } from "./List";
@@ -48,6 +48,125 @@ const ratingUnitToString = (ratingUnit: RatingUnitType) => {
       return { label: "Hedonic Scale", description: "Degree of pleasure" };
     case "grading":
       return { label: "Grading", description: "School grading systems" };
+  }
+};
+
+// A caption naming what the widget below it configures.
+const ConfigLabel = ({ label }: { label: string }) => {
+  const theme = useAppTheme();
+  return <Text style={{ fontSize: 14, color: theme.onSurfaceVariant }}>{label}</Text>;
+};
+
+const SwitchRow = ({
+  label,
+  value,
+  onValueChange,
+}: {
+  label: string;
+  value: boolean;
+  onValueChange: (value: boolean) => void;
+}) => {
+  const theme = useAppTheme();
+  return (
+    <Pressable
+      onPress={() => onValueChange(!value)}
+      accessibilityRole="switch"
+      accessibilityState={{ checked: value }}
+      style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 16 }}
+    >
+      <Text style={{ flex: 1, fontSize: 16, color: theme.onSurface }}>{label}</Text>
+      <Switch value={value} onValueChange={onValueChange} />
+    </Pressable>
+  );
+};
+
+// The parameters of one rating scale, i.e. the fields of the chosen RatingUnit constructor.
+const RatingUnitConfig = ({
+  ratingUnit,
+  onChange,
+}: {
+  ratingUnit: RatingUnit;
+  onChange: (ratingUnit: RatingUnit) => void;
+}) => {
+  switch (ratingUnit.rating) {
+    case "stars":
+      return (
+        <>
+          <ConfigLabel label="Number of stars" />
+          <SegmentedButtons
+            value={ratingUnit.stars.toString()}
+            onValueChange={(value) => onChange({ ...ratingUnit, stars: Number(value) as 3 | 5 | 10 })}
+            buttons={[
+              { value: "3", label: "3" },
+              { value: "5", label: "5" },
+              { value: "10", label: "10" },
+            ]}
+          />
+          <SwitchRow
+            label="Half stars"
+            value={ratingUnit.half_stars}
+            onValueChange={(half_stars) => onChange({ ...ratingUnit, half_stars })}
+          />
+        </>
+      );
+    case "likert-scale":
+      return (
+        <>
+          <ConfigLabel label="Levels of agreement" />
+          <SegmentedButtons
+            value={ratingUnit.levels.toString()}
+            onValueChange={(value) => onChange({ ...ratingUnit, levels: Number(value) as 5 | 7 })}
+            buttons={[
+              { value: "5", label: "5" },
+              { value: "7", label: "7" },
+            ]}
+          />
+        </>
+      );
+    case "nrs-11":
+      return <ConfigLabel label="Fixed scale from 0 (no pain) to 10 (worst pain)" />;
+    case "rpe":
+      return (
+        <>
+          <ConfigLabel label="Scale range" />
+          <SegmentedButtons
+            value={ratingUnit.rpe.toString()}
+            onValueChange={(value) => onChange({ ...ratingUnit, rpe: Number(value) as 6 | 10 })}
+            buttons={[
+              { value: "6", label: "Borg 6\u201320" },
+              { value: "10", label: "CR10 0\u201310" },
+            ]}
+          />
+        </>
+      );
+    case "hedonic-scale":
+      return (
+        <>
+          <ConfigLabel label="Levels of pleasure" />
+          <SegmentedButtons
+            value={ratingUnit.levels.toString()}
+            onValueChange={(value) => onChange({ ...ratingUnit, levels: Number(value) as 5 | 7 })}
+            buttons={[
+              { value: "5", label: "5" },
+              { value: "7", label: "7" },
+            ]}
+          />
+        </>
+      );
+    case "grading":
+      return (
+        <>
+          <ConfigLabel label="Grading system" />
+          <SegmentedButtons
+            value={ratingUnit.scale}
+            onValueChange={(value) => onChange({ ...ratingUnit, scale: value as "A-F" | "1-5" })}
+            buttons={[
+              { value: "A-F", label: "A\u2013F" },
+              { value: "1-5", label: "1\u20135" },
+            ]}
+          />
+        </>
+      );
   }
 };
 
@@ -72,28 +191,39 @@ const subUnitProps = (
         description: null,
         children: null,
       };
-    case "rating":
+    case "rating": {
+      const ratingUnit = allUnits.find((unit) => unit.type === "rating");
       return {
         title: "Rating",
         icon: "star",
         description: null,
         children: (
           <View style={{ gap: 10 }}>
-            <Pressable onPress={() => {
-              setRatingUnitDialogVisible(true);
-            }}>
+            <Pressable
+              onPress={() => {
+                setRatingUnitDialogVisible(true);
+              }}
+            >
               <TextField
                 label="Rating scale"
                 editable={false}
-                value={(() => {
-                  const ratingUnit = allUnits.find((unit) => unit.type === subUnitType)?.rating;
-                  return ratingUnit ? ratingUnitToString(ratingUnit).label : "";
-                })()}
+                value={ratingUnit ? ratingUnitToString(ratingUnit.rating).label : ""}
               />
             </Pressable>
+            {ratingUnit && (
+              <RatingUnitConfig
+                ratingUnit={ratingUnit}
+                onChange={(newRatingUnit) =>
+                  setAllUnits(
+                    allUnits.map((unit) => (unit.type === "rating" ? { type: "rating", ...newRatingUnit } : unit)),
+                  )
+                }
+              />
+            )}
           </View>
         ),
       };
+    }
     case "distance":
       return {
         title: "Distance",
@@ -245,14 +375,7 @@ const subUnitProps = (
   }
 };
 
-const ratingUnitTypes: RatingUnitType[] = [
-  "stars",
-  "likert-scale",
-  "nrs-11",
-  "rpe",
-  "hedonic-scale",
-  "grading",
-];
+const ratingUnitTypes: RatingUnitType[] = ["stars", "likert-scale", "nrs-11", "rpe", "hedonic-scale", "grading"];
 
 const defaultRatingUnit = (ratingUnitType: RatingUnitType): RatingUnit => {
   switch (ratingUnitType) {
@@ -268,7 +391,7 @@ const defaultRatingUnit = (ratingUnitType: RatingUnitType): RatingUnit => {
       return { rating: "hedonic-scale", levels: 5 };
     case "grading":
       return { rating: "grading", scale: "A-F" };
-    }
+  }
 };
 
 export const UnitEditor = ({
@@ -344,7 +467,7 @@ export const UnitEditor = ({
                 subUnit.type,
                 allUnits,
                 setAllUnits,
-                setRatingUnitDialogVisible
+                setRatingUnitDialogVisible,
               );
               if (children) {
                 return (
@@ -376,19 +499,18 @@ export const UnitEditor = ({
           </View>
         </ScrollView>
       </FullScreenDialog>
-      <SmallDialog
-        visible={ratingUnitDialogVisible}
-        onDismiss={() => setRatingUnitDialogVisible(false)}
-        theme={theme}
-      >
+      <SmallDialog visible={ratingUnitDialogVisible} onDismiss={() => setRatingUnitDialogVisible(false)} theme={theme}>
         <ScrollView>
           {ratingUnitTypes.map((ratingUnitType) => {
             const selected = allUnits.find((unit) => unit.type === "rating")?.rating === ratingUnitType;
             return (
-              <Pressable key={ratingUnitType} onPress={() => {
-                setRatingUnitDialogVisible(false);
-                // setAllUnits(allUnits.map((unit) => (unit.type === "rating" ? { ...unit, rating: ratingUnitType } : unit)));
-              }}>
+              <Pressable
+                key={ratingUnitType}
+                onPress={() => {
+                  setRatingUnitDialogVisible(false);
+                  // setAllUnits(allUnits.map((unit) => (unit.type === "rating" ? { ...unit, rating: ratingUnitType } : unit)));
+                }}
+              >
                 <ListItem
                   title={ratingUnitToString(ratingUnitType).label}
                   titleColor={selected ? theme.primary : theme.onSurface}
@@ -396,7 +518,11 @@ export const UnitEditor = ({
                   right={<ListIcon name={selected ? "radiobox-marked" : "radiobox-blank"} />}
                   onPress={() => {
                     setRatingUnitDialogVisible(false);
-                    setAllUnits(allUnits.map((unit) => (unit.type === "rating" ? { type: "rating", ...defaultRatingUnit(ratingUnitType) } : unit)));
+                    setAllUnits(
+                      allUnits.map((unit) =>
+                        unit.type === "rating" ? { type: "rating", ...defaultRatingUnit(ratingUnitType) } : unit,
+                      ),
+                    );
                   }}
                 />
               </Pressable>
@@ -518,12 +644,12 @@ export const ValueEditor = ({
       is24Hour: true,
       value: valueHours
         ? new Date(
-          0,
-          0,
-          0,
-          Math.floor((valueHours ?? 0) + 1 / 120),
-          Math.floor((((valueHours ?? 0) + 1 / 120) % 1) * 60),
-        )
+            0,
+            0,
+            0,
+            Math.floor((valueHours ?? 0) + 1 / 120),
+            Math.floor((((valueHours ?? 0) + 1 / 120) % 1) * 60),
+          )
         : new Date(),
       onChange: (event, selectedDate) => {
         if (selectedDate !== undefined) {
