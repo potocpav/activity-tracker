@@ -85,8 +85,9 @@ export const authenticate = async (): Promise<boolean> => {
   const forceBiometrics = useStore.getState().forceBiometrics;
   await LocalAuthentication.cancelAuthenticate();
   const result = await LocalAuthentication.authenticateAsync({
-    promptMessage: "Unlock locked activities",
+    promptMessage: "Unlock activities",
     biometricsSecurityLevel: "weak",
+    requireConfirmation: false,
     disableDeviceFallback: forceBiometrics,
   });
   if (result.success) {

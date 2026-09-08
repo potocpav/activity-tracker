@@ -771,7 +771,9 @@ const useStore = create<State>()(
       },
 
       isAnyActivityLocked: () => {
-        return get().activities.some((tab: ActivityTab) => tab.activities.some((activity: ActivityType) => activity.locked));
+        return get().activities.some((tab: ActivityTab) =>
+          tab.activities.some((activity: ActivityType) => activity.locked),
+        );
       },
 
       requestPermissions: requestPermissions,

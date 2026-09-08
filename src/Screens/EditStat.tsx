@@ -21,8 +21,9 @@ import { useAppTheme } from "../Model/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
 import { ButtonRow, CheckButton, CopyButton, DeleteButton } from "../Components/Element";
+import { withActivityLock } from "../Components/LockedActivity";
 
-export const EditStat = ({ navigation, route }: { navigation: any; route: any }) => {
+const EditStat = ({ navigation, route }: { navigation: any; route: any }) => {
   const { activityPath, statId } = route.params;
   const activity: ActivityType = useStore(
     (state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId],
@@ -207,4 +208,4 @@ export const EditStat = ({ navigation, route }: { navigation: any; route: any })
   );
 };
 
-export default EditStat;
+export default withActivityLock(EditStat);
