@@ -125,15 +125,17 @@ const WeekColumnImpl: React.FC<WeekColumnProps> = ({
             )}
 
             <View style={styles.daySquare}>
-              <View style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                borderColor: theme.background,
-                borderWidth: isToday ? 3 : 0,
-              }}>
+              <View
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  borderColor: theme.background,
+                  borderWidth: isToday ? 3 : 0,
+                }}
+              >
                 <View
                   style={{
                     position: "absolute",
@@ -179,7 +181,8 @@ const WeekColumnImpl: React.FC<WeekColumnProps> = ({
                   borderRadius: 8,
                   borderColor: theme.primary,
                   borderWidth: isToday ? 2 : 0,
-                }} />
+                }}
+              />
             </View>
           </TouchableOpacity>
         );
