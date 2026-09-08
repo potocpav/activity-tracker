@@ -224,7 +224,7 @@ const useStore = create<State>()(
           const newScreen = oldTab.activities.slice(0);
           newScreen.splice(activityPath.activityId, 1);
           newActivities[activityPath.tabId] = { ...oldTab, activities: newScreen };
-          return trimEmptyTabs(newActivities, state.currentTabId);
+          return {activities: trimEmptyTabs(newActivities, state.currentTabId).activities};
         });
       },
 
@@ -256,28 +256,29 @@ const useStore = create<State>()(
       moveActivitiesToTab: (tabId: number, activityIds: number[], toTabId: number) => {
         set((state: any) => {
           let newActivities;
+          let fromTabId = tabId;
           // add a new tab if necessary
           if (toTabId < 0) {
             newActivities = [{ tabName: "Activities", activities: [] }, ...state.activities];
             toTabId = 0;
-            tabId += 1;
+            fromTabId += 1;
           } else if (toTabId >= state.activities.length) {
             newActivities = [...state.activities, { tabName: "Activities", activities: [] }];
             toTabId = newActivities.length - 1;
           } else {
             newActivities = state.activities.slice(0);
           }
-          const fromTab = newActivities[tabId];
+          const fromTab = newActivities[fromTabId];
           const selectedActivities = fromTab.activities.filter((activity: ActivityType, index: number) =>
             activityIds.includes(index),
           );
           const unselectedActivities = fromTab.activities.filter(
             (activity: ActivityType, index: number) => !activityIds.includes(index),
           );
-          newActivities[tabId] = { ...fromTab, activities: unselectedActivities };
+          newActivities[fromTabId] = { ...fromTab, activities: unselectedActivities };
           const toTab = newActivities[toTabId];
           newActivities[toTabId] = { ...toTab, activities: [...toTab.activities, ...selectedActivities] };
-          return trimEmptyTabs(newActivities, tabId);
+          return {activities: trimEmptyTabs(newActivities, tabId).activities};
         });
       },
 

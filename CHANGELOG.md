@@ -30,6 +30,10 @@
 
 # Changelog
 
+## 3.7.1 (planned)
+
+- Tweaks and fixes
+
 ### 3.7.0
 
 - Add ratings
