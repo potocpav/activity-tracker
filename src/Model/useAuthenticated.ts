@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from "react";
 import { AppState, ToastAndroid } from "react-native";
 import * as LocalAuthentication from "expo-local-authentication";
+import * as ScreenCapture from "expo-screen-capture";
 import useStore from "./Store";
 
 let authenticated = false;
@@ -16,11 +17,20 @@ const subscribe = (listener: () => void) => {
 
 const getSnapshot = () => authenticated;
 
+// Blanket ban on screenshots and screen recording while authenticated: any screen can
+// be showing locked data at that point. Sets FLAG_SECURE on Android, which also blanks
+// the app switcher preview.
+const setScreenCaptureAllowed = (allowed: boolean) => {
+  const call = allowed ? ScreenCapture.allowScreenCaptureAsync() : ScreenCapture.preventScreenCaptureAsync();
+  call.catch((error) => console.error("Could not change the screen capture setting", error));
+};
+
 const setAuthenticated = (value: boolean) => {
   if (authenticated === value) {
     return;
   }
   authenticated = value;
+  setScreenCaptureAllowed(!value);
   if (value) {
     // Re-lock as soon as the app leaves the foreground. Only "background" counts:
     // Android reports it when the app is actually left, while a dialog on top of the

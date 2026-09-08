@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import { Fragment, useEffect } from "react";
 import { ScrollView, ToastAndroid, Alert, Linking } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import useStore, { partialize } from "../Model/Store";
@@ -7,7 +7,8 @@ import { File, Paths, EncodingType } from "expo-file-system";
 import * as DocumentPicker from "expo-document-picker";
 import * as Sharing from "expo-sharing";
 import { useAppTheme } from "../Model/Theme";
-import { Switch } from "../Components/Element";
+import { Button, Switch } from "../Components/Element";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { ListSection, ListItem, ListIcon } from "../Components/List";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { allHints, ActivityType, DateList, Unit, ActivityTab, stripUuids, generateUuids } from "../Model/StoreTypes";
@@ -16,12 +17,12 @@ import { SystemBars } from "react-native-edge-to-edge";
 import * as SQLite from "expo-sqlite";
 import { defaultGraphs, defaultCalendar, defaultStats } from "../Model/DefaultActivity";
 import * as Crypto from "expo-crypto";
-import { authenticate } from "../Model/useAuthenticated";
+import { authenticate, deauthenticate, useAuthenticated } from "../Model/useAuthenticated";
 
 const Settings = () => {
   const navigation = useNavigation();
   const themeState = useStore((state: any) => state.theme);
-  const themeVariant = useAppTheme().variant;
+  const theme = useAppTheme();
   const blackBackground = useStore((state: any) => state.blackBackground);
   const setBlackBackground = useStore((state: any) => state.setBlackBackground);
   const weekStart = useStore((state: any) => state.weekStart);
@@ -37,6 +38,23 @@ const Settings = () => {
   const showHints = useStore((state: any) => state.showHints);
   const setShowHints = useStore((state: any) => state.setShowHints);
   const activateAllHints = useStore((state: any) => state.activateAllHints);
+  const authenticated = useAuthenticated();
+
+  const lockActivities = () => {
+    deauthenticate();
+    ToastAndroid.show("Activities locked", ToastAndroid.SHORT);
+  };
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerRight: () =>
+        authenticated ? (
+          <Button onPress={lockActivities}>
+            <MaterialCommunityIcons name="lock-open-variant" size={24} color={theme.onSurface} />
+          </Button>
+        ) : null,
+    });
+  }, [navigation, authenticated, theme]);
 
   // Guards the actions that expose or weaken the locked activities. A no-op prompt
   // when the user has already authenticated.
@@ -195,7 +213,7 @@ const Settings = () => {
 
   return (
     <Fragment>
-      <SystemBars style={themeVariant == "light" ? "dark" : "light"} />
+      <SystemBars style={theme.variant == "light" ? "dark" : "light"} />
       <ScrollView showsVerticalScrollIndicator={false}>
         <SafeAreaView style={{}} edges={["left", "right", "bottom"]}>
           <ListSection title="Interface">

@@ -32,6 +32,7 @@
     "expo-font": "~57.0.2",
     "expo-local-authentication": "~57.0.2",
     "expo-localization": "~57.0.1",
+    "expo-screen-capture": "~57.0.2",
     "expo-sharing": "~57.0.16",
     "expo-splash-screen": "~57.0.8",
     "expo-sqlite": "~57.0.2",
