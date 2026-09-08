@@ -201,6 +201,7 @@ const dayValuesEqual = (a: CalendarDayValue[], b: CalendarDayValue[]): boolean =
       x.hasFilteredData !== y.hasFilteredData ||
       x.value !== y.value ||
       x.isWeekend !== y.isWeekend ||
+      x.hasNotes !== y.hasNotes ||
       x.day[0] !== y.day[0] ||
       x.day[1] !== y.day[1] ||
       x.day[2] !== y.day[2]
