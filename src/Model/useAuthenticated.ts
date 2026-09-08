@@ -30,7 +30,6 @@ const setAuthenticated = (value: boolean) => {
     return;
   }
   authenticated = value;
-  setScreenCaptureAllowed(!value);
   if (value) {
     // Re-lock as soon as the app leaves the foreground. Only "background" counts:
     // Android reports it when the app is actually left, while a dialog on top of the
@@ -92,6 +91,7 @@ export const authenticate = async (): Promise<boolean> => {
   });
   if (result.success) {
     setAuthenticated(true);
+    setScreenCaptureAllowed(false);
     return true;
   }
   const message = errorMessage(result.error, forceBiometrics);
@@ -102,7 +102,10 @@ export const authenticate = async (): Promise<boolean> => {
 };
 
 /** Lock the locked activities back up, without going through the OS prompt. */
-export const deauthenticate = () => setAuthenticated(false);
+export const deauthenticate = () => {
+  setAuthenticated(false);
+  setScreenCaptureAllowed(true);
+};
 
 /**
  * Whether the user has authenticated in this app session. Locked activities are only

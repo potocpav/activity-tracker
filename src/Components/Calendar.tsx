@@ -33,6 +33,7 @@ type CalendarDayValue = {
   hasFilteredData: boolean;
   value: number | null;
   isWeekend: boolean;
+  hasNotes: boolean;
 };
 
 type WeekColumnProps = {
@@ -86,7 +87,7 @@ const WeekColumnImpl: React.FC<WeekColumnProps> = ({
           >{`${itemWeekStart.toLocaleDateString("en-US", { year: "numeric" })}`}</Text>
         )}
       </View>
-      {dayValues.map(({ day, hasData, hasFilteredData, value, isWeekend }, dayIdx) => {
+      {dayValues.map(({ day, hasData, hasFilteredData, value, isWeekend, hasNotes }, dayIdx) => {
         const isToday = cmpDateList(dateToDateList(today), day) === 0;
         return (
           <TouchableOpacity
@@ -123,35 +124,49 @@ const WeekColumnImpl: React.FC<WeekColumnProps> = ({
               </Text>
             )}
 
-            <View style={styles.daySquareInternal}>
-              <View
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  backgroundColor: hasData ? dayBackground : "#888888",
-                  opacity: hasFilteredData ? 1 : hasData ? (isWeekend ? 0.6 : 0.4) : isWeekend ? 0.5 : 0.3,
-                  borderRadius: 8,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  // borderWidth: 1,
-                }}
-              >
-                {hasFilteredData && (
-                  <Text
-                    style={[styles.value, { color: theme.background }]}
-                    numberOfLines={1}
-                    adjustsFontSizeToFit
-                    minimumFontScale={0.5}
-                  >
-                    {value !== null
-                      ? unitType === "none" && value === 1
-                        ? "✓"
-                        : renderShortFormValue(value, subUnit)
-                      : "-"}
-                  </Text>
+            <View style={styles.daySquare}>
+              <View style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                borderColor: theme.background,
+                borderWidth: isToday ? 3 : 0,
+              }}>
+                <View
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: hasData ? dayBackground : "#888888",
+                    opacity: hasFilteredData ? 1 : hasData ? (isWeekend ? 0.6 : 0.4) : isWeekend ? 0.5 : 0.3,
+                    borderRadius: isToday ? 5 : 8,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {hasFilteredData && (
+                    <Text
+                      style={[styles.value, { color: theme.background }]}
+                      numberOfLines={1}
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.5}
+                    >
+                      {value !== null
+                        ? unitType === "none" && value === 1
+                          ? "✓"
+                          : renderShortFormValue(value, subUnit)
+                        : "-"}
+                    </Text>
+                  )}
+                </View>
+                {hasNotes && (
+                  <View style={styles.noteDot}>
+                    <View style={styles.noteDotInner} />
+                  </View>
                 )}
               </View>
               <View
@@ -162,23 +177,9 @@ const WeekColumnImpl: React.FC<WeekColumnProps> = ({
                   right: 0,
                   bottom: 0,
                   borderRadius: 8,
-                  borderColor: isToday ? theme.primary : "transparent",
+                  borderColor: theme.primary,
                   borderWidth: isToday ? 2 : 0,
-                }}
-              >
-                <View
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    borderRadius: 6,
-                    borderColor: isToday ? theme.background : "transparent",
-                    borderWidth: isToday ? 1.5 : 0,
-                  }}
-                />
-              </View>
+                }} />
             </View>
           </TouchableOpacity>
         );
@@ -237,7 +238,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, 
   const minWeekCount = Math.ceil(dimensions.width / itemWidth);
   const maxWeekCount = 52 * 10;
 
-  const styles = getStyles(itemWidth, dimensions);
+  const styles = getStyles(itemWidth, dimensions, theme);
   const now = useToday();
   const pastWeekStart = (date: Date, i: number) => binTime("week", date.getTime(), -i, weekStart);
 
@@ -289,10 +290,15 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, 
       }
       const [dayStart, dayEnd] = findZeroSlice(activity.dataPoints, (dp) => dayCmp(dp, day));
       const filtered: [DateList, number][] = [];
+      let hasNotes = false;
       for (let k = dayStart; k < dayEnd; k++) {
-        const v = extractValue(activity.dataPoints[k], calendar.tagFilters, calendar.subUnit);
+        const dp = activity.dataPoints[k];
+        const v = extractValue(dp, calendar.tagFilters, calendar.subUnit);
         if (v !== null) {
-          filtered.push([activity.dataPoints[k].date, v]);
+          filtered.push([dp.date, v]);
+        }
+        if (dp.note !== undefined) {
+          hasNotes = true;
         }
       }
       days.push({
@@ -301,6 +307,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, 
         hasFilteredData: filtered.length > 0,
         value: extractStatValue(filtered, calendar.value, "today", weekStart),
         isWeekend: [0, 6].includes((weekStartDay + dayIdx) % 7),
+        hasNotes,
       });
     }
     return days;
@@ -336,7 +343,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, 
   );
 };
 
-const getStyles = (itemWidth: number, dimensions: any) =>
+const getStyles = (itemWidth: number, dimensions: any, theme: ReturnType<typeof useAppTheme>) =>
   StyleSheet.create({
     calendarContainer: {
       flexDirection: "column",
@@ -348,7 +355,7 @@ const getStyles = (itemWidth: number, dimensions: any) =>
       flexDirection: "column",
       width: itemWidth,
     },
-    daySquareInternal: {
+    daySquare: {
       width: itemWidth - ITEM_MARGIN,
       height: itemWidth - ITEM_MARGIN,
       marginBottom: ITEM_MARGIN,
@@ -378,6 +385,17 @@ const getStyles = (itemWidth: number, dimensions: any) =>
     },
     scrollView: {
       flex: 1,
+    },
+    noteDot: {
+      position: "absolute",
+      top: 3,
+      right: 3,
+    },
+    noteDotInner: {
+      width: 4,
+      height: 4,
+      borderRadius: 2.5,
+      backgroundColor: theme.background,
     },
   });
 

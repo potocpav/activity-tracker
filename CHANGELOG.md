@@ -20,19 +20,19 @@
 - [ ] Performance improvements
   - [ ] Debug BLE Input performance
 - [ ] Optimize for tablets
-- [o] Authenticated activities
+- [x] Authenticated activities
 - [o] Add ratings
   - [x] Easy, Moderate, Hard, Very Hard, Max
   - [x] 1-5 stars
   - [x] 1-10 points
-  - [ ] Improve value display
+  - [o] Improve value display
   - [ ] Tweak colors
 - [ ] Minor features
   - [ ] Remember last tags for each activity
   - [ ] BLE Input font size debugging
   - [ ] Unit conversions: kg <-> lbs, etc. This could include the ability to input values in different units - useful for climbing grades.
   - [ ] Desktop shortcuts for activities
-  - [ ] Show a small dot in calendar where a note is present
+  - [x] Show a small dot in calendar where a note is present
 
 # Changelog
 
@@ -40,6 +40,7 @@
 
 - Add ratings
 - Add locked activities
+- Show a small dot in calendar where a note is present
 
 ### 3.6.1 (2026-08-30)
 

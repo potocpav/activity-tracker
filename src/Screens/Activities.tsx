@@ -287,7 +287,7 @@ const ActivityCard = ({
           if (selectedActivities.length > 0) {
             return;
           }
-          if (activity.unit.type === "none") {
+          if ((authenticated || !activity.locked) && activity.unit.type === "none") {
             if (todayNPoints > 0) {
               deleteActivityDataPoint(activityPath, end - 1);
             } else {
