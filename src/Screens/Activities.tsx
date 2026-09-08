@@ -256,6 +256,9 @@ const ActivityCard = ({
       <Pressable
         onPress={() => {
           if (selectedActivities.length === 0) {
+            if (activity.locked && !authenticated) {
+              authenticate();
+            }
             if (activity.unit.type === "none") {
               if (todayNPoints > 0) {
                 navigation.navigate("EditDataPoint", {

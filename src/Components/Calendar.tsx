@@ -164,12 +164,12 @@ const WeekColumnImpl: React.FC<WeekColumnProps> = ({
                         : "-"}
                     </Text>
                   )}
-                  {hasNotes && (
-                    <View style={styles.noteDot}>
-                      <View style={styles.noteDotInner} />
-                    </View>
-                  )}
                 </View>
+                {hasNotes && (
+                  <View style={styles.noteDot}>
+                    <View style={styles.noteDotInner} />
+                  </View>
+                )}
               </View>
               <View
                 style={{

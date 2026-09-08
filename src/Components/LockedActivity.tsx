@@ -15,7 +15,7 @@ const LockedActivity: React.FC<{ activity: ActivityType; navigation: any }> = ({
 
   React.useEffect(() => {
     navigation.setOptions({
-      title: activity.name,
+      title: "Locked",
       headerStyle: { backgroundColor: theme.header },
       headerTintColor: theme.onHeader,
       headerRight: () => null,
