@@ -341,6 +341,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   const setActivityTabName = useStore((state: any) => state.setActivityTabName);
   const hideLockedActivities = useStore((state: any) => state.hideLockedActivities);
   const authenticated = useAuthenticated();
+  const isAnyActivityLocked = useStore((state: any) => state.isAnyActivityLocked);
 
   const wideDisplay = useWideDisplay();
   const dimensions = useWindowDimensions();
@@ -451,7 +452,11 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
                       dismissHint("hello");
                       navigation.navigate("Settings");
                     }}
-                    onLongPress={toggleAuthentication}
+                    onLongPress={() => {
+                      if (isAnyActivityLocked()) {
+                        toggleAuthentication();
+                      }
+                    }}
                   >
                     <MaterialCommunityIcons name="cog" size={24} color={theme.onSurface} />
                   </Button>
@@ -460,7 +465,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
             )
           : undefined,
     });
-  }, [navigation, currentTabId, theme, activities, selectedActivities, authenticated]);
+  }, [navigation, currentTabId, theme, activities, selectedActivities, authenticated, isAnyActivityLocked]);
 
   const moveActivityAction = (tabId: number, from: number, to: number) => {
     moveActivity(tabId, from, to);

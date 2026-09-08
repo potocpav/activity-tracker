@@ -39,6 +39,7 @@ const Settings = () => {
   const setShowHints = useStore((state: any) => state.setShowHints);
   const activateAllHints = useStore((state: any) => state.activateAllHints);
   const authenticated = useAuthenticated();
+  const isAnyActivityLocked = useStore((state: any) => state.isAnyActivityLocked);
 
   const lockActivities = () => {
     deauthenticate();
@@ -59,7 +60,11 @@ const Settings = () => {
   // Guards the actions that expose or weaken the locked activities. A no-op prompt
   // when the user has already authenticated.
   const withAuthentication = async (action: () => void) => {
-    if (await authenticate()) {
+    if (isAnyActivityLocked()) {
+      if (await authenticate()) {
+        action();
+      }
+    } else {
       action();
     }
   };
