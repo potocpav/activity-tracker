@@ -38,6 +38,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
 import { useToday } from "../Model/useToday";
+import { withActivityLock } from "../Components/LockedActivity";
 
 type ActivityDataProps = {
   navigation: any;
@@ -671,4 +672,4 @@ const getStyles = (theme: any) =>
     },
   });
 
-export default ActivityData;
+export default withActivityLock(ActivityData);

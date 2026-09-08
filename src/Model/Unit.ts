@@ -655,7 +655,7 @@ export const vScaleGrades = [...Array(17).keys()]
 // Star ratings are not here: they are a count of stars rather than a set of named steps.
 export type RatingScalePoint = { value: number; label: string; description: string };
 
-const numberedPoints = (labels: (string)[], firstValue: number): RatingScalePoint[] =>
+const numberedPoints = (labels: string[], firstValue: number): RatingScalePoint[] =>
   labels.map((description, index) => ({
     value: firstValue + index,
     label: (firstValue + index).toString(),
@@ -746,12 +746,7 @@ export const ratingScalePoints = (unit: Exclude<RatingUnit, { rating: "stars" }>
       switch (unit.levels) {
         case 5:
           return numberedPoints(
-            ["Dislike very much", 
-              "Dislike", 
-              "Neither like nor dislike", 
-              "Like",
-               "Like very much"
-              ],
+            ["Dislike very much", "Dislike", "Neither like nor dislike", "Like", "Like very much"],
             1,
           );
         case 7:

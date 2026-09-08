@@ -35,6 +35,7 @@ import TagSelector from "../Components/TagSelector";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import * as Crypto from "expo-crypto";
 import { useToday } from "../Model/useToday";
+import { withActivityLock } from "../Components/LockedActivity";
 
 type EditDataPointProps = {
   navigation: any;
@@ -415,4 +416,4 @@ const getStyles = (theme: Theme) =>
     },
   });
 
-export default EditDataPoint;
+export default withActivityLock(EditDataPoint);

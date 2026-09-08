@@ -19,6 +19,7 @@ import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
 import { ListItem } from "../Components/List";
 import { CheckButton, DeleteButton, ButtonRow, Button, ColorButton, PlusIcon, Switch } from "../Components/Element";
 import * as Crypto from "expo-crypto";
+import { withActivityLock } from "../Components/LockedActivity";
 
 type SpecialType = "ble_scale" | null;
 
@@ -849,4 +850,4 @@ const getStyles = (theme: Theme) =>
     },
   });
 
-export default EditActivity;
+export default withActivityLock(EditActivity);

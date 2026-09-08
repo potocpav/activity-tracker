@@ -97,7 +97,11 @@ const WeekColumnImpl: React.FC<WeekColumnProps> = ({
                 if (hasFilteredData) {
                   deleteActivityDataPointByDate(activityPath, day, tagFilters);
                 } else {
-                  updateActivityDataPoint(activityPath, undefined, { date: day, tags: positiveTags, uuid: Crypto.randomUUID(), });
+                  updateActivityDataPoint(activityPath, undefined, {
+                    date: day,
+                    tags: positiveTags,
+                    uuid: Crypto.randomUUID(),
+                  });
                 }
               }
             }}
@@ -119,9 +123,7 @@ const WeekColumnImpl: React.FC<WeekColumnProps> = ({
               </Text>
             )}
 
-            <View
-              style={styles.daySquareInternal}
-            >
+            <View style={styles.daySquareInternal}>
               <View
                 style={{
                   position: "absolute",

@@ -36,6 +36,7 @@ import { dayCmp, findZeroSlice } from "../Model/Activity";
 import { useFocusEffect } from "@react-navigation/native";
 import { RenderTags } from "../Components/Tags";
 import * as Crypto from "expo-crypto";
+import { withActivityLock } from "../Components/LockedActivity";
 
 const fontFamily = Platform.select({ default: "sans-serif" });
 const largeFont = matchFont({ fontFamily: fontFamily, fontSize: 24, fontWeight: "bold" });
@@ -771,4 +772,4 @@ const BleScaleInput: React.FC<BleScaleInputProps> = ({ route, navigation }) => {
   );
 };
 
-export default BleScaleInput;
+export default withActivityLock(BleScaleInput);

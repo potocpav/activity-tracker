@@ -16,6 +16,7 @@ import { SystemBars } from "react-native-edge-to-edge";
 import * as SQLite from "expo-sqlite";
 import { defaultGraphs, defaultCalendar, defaultStats } from "../Model/DefaultActivity";
 import * as Crypto from "expo-crypto";
+import { authenticate } from "../Model/useAuthenticated";
 
 const Settings = () => {
   const navigation = useNavigation();
@@ -37,9 +38,21 @@ const Settings = () => {
   const setShowHints = useStore((state: any) => state.setShowHints);
   const activateAllHints = useStore((state: any) => state.activateAllHints);
 
+  // Guards the actions that expose or weaken the locked activities. A no-op prompt
+  // when the user has already authenticated.
+  const withAuthentication = async (action: () => void) => {
+    if (await authenticate()) {
+      action();
+    }
+  };
+
   const openThemeSelection = () => {
     (navigation as any).navigate("ThemeSelection", { currentTheme: themeState });
   };
+
+  const toggleHideLockedActivities = () => withAuthentication(() => setHideLockedActivities(!hideLockedActivities));
+
+  const toggleForceBiometrics = () => withAuthentication(() => setForceBiometrics(!forceBiometrics));
 
   const exportData = async () => {
     const stateWithoutUuids = stripUuids({ ...state });
@@ -212,21 +225,16 @@ const Settings = () => {
             <ListItem
               title="Hide locked activities"
               description="Locked activities can be shown by long-pressing the settings button."
-              onPress={() => setHideLockedActivities(!hideLockedActivities)}
+              onPress={toggleHideLockedActivities}
               icon="eye-off"
-              right={
-                <Switch
-                  value={hideLockedActivities}
-                  onValueChange={() => setHideLockedActivities(!hideLockedActivities)}
-                />
-              }
+              right={<Switch value={hideLockedActivities} onValueChange={toggleHideLockedActivities} />}
             />
             <ListItem
               title="Force biometrics"
               description="Disallow pattern and password authentication."
-              onPress={() => setForceBiometrics(!forceBiometrics)}
+              onPress={toggleForceBiometrics}
               icon="fingerprint"
-              right={<Switch value={forceBiometrics} onValueChange={() => setForceBiometrics(!forceBiometrics)} />}
+              right={<Switch value={forceBiometrics} onValueChange={toggleForceBiometrics} />}
             />
           </ListSection>
 
@@ -235,7 +243,7 @@ const Settings = () => {
               title="Data Export"
               description="Generate a backup file that contains all your data. This file can be imported back."
               icon="upload"
-              onPress={exportData}
+              onPress={() => withAuthentication(exportData)}
             />
             <ListItem
               title="Data Import"

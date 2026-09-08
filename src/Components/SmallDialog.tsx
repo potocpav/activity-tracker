@@ -14,7 +14,6 @@ const SmallDialogBase: React.FC<SmallDialogProps> = ({ visible, onDismiss, theme
   const insets = useSafeAreaInsets();
   const styles = getStyles(theme, insets);
   return (
-
     <Modal
       visible={visible}
       animationType="fade"
@@ -37,26 +36,27 @@ const SmallDialogActions = ({ children }: { children: React.ReactNode }) => (
   <View style={actionsStyles.actions}>{children}</View>
 );
 
-const getStyles = (theme: Theme, insets: EdgeInsets) => StyleSheet.create({
-  centered: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingTop: insets.top + 24,
-    paddingBottom: insets.bottom + 24,
-    paddingLeft: insets.left + 24,
-    paddingRight: insets.right + 24,
-  },
-  card: {
-    maxWidth: 560,
-    maxHeight: "80%",
-    borderRadius: 28,
-    padding: 24,
-    paddingBottom: 16,
-    elevation: 24,
-    width: "100%",
-  },
-});
+const getStyles = (theme: Theme, insets: EdgeInsets) =>
+  StyleSheet.create({
+    centered: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      paddingTop: insets.top + 24,
+      paddingBottom: insets.bottom + 24,
+      paddingLeft: insets.left + 24,
+      paddingRight: insets.right + 24,
+    },
+    card: {
+      maxWidth: 560,
+      maxHeight: "80%",
+      borderRadius: 28,
+      padding: 24,
+      paddingBottom: 16,
+      elevation: 24,
+      width: "100%",
+    },
+  });
 
 const actionsStyles = StyleSheet.create({
   actions: {
