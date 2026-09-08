@@ -39,6 +39,7 @@ import { scheduleOnRN } from "react-native-worklets";
 import SmallDialog from "../Components/SmallDialog";
 import TextField from "../Components/TextField";
 import * as Crypto from "expo-crypto";
+import * as LocalAuthentication from 'expo-local-authentication';
 
 type ActivitiesProps = {
   navigation: any;
@@ -445,8 +446,18 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
       <View style={{ position: "absolute", top: 100, left: 0, right: 0 }}>
         {activities.length >= 6 && <Hint hint="reorder_activities" />}
       </View>
-      <View style={{ position: "absolute", top: -20, left: 0, right: 0, zIndex: 20 }}>
-        <Text style={{ color: "black" }}>Hello, world!</Text>
+      <View style={{ borderWidth: 1, borderColor: "white", padding: 10 }}>
+        <Button onPress={() => {
+          LocalAuthentication.authenticateAsync({
+            promptMessage: "Authenticate to continue",
+            biometricsSecurityLevel: "weak",
+            disableDeviceFallback: true,
+          }).then((result) => {
+            console.log(result);
+          });
+        }}>
+          <Text style={{ color: "white" }}>Authenticate</Text>
+        </Button>
       </View>
       <PagerView
         ref={pagerViewRef}
