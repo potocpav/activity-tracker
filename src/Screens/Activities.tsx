@@ -1,5 +1,5 @@
 import React, { useState, useRef, useMemo } from "react";
-import { StyleSheet, Text, View, useWindowDimensions, FlatList } from "react-native";
+import { StyleSheet, Text, View, useWindowDimensions, FlatList, ToastAndroid } from "react-native";
 import useStore from "../Model/Store";
 import { ActivityType, DataPoint, dateToDateList, Stat, ActivityTab, ActivityPath } from "../Model/StoreTypes";
 import { dayCmp, findZeroSlice, renderStatValue } from "../Model/Activity";
@@ -39,7 +39,7 @@ import { scheduleOnRN } from "react-native-worklets";
 import SmallDialog from "../Components/SmallDialog";
 import TextField from "../Components/TextField";
 import * as Crypto from "expo-crypto";
-import * as LocalAuthentication from 'expo-local-authentication';
+import { useAuthenticated, authenticate, deauthenticate } from "../Model/useAuthenticated";
 
 type ActivitiesProps = {
   navigation: any;
@@ -49,6 +49,7 @@ const DraggableCard = ({
   draggedCardIx,
   moveActivity,
   index,
+  activityId,
   itemHeight,
   numberOfItems,
   tabId,
@@ -57,8 +58,12 @@ const DraggableCard = ({
   setSelectedActivities,
 }: {
   draggedCardIx: SharedValue<{ from: number; to: number } | null>;
+  // `from` and `to` are positions in the visible list, not activity indices
   moveActivity: (from: number, to: number) => void;
+  // position in the visible list, which skips hidden (locked) activities
   index: number;
+  // index of the activity within its tab
+  activityId: number;
   itemHeight: number;
   numberOfItems: number;
   tabId: number;
@@ -137,7 +142,7 @@ const DraggableCard = ({
       <Animated.View style={[animatedStyle, { height: itemHeight }]}>
         <ActivityCard
           tabId={tabId}
-          activityId={index}
+          activityId={activityId}
           navigation={navigation}
           selectedActivities={selectedActivities}
           setSelectedActivities={setSelectedActivities}
@@ -167,6 +172,7 @@ const ActivityCard = ({
   const deleteActivityDataPoint = useStore((state: any) => state.deleteActivityDataPoint);
   const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);
   const weekStart = useStore((state: any) => state.weekStart);
+  const authenticated = useAuthenticated();
   const wideDisplay = useWideDisplay();
   const palette = useThemePalette();
   const today = dateToDateList(useToday());
@@ -223,9 +229,14 @@ const ActivityCard = ({
         style={styles.activityRow}
       >
         <View style={styles.activityTitleContainer}>
-          <Text numberOfLines={1} style={[styles.activityTitle, { color: palette[activity.color] }]}>
-            {activity.name}
-          </Text>
+          <View style={styles.activityTitleRow}>
+            {activity.locked && authenticated && (
+              <MaterialCommunityIcons name="lock-open-variant" size={16} color={palette[activity.color]} />
+            )}
+            <Text numberOfLines={1} style={[styles.activityTitle, { color: palette[activity.color] }]}>
+              {activity.name}
+            </Text>
+          </View>
         </View>
         {statValues.map((value, index) => (
           <View key={index} style={styles.activityValueContainer}>
@@ -280,7 +291,7 @@ const ActivityCard = ({
             if (todayNPoints > 0) {
               deleteActivityDataPoint(activityPath, end - 1);
             } else {
-              updateActivityDataPoint(activityPath, undefined, { date: today, uuid: Crypto.randomUUID(), });
+              updateActivityDataPoint(activityPath, undefined, { date: today, uuid: Crypto.randomUUID() });
             }
           }
         }}
@@ -322,6 +333,8 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   const dismissHint = useStore((state: any) => state.dismissHint);
   const moveActivity = useStore((state: any) => state.moveActivity);
   const setActivityTabName = useStore((state: any) => state.setActivityTabName);
+  const hideLockedActivities = useStore((state: any) => state.hideLockedActivities);
+  const authenticated = useAuthenticated();
 
   const wideDisplay = useWideDisplay();
   const dimensions = useWindowDimensions();
@@ -339,6 +352,17 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
 
   const [selectedActivities, setSelectedActivities] = useState<number[]>([]);
   const pagerViewRef = useRef<PagerView>(null);
+
+  const toggleAuthentication = async () => {
+    if (authenticated) {
+      deauthenticate();
+      setSelectedActivities([]);
+      ToastAndroid.show("Activities locked", ToastAndroid.SHORT);
+    } else if (await authenticate()) {
+      setSelectedActivities([]);
+      ToastAndroid.show("Activities unlocked", ToastAndroid.SHORT);
+    }
+  };
 
   const scrollY = useSharedValue(0);
   const draggedCardIx = useSharedValue<{ from: number; to: number } | null>(null);
@@ -399,6 +423,11 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
           ? () => (
               <Animated.View key="unselected" entering={FadeIn} exiting={FadeOut}>
                 <ButtonRow>
+                  {authenticated && (
+                    <Button onPress={toggleAuthentication}>
+                      <MaterialCommunityIcons name="lock-open-variant" size={24} color={theme.onSurface} />
+                    </Button>
+                  )}
                   <PlusIconButton
                     onPress={() => {
                       dismissHint("hello");
@@ -416,6 +445,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
                       dismissHint("hello");
                       navigation.navigate("Settings");
                     }}
+                    onLongPress={toggleAuthentication}
                   >
                     <MaterialCommunityIcons name="cog" size={24} color={theme.onSurface} />
                   </Button>
@@ -424,12 +454,15 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
             )
           : undefined,
     });
-  }, [navigation, currentTabId, theme, activities, selectedActivities]);
+  }, [navigation, currentTabId, theme, activities, selectedActivities, authenticated]);
 
-  const moveActivityAction = (from: number, to: number) => {
-    moveActivity(currentTabId, from, to);
+  const moveActivityAction = (tabId: number, from: number, to: number) => {
+    moveActivity(tabId, from, to);
     setSelectedActivities([]);
   };
+
+  // Locked activities are only listed once the user has authenticated
+  const isHidden = (activity: ActivityType) => activity.locked && hideLockedActivities && !authenticated;
 
   useAnimatedReaction(
     () => {},
@@ -446,19 +479,6 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
       <View style={{ position: "absolute", top: 100, left: 0, right: 0 }}>
         {activities.length >= 6 && <Hint hint="reorder_activities" />}
       </View>
-      <View style={{ borderWidth: 1, borderColor: "white", padding: 10 }}>
-        <Button onPress={() => {
-          LocalAuthentication.authenticateAsync({
-            promptMessage: "Authenticate to continue",
-            biometricsSecurityLevel: "weak",
-            disableDeviceFallback: true,
-          }).then((result) => {
-            console.log(result);
-          });
-        }}>
-          <Text style={{ color: "white" }}>Authenticate</Text>
-        </Button>
-      </View>
       <PagerView
         ref={pagerViewRef}
         style={{ flex: 1 }}
@@ -473,36 +493,44 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
         <View key="-1" collapsable={false}>
           <EmptyPagePlaceholder title="No activities" subtext="Tap the + button to create an activity" />
         </View>
-        {activities.map((activityTab: ActivityTab, tabId: number) => (
-          <View key={tabId} collapsable={false}>
-            {activityTab.activities.length === 0 ? (
-              <EmptyPagePlaceholder title="No activities" subtext="Tap the + button to create an activity" />
-            ) : (
-              <FlatList
-                data={activityTab.activities}
-                onScroll={(event) => {
-                  scrollY.set(event.nativeEvent.contentOffset.y);
-                }}
-                renderItem={({ index }) => (
-                  <DraggableCard
-                    draggedCardIx={draggedCardIx}
-                    index={index}
-                    moveActivity={moveActivityAction}
-                    itemHeight={itemHeight}
-                    numberOfItems={activityTab.activities.length}
-                    tabId={tabId}
-                    navigation={navigation}
-                    selectedActivities={selectedActivities}
-                    setSelectedActivities={setSelectedActivities}
-                  />
-                )}
-                keyExtractor={(item) => item.uuid}
-                contentContainerStyle={styles.listContainer}
-                ListFooterComponent={() => <Inset type="bottom" />}
-              />
-            )}
-          </View>
-        ))}
+        {activities.map((activityTab: ActivityTab, tabId: number) => {
+          const visibleActivities = activityTab.activities
+            .map((activity: ActivityType, activityId: number) => ({ activity, activityId }))
+            .filter(({ activity }) => !isHidden(activity));
+          return (
+            <View key={tabId} collapsable={false}>
+              {visibleActivities.length === 0 ? (
+                <EmptyPagePlaceholder title="No activities" subtext="Tap the + button to create an activity" />
+              ) : (
+                <FlatList
+                  data={visibleActivities}
+                  onScroll={(event) => {
+                    scrollY.set(event.nativeEvent.contentOffset.y);
+                  }}
+                  renderItem={({ item, index }) => (
+                    <DraggableCard
+                      draggedCardIx={draggedCardIx}
+                      index={index}
+                      activityId={item.activityId}
+                      moveActivity={(from: number, to: number) =>
+                        moveActivityAction(tabId, visibleActivities[from].activityId, visibleActivities[to].activityId)
+                      }
+                      itemHeight={itemHeight}
+                      numberOfItems={visibleActivities.length}
+                      tabId={tabId}
+                      navigation={navigation}
+                      selectedActivities={selectedActivities}
+                      setSelectedActivities={setSelectedActivities}
+                    />
+                  )}
+                  keyExtractor={(item) => item.activity.uuid}
+                  contentContainerStyle={styles.listContainer}
+                  ListFooterComponent={() => <Inset type="bottom" />}
+                />
+              )}
+            </View>
+          );
+        })}
         <View key={activities.length} collapsable={false}>
           <EmptyPagePlaceholder title="No activities" subtext="Tap the + button to create an activity" />
         </View>
@@ -567,6 +595,11 @@ const getStyles = (theme: any, wideDisplay: boolean, dimensions: any) =>
       flex: 1,
 
       justifyContent: "center",
+    },
+    activityTitleRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
     },
     activityValueContainer: {
       width: wideDisplay ? "10%" : "25%",

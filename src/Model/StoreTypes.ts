@@ -190,6 +190,8 @@ export type ActivityType = {
   calendars: CalendarProps[];
   graphs: GraphProps[];
   special: SpecialActivity | null;
+  // Locked activities are only reachable after the user authenticates. See `useAuthenticated`.
+  locked: boolean;
 };
 
 export type SpecialActivity = { type: "ble_scale"; minWeight: number };
@@ -247,6 +249,12 @@ export type State = {
   theme: "system" | "light" | "dark";
   blackBackground: boolean;
   weekStart: WeekStart;
+
+  // Locked activities
+  // Hide locked activities from the activity list until the user authenticates
+  hideLockedActivities: boolean;
+  // Only accept biometrics when authenticating, no pattern/password fallback
+  forceBiometrics: boolean;
 
   activeHints: HintType[];
   showHints: boolean;

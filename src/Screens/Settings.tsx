@@ -25,6 +25,10 @@ const Settings = () => {
   const setBlackBackground = useStore((state: any) => state.setBlackBackground);
   const weekStart = useStore((state: any) => state.weekStart);
   const setWeekStart = useStore((state: any) => state.setWeekStart);
+  const hideLockedActivities = useStore((state: any) => state.hideLockedActivities);
+  const setHideLockedActivities = useStore((state: any) => state.setHideLockedActivities);
+  const forceBiometrics = useStore((state: any) => state.forceBiometrics);
+  const setForceBiometrics = useStore((state: any) => state.setForceBiometrics);
   const state = useStore((state: any) => state);
   const setState = useStore((state: any) => state.setState);
   const addActivityTab = useStore((state: any) => state.addActivityTab);
@@ -162,6 +166,7 @@ const Settings = () => {
             calendars: [defaultCalendar(unit)],
             graphs: defaultGraphs(unit),
             special: null,
+            locked: false,
           };
           activities.push(activity);
         }
@@ -200,6 +205,28 @@ const Settings = () => {
               description={weekStart == "sunday" ? "Sunday" : "Monday"}
               onPress={() => setWeekStart(weekStart == "sunday" ? "monday" : "sunday")}
               icon="calendar"
+            />
+          </ListSection>
+
+          <ListSection title="Locked Activities">
+            <ListItem
+              title="Hide locked activities"
+              description="Locked activities can be shown by long-pressing the settings button."
+              onPress={() => setHideLockedActivities(!hideLockedActivities)}
+              icon="eye-off"
+              right={
+                <Switch
+                  value={hideLockedActivities}
+                  onValueChange={() => setHideLockedActivities(!hideLockedActivities)}
+                />
+              }
+            />
+            <ListItem
+              title="Force biometrics"
+              description="Disallow pattern and password authentication."
+              onPress={() => setForceBiometrics(!forceBiometrics)}
+              icon="fingerprint"
+              right={<Switch value={forceBiometrics} onValueChange={() => setForceBiometrics(!forceBiometrics)} />}
             />
           </ListSection>
 

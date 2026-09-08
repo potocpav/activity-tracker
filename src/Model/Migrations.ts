@@ -1,6 +1,6 @@
 import { ActivityType, DataPoint, GraphProps, HintType, allHints, ActivityTab, generateUuids } from "./StoreTypes";
 
-export const version = 33;
+export const version = 34;
 
 export const migrate = (persisted: any, version: number) => {
   if (version < 6) {
@@ -146,6 +146,15 @@ export const migrate = (persisted: any, version: number) => {
     if (persisted.activities.length === 0) {
       persisted.activities = [{ tabName: "Activities", activities: [] }];
     }
+  }
+  if (version < 34) {
+    persisted.hideLockedActivities = false;
+    persisted.forceBiometrics = false;
+    persisted.activities.forEach((tab: ActivityTab) => {
+      tab.activities.forEach((activity: ActivityType) => {
+        activity.locked = false;
+      });
+    });
   }
   return persisted;
 };

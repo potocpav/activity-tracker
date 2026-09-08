@@ -20,7 +20,7 @@
 - [ ] Performance improvements
   - [ ] Debug BLE Input performance
 - [ ] Optimize for tablets
-- [ ] Authenticated activities
+- [o] Authenticated activities
 - [o] Add ratings
   - [x] Easy, Moderate, Hard, Very Hard, Max
   - [x] 1-5 stars
@@ -39,6 +39,7 @@
 ### 3.7.0 (planned)
 
 - Add ratings
+- Add locked activities
 
 ### 3.6.1 (2026-08-30)
 

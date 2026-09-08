@@ -12,6 +12,7 @@ import Hint from "../Components/Hint";
 import { BleScaleIcon, ButtonRow, DotsIconButton, EditIconButton, PlusIconButton, Button } from "../Components/Element";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useToday } from "../Model/useToday";
+import { useAuthenticated, authenticate } from "../Model/useAuthenticated";
 
 type ActivityProps = {
   navigation: any;
@@ -23,11 +24,52 @@ const Activity: React.FC<ActivityProps> = ({ navigation, route }) => {
   const activity: ActivityType = useStore(
     (state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId],
   );
+  const authenticated = useAuthenticated();
 
-  return activity ? (
-    <ActivityInner activity={activity} activityPath={activityPath} navigation={navigation} />
-  ) : (
-    <Text></Text>
+  if (!activity) {
+    return <Text></Text>;
+  } else if (activity.locked && !authenticated) {
+    return <LockedActivity activity={activity} navigation={navigation} />;
+  } else {
+    return <ActivityInner activity={activity} activityPath={activityPath} navigation={navigation} />;
+  }
+};
+
+// Stands in for a locked activity until the user authenticates. Shows none of the
+// activity's data, only the way to unlock it.
+const LockedActivity: React.FC<{ activity: ActivityType; navigation: any }> = ({ activity, navigation }) => {
+  const theme = useAppTheme(activity.color);
+
+  React.useEffect(() => {
+    navigation.setOptions({
+      title: activity.name,
+      headerStyle: { backgroundColor: theme.header },
+      headerTintColor: theme.onHeader,
+      headerRight: () => null,
+    });
+  }, [navigation, theme, activity]);
+
+  // Prompt as soon as the screen opens. The button below is the retry after a cancel.
+  React.useEffect(() => {
+    authenticate();
+  }, []);
+
+  return (
+    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 20, gap: 10 }}>
+      <SystemBars style={{ statusBar: "light", navigationBar: theme.variant == "light" ? "dark" : "light" }} />
+      <MaterialCommunityIcons name="lock" size={64} color={theme.onSurfaceVariant} />
+      <Text style={{ fontSize: 24, fontWeight: "bold", color: theme.onSurfaceVariant }}>Locked</Text>
+      <Text style={{ fontSize: 16, color: theme.onSurfaceVariant, textAlign: "center" }}>
+        Authenticate to open this activity.
+      </Text>
+      <Button
+        onPress={() => authenticate()}
+        style={{ borderWidth: 1, borderColor: theme.outline, paddingHorizontal: 20 }}
+      >
+        <MaterialCommunityIcons name="lock-open-variant" size={20} color={theme.onSurface} />
+        <Text style={{ color: theme.onSurface, fontSize: 16 }}>Unlock</Text>
+      </Button>
+    </View>
   );
 };
 

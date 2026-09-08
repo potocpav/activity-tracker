@@ -16,7 +16,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
 import { UnitEditor } from "../Components/UnitView";
 import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
-import { CheckButton, DeleteButton, ButtonRow, Button, ColorButton, PlusIcon } from "../Components/Element";
+import { ListItem } from "../Components/List";
+import { CheckButton, DeleteButton, ButtonRow, Button, ColorButton, PlusIcon, Switch } from "../Components/Element";
 import * as Crypto from "expo-crypto";
 
 type SpecialType = "ble_scale" | null;
@@ -199,6 +200,8 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
 
   const [colorDialogVisible, setColorDialogVisible] = useState(false);
 
+  const [lockedInput, setLockedInput] = useState(activity?.locked ?? false);
+
   const [specialType, setSpecialType] = useState<SpecialType>(activity?.special?.type ?? null);
 
   const bleMinWeightUnit = multiUnitInput[0]?.unit?.type === "weight" ? (multiUnitInput[0]?.unit?.unit ?? "kg") : "kg";
@@ -269,6 +272,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
         calendars: [defaultCalendar(newUnit)],
         graphs: specialType === "ble_scale" ? defaultBleScaleGraphs(newUnit) : defaultGraphs(newUnit),
         special: specialType === "ble_scale" ? { type: "ble_scale", minWeight: bleMinWeightNumber } : null,
+        locked: lockedInput,
       };
       newActivityPath = createActivity(activityPath.tabId, updatedActivity);
     } else {
@@ -278,6 +282,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
         description: activityDescriptionInput,
         color: selectedColor,
         special: specialType === "ble_scale" ? { type: "ble_scale", minWeight: bleMinWeightNumber } : null,
+        locked: lockedInput,
         // don't update unit, it will be updated in the setUnit call
         // don't update tags, they will be updated in the setTags call
       };
@@ -421,6 +426,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
     unitMode,
     specialType,
     bleMinWeight,
+    lockedInput,
   ]);
 
   const onUpdateTag = (action: "delete" | "update") => {
@@ -752,6 +758,17 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
                 </View>
               </>
             )}
+
+            {/* negative margin cancels the form's padding, so the row lines up with the Settings rows */}
+            <View style={{ marginHorizontal: -10 }}>
+              <ListItem
+                title="Locked"
+                description="Require authentication to open this activity."
+                icon="lock"
+                onPress={() => setLockedInput(!lockedInput)}
+                right={<Switch value={lockedInput} onValueChange={setLockedInput} />}
+              />
+            </View>
           </View>
         </SafeAreaView>
       </ScrollView>

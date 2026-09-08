@@ -50,6 +50,8 @@ export const partialize = (state: State) => ({
   theme: state.theme,
   blackBackground: state.blackBackground,
   weekStart: state.weekStart,
+  hideLockedActivities: state.hideLockedActivities,
+  forceBiometrics: state.forceBiometrics,
   activeHints: state.activeHints,
   showHints: state.showHints,
   experimentalFeatures: state.experimentalFeatures,
@@ -109,6 +111,8 @@ const useStore = create<State>()(
       theme: "system",
       blackBackground: false,
       weekStart: "monday",
+      hideLockedActivities: false,
+      forceBiometrics: false,
       activeHints: allHints,
       showHints: true,
 
@@ -147,6 +151,14 @@ const useStore = create<State>()(
 
       setWeekStart: (weekStart: "sunday" | "monday") => {
         set({ weekStart: weekStart });
+      },
+
+      setHideLockedActivities: (hideLockedActivities: boolean) => {
+        set({ hideLockedActivities: hideLockedActivities });
+      },
+
+      setForceBiometrics: (forceBiometrics: boolean) => {
+        set({ forceBiometrics: forceBiometrics });
       },
 
       setCurrentTabId: (currentTabId: number) => {
