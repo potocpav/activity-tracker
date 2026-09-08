@@ -224,7 +224,7 @@ const useStore = create<State>()(
           const newScreen = oldTab.activities.slice(0);
           newScreen.splice(activityPath.activityId, 1);
           newActivities[activityPath.tabId] = { ...oldTab, activities: newScreen };
-          return {activities: trimEmptyTabs(newActivities, state.currentTabId).activities};
+          return { activities: trimEmptyTabs(newActivities, state.currentTabId).activities };
         });
       },
 
@@ -278,7 +278,7 @@ const useStore = create<State>()(
           newActivities[fromTabId] = { ...fromTab, activities: unselectedActivities };
           const toTab = newActivities[toTabId];
           newActivities[toTabId] = { ...toTab, activities: [...toTab.activities, ...selectedActivities] };
-          return {activities: trimEmptyTabs(newActivities, tabId).activities};
+          return { activities: trimEmptyTabs(newActivities, tabId).activities };
         });
       },
 
