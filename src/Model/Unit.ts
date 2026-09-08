@@ -391,23 +391,15 @@ export const renderShortFormValue = (value: number, unit: SubUnit): string => {
     case "rating":
       switch (unit.rating) {
         case "stars":
-          if (value == 1) {
-            return "★";
-          } else if (value == 2) {
-            return "★★";
-          } else if (value == 3) {
-            return "★★★";
-          } else {
-            return renderShortFormNumber(Math.round(value * 10) / 10) + (value % 1 === 0 ? "★" : "");
-          }
+          return renderShortFormNumber(Math.round(value * 10) / 10);
         case "likert-scale":
-          return renderShortFormNumber(value);
+          return renderShortFormNumber(Math.round(value * 10) / 10);
         case "nrs-11":
-          return renderShortFormNumber(value);
+          return renderShortFormNumber(Math.round(value * 10) / 10);
         case "rpe":
-          return renderShortFormNumber(value);
+          return renderShortFormNumber(Math.round(value * 10) / 10);
         case "hedonic-scale":
-          return renderShortFormNumber(value);
+          return renderShortFormNumber(Math.round(value * 10) / 10);
         case "grading":
           switch (unit.scale) {
             case "A-F":

@@ -20,7 +20,7 @@
 - [ ] Performance improvements
   - [ ] Debug BLE Input performance
 - [ ] Optimize for tablets
-- [x] Authenticated activities
+- [x] Locked activities
 - [o] Add ratings
   - [x] Easy, Moderate, Hard, Very Hard, Max
   - [x] 1-5 stars
