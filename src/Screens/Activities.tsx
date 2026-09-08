@@ -220,6 +220,9 @@ const ActivityCard = ({
         delayLongPress={300}
         onPress={() => {
           if (selectedActivities.length === 0) {
+            if (activity.locked && !authenticated) {
+              authenticate();
+            }
             navigation.navigate("Activity", { activityPath });
           } else {
             toggleSelected();
@@ -593,7 +596,6 @@ const getStyles = (theme: any, wideDisplay: boolean, dimensions: any) =>
     },
     activityTitleContainer: {
       flex: 1,
-
       justifyContent: "center",
     },
     activityTitleRow: {
