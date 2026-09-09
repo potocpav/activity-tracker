@@ -26,24 +26,21 @@ const setScreenCaptureAllowed = (allowed: boolean) => {
 };
 
 const setAuthenticated = (value: boolean) => {
-  if (authenticated === value) {
-    return;
+  if (authenticated !== value) {
+    authenticated = value;
+    listeners.forEach((l) => l());
   }
-  authenticated = value;
-  if (value) {
-    // Re-lock as soon as the app leaves the foreground. Only "background" counts:
-    // Android reports it when the app is actually left, while a dialog on top of the
-    // app (the OS authentication prompt included) does not.
-    appStateSub = AppState.addEventListener("change", (state) => {
-      if (state === "background") {
-        setAuthenticated(false);
-      }
-    });
-  } else {
-    appStateSub?.remove();
-    appStateSub = null;
-  }
-  listeners.forEach((l) => l());
+};
+
+const lockOnBackground = () => {
+  appStateSub?.remove();
+  appStateSub = AppState.addEventListener("change", (state) => {
+    if (state === "background") {
+      setAuthenticated(false);
+    } else if (state === "active") {
+      setScreenCaptureAllowed(true);
+    }
+  });
 };
 
 // The OS prompt already tells the user about cancellations and mistyped credentials,
@@ -92,6 +89,7 @@ export const authenticate = async (): Promise<boolean> => {
   });
   if (result.success) {
     setAuthenticated(true);
+    lockOnBackground();
     setScreenCaptureAllowed(false);
     return true;
   }
