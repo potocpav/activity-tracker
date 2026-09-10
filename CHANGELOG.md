@@ -26,13 +26,13 @@
   - [ ] Unit conversions: kg <-> lbs, etc. This could include the ability to input values in different units - useful for climbing grades.
   - [ ] Desktop shortcuts for activities
   - [ ] Show stars in calendar instead of numbers for star ratings
-  - [x] Show a small dot in calendar where a note is present
 
 # Changelog
 
-## 3.7.1 (planned)
+## 3.8.0 (planned)
 
 - Tweaks and fixes
+- Add future date input
 
 ### 3.7.0
 

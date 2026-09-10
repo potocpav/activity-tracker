@@ -35,8 +35,10 @@ type CalendarComponentProps = {
 
 const ITEM_MARGIN = 2;
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
-/** Weeks of empty future the calendar always keeps scrollable, to plan into */
-const MIN_FUTURE_WEEKS = 4;
+/** Weeks the calendar always keeps scrollable ahead of this week, to plan into */
+const MIN_FUTURE_WEEKS = 8;
+/** Weeks it always keeps scrollable behind this week, however little data reaches back */
+const MIN_PAST_WEEKS = 44;
 
 type CalendarDayValue = {
   day: DateList;
@@ -257,10 +259,9 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, 
   const dimensions = useWindowDimensions();
 
   const itemWidth = 35 * dimensions.fontScale;
-  const maxFutureWeeks = Math.ceil(FUTURE_HORIZON_DAYS / 7);
-  const minWeekCount = Math.ceil(dimensions.width / itemWidth) + maxFutureWeeks;
-  const maxWeekCount = 52 * 11;
   // A point can be planned up to the horizon, and the calendar has to be able to reach it
+  const maxFutureWeeks = Math.ceil(FUTURE_HORIZON_DAYS / 7);
+  const maxWeekCount = 52 * 11;
 
   const styles = getStyles(itemWidth, dimensions, theme);
   const now = useToday();
@@ -280,16 +281,17 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, 
   const firstDataWeekMs = firstDataWeek.getTime();
   const lastDataWeekMs = lastDataWeek.getTime();
 
-  // Weeks drawn ahead of this one: enough to reach the last planned point, and always at
-  // least MIN_FUTURE_WEEKS so there is somewhere to plan into
+  // Weeks drawn either side of this one: the minimums always, stretched to reach the
+  // first and last points when the data runs further out. A point can only be planned up
+  // to the horizon, and the total is capped at maxWeekCount, which trims the oldest weeks.
   const futureWeeks = Math.min(
     maxFutureWeeks,
     Math.max(MIN_FUTURE_WEEKS, Math.round((lastDataWeekMs - thisWeekMs) / WEEK_MS)),
   );
-  // Weeks drawn behind this one, back to the first point — which may itself be ahead, in
-  // which case there is no past to draw
-  const pastWeeks = Math.max(0, Math.round((thisWeekMs - firstDataWeekMs) / WEEK_MS));
-  const weekCount = Math.min(maxWeekCount, Math.max(minWeekCount, futureWeeks + pastWeeks + 1));
+  // A negative span, from an activity whose only points are planned ones, falls back to
+  // the minimum
+  const pastWeeks = Math.max(MIN_PAST_WEEKS, Math.round((thisWeekMs - firstDataWeekMs) / WEEK_MS));
+  const weekCount = Math.min(maxWeekCount, futureWeeks + pastWeeks + 1);
   const positiveTags = calendar.tagFilters.filter((t: TagFilter) => t.state === "yes").map((t: TagFilter) => t.name);
 
   let subUnit: SubUnit;
