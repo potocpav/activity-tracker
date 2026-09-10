@@ -16,6 +16,7 @@ import {
   BinnableSize,
   ActivityPath,
   State,
+  dateToDateList,
 } from "../../Model/StoreTypes";
 import { binTime, binTimeSeries, cmpDateList, extractValue } from "../../Model/Activity";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
@@ -23,12 +24,13 @@ import TagMenu from "../TagMenu";
 import SubUnitMenu from "../SubUnitMenu";
 import DropdownMenu from "../DropdownMenu";
 import RenameDialog from "../RenameDialog";
-import { useAppTheme } from "../../Model/Theme";
+import { useAppTheme, FUTURE_OPACITY } from "../../Model/Theme";
 import FlatListChart, { BarChart, BoxChart, barBoundingBox, ViewDimensions } from "../Chart/FlatListChart";
 import Animated, { FadeInUp, FadeOutUp } from "react-native-reanimated";
 import { renderLongFormValue, isSummable } from "../../Model/Unit";
 import { Canvas, Line, vec } from "@shopify/react-native-skia";
 import { ChevronDownIcon, ButtonRow, Button } from "../Element";
+import { useToday } from "../../Model/useToday";
 
 const ActivityGraph = ({ activityPath, graphIndex }: { activityPath: ActivityPath; graphIndex: number }) => {
   const activity: ActivityType = useStore(
@@ -403,6 +405,12 @@ const linearRegression = (values: { x: number; y: number }[]) => {
 
 const ActivityChart = ({ height, graph, dataPoints, activityUnit, weekStart, theme }: ActivityChart) => {
   const windowDimensions = useWindowDimensions();
+  const today = useToday();
+
+  // Every item is stamped with the start of its first day, so one starting after today
+  // has not begun yet and is drawn faded, like a future day in the calendar
+  const startOfToday = dateListToTime(dateToDateList(today));
+  const itemOpacity = (item: { time: number }) => (item.time > startOfToday ? FUTURE_OPACITY : 1);
 
   const [selectedRange, setSelectedRange] = useState<{ min: number; max: number } | null>(null);
 
@@ -534,6 +542,7 @@ const ActivityChart = ({ height, graph, dataPoints, activityUnit, weekStart, the
             unit={unit}
             color={theme.primary}
             fontScale={windowDimensions.fontScale}
+            opacity={itemOpacity(item)}
           />
         </>
       );
@@ -556,7 +565,13 @@ const ActivityChart = ({ height, graph, dataPoints, activityUnit, weekStart, the
               binSize={graph.binSize}
             />
           )}
-          <BoxChart view={view} values={item.values} color={theme.primary} surfaceColor={theme.surface} />
+          <BoxChart
+            view={view}
+            values={item.values}
+            color={theme.primary}
+            surfaceColor={theme.surface}
+            opacity={itemOpacity(item)}
+          />
         </>
       );
       itemBoundingBox = (item: any, itemWidthPx: number) =>

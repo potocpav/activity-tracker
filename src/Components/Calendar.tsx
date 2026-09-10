@@ -22,7 +22,7 @@ import {
   FUTURE_HORIZON_DAYS,
 } from "../Model/Activity";
 import useStore from "../Model/Store";
-import { useAppTheme } from "../Model/Theme";
+import { useAppTheme, FUTURE_OPACITY } from "../Model/Theme";
 import { useToday } from "../Model/useToday";
 import { renderShortFormValue } from "../Model/Unit";
 import * as Crypto from "expo-crypto";
@@ -37,8 +37,6 @@ const ITEM_MARGIN = 2;
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 /** Weeks of empty future the calendar always keeps scrollable, to plan into */
 const MIN_FUTURE_WEEKS = 4;
-/** Days that have not happened yet are drawn faded, however much data they hold */
-const FUTURE_OPACITY = 0.4;
 
 type CalendarDayValue = {
   day: DateList;
@@ -261,7 +259,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, 
   const itemWidth = 35 * dimensions.fontScale;
   const maxFutureWeeks = Math.ceil(FUTURE_HORIZON_DAYS / 7);
   const minWeekCount = Math.ceil(dimensions.width / itemWidth) + maxFutureWeeks;
-  const maxWeekCount = 52 * 10;
+  const maxWeekCount = 52 * 11;
   // A point can be planned up to the horizon, and the calendar has to be able to reach it
 
   const styles = getStyles(itemWidth, dimensions, theme);

@@ -284,12 +284,14 @@ export const BarChart = ({
   unit,
   color,
   fontScale,
+  opacity = 1,
 }: {
   view: ViewDimensions;
   value: number | null;
   unit: any;
   color: string;
   fontScale: number;
+  opacity?: number;
 }) => {
   let barWidth = view.width * 0.6;
   let belowZero = value !== null && value < 0;
@@ -298,12 +300,12 @@ export const BarChart = ({
   return (
     value !== null && (
       <Fragment key="data view">
-        <View key="value text" style={{ top: view.yToPx(value) - labelOffset, alignItems: "center" }}>
+        <View key="value text" style={{ top: view.yToPx(value) - labelOffset, alignItems: "center", opacity }}>
           <Text style={{ fontSize: 9, color: color }} numberOfLines={1} adjustsFontSizeToFit>
             {renderShortFormValue(value, unit)}
           </Text>
         </View>
-        <Canvas key="bar" style={{ position: "absolute", ...view }}>
+        <Canvas key="bar" style={{ position: "absolute", ...view, opacity }}>
           <RoundedRect
             rect={{
               rect: {
@@ -330,11 +332,13 @@ export const BoxChart = ({
   values,
   color,
   surfaceColor,
+  opacity = 1,
 }: {
   view: ViewDimensions;
   values: number[];
   color: string;
   surfaceColor: string;
+  opacity?: number;
 }) => {
   let barWidth = view.width * 0.5;
   let xmid = view.width / 2;
@@ -354,7 +358,9 @@ export const BoxChart = ({
   const q4px = view.yToPx(q4);
 
   return (
-    <Canvas key="bar" style={{ position: "absolute", ...view }}>
+    // Fading the canvas rather than the shapes keeps the median dot punched out of the
+    // box instead of blending with it
+    <Canvas key="bar" style={{ position: "absolute", ...view, opacity }}>
       <RoundedRect x={xmid - w} y={q1px} width={2 * w} height={q3px - q1px} color={color} r={w} />
       <RoundedRect x={xmid - ws} y={q0px} width={2 * ws} height={q4px - q0px} color={color} r={ws} />
       <RoundedRect

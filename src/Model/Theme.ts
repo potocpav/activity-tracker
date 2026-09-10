@@ -9,6 +9,13 @@ export const withAlpha = (color: string, alpha: number): string =>
     .toString(16)
     .padStart(2, "0");
 
+/**
+ * How much of the way to invisible a day that has not happened yet is drawn: planned
+ * points are ordinary points, but the calendar and the graphs fade them so it is clear
+ * which part of the picture has actually happened.
+ */
+export const FUTURE_OPACITY = 0.4;
+
 // The app's colors, flat: a theme holds nothing but colors and the variant it belongs
 // to, so there is nothing to nest them under. The values are the Material Design 3
 // baseline palette, previously reached through react-native-paper's MD3 themes.
