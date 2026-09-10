@@ -206,7 +206,8 @@ export type HintType =
   | "rename_calendar"
   | "calendar_introduction"
   | "quick_check_daily_activity"
-  | "save_data_point";
+  | "save_data_point"
+  | "lock_activity";
 
 // hint sequencing. Must contain all hints.
 export const hintDependencyChains: HintType[][] = [
@@ -215,7 +216,7 @@ export const hintDependencyChains: HintType[][] = [
   // Activity screen
   ["add_data_point", "calendar_introduction", "overview_edit_hint", "quick_check_daily_activity", "rename_calendar"],
   // Edit activity screen
-  // (none)
+  ["lock_activity"],
   // Edit data point screen
   ["save_data_point"],
   // Data list screen

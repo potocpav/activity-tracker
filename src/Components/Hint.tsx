@@ -53,6 +53,13 @@ const hintInfo = (hint: HintType) => {
         text: ["Save the data point (✓), or save and clone (✓+)"],
         arrowPos: 1.0,
       };
+    case "lock_activity":
+      return {
+        text: [
+          "Authentication can be customized in the Settings.",
+        ],
+        arrowPos: 1.0,
+      };
   }
 };
 

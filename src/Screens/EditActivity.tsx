@@ -20,6 +20,7 @@ import { ListItem } from "../Components/List";
 import { CheckButton, DeleteButton, ButtonRow, Button, ColorButton, PlusIcon, Switch } from "../Components/Element";
 import * as Crypto from "expo-crypto";
 import { withActivityLock } from "../Components/LockedActivity";
+import Hint from "../Components/Hint";
 
 type SpecialType = "ble_scale" | null;
 
@@ -769,6 +770,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
                 onPress={() => setLockedInput(!lockedInput)}
                 right={<Switch value={lockedInput} onValueChange={setLockedInput} />}
               />
+              {lockedInput && <Hint hint="lock_activity" inline />}
             </View>
           </View>
         </SafeAreaView>

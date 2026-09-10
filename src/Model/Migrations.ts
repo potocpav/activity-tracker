@@ -1,6 +1,6 @@
 import { ActivityType, DataPoint, GraphProps, HintType, allHints, ActivityTab, generateUuids } from "./StoreTypes";
 
-export const version = 34;
+export const version = 35;
 
 export const migrate = (persisted: any, version: number) => {
   if (version < 6) {
@@ -155,6 +155,10 @@ export const migrate = (persisted: any, version: number) => {
         activity.locked = false;
       });
     });
+  }
+  if (version < 35) {
+    // A hint added after the user's hints were first seeded: activate it for them too
+    persisted.activeHints = [...persisted.activeHints, "lock_activity"];
   }
   return persisted;
 };
