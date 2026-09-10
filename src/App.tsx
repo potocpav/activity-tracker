@@ -15,6 +15,7 @@ import { useAppTheme } from "./Model/Theme";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import EditStat from "./Screens/EditStat";
 import BleConnectionModal from "./Components/BleConnectionModal";
+import DragUnlockOverlay from "./Components/DragUnlockOverlay";
 import { enableFreeze } from "react-native-screens";
 import "expo-font";
 
@@ -88,6 +89,7 @@ const App = () => {
               </Stack.Group>
             </Stack.Navigator>
           </NavigationContainer>
+          <DragUnlockOverlay />
         </View>
       </GestureHandlerRootView>
     </SafeAreaProvider>

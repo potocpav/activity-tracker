@@ -247,7 +247,7 @@ const Settings = () => {
           <ListSection title="Locked Activities">
             <ListItem
               title="Hide locked activities"
-              description="Locked activities can be shown by long-pressing the settings button."
+              description="Locked activities can be shown by dragging the settings button down."
               onPress={toggleHideLockedActivities}
               icon="eye-off"
               right={<Switch value={hideLockedActivities} onValueChange={toggleHideLockedActivities} />}

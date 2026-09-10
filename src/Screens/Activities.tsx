@@ -36,6 +36,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { Gesture, GestureDetector, Pressable } from "react-native-gesture-handler";
 import { scheduleOnRN } from "react-native-worklets";
+import SettingsButton from "../Components/SettingsButton";
 import SmallDialog from "../Components/SmallDialog";
 import TextField from "../Components/TextField";
 import * as Crypto from "expo-crypto";
@@ -447,19 +448,14 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
                     }}
                     color={theme.onSurface}
                   />
-                  <Button
+                  <SettingsButton
                     onPress={() => {
                       dismissHint("hello");
                       navigation.navigate("Settings");
                     }}
-                    onLongPress={() => {
-                      if (isAnyActivityLocked()) {
-                        toggleAuthentication();
-                      }
-                    }}
-                  >
-                    <MaterialCommunityIcons name="cog" size={24} color={theme.onSurface} />
-                  </Button>
+                    onDragDown={isAnyActivityLocked() ? toggleAuthentication : undefined}
+                    color={theme.onSurface}
+                  />
                 </ButtonRow>
               </Animated.View>
             )
