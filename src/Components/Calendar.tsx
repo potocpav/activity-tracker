@@ -37,6 +37,8 @@ const ITEM_MARGIN = 2;
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 /** Weeks of empty future the calendar always keeps scrollable, to plan into */
 const MIN_FUTURE_WEEKS = 4;
+/** Days that have not happened yet are drawn faded, however much data they hold */
+const FUTURE_OPACITY = 0.4;
 
 type CalendarDayValue = {
   day: DateList;
@@ -83,7 +85,7 @@ const WeekColumnImpl: React.FC<WeekColumnProps> = ({
   const dismissHint = useStore((state: any) => state.dismissHint);
   const nowMs = now.getTime();
   const itemWeekStart = binTime("week", nowMs, -weekIdx, weekStart);
-  const today = useToday();
+  const todayDay = dateToDateList(useToday());
   return (
     <View style={styles.weekColumn}>
       <View style={styles.monthLabelContainer}>
@@ -99,7 +101,8 @@ const WeekColumnImpl: React.FC<WeekColumnProps> = ({
         )}
       </View>
       {dayValues.map(({ day, hasData, hasFilteredData, value, isWeekend, hasNotes }, dayIdx) => {
-        const isToday = cmpDateList(dateToDateList(today), day) === 0;
+        const isToday = cmpDateList(todayDay, day) === 0;
+        const isFuture = cmpDateList(day, todayDay) > 0;
         return (
           <TouchableOpacity
             key={dayIdx}
@@ -130,12 +133,18 @@ const WeekColumnImpl: React.FC<WeekColumnProps> = ({
             activeOpacity={0.3}
           >
             {dayIdx == 0 && (
-              <Text style={[styles.dayNumber, { color: theme.outline, backgroundColor: theme.background, zIndex: 10 }]}>
+              <Text
+                style={[
+                  styles.dayNumber,
+                  { color: theme.outline, backgroundColor: theme.background, zIndex: 10 },
+                  isFuture && styles.future,
+                ]}
+              >
                 {day[2]}
               </Text>
             )}
 
-            <View style={styles.daySquare}>
+            <View style={[styles.daySquare, isFuture && styles.future]}>
               <View
                 style={{
                   position: "absolute",
@@ -385,6 +394,10 @@ const getStyles = (itemWidth: number, dimensions: any, theme: ReturnType<typeof 
       width: itemWidth - ITEM_MARGIN,
       height: itemWidth - ITEM_MARGIN,
       marginBottom: ITEM_MARGIN,
+    },
+    // Nested opacity composites, so this fades a day's fill, value and note dot alike
+    future: {
+      opacity: FUTURE_OPACITY,
     },
     dayNumber: {
       position: "absolute",
