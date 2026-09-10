@@ -107,7 +107,7 @@ const BleScaleInputInner: React.FC<BleScaleInputInnerProps> = ({
   timeUnit,
 }) => {
   const { activityPath } = route.params;
-  const appendActivityDataPoint = useStore((state: any) => state.appendActivityDataPoint);
+  const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);
   const theme = useAppTheme(activity.color);
   const palette = useThemePalette();
   const today = dateToDateList(useToday());
@@ -204,7 +204,9 @@ const BleScaleInputInner: React.FC<BleScaleInputInnerProps> = ({
   useEffect(() => {
     // indirection is necessary, because we can't set Zustand state in `setScaleInput` directly
     if (newDataPoint) {
-      appendActivityDataPoint(activityPath, {
+      // Inserted rather than appended: the array is kept sorted by date, and a point
+      // planned for a future day would otherwise sort after today's new one
+      updateActivityDataPoint(activityPath, undefined, {
         ...newDataPoint,
         ...(inputTags.length > 0 ? { tags: inputTags } : {}),
       });

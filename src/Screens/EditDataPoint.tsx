@@ -23,7 +23,7 @@ import {
 import useStore from "../Model/Store";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import { CheckButton, CheckPlusButton, DeleteButton, ButtonRow, Button } from "../Components/Element";
-import { cmpDateList, formatDate } from "../Model/Activity";
+import { cmpDateList, formatDate, futureHorizon } from "../Model/Activity";
 import { useAppTheme, useThemePalette, Theme } from "../Model/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
@@ -88,8 +88,8 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   const dateInputRef = useRef<InputWrapperRef>(undefined);
   let dateError: string | null = null;
   let inputDateList: DateList | null = inputDate ? dateToDateList(inputDate) : null;
-  if (inputDateList !== null && cmpDateList(inputDateList, dateToDateList(today)) > 0) {
-    dateError = "Date cannot be in the future";
+  if (inputDateList !== null && cmpDateList(inputDateList, dateToDateList(futureHorizon(today))) > 0) {
+    dateError = "Date cannot be more than a year in the future";
   } else if (inputDateList !== null && cmpDateList(inputDateList, [2000, 1, 1]) < 0) {
     dateError = "Date must be from this millenium";
   }
@@ -252,7 +252,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   const showDatePicker = () => {
     DateTimePickerAndroid.open({
       value: inputDate ?? today,
-      maximumDate: today,
+      maximumDate: futureHorizon(today),
       minimumDate: new Date(2000, 0, 1),
       firstDayOfWeek: weekStart === "monday" ? 1 : 0,
       onValueChange: (event, selectedDate) => {

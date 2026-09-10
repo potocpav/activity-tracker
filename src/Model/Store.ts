@@ -716,16 +716,6 @@ const useStore = create<State>()(
         return insertIndex;
       },
 
-      // users need to make sure that the date is monotonic
-      // TODO: double check it
-      appendActivityDataPoint: (activityPath: ActivityPath, dataPoint: DataPoint) => {
-        set((state: State) =>
-          mapActivity(state, activityPath, (activity: ActivityType) => {
-            return { ...activity, dataPoints: [...activity.dataPoints, dataPoint] };
-          }),
-        );
-      },
-
       deleteActivityDataPoint: (activityPath: ActivityPath, dataPointIndex: number) => {
         set((state: State) =>
           mapActivity(state, activityPath, (activity: ActivityType) => {

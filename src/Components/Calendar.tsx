@@ -12,7 +12,15 @@ import {
   ActivityPath,
   State,
 } from "../Model/StoreTypes";
-import { findZeroSlice, dayCmp, cmpDateList, extractStatValue, extractValue, binTime } from "../Model/Activity";
+import {
+  findZeroSlice,
+  dayCmp,
+  cmpDateList,
+  extractStatValue,
+  extractValue,
+  binTime,
+  FUTURE_HORIZON_DAYS,
+} from "../Model/Activity";
 import useStore from "../Model/Store";
 import { useAppTheme } from "../Model/Theme";
 import { useToday } from "../Model/useToday";
@@ -26,6 +34,9 @@ type CalendarComponentProps = {
 };
 
 const ITEM_MARGIN = 2;
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+/** Weeks of empty future the calendar always keeps scrollable, to plan into */
+const MIN_FUTURE_WEEKS = 4;
 
 type CalendarDayValue = {
   day: DateList;
@@ -239,26 +250,39 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, 
   const dimensions = useWindowDimensions();
 
   const itemWidth = 35 * dimensions.fontScale;
-  const minWeekCount = Math.ceil(dimensions.width / itemWidth);
+  const maxFutureWeeks = Math.ceil(FUTURE_HORIZON_DAYS / 7);
+  const minWeekCount = Math.ceil(dimensions.width / itemWidth) + maxFutureWeeks;
   const maxWeekCount = 52 * 10;
+  // A point can be planned up to the horizon, and the calendar has to be able to reach it
 
   const styles = getStyles(itemWidth, dimensions, theme);
   const now = useToday();
   const pastWeekStart = (date: Date, i: number) => binTime("week", date.getTime(), -i, weekStart);
 
   const firstDpDate: DateList | null = activity.dataPoints[0]?.date || null;
-  const lastVisibleWeek = pastWeekStart(now, 0);
+  const lastDpDate: DateList | null = activity.dataPoints[activity.dataPoints.length - 1]?.date || null;
 
-  const firstVisibleWeek = firstDpDate ? pastWeekStart(dateListToDate(firstDpDate), 0) : lastVisibleWeek;
+  const thisWeek = pastWeekStart(now, 0);
+  const firstDataWeek = firstDpDate ? pastWeekStart(dateListToDate(firstDpDate), 0) : thisWeek;
+  const lastDataWeek = lastDpDate ? pastWeekStart(dateListToDate(lastDpDate), 0) : thisWeek;
 
-  // Hoist .getTime() into locals: two .getTime() calls inline here crash the React Compiler
-  // (babel-plugin-react-compiler@1.0.0 codegen bug), making it bail out of the whole component.
-  const lastMs = lastVisibleWeek.getTime();
-  const firstMs = firstVisibleWeek.getTime();
-  const weekCount = Math.min(
-    maxWeekCount,
-    Math.max(minWeekCount, 1 + Math.round((lastMs - firstMs) / (7 * 24 * 60 * 60 * 1000))),
+  // Hoist .getTime() into locals: two .getTime() calls inline in one expression crash the
+  // React Compiler (babel-plugin-react-compiler@1.0.0 codegen bug), making it bail out of
+  // the whole component.
+  const thisWeekMs = thisWeek.getTime();
+  const firstDataWeekMs = firstDataWeek.getTime();
+  const lastDataWeekMs = lastDataWeek.getTime();
+
+  // Weeks drawn ahead of this one: enough to reach the last planned point, and always at
+  // least MIN_FUTURE_WEEKS so there is somewhere to plan into
+  const futureWeeks = Math.min(
+    maxFutureWeeks,
+    Math.max(MIN_FUTURE_WEEKS, Math.round((lastDataWeekMs - thisWeekMs) / WEEK_MS)),
   );
+  // Weeks drawn behind this one, back to the first point — which may itself be ahead, in
+  // which case there is no past to draw
+  const pastWeeks = Math.max(0, Math.round((thisWeekMs - firstDataWeekMs) / WEEK_MS));
+  const weekCount = Math.min(maxWeekCount, Math.max(minWeekCount, futureWeeks + pastWeeks + 1));
   const positiveTags = calendar.tagFilters.filter((t: TagFilter) => t.state === "yes").map((t: TagFilter) => t.name);
 
   let subUnit: SubUnit;
@@ -277,8 +301,6 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, 
       break;
   }
 
-  const nowDay = dateToDateList(now);
-
   const computeWeekDayValues = (weekIdx: number): CalendarDayValue[] => {
     const itemWeekStart = pastWeekStart(now, weekIdx);
     const weekStartDay = itemWeekStart.getDay();
@@ -289,9 +311,6 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, 
         itemWeekStart.getMonth() + 1,
         itemWeekStart.getDate() + dayIdx,
       ]);
-      if (cmpDateList(day, nowDay) > 0) {
-        break;
-      }
       const [dayStart, dayEnd] = findZeroSlice(activity.dataPoints, (dp) => dayCmp(dp, day));
       const filtered: [DateList, number][] = [];
       let hasNotes = false;
@@ -309,7 +328,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, 
         day,
         hasData: dayEnd > dayStart,
         hasFilteredData: filtered.length > 0,
-        value: extractStatValue(filtered, calendar.value, "today", weekStart),
+        value: extractStatValue(filtered, calendar.value, 1),
         isWeekend: [0, 6].includes((weekStartDay + dayIdx) % 7),
         hasNotes,
       });
@@ -319,8 +338,8 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, 
 
   return (
     <FlatList
-      data={Array.from({ length: weekCount }, (_, i) => i)}
-      keyExtractor={(_, id) => id.toString()}
+      data={Array.from({ length: weekCount }, (_, i) => i - futureWeeks)}
+      keyExtractor={(weekIdx) => weekIdx.toString()}
       style={styles.scrollView}
       extraData={activity.dataPoints}
       removeClippedSubviews={true}
@@ -328,6 +347,9 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, 
       windowSize={2}
       horizontal={true}
       getItemLayout={(_, index) => ({ length: itemWidth, offset: itemWidth * index, index })}
+      // The list is inverted, so index 0 sits at the right edge: start on the current
+      // week and leave the weeks ahead of it off screen to the right
+      initialScrollIndex={futureWeeks}
       renderItem={({ item: weekIdx }) => (
         <WeekColumn
           weekIdx={weekIdx}

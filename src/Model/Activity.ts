@@ -18,6 +18,16 @@ import { NativeModules } from "react-native";
 
 const locale = NativeModules.I18nManager.localeIdentifier;
 
+/**
+ * How far ahead a data point may be dated. Planned points are ordinary points, so this
+ * limit is only here to keep the calendar and the graphs from having to span decades.
+ */
+export const FUTURE_HORIZON_DAYS = 365;
+
+/** The last day a data point may be dated to */
+export const futureHorizon = (today: Date): Date =>
+  new Date(today.getFullYear(), today.getMonth(), today.getDate() + FUTURE_HORIZON_DAYS);
+
 export const dayCmp = (dp: DataPoint, day: DateList) => {
   return cmpDateList(dp.date, day);
 };
@@ -46,56 +56,109 @@ export const dateBetween = (d: DateList, lo: DateList, hi: DateList) => {
 //   }
 // };
 
-export const statPeriodCmp = (
-  dp: DataPoint,
+/** A closed interval of days: both `lo` and `hi` are part of it */
+export type DayInterval = { lo: DateList; hi: DateList };
+
+/** How far an activity's data reaches, for the periods that are relative to it */
+export type DataExtent = {
+  /** Day of the first data point */
+  first: DateList | null;
+  /** Day of the last data point, which may be in the future */
+  last: DateList | null;
+  /** Day of the last data point that is not in the future, so today at the latest */
+  lastActive: DateList | null;
+};
+
+export const dataExtent = (dataPoints: DataPoint[], today: DateList): DataExtent => {
+  if (dataPoints.length === 0) {
+    return { first: null, last: null, lastActive: null };
+  }
+  // Points are kept sorted by day, so the ones up to today are a prefix of the array
+  const nUpToToday = findZeroSlice(dataPoints, (dp: DataPoint) => (cmpDateList(dp.date, today) > 0 ? 1 : 0))[1];
+  return {
+    first: dataPoints[0].date,
+    last: dataPoints[dataPoints.length - 1].date,
+    lastActive: nUpToToday > 0 ? dataPoints[nUpToToday - 1].date : null,
+  };
+};
+
+/**
+ * The interval of days a stat period covers.
+ *
+ * The `this_*` periods span their whole calendar period, future days included, so a
+ * point planned for later this week counts towards "This Week" just like a past one.
+ * The `last_*` periods end today and never look ahead. `all_time` runs from the first
+ * point to today, or to the last point when that is further ahead.
+ *
+ * Null when the period has no interval at all, which only happens for
+ * `last_active_day` before there is any data.
+ */
+export const statPeriodInterval = (
   period: StatPeriod,
   today: DateList,
-  lastActive: DateList | null,
+  extent: DataExtent,
   weekStart: WeekStart,
-) => {
-  let lo: DateList | null = null;
-  let hi: DateList | null = null;
-  if (period === "today") {
-    lo = hi = today;
-  } else if (period === "this_week") {
-    const startDay = weekStart === "sunday" ? 0 : 1;
-    const dayOfWeek = (dateListToDate(today).getDay() - startDay + 7) % 7;
-    lo = [today[0], today[1], today[2] - dayOfWeek];
-    hi = [today[0], today[1], today[2] - dayOfWeek + 6];
-  } else if (period === "this_month") {
-    lo = [today[0], today[1], 1];
-    hi = [today[0], today[1] + 1, 0];
-  } else if (period === "this_quarter") {
-    const thisQuarter = Math.floor((today[1] - 1) / 3);
-    lo = [today[0], thisQuarter * 3 + 1, 1];
-    hi = [today[0], thisQuarter * 3 + 4, 0];
-  } else if (period === "this_year") {
-    lo = [today[0], 1, 1];
-    hi = [today[0] + 1, 1, 0];
-  } else if (period === "last_7_days") {
-    lo = [today[0], today[1], today[2] - 6];
-    hi = today;
-  } else if (period === "last_30_days") {
-    lo = [today[0], today[1], today[2] - 29];
-    hi = today;
-  } else if (period === "last_365_days") {
-    lo = [today[0], today[1], today[2] - 364];
-    hi = today;
-  } else if (period === "last_active_day") {
-    lo = hi = lastActive;
-  } else if (period === "all_time") {
-    lo = [0, 0, 0];
-    hi = [3000, 12, 31];
+): DayInterval | null => {
+  switch (period) {
+    case "today":
+      return { lo: today, hi: today };
+    case "this_week": {
+      const startDay = weekStart === "sunday" ? 0 : 1;
+      const dayOfWeek = (dateListToDate(today).getDay() - startDay + 7) % 7;
+      return {
+        lo: normalizeDateList([today[0], today[1], today[2] - dayOfWeek]),
+        hi: normalizeDateList([today[0], today[1], today[2] - dayOfWeek + 6]),
+      };
+    }
+    case "this_month":
+      return { lo: normalizeDateList([today[0], today[1], 1]), hi: normalizeDateList([today[0], today[1] + 1, 0]) };
+    case "this_quarter": {
+      const thisQuarter = Math.floor((today[1] - 1) / 3);
+      return {
+        lo: normalizeDateList([today[0], thisQuarter * 3 + 1, 1]),
+        hi: normalizeDateList([today[0], thisQuarter * 3 + 4, 0]),
+      };
+    }
+    case "this_year":
+      return { lo: normalizeDateList([today[0], 1, 1]), hi: normalizeDateList([today[0] + 1, 1, 0]) };
+    case "last_7_days":
+      return { lo: normalizeDateList([today[0], today[1], today[2] - 6]), hi: today };
+    case "last_30_days":
+      return { lo: normalizeDateList([today[0], today[1], today[2] - 29]), hi: today };
+    case "last_90_days":
+      return { lo: normalizeDateList([today[0], today[1], today[2] - 89]), hi: today };
+    case "last_365_days":
+      return { lo: normalizeDateList([today[0], today[1], today[2] - 364]), hi: today };
+    case "last_active_day":
+      return extent.lastActive === null ? null : { lo: extent.lastActive, hi: extent.lastActive };
+    case "all_time":
+      if (extent.first === null || extent.last === null) {
+        return { lo: today, hi: today };
+      }
+      return { lo: extent.first, hi: cmpDateList(extent.last, today) > 0 ? extent.last : today };
   }
-  // normalize lo and hi
-  if (lo && hi) {
-    lo = normalizeDateList(lo);
-    hi = normalizeDateList(hi);
-    return dateBetween(dp.date, lo, hi) ? 0 : cmpDateList(dp.date, lo);
-  } else {
-    // don't match
+};
+
+/** Days covered by a stat period, which is what "Daily %" divides by */
+export const dayIntervalLength = (interval: DayInterval | null): number => {
+  if (interval === null) {
+    return 1;
+  }
+  // Rounding absorbs the hour a daylight saving change adds to or takes off the span
+  const loTime = dateListToTime(interval.lo);
+  const hiTime = dateListToTime(interval.hi);
+  return Math.max(1, Math.round((hiTime - loTime) / (1000 * 60 * 60 * 24)) + 1);
+};
+
+/**
+ * Orders a data point against a period's interval, for `findZeroSlice`: 0 inside it,
+ * and the side it falls on otherwise. A null interval matches nothing.
+ */
+export const statPeriodCmp = (dp: DataPoint, interval: DayInterval | null) => {
+  if (interval === null) {
     return -1;
   }
+  return dateBetween(dp.date, interval.lo, interval.hi) ? 0 : cmpDateList(dp.date, interval.lo);
 };
 
 export const extractValue = (
@@ -117,16 +180,14 @@ export const extractValue = (
 
 export const calcStatValue = (stat: Stat, activity: ActivityType, weekStart: WeekStart) => {
   const today = dateToDateList(new Date());
-  const lastActive = activity.dataPoints.length > 0 ? activity.dataPoints[activity.dataPoints.length - 1].date : null;
-  const periodSlice = findZeroSlice(activity.dataPoints, (dp: DataPoint) =>
-    statPeriodCmp(dp, stat.period, today, lastActive, weekStart),
-  );
+  const interval = statPeriodInterval(stat.period, today, dataExtent(activity.dataPoints, today), weekStart);
+  const periodSlice = findZeroSlice(activity.dataPoints, (dp: DataPoint) => statPeriodCmp(dp, interval));
 
   const filteredValues: any[] = activity.dataPoints
     .slice(...periodSlice)
     .map((dp: DataPoint) => [dp.date, extractValue(dp, stat.tagFilters, stat.subUnit)])
     .filter((v: any) => v[1] !== null);
-  return extractStatValue(filteredValues, stat.value, stat.period, weekStart);
+  return extractStatValue(filteredValues, stat.value, dayIntervalLength(interval));
 };
 
 export const renderStatValue = (stat: Stat, activity: ActivityType, weekStart: WeekStart) => {
@@ -283,49 +344,11 @@ export const binTimeSeries = (
   return bins;
 };
 
-export const statPeriodDays = (period: StatPeriod, weekStart: WeekStart) => {
-  const today = new Date();
-  switch (period) {
-    case "today":
-      return 1;
-    case "this_week": {
-      const startDay = weekStart === "sunday" ? 0 : 1;
-      const dayOfWeek = (today.getDay() - startDay + 7) % 7;
-      return dayOfWeek + 1;
-    }
-    case "this_month": {
-      return today.getDate();
-    }
-    case "this_quarter": {
-      const startDay = new Date(today.getFullYear(), Math.floor(today.getMonth() / 3) * 3, 1);
-      return Math.floor((today.getTime() - startDay.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-    }
-    case "this_year":
-      {
-        const startDay = new Date(today.getFullYear(), 0, 1);
-        return Math.floor((today.getTime() - startDay.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-      }
-      return 365;
-    case "last_7_days":
-      return 7;
-    case "last_30_days":
-      return 30;
-    case "last_90_days":
-      return 90;
-    case "last_365_days":
-      return 365;
-    case "last_active_day":
-      return 1;
-    case "all_time":
-      return 365;
-  }
-};
-
 export const extractStatValue = (
   filteredValues: [DateList, number][],
   statValue: StatValue,
-  period: StatPeriod,
-  weekStart: WeekStart,
+  /** Days the values were collected over, from `dayIntervalLength` */
+  periodDays: number,
 ): number | null => {
   const periodValues = filteredValues.map((v: any) => v[1]);
   const periodDates = filteredValues.map((v: any) => v[0]);
@@ -336,7 +359,7 @@ export const extractStatValue = (
   } else if (statValue === "n_points") {
     value = periodValues.length;
   } else if (statValue === "daily_mean") {
-    value = Math.round((periodValues.length / statPeriodDays(period, weekStart)) * 100);
+    value = Math.round((periodValues.length / periodDays) * 100);
   } else if (statValue === "sum") {
     value = periodValues.reduce((acc, v) => acc + v, 0);
   } else if (statValue === "mean") {
