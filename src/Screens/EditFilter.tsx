@@ -26,6 +26,7 @@ import SegmentedButtons from "../Components/SegmentedButtons";
 import TagMenu from "../Components/TagMenu";
 import { ValueEditor } from "../Components/UnitView";
 import { Button, ButtonRow, CheckButton, Divider, Switch } from "../Components/Element";
+import { ListItem } from "../Components/List";
 import { useAppTheme } from "../Model/Theme";
 import { useToday } from "../Model/useToday";
 import { withActivityLock } from "../Components/LockedActivity";
@@ -44,13 +45,24 @@ const parseBound = (text: string, unit: SubUnit): number | null => {
   return value === null || isNaN(value) ? null : value;
 };
 
-const Section = ({ title, children }: { title: string; children: React.ReactNode }) => {
+const Section = ({
+  title,
+  flush = false,
+  children,
+}: {
+  title: string;
+  // Set where the rows bring their own padding, as `ListItem` does
+  flush?: boolean;
+  children: React.ReactNode;
+}) => {
   const theme = useAppTheme();
   return (
-    <View style={{ backgroundColor: theme.elevation1, borderRadius: 15, padding: 12, gap: 10, elevation: 1 }}>
-      <Text style={{ color: theme.onSurfaceVariant, fontSize: 14 }}>{title}</Text>
-      <Divider />
-      {children}
+    <View style={{ backgroundColor: theme.elevation1, borderRadius: 15, paddingVertical: 12, gap: 10, elevation: 1 }}>
+      <View style={{ paddingHorizontal: 16, gap: 10 }}>
+        <Text style={{ color: theme.onSurfaceVariant, fontSize: 14 }}>{title}</Text>
+        <Divider />
+      </View>
+      <View style={{ gap: 10, paddingHorizontal: flush ? 0 : 16 }}>{children}</View>
     </View>
   );
 };
@@ -301,11 +313,13 @@ const EditFilter = ({ navigation, route }: { navigation: any; route: any }) => {
             </Section>
           ))}
 
-          <Section title="Notes">
-            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
-              <Text style={{ flex: 1, color: theme.onSurface, fontSize: 16 }}>Only points with a note</Text>
-              <Switch value={inputOnlyWithNote} onValueChange={setInputOnlyWithNote} />
-            </View>
+          <Section title="Notes" flush>
+            <ListItem
+              title="Only points with a note"
+              icon="note-text-outline"
+              onPress={() => setInputOnlyWithNote(!inputOnlyWithNote)}
+              right={<Switch value={inputOnlyWithNote} onValueChange={setInputOnlyWithNote} />}
+            />
           </Section>
         </SafeAreaView>
       </ScrollView>
