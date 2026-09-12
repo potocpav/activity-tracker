@@ -21,6 +21,9 @@ export const FUTURE_OPACITY = 0.4;
 // baseline palette, previously reached through react-native-paper's MD3 themes.
 export type Theme = {
   variant: "light" | "dark";
+  // The pure-black AMOLED variant, where the elevation overlays collapse into the
+  // background: screens that separate content by tinting it need an outline instead.
+  black: boolean;
   primary: string;
   onPrimary: string;
   secondary: string;
@@ -47,6 +50,7 @@ export type Theme = {
 
 export const lightTheme: Theme = {
   variant: "light",
+  black: false,
   primary: "#6750A4",
   onPrimary: "#FFFFFF",
   secondary: "#625B71",
@@ -68,6 +72,7 @@ export const lightTheme: Theme = {
 
 export const darkTheme: Theme = {
   variant: "dark",
+  black: false,
   primary: "#D0BCFF",
   onPrimary: "#381E72",
   secondary: "#CCC2DC",
@@ -90,6 +95,7 @@ export const darkTheme: Theme = {
 // Dark theme with pure black backgrounds, for AMOLED screens.
 export const blackTheme: Theme = {
   ...darkTheme,
+  black: true,
   background: "#000000",
   surface: "#000000",
   surfaceVariant: "#000000",

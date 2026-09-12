@@ -120,12 +120,18 @@ const DataPointContainer = (props: {
       style={[
         {
           padding: 6,
-          backgroundColor: props.theme.elevation2,
+          // The black theme has no tint to lift a point off the background, so the point
+          // is drawn as an outline on black instead of a grey card.
+          backgroundColor: props.theme.black ? props.theme.background : props.theme.elevation2,
           margin: 4,
           borderRadius: 15,
           elevation: 2,
           borderWidth: 2,
-          borderColor: props.selected ? props.theme.primary : "transparent",
+          borderColor: props.selected
+            ? props.theme.primary
+            : props.theme.black
+              ? props.theme.outlineVariant
+              : "transparent",
         },
         props.style,
       ]}
@@ -654,7 +660,7 @@ const getStyles = (theme: any) =>
       backgroundColor: theme.elevation2,
       margin: 4,
       borderRadius: 15,
-      elevation: 2,
+      elevation: 2
     },
   });
 

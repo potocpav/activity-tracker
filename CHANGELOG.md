@@ -10,6 +10,10 @@
   - [ ] Bulk editing
   - [ ] Bulk deletion
 - [x] Data list filtering and sorting
+  - [ ] Re-use the same filtering and sorting for stats, with relevant limitations
+  - [ ] Re-use the same filtering and sorting for graphs, with relevant limitations
+  - [ ] Re-use the same filtering and sorting for calendars, with relevant limitations
+  - [ ] Fix greater-equal constraint not working properly. Some equal values are not displayed.
 - [ ] Tag groups to support mutually exclusive tags. 
   - [ ] Drag-drop across multiple tab rows.
   - [ ] Drag-drop the tag rows themeslves.
@@ -26,6 +30,9 @@
   - [ ] Unit conversions: kg <-> lbs, etc. This could include the ability to input values in different units - useful for climbing grades.
   - [ ] Desktop shortcuts for activities
   - [ ] Show stars in calendar instead of numbers for star ratings
+  - [ ] Allow opening data list from graph by a link in the stats overlay
+- [ ] Bugs
+  - [ ] Opening data list from calendar opens an empty data screen
 
 # Changelog
 

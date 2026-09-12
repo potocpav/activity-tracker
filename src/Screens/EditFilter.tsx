@@ -57,7 +57,19 @@ const Section = ({
 }) => {
   const theme = useAppTheme();
   return (
-    <View style={{ backgroundColor: theme.elevation1, borderRadius: 15, paddingVertical: 12, gap: 10, elevation: 1 }}>
+    <View
+      style={{
+        backgroundColor: theme.elevation1,
+        borderRadius: 15,
+        paddingVertical: 12,
+        gap: 10,
+        elevation: 1,
+        // The black theme has no tint to set a section apart from the background, so it
+        // gets an outline instead.
+        borderWidth: theme.black ? 1 : 0,
+        borderColor: theme.outlineVariant,
+      }}
+    >
       <View style={{ paddingHorizontal: 16, gap: 10 }}>
         <Text style={{ color: theme.onSurfaceVariant, fontSize: 14 }}>{title}</Text>
         <Divider />
@@ -202,24 +214,14 @@ const EditFilter = ({ navigation, route }: { navigation: any; route: any }) => {
     // Crossed bounds match nothing; say so rather than quietly showing an empty list
     const error = min !== null && max !== null && min > max ? "No value can satisfy both bounds" : null;
     return (
-      <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 4 }}>
-        <View style={{ flex: 1 }}>
-          <ValueEditor
-            unit={subUnit.unit}
-            label={end === "min" ? "At least (≥)" : "At most (≤)"}
-            value={text}
-            error={error}
-            activityColor={activity.color}
-            onChange={(value: string) => setBound(subUnit.name, end, value)}
-          />
-        </View>
-        <Button
-          onPress={() => setBound(subUnit.name, end, "")}
-          style={{ marginBottom: 8, opacity: text === "" ? 0.3 : 1 }}
-        >
-          <MaterialCommunityIcons name="close" size={20} color={theme.onSurfaceVariant} />
-        </Button>
-      </View>
+      <ValueEditor
+        unit={subUnit.unit}
+        label={end === "min" ? "At least (≥)" : "At most (≤)"}
+        value={text}
+        error={error}
+        activityColor={activity.color}
+        onChange={(value: string) => setBound(subUnit.name, end, value)}
+      />
     );
   };
 
