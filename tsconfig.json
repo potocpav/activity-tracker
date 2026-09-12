@@ -1,6 +1,12 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "strict": true
+    "strict": true,
+    // Tests import the module under test by its exact path (node --test runs the
+    // TypeScript sources directly, and Node's ESM resolver needs the extension).
+    "allowImportingTsExtensions": true,
+    // TypeScript 6 does not pick up @types/node on its own; the tests need it for
+    // node:test and node:assert.
+    "types": ["node"]
   }
 }
