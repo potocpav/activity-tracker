@@ -206,20 +206,25 @@ const matchesValueConstraints = (dataPoint: DataPoint, constraints: ValueConstra
 /**
  * Orders the listed points, in place. Points are stored ascending by day, so ordering by
  * date only has to keep or reverse that; ordering by value puts the points that do not
- * carry the sorted value last, whichever way round the order runs.
+ * carry the sorted value last, whichever way round the order runs, and breaks ties on the
+ * date, newest first. The stored index is the tiebreak: it runs with the day, and orders
+ * points sharing one day the way they were entered.
  */
 const sortDataPoints = (dataPoints: [DataPoint, number][], sort: DataSort): [DataPoint, number][] => {
   switch (sort.key) {
     case "date":
       return sort.direction === "ascending" ? dataPoints : dataPoints.reverse();
     case "value":
-      return dataPoints.sort((a, b) => {
-        const valueA = dataPointValue(a[0], sort.subUnit);
-        const valueB = dataPointValue(b[0], sort.subUnit);
-        if (valueA === null || valueB === null) {
-          return valueA === valueB ? 0 : valueA === null ? 1 : -1;
+      return dataPoints.sort(([pointA, indexA], [pointB, indexB]) => {
+        const valueA = dataPointValue(pointA, sort.subUnit);
+        const valueB = dataPointValue(pointB, sort.subUnit);
+        if (valueA !== valueB) {
+          if (valueA === null || valueB === null) {
+            return valueA === null ? 1 : -1;
+          }
+          return sort.direction === "ascending" ? valueA - valueB : valueB - valueA;
         }
-        return sort.direction === "ascending" ? valueA - valueB : valueB - valueA;
+        return indexB - indexA;
       });
   }
 };
