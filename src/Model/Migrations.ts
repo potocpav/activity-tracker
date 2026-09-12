@@ -8,10 +8,11 @@ import {
   generateUuids,
   ISODate,
   dayToISO,
+  defaultDataFilter,
 } from "./StoreTypes";
 import { day } from "./Date";
 
-export const version = 36;
+export const version = 37;
 
 export const migrate = (persisted: any, version: number) => {
   if (version < 6) {
@@ -186,6 +187,14 @@ export const migrate = (persisted: any, version: number) => {
     if (persisted.bleScaleWorkoutState !== null) {
       persisted.bleScaleWorkoutState.date = toISODate(persisted.bleScaleWorkoutState.date);
     }
+  }
+  if (version < 37) {
+    // The data list grew a persisted filter, replacing the tag filter it kept in screen state
+    persisted.activities.forEach((tab: ActivityTab) => {
+      tab.activities.forEach((activity: ActivityType) => {
+        activity.dataFilter = defaultDataFilter();
+      });
+    });
   }
   return persisted;
 };

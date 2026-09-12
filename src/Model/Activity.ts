@@ -9,6 +9,9 @@ import {
   ActivityType,
   WeekStart,
   BinnableSize,
+  DataFilter,
+  DataSort,
+  ValueConstraint,
 } from "./StoreTypes";
 import * as D from "./Date";
 import { renderLongFormNumber, renderLongFormValue } from "./Unit";
@@ -161,21 +164,98 @@ export const statPeriodCmp = (dp: DataPoint, interval: DayInterval | null) => {
   return D.compare(day, interval.lo) >= 0 && D.compare(day, interval.hi) <= 0 ? 0 : D.compare(day, interval.lo);
 };
 
+/** Whether a data point carries every required tag and none of the excluded ones */
+export const matchesTagFilters = (dataPoint: DataPoint, tagFilters: TagFilter[]): boolean => {
+  const tags = dataPoint.tags ?? [];
+  return tagFilters.every((t) => (t.state === "yes" ? tags.includes(t.name) : !tags.includes(t.name)));
+};
+
+/**
+ * One of a data point's values, or null when the point does not carry it. Unlike
+ * `extractValue` this never stands in a 1 for a valueless activity: it answers what the
+ * point holds, which is what a bound or an ordering can be applied to.
+ */
+export const dataPointValue = (dataPoint: DataPoint, subUnit: string | null): number | null => {
+  const value = subUnit === null ? dataPoint.value : (dataPoint.value as Record<string, number> | undefined)?.[subUnit];
+  return typeof value === "number" ? value : null;
+};
+
 export const extractValue = (
   dataPoint: DataPoint,
   tagFiters: TagFilter[],
   subUnitName: string | null,
 ): number | null => {
-  const requiredTags = tagFiters.filter((t) => t.state === "yes");
-  const negativeTags = tagFiters.filter((t) => t.state === "no");
-  const hasAllRequiredTags = requiredTags.every((t) => (dataPoint.tags ?? []).includes(t.name));
-  const hasAnyNegativeTags = negativeTags.some((t) => (dataPoint.tags ?? []).includes(t.name));
-  if (hasAllRequiredTags && !hasAnyNegativeTags) {
-    const value = subUnitName !== null ? ((dataPoint.value as any)[subUnitName] ?? null) : (dataPoint.value ?? 1);
-    return value;
+  if (matchesTagFilters(dataPoint, tagFiters)) {
+    // A valueless activity counts each point as a 1, which is what the stats sum over
+    return subUnitName !== null ? dataPointValue(dataPoint, subUnitName) : ((dataPoint.value as number) ?? 1);
   } else {
     return null;
   }
+};
+
+const matchesValueConstraints = (dataPoint: DataPoint, constraints: ValueConstraint[]): boolean =>
+  constraints.every((c) => {
+    const value = dataPointValue(dataPoint, c.subUnit);
+    // A point that does not carry the constrained value cannot satisfy a bound on it
+    if (value === null) {
+      return c.min === null && c.max === null;
+    }
+    return (c.min === null || value >= c.min) && (c.max === null || value <= c.max);
+  });
+
+/**
+ * Orders the listed points, in place. Points are stored ascending by day, so ordering by
+ * date only has to keep or reverse that; ordering by value puts the points that do not
+ * carry the sorted value last, whichever way round the order runs.
+ */
+const sortDataPoints = (dataPoints: [DataPoint, number][], sort: DataSort): [DataPoint, number][] => {
+  switch (sort.key) {
+    case "date":
+      return sort.direction === "ascending" ? dataPoints : dataPoints.reverse();
+    case "value":
+      return dataPoints.sort((a, b) => {
+        const valueA = dataPointValue(a[0], sort.subUnit);
+        const valueB = dataPointValue(b[0], sort.subUnit);
+        if (valueA === null || valueB === null) {
+          return valueA === valueB ? 0 : valueA === null ? 1 : -1;
+        }
+        return sort.direction === "ascending" ? valueA - valueB : valueB - valueA;
+      });
+  }
+};
+
+/**
+ * The data points a filter lists, as `[point, index into dataPoints]` pairs — the index
+ * is what the store's per-point calls take.
+ *
+ * `day`, when given, pins the listing to that one day and the filter's own period is
+ * ignored; that is the calendar's "show me this day" way into the list.
+ */
+export const filterDataPoints = (
+  dataPoints: DataPoint[],
+  filter: DataFilter,
+  today: D.Day,
+  weekStart: WeekStart,
+  day?: ISODate,
+): [DataPoint, number][] => {
+  const interval: DayInterval | null =
+    day !== undefined
+      ? { lo: dayFromISO(day), hi: dayFromISO(day) }
+      : statPeriodInterval(filter.period, today, dataExtent(dataPoints, today), weekStart);
+  const [from, to] = findZeroSlice(dataPoints, (dp: DataPoint) => statPeriodCmp(dp, interval));
+
+  const listed: [DataPoint, number][] = [];
+  for (let i = from; i < to; i++) {
+    const dataPoint = dataPoints[i];
+    if (
+      matchesTagFilters(dataPoint, filter.tagFilters) &&
+      (!filter.onlyWithNote || (dataPoint.note ?? "") !== "") &&
+      matchesValueConstraints(dataPoint, filter.valueConstraints)
+    ) {
+      listed.push([dataPoint, i]);
+    }
+  }
+  return sortDataPoints(listed, filter.sort);
 };
 
 export const calcStatValue = (stat: Stat, activity: ActivityType, weekStart: WeekStart) => {

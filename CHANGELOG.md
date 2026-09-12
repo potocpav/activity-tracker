@@ -9,7 +9,7 @@
   - [x] Bulk selection
   - [ ] Bulk editing
   - [ ] Bulk deletion
-- [ ] Data list filtering and sorting
+- [x] Data list filtering and sorting
 - [ ] Tag groups to support mutually exclusive tags. 
   - [ ] Drag-drop across multiple tab rows.
   - [ ] Drag-drop the tag rows themeslves.
@@ -33,6 +33,7 @@
 
 - Tweaks and fixes
 - Add future date input
+- Filter and sort the data list by date, value, tags and notes
 
 ### 3.7.0
 

@@ -3,10 +3,20 @@ import { StyleSheet, Text, View, SectionList, Alert, BackHandler } from "react-n
 import { useFocusEffect } from "@react-navigation/native";
 import useStore from "../Model/Store";
 import { useShallow } from "zustand/react/shallow";
-import { DataPoint, ActivityType, Tag, ISODate, dayFromISO, ActivityPath, State, dayToISO } from "../Model/StoreTypes";
-import { dayCmp, findZeroSlice, formatDate } from "../Model/Activity";
+import {
+  DataPoint,
+  ActivityType,
+  Tag,
+  ISODate,
+  dayFromISO,
+  ActivityPath,
+  State,
+  dayToISO,
+  isDataFilterActive,
+  isDataSortActive,
+} from "../Model/StoreTypes";
+import { filterDataPoints, formatDate } from "../Model/Activity";
 import { RenderTags } from "../Components/Tags";
-import TagMenu from "../Components/TagMenu";
 import { renderLongFormValue } from "../Model/Unit";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useThemePalette } from "../Model/Theme";
@@ -413,6 +423,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
   const activity: ActivityType = useStore(
     (state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId],
   );
+  const weekStart = useStore((state: State) => state.weekStart);
   const deleteActivityDataPoints = useStore((state: any) => state.deleteActivityDataPoints);
   const theme = useAppTheme(activity.color);
   const [selectedPointUuids, setSelectedPointUuids] = useState<string[]>([]);
@@ -421,31 +432,19 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
 
   const styles = getStyles(theme);
 
-  // Tag filter state
-  const [tags, setTags] = useState<{ name: string; state: "yes" | "no" }[]>([]);
-  const [tagsMenuVisible, setTagsMenuVisible] = useState(false);
+  // Which points are listed, and in what order, is the activity's persisted filter,
+  // edited on the `EditFilter` screen. A `day` pins the list to that one day.
+  const filter = activity.dataFilter;
+  const filterActive = isDataFilterActive(filter, day) || isDataSortActive(filter);
+  const requiredTags = filter.tagFilters.filter((t) => t.state === "yes").map((t) => t.name);
 
-  // Filtering logic
-  const requiredTags = tags.filter((t) => t.state === "yes").map((t) => t.name);
-  const negativeTags = tags.filter((t) => t.state === "no").map((t) => t.name);
-
-  let dps: [DataPoint, number][] = activity.dataPoints.map((o: DataPoint, i: number) => [o, i]);
-  // filter only daily points
-  if (day) {
-    const selectedDay = dayFromISO(day);
-    const daySlice = findZeroSlice(dps, (dp) => dayCmp(dp[0], selectedDay));
-    const dayDataAndIndex = dps.slice(...daySlice);
-    dps = dayDataAndIndex;
-  }
-
-  const filteredDataPoints: [DataPoint, number][] = dps
-    .filter(([dataPoint, _]: [DataPoint, number]) => {
-      const hasAllRequired = requiredTags.every((tag) => (dataPoint.tags ?? []).includes(tag));
-      const hasAnyNegative = negativeTags.some((tag) => (dataPoint.tags ?? []).includes(tag));
-      return hasAllRequired && !hasAnyNegative;
-    })
-    .slice()
-    .reverse();
+  const filteredDataPoints: [DataPoint, number][] = filterDataPoints(
+    activity.dataPoints,
+    filter,
+    today,
+    weekStart,
+    day,
+  );
 
   const toggleSelection = (uuids: string[]) => {
     // If no `uuids` are selected, select all of them
@@ -532,21 +531,9 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
             <DeleteIcon color={theme.onHeader} />
           </Button>
         )}
-        {activity.tags.length > 0 && (
-          <TagMenu
-            activity={activity}
-            tags={tags}
-            onChange={(tags) => setTags(tags)}
-            menuVisible={tagsMenuVisible}
-            setMenuVisible={setTagsMenuVisible}
-            activityTags={activity.tags}
-            button={(setMenuVisible) => (
-              <Button onPress={() => setMenuVisible()}>
-                <MaterialCommunityIcons name="filter" size={24} color={theme.onHeader} />
-              </Button>
-            )}
-          />
-        )}
+        <Button onPress={() => navigation.navigate("EditFilter", { activityPath, day })}>
+          <MaterialCommunityIcons name={filterActive ? "filter" : "filter-outline"} size={24} color={theme.onHeader} />
+        </Button>
         <Button
           onPress={() =>
             navigation.navigate("EditDataPoint", {
@@ -586,13 +573,20 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
       headerBackVisible: !selectModeActive,
       headerRight: selectModeActive ? selectModeButtons : normalButtons,
     });
-  }, [navigation, theme, tagsMenuVisible, tags, activity, selectModeActive, selectedPointUuids, today]);
+  }, [navigation, theme, activity, day, filterActive, selectModeActive, selectedPointUuids, today]);
 
   return (
     <SafeAreaView style={[styles.container]} edges={["left", "right"]}>
       <SystemBars style={{ statusBar: "light", navigationBar: theme.variant == "light" ? "dark" : "light" }} />
       {sections.length === 0 ? (
-        <EmptyPagePlaceholder title="No data" subtext="Tap the + button to create a data point" />
+        <EmptyPagePlaceholder
+          title="No data"
+          subtext={
+            isDataFilterActive(filter, day) && activity.dataPoints.length > 0
+              ? "No data point matches the filter"
+              : "Tap the + button to create a data point"
+          }
+        />
       ) : (
         <SectionList
           style={styles.scrollView}

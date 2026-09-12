@@ -35,6 +35,7 @@ import {
   ActivityTab,
   StatValue,
   GraphType,
+  DataFilter,
 } from "./StoreTypes";
 import { areUnitsEqual } from "./Unit";
 import { persist, createJSONStorage } from "zustand/middleware";
@@ -398,6 +399,12 @@ const useStore = create<State>()(
         );
       },
 
+      setActivityDataFilter: (activityPath: ActivityPath, dataFilter: DataFilter) => {
+        set((state: any) =>
+          mapActivity(state, activityPath, (activity: ActivityType) => ({ ...activity, dataFilter })),
+        );
+      },
+
       setUnit: (activityPath: ActivityPath, unit: Unit, unitMap: { oldName: string | null; newName: string }[]) => {
         set((state: any) =>
           mapActivity(state, activityPath, (activity: ActivityType) => {
@@ -527,6 +534,17 @@ const useStore = create<State>()(
               subUnit: setSubUnitName(stat.subUnit),
             }));
 
+            // The values themselves are rescaled or dropped by the unit change, so the
+            // data filter's bounds on them no longer mean anything and are cleared.
+            const newDataFilter: DataFilter = {
+              ...activity.dataFilter,
+              valueConstraints: [],
+              sort:
+                unit.type === "none"
+                  ? { ...activity.dataFilter.sort, key: "date", subUnit: null }
+                  : { ...activity.dataFilter.sort, subUnit: setSubUnitName(activity.dataFilter.sort.subUnit) },
+            };
+
             const newActivity: ActivityType = {
               ...activity,
               unit,
@@ -534,6 +552,7 @@ const useStore = create<State>()(
               calendars: newCalendars,
               graphs: newGraphs,
               stats: newStats,
+              dataFilter: newDataFilter,
             };
             return newActivity;
           }),

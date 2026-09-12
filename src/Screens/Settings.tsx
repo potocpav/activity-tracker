@@ -11,7 +11,16 @@ import { Button, Switch } from "../Components/Element";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { ListSection, ListItem, ListIcon } from "../Components/List";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { allHints, ActivityType, Unit, ActivityTab, stripUuids, generateUuids, dayToISO } from "../Model/StoreTypes";
+import {
+  allHints,
+  ActivityType,
+  Unit,
+  ActivityTab,
+  stripUuids,
+  generateUuids,
+  dayToISO,
+  defaultDataFilter,
+} from "../Model/StoreTypes";
 import * as D from "../Model/Date";
 import { SystemBars } from "react-native-edge-to-edge";
 import * as SQLite from "expo-sqlite";
@@ -197,6 +206,7 @@ const Settings = () => {
             stats: defaultStats(unit),
             calendars: [defaultCalendar(unit)],
             graphs: defaultGraphs(unit),
+            dataFilter: defaultDataFilter(),
             special: null,
             locked: false,
           };

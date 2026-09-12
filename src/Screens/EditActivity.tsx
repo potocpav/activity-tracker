@@ -1,7 +1,17 @@
 import React, { useState, FC, useRef } from "react";
 import { View, Text, StyleSheet, ScrollView, Alert, KeyboardAvoidingView, Pressable, TextInput } from "react-native";
 import Menu from "../Components/Menu";
-import { ActivityType, SetTag, Tag, SubUnit, Unit, WeightUnit, State, ActivityPath } from "../Model/StoreTypes";
+import {
+  ActivityType,
+  SetTag,
+  Tag,
+  SubUnit,
+  Unit,
+  WeightUnit,
+  State,
+  ActivityPath,
+  defaultDataFilter,
+} from "../Model/StoreTypes";
 import TextField from "../Components/TextField";
 import SegmentedButtons from "../Components/SegmentedButtons";
 import { stringToNumber } from "../Model/Unit";
@@ -273,6 +283,7 @@ const EditActivity: FC<EditActivityProps> = ({ navigation, route }) => {
         stats: defaultStats(newUnit),
         calendars: [defaultCalendar(newUnit)],
         graphs: specialType === "ble_scale" ? defaultBleScaleGraphs(newUnit) : defaultGraphs(newUnit),
+        dataFilter: defaultDataFilter(),
         special: specialType === "ble_scale" ? { type: "ble_scale", minWeight: bleMinWeightNumber } : null,
         locked: lockedInput,
       };

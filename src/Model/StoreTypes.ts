@@ -185,6 +185,61 @@ export type GraphProps = {
   binSize: BinSize;
 };
 
+/** A `>=` / `<=` bound on one of an activity's values. A null end is unbounded. */
+export type ValueConstraint = {
+  /** The sub-unit this bounds, or null for a single-valued activity */
+  subUnit: string | null;
+  min: number | null;
+  max: number | null;
+};
+
+export type SortKey = "date" | "value";
+
+export type SortDirection = "ascending" | "descending";
+
+export type DataSort = {
+  key: SortKey;
+  /** The sub-unit sorted on, when `key` is "value" */
+  subUnit: string | null;
+  direction: SortDirection;
+};
+
+/**
+ * How the data point list is narrowed down and ordered, edited on the `EditFilter`
+ * screen. Persisted per activity, so the list opens the way the user left it.
+ */
+export type DataFilter = {
+  period: StatPeriod;
+  tagFilters: TagFilter[];
+  /** Only the constraints that actually bound something are kept */
+  valueConstraints: ValueConstraint[];
+  /** When set, only points carrying a note are listed */
+  onlyWithNote: boolean;
+  sort: DataSort;
+};
+
+export const defaultDataFilter = (): DataFilter => ({
+  period: "all_time",
+  tagFilters: [],
+  valueConstraints: [],
+  onlyWithNote: false,
+  sort: { key: "date", subUnit: null, direction: "descending" },
+});
+
+/**
+ * Whether the filter leaves any data point out. A `day` pins the list to that one day, so
+ * the filter's own period is not applied and does not count as narrowing anything.
+ */
+export const isDataFilterActive = (filter: DataFilter, day?: ISODate): boolean =>
+  (day === undefined && filter.period !== "all_time") ||
+  filter.tagFilters.length > 0 ||
+  filter.valueConstraints.length > 0 ||
+  filter.onlyWithNote;
+
+/** Whether the filter lists the data in anything but the default newest-first order */
+export const isDataSortActive = (filter: DataFilter): boolean =>
+  filter.sort.key !== "date" || filter.sort.direction !== "descending";
+
 export type ActivityType = {
   uuid: string;
   name: string;
@@ -196,6 +251,7 @@ export type ActivityType = {
   stats: Stat[];
   calendars: CalendarProps[];
   graphs: GraphProps[];
+  dataFilter: DataFilter;
   special: SpecialActivity | null;
   // Locked activities are only reachable after the user authenticates. See `useAuthenticated`.
   locked: boolean;

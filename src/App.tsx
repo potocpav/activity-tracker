@@ -14,6 +14,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useAppTheme } from "./Model/Theme";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import EditStat from "./Screens/EditStat";
+import EditFilter from "./Screens/EditFilter";
 import BleConnectionModal from "./Components/BleConnectionModal";
 import DragUnlockOverlay from "./Components/DragUnlockOverlay";
 import { enableFreeze } from "react-native-screens";
@@ -86,6 +87,7 @@ const App = () => {
                   options={{ title: "Select Theme" }}
                 />
                 <Stack.Screen name="EditStat" component={EditStat} options={{ title: "Edit Stat" }} />
+                <Stack.Screen name="EditFilter" component={EditFilter} options={{ title: "Filter & Sort" }} />
               </Stack.Group>
             </Stack.Navigator>
           </NavigationContainer>

@@ -55,9 +55,7 @@ const hintInfo = (hint: HintType) => {
       };
     case "lock_activity":
       return {
-        text: [
-          "Authentication can be customized in the Settings.",
-        ],
+        text: ["Authentication can be customized in the Settings."],
         arrowPos: 1.0,
       };
   }

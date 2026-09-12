@@ -649,10 +649,12 @@ export const ValueEditor = ({
   label: string;
   value: string;
   error: string | null;
-  inputWrapperRef: React.RefObject<InputWrapperRef>;
+  // Both are only wanted where the value is submitted: a screen that just reads a value,
+  // like the data filter, has nothing to shake and nothing to block.
+  inputWrapperRef?: React.RefObject<InputWrapperRef>;
   activityColor: number;
   onChange: (value: string) => void;
-  setSubmitDisabled: (disabled: string | null) => void;
+  setSubmitDisabled?: (disabled: string | null) => void;
 }) => {
   const theme = useAppTheme();
 
@@ -667,7 +669,7 @@ export const ValueEditor = ({
     setTimerActive(false);
     setTimerStartTime(null);
     setNow(null);
-    setSubmitDisabled(null);
+    setSubmitDisabled?.(null);
     onChange(numberToString(0, unit));
   };
 
@@ -678,7 +680,7 @@ export const ValueEditor = ({
       onChange(addTimerToValue(value));
       setTimerActive(false);
       setTimerStartTime(null);
-      setSubmitDisabled(null);
+      setSubmitDisabled?.(null);
       if (timerInterval) {
         clearInterval(timerInterval);
         setTimerInterval(null);
@@ -691,7 +693,7 @@ export const ValueEditor = ({
       setTimerActive(true);
       setTimerStartTime(Date.now() / timeFactor);
       setNow(Date.now() / timeFactor);
-      setSubmitDisabled("Timer is running");
+      setSubmitDisabled?.("Timer is running");
 
       setTimerInterval(
         setInterval(() => {
