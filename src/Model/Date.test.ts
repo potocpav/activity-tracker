@@ -69,6 +69,76 @@ describe("days", () => {
   });
 });
 
+describe("the civil calendar conversion", () => {
+  const utcParts = (value: number): D.DayParts => {
+    const date = new Date(value * 86_400_000);
+    return { year: date.getUTCFullYear(), month: date.getUTCMonth() + 1, dayOfMonth: date.getUTCDate() };
+  };
+
+  test("is anchored at the epoch", () => {
+    assert.equal(D.day(1970, 1, 1).value, 0);
+    assert.equal(D.day(1969, 12, 31).value, -1);
+    assert.equal(D.day(1970, 1, 2).value, 1);
+    // The shifted calendar's own origin, 400-year era zero.
+    assert.equal(D.day(0, 3, 1).value, -719_468);
+  });
+
+  test("follows the Gregorian leap rules, including the century exceptions", () => {
+    assert.equal(D.toISODate(D.day(2000, 2, 29)), "2000-02-29"); // divisible by 400: leap
+    assert.equal(D.toISODate(D.day(1600, 2, 29)), "1600-02-29");
+    assert.equal(D.toISODate(D.day(1900, 2, 29)), "1900-03-01"); // divisible by 100: not leap
+    assert.equal(D.toISODate(D.day(2100, 2, 29)), "2100-03-01");
+    assert.equal(D.toISODate(D.day(2024, 2, 29)), "2024-02-29"); // divisible by 4: leap
+  });
+
+  test("repeats exactly every 400 years", () => {
+    // 146,097 days is the whole Gregorian cycle, so the calendar must land identically.
+    for (const start of [D.day(1970, 1, 1), D.day(1900, 2, 28), D.day(2000, 2, 29), D.day(-500, 7, 14)]) {
+      const parts = D.dayParts(start)!;
+      assert.deepEqual(D.dayParts(D.add(146_097, start)), { ...parts, year: parts.year + 400 });
+      assert.deepEqual(D.dayParts(D.sub(146_097, start)), { ...parts, year: parts.year - 400 });
+    }
+  });
+
+  test("agrees with Date on and beyond the everyday range", () => {
+    const dates: [number, number, number][] = [
+      [1970, 1, 1],
+      [2026, 9, 12],
+      [1900, 1, 1],
+      [2100, 12, 31],
+      [1, 1, 1],
+      [0, 1, 1],
+      [-1, 12, 31],
+      [-4713, 11, 24], // the Julian-day epoch, proleptic Gregorian
+      [12345, 6, 7],
+    ];
+    for (const [year, month, dayOfMonth] of dates) {
+      const value = D.day(year, month, dayOfMonth).value;
+      const oracle = new Date(0);
+      oracle.setUTCFullYear(year, month - 1, dayOfMonth);
+      assert.equal(value, oracle.getTime() / 86_400_000, `${year}-${month}-${dayOfMonth}`);
+      assert.deepEqual(D.dayParts(D.day(year, month, dayOfMonth)), { year, month, dayOfMonth });
+    }
+  });
+
+  test("agrees with Date at the very ends of what Date can represent", () => {
+    // Date tops out at ±8.64e15 ms, which is exactly ±100,000,000 days.
+    for (const value of [-100_000_000, -99_999_999, 99_999_999, 100_000_000]) {
+      const day = D.add(value, D.day(1970, 1, 1));
+      assert.deepEqual(D.dayParts(day), utcParts(value));
+      const { year, month, dayOfMonth } = D.dayParts(day)!;
+      assert.equal(D.day(year, month, dayOfMonth).value, value);
+    }
+  });
+
+  test("keeps working past Date, where Date gives up", () => {
+    const far = D.day(1_000_000, 6, 15);
+    assert.ok(D.isDefinite(far));
+    assert.deepEqual(D.dayParts(far), { year: 1_000_000, month: 6, dayOfMonth: 15 });
+    assert.equal(Number.isNaN(D.toDate(far)!.getTime()), true, "Date cannot hold it");
+  });
+});
+
 describe("weeks", () => {
   test("start on the requested weekday", () => {
     // 2026-09-12 is a Saturday.
@@ -211,13 +281,18 @@ describe("comparison", () => {
   });
 });
 
-test("every day of 1900..2100 round-trips through ISO text", () => {
+test("every day of 1900..2100 matches Date and round-trips through ISO text", () => {
   const last = D.day(LAST_YEAR, 12, 31);
   let day = D.day(FIRST_YEAR, 1, 1);
   let count = 0;
   while (D.compare(day, last) <= 0) {
     const iso = D.toISODate(day)!;
     assert.equal(D.fromISODate(iso)?.value, day.value, iso);
+    const oracle = new Date(day.value * 86_400_000);
+    const parts = D.dayParts(day)!;
+    assert.equal(parts.year, oracle.getUTCFullYear(), iso);
+    assert.equal(parts.month, oracle.getUTCMonth() + 1, iso);
+    assert.equal(parts.dayOfMonth, oracle.getUTCDate(), iso);
     day = D.add(1, day);
     count++;
   }

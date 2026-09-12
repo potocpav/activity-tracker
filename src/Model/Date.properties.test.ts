@@ -51,6 +51,9 @@ const arbDefiniteDay = fc
 
 const arbInfiniteDay = fc.constantFrom(D.farPast, D.farFuture);
 
+/** A day straight from its day number, for reaching the places `fc.date` cannot. */
+const dayFromValue = (value: number): D.Day => D.add(value, D.day(1970, 1, 1));
+
 const arbDay = fc.oneof({ arbitrary: arbDefiniteDay, weight: 9 }, { arbitrary: arbInfiniteDay, weight: 1 });
 
 /** A day together with one of the periods containing it — most laws need both ends of that relation. */
@@ -318,6 +321,25 @@ describe("agreement with Date", () => {
     );
   });
 
+  test("days are the days Date thinks they are across its whole range", () => {
+    // Date tops out at ±8.64e15 ms, which is exactly ±100,000,000 days: years -271821
+    // to 275760. The everyday generators never go near those, so reach them directly.
+    fc.assert(
+      fc.property(fc.integer({ min: -100_000_000, max: 100_000_000 }), (value) => {
+        const day = dayFromValue(value);
+        const oracle = new Date(value * 86_400_000);
+        assert.deepEqual(parts(day), {
+          year: oracle.getUTCFullYear(),
+          month: oracle.getUTCMonth() + 1,
+          dayOfMonth: oracle.getUTCDate(),
+        });
+        assert.equal(WEEKDAY_INDEX[D.weekday(day)!], oracle.getUTCDay());
+        const { year, month, dayOfMonth } = parts(day);
+        assert.equal(D.day(year, month, dayOfMonth).value, value);
+      }),
+    );
+  });
+
   test("month, quarter and year ends are the ends Date computes", () => {
     fc.assert(
       fc.property(arbDefiniteDay, (day) => {
@@ -442,6 +464,65 @@ describe("the far past and the far future", () => {
         assert.equal(period.value, day.value);
         assert.deepEqual(D.firstDay(period), day);
         assert.deepEqual(D.lastDay(period), day);
+      }),
+    );
+  });
+});
+
+describe("the calendar beyond what Date can represent", () => {
+  // Billions of years out, where Date is an Invalid Date and cannot be the oracle.
+  // These check the conversion against the structure of the calendar itself.
+  const arbRemoteValue = fc.integer({ min: -1_000_000_000_000, max: 1_000_000_000_000 });
+
+  test("day numbers round-trip through calendar fields", () => {
+    fc.assert(
+      fc.property(arbRemoteValue, (value) => {
+        const { year, month, dayOfMonth } = parts(dayFromValue(value));
+        assert.equal(D.day(year, month, dayOfMonth).value, value);
+      }),
+    );
+  });
+
+  test("calendar fields stay well formed", () => {
+    fc.assert(
+      fc.property(arbRemoteValue, (value) => {
+        const { month, dayOfMonth } = parts(dayFromValue(value));
+        assert.ok(month >= 1 && month <= 12, `month ${month}`);
+        assert.ok(dayOfMonth >= 1 && dayOfMonth <= 31, `day ${dayOfMonth}`);
+      }),
+    );
+  });
+
+  test("consecutive day numbers are consecutive dates", () => {
+    fc.assert(
+      fc.property(arbRemoteValue, (value) => {
+        const [today, tomorrow] = [parts(dayFromValue(value)), parts(dayFromValue(value + 1))];
+        const sameMonth = tomorrow.year === today.year && tomorrow.month === today.month;
+        assert.ok(
+          sameMonth ? tomorrow.dayOfMonth === today.dayOfMonth + 1 : tomorrow.dayOfMonth === 1,
+          `${JSON.stringify(today)} then ${JSON.stringify(tomorrow)}`,
+        );
+      }),
+    );
+  });
+
+  test("the calendar repeats exactly every 400 years", () => {
+    fc.assert(
+      fc.property(arbRemoteValue, (value) => {
+        const here = parts(dayFromValue(value));
+        assert.deepEqual(parts(dayFromValue(value + 146_097)), { ...here, year: here.year + 400 });
+      }),
+    );
+  });
+
+  test("months and years out there still have the lengths calendars have", () => {
+    fc.assert(
+      fc.property(arbRemoteValue, (value) => {
+        const day = dayFromValue(value);
+        assert.equal(parts(D.firstDay(D.month(day))).dayOfMonth, 1);
+        assert.ok([28, 29, 30, 31].includes(lengthInDays(D.month(day))));
+        assert.ok([365, 366].includes(lengthInDays(D.year(day))));
+        assert.ok(D.contains(D.year(day), day));
       }),
     );
   });

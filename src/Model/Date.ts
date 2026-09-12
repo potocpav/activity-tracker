@@ -17,9 +17,10 @@
  * every definite day, have no calendar form, and absorb every operation:
  * shifting one returns it, and its first and last day are itself.
  *
- * Definite periods are unbounded, but only everyday dates are meant to be useful.
- * Calendar fields are converted through `Date`, which keeps days exact out to
- * roughly ±273,000 years and meaningless beyond that. Nothing is clamped.
+ * Definite periods are unbounded and nothing is clamped. Day numbers convert to
+ * and from calendar fields by exact integer arithmetic, so every day number that
+ * fits in a safe integer is exact; only `toDate` / `fromDate` touch `Date`, and
+ * inherit its narrower ±273,000-year limit.
  *
  * All values are immutable; every operation returns a new object. Calendar
  * arithmetic is done on UTC day numbers so it is unaffected by DST, while
@@ -40,8 +41,6 @@ export type Period = Day | Week | Month | Quarter | Year;
 /** Calendar fields of a definite day. */
 export type DayParts = { readonly year: number; readonly month: number; readonly dayOfMonth: number };
 
-const MS_PER_DAY = 86_400_000;
-
 // 0 = Sunday, matching Date.prototype.getUTCDay.
 const WEEKDAY: Record<WeekStart, number> = {
   sunday: 0,
@@ -55,17 +54,43 @@ const WEEKDAY: Record<WeekStart, number> = {
 
 const mod = (a: number, b: number): number => ((a % b) + b) % b;
 
-/** Day number of a calendar date. Out-of-range month/day fields normalise (month 13 is January of the next year). */
+// Howard Hinnant's civil-calendar algorithms (howardhinnant.github.io/date_algorithms.html).
+// They count in a calendar shifted to begin in March, which puts the leap day last and
+// makes every 400-year era exactly 146,097 days, so no table or branching on leap years
+// is needed — just integer arithmetic, exact wherever doubles hold integers exactly.
+
+const DAYS_PER_ERA = 146_097; // 400 years
+const ERA_OFFSET = 719_468; // days from 0000-03-01, the shifted calendar's origin, to 1970-01-01
+
+/** Day number of a calendar date. Out-of-range fields normalise: month 13 is January of the next year, day 0 the last day of the previous month. */
 const dayValueOfCivil = (year: number, month: number, dayOfMonth: number): number => {
-  // setUTCFullYear rather than Date.UTC, which folds years 0..99 into 1900..1999.
-  const date = new Date(0);
-  date.setUTCFullYear(year, month - 1, dayOfMonth);
-  return Math.round(date.getTime() / MS_PER_DAY);
+  // Fold the month into 1..12 first: the closed form tolerates only a month or two of
+  // overshoot, while callers rely on arbitrary month numbers normalising. The day of
+  // the month needs no such care — it enters the sum linearly, so any value works.
+  const months = year * 12 + (month - 1);
+  const civilYear = Math.floor(months / 12);
+  const civilMonth = months - civilYear * 12 + 1; // [1, 12]
+
+  const shiftedYear = civilYear - (civilMonth <= 2 ? 1 : 0); // January and February end the previous year
+  const era = Math.floor(shiftedYear / 400);
+  const yearOfEra = shiftedYear - era * 400; // [0, 399]
+  const dayOfYear = Math.floor((153 * (civilMonth + (civilMonth > 2 ? -3 : 9)) + 2) / 5) + dayOfMonth - 1;
+  const dayOfEra = yearOfEra * 365 + Math.floor(yearOfEra / 4) - Math.floor(yearOfEra / 100) + dayOfYear;
+  return era * DAYS_PER_ERA + dayOfEra - ERA_OFFSET;
 };
 
 const civilOfDayValue = (value: number): DayParts => {
-  const date = new Date(value * MS_PER_DAY);
-  return { year: date.getUTCFullYear(), month: date.getUTCMonth() + 1, dayOfMonth: date.getUTCDate() };
+  const shifted = value + ERA_OFFSET;
+  const era = Math.floor(shifted / DAYS_PER_ERA);
+  const dayOfEra = shifted - era * DAYS_PER_ERA; // [0, 146096]
+  const yearOfEra = Math.floor(
+    (dayOfEra - Math.floor(dayOfEra / 1460) + Math.floor(dayOfEra / 36524) - Math.floor(dayOfEra / 146096)) / 365,
+  ); // [0, 399]
+  const dayOfYear = dayOfEra - (365 * yearOfEra + Math.floor(yearOfEra / 4) - Math.floor(yearOfEra / 100)); // [0, 365]
+  const shiftedMonth = Math.floor((5 * dayOfYear + 2) / 153); // [0, 11], counting from March
+  const dayOfMonth = dayOfYear - Math.floor((153 * shiftedMonth + 2) / 5) + 1; // [1, 31]
+  const month = shiftedMonth + (shiftedMonth < 10 ? 3 : -9); // [1, 12]
+  return { year: era * 400 + yearOfEra + (month <= 2 ? 1 : 0), month, dayOfMonth };
 };
 
 /** Day number of the first day, on or after the epoch, falling on `weekStart`. 1970-01-01 was a Thursday (4). */
@@ -156,7 +181,7 @@ export const isFarFuture = (period: Period): boolean => period.value === Infinit
 /** Calendar fields of a day, or `null` for the far past / far future. */
 export const dayParts = (value: Day): DayParts | null => (isDefinite(value) ? civilOfDayValue(value.value) : null);
 
-/** Local midnight of a day, or `null` for the far past / far future. */
+/** Local midnight of a day, or `null` for the far past / far future. Days beyond what `Date` can hold give an invalid `Date`. */
 export const toDate = (value: Day): Date | null => {
   const parts = dayParts(value);
   return parts ? new Date(parts.year, parts.month - 1, parts.dayOfMonth) : null;
