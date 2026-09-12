@@ -12,12 +12,14 @@
  *   quarter  year * 4 + (quarter - 1)
  *   year     the year itself
  *
- * Only dates in [1900-01-01, 2100-12-31] are representable. Anything outside
- * saturates to the far past (`value === -Infinity`) or the far future
- * (`value === Infinity`), which exist for every period kind and absorb every
- * operation: shifting them returns them, and their first/last day is `farPast` /
- * `farFuture`. Saturation makes the algebra total, at the cost of being lossy at
- * the edges — `sub(1, add(1, p))` is not `p` once `p` has hit a bound.
+ * Alongside the definite periods, every kind has a far past (`value ===
+ * -Infinity`) and a far future (`value === Infinity`). They lie before and after
+ * every definite day, have no calendar form, and absorb every operation:
+ * shifting one returns it, and its first and last day are itself.
+ *
+ * Definite periods are unbounded, but only everyday dates are meant to be useful.
+ * Calendar fields are converted through `Date`, which keeps days exact out to
+ * roughly ±273,000 years and meaningless beyond that. Nothing is clamped.
  *
  * All values are immutable; every operation returns a new object. Calendar
  * arithmetic is done on UTC day numbers so it is unaffected by DST, while
@@ -37,9 +39,6 @@ export type Period = Day | Week | Month | Quarter | Year;
 
 /** Calendar fields of a definite day. */
 export type DayParts = { readonly year: number; readonly month: number; readonly dayOfMonth: number };
-
-export const MIN_YEAR = 1900;
-export const MAX_YEAR = 2100;
 
 const MS_PER_DAY = 86_400_000;
 
@@ -69,9 +68,6 @@ const civilOfDayValue = (value: number): DayParts => {
   return { year: date.getUTCFullYear(), month: date.getUTCMonth() + 1, dayOfMonth: date.getUTCDate() };
 };
 
-const MIN_DAY_VALUE = dayValueOfCivil(MIN_YEAR, 1, 1);
-const MAX_DAY_VALUE = dayValueOfCivil(MAX_YEAR, 12, 31);
-
 /** Day number of the first day, on or after the epoch, falling on `weekStart`. 1970-01-01 was a Thursday (4). */
 const weekAnchor = (weekStart: WeekStart): number => mod(WEEKDAY[weekStart] - 4, 7);
 
@@ -85,25 +81,6 @@ const quarterValueOfDay = (value: number): number => {
   return year * 4 + Math.floor((month - 1) / 3);
 };
 const yearValueOfDay = (value: number): number => civilOfDayValue(value).year;
-
-const saturate = (value: number, min: number, max: number): number =>
-  value < min ? -Infinity : value > max ? Infinity : value;
-
-/** Index of the first and last period of this kind that still touches the representable range. */
-const periodBounds = (period: Period): readonly [number, number] => {
-  switch (period.type) {
-    case "day":
-      return [MIN_DAY_VALUE, MAX_DAY_VALUE];
-    case "week":
-      return [weekValueOfDay(MIN_DAY_VALUE, period.weekStart), weekValueOfDay(MAX_DAY_VALUE, period.weekStart)];
-    case "month":
-      return [monthValueOfDay(MIN_DAY_VALUE), monthValueOfDay(MAX_DAY_VALUE)];
-    case "quarter":
-      return [quarterValueOfDay(MIN_DAY_VALUE), quarterValueOfDay(MAX_DAY_VALUE)];
-    case "year":
-      return [yearValueOfDay(MIN_DAY_VALUE), yearValueOfDay(MAX_DAY_VALUE)];
-  }
-};
 
 // Both only ever see a definite period; firstDay/lastDay handle the infinities.
 const firstDayValue = (period: Period): number => {
@@ -137,8 +114,6 @@ const lastDayValue = (period: Period): number => {
   }
 };
 
-const mkDay = (value: number): Day => ({ type: "day", value: saturate(value, MIN_DAY_VALUE, MAX_DAY_VALUE) });
-
 // --- days ------------------------------------------------------------------
 
 /** Day infinitely far in the past; earlier than every other day. */
@@ -147,9 +122,11 @@ export const farPast: Day = { type: "day", value: -Infinity };
 /** Day infinitely far in the future; later than every other day. */
 export const farFuture: Day = { type: "day", value: Infinity };
 
-/** Day from calendar fields (month is 1..12). Out-of-range fields normalise; dates outside the representable range saturate. */
-export const day = (year: number, month: number, dayOfMonth: number): Day =>
-  mkDay(dayValueOfCivil(year, month, dayOfMonth));
+/** Day from calendar fields (month is 1..12). Out-of-range fields normalise: month 13 is January of the next year. */
+export const day = (year: number, month: number, dayOfMonth: number): Day => ({
+  type: "day",
+  value: dayValueOfCivil(year, month, dayOfMonth),
+});
 
 /** The local calendar date of a `Date`, discarding its time of day. */
 export const fromDate = (date: Date): Day => day(date.getFullYear(), date.getMonth() + 1, date.getDate());
@@ -204,15 +181,13 @@ export const weekday = (value: Day): WeekStart | null => {
 
 /**
  * Shifts a period by `n` periods of its own kind: days for a `Day`, weeks for a
- * `Week`, and so on. `n` may be negative; the far past and far future are
- * returned unchanged, and a shift past either end of the representable range
- * saturates to them.
+ * `Week`, and so on. `n` may be negative, and shifting by ±Infinity lands on the
+ * far future or far past. The far past and far future are returned unchanged.
  */
 export const add = <P extends Period>(n: number, period: P): P => {
   if (!isDefinite(period)) return period;
-  const [min, max] = periodBounds(period);
   // Spreading a generic widens it back to Period, so the tag has to be re-asserted.
-  return { ...period, value: saturate(period.value + Math.trunc(n), min, max) } as P;
+  return { ...period, value: period.value + Math.trunc(n) } as P;
 };
 
 /** `add` in the other direction. */
@@ -225,12 +200,16 @@ export const next = <P extends Period>(period: P): P => add(1, period);
 export const prev = <P extends Period>(period: P): P => sub(1, period);
 
 /** First day of a period — the period itself when it is a `Day`. */
-export const firstDay = (period: Period): Day =>
-  isDefinite(period) ? mkDay(firstDayValue(period)) : { type: "day", value: period.value };
+export const firstDay = (period: Period): Day => ({
+  type: "day",
+  value: isDefinite(period) ? firstDayValue(period) : period.value,
+});
 
 /** Last day of a period — the period itself when it is a `Day`. */
-export const lastDay = (period: Period): Day =>
-  isDefinite(period) ? mkDay(lastDayValue(period)) : { type: "day", value: period.value };
+export const lastDay = (period: Period): Day => ({
+  type: "day",
+  value: isDefinite(period) ? lastDayValue(period) : period.value,
+});
 
 // --- the period containing a day -------------------------------------------
 

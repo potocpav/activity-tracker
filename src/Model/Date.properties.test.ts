@@ -36,12 +36,15 @@ const periodOf = (kind: Kind, weekStart: D.WeekStart, day: D.Day): D.Period => {
 
 const arbWeekStart = fc.constantFrom(...WEEK_STARTS);
 
-// Built with `day` alone — the primitive constructor — so the generator does not
-// lean on the arithmetic the properties are meant to test.
+// Days are unbounded, but only everyday dates behave usefully, so that is what the
+// properties are stated over. Built with `day` alone — the primitive constructor —
+// so the generator does not lean on the arithmetic the properties are meant to test.
+const [FIRST_YEAR, LAST_YEAR] = [1900, 2100];
+
 const arbDefiniteDay = fc
   .date({
-    min: new Date(Date.UTC(D.MIN_YEAR, 0, 1)),
-    max: new Date(Date.UTC(D.MAX_YEAR, 11, 31)),
+    min: new Date(Date.UTC(FIRST_YEAR, 0, 1)),
+    max: new Date(Date.UTC(LAST_YEAR, 11, 31)),
     noInvalidDate: true,
   })
   .map((date) => D.day(date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate()));
@@ -61,11 +64,12 @@ const arbSample = arbSampleFrom(arbDay);
 const arbDefiniteSample = arbSampleFrom(arbDefiniteDay);
 const arbPeriod = arbSample.map(({ period }) => period);
 
-// Mostly modest shifts, which stay inside the representable range and so exercise
-// real arithmetic, with occasional wild and infinite ones to exercise saturation.
+// Shifts stay modest, so that a shifted everyday date is still an everyday date:
+// days are unbounded, but calendar arithmetic goes through Date and stops meaning
+// anything hundreds of thousands of years out. The infinite shifts are the
+// interesting extreme instead — they land on the far past or far future.
 const arbShift = fc.oneof(
   { arbitrary: fc.integer({ min: -5_000, max: 5_000 }), weight: 9 },
-  { arbitrary: fc.integer(), weight: 1 },
   { arbitrary: fc.constantFrom(Infinity, -Infinity), weight: 1 },
 );
 
@@ -109,7 +113,7 @@ describe("shifting periods", () => {
     fc.assert(fc.property(arbPeriod, arbShift, (period, n) => assert.deepEqual(D.sub(n, period), D.add(-n, period))));
   });
 
-  test("sub undoes add whenever nothing saturates", () => {
+  test("sub undoes add", () => {
     fc.assert(
       fc.property(arbPeriod, arbShift, (period, n) => {
         const moved = D.add(n, period);
@@ -155,6 +159,7 @@ describe("shifting periods", () => {
       fc.property(arbPeriod, arbShift, (period, n) => {
         const moved = D.add(n, period);
         assert.equal(moved.type, period.type);
+        assert.equal(D.isDefinite(moved), D.isDefinite(period) && Number.isFinite(n));
         for (const value of [moved.value, ...ends(moved).map((day) => day.value)]) {
           assert.equal(Number.isNaN(value), false);
         }
@@ -186,10 +191,8 @@ describe("first and last day", () => {
   test("consecutive periods are adjacent, leaving no day uncovered", () => {
     fc.assert(
       fc.property(arbPeriod, (period) => {
-        const next = D.next(period);
-        definite(period, next);
-        definite(D.lastDay(period), D.firstDay(next));
-        assert.deepEqual(D.add(1, D.lastDay(period)), D.firstDay(next));
+        definite(period);
+        assert.deepEqual(D.add(1, D.lastDay(period)), D.firstDay(D.next(period)));
       }),
     );
   });
@@ -212,7 +215,6 @@ describe("the period containing a day", () => {
     fc.assert(
       fc.property(arbDefiniteSample, ({ kind, weekStart, period }) => {
         const [first, last] = ends(period);
-        definite(first, last);
         assert.ok(D.equals(periodOf(kind, weekStart, first), period));
         assert.ok(D.equals(periodOf(kind, weekStart, last), period));
       }),
@@ -253,7 +255,6 @@ describe("calendar shapes", () => {
     fc.assert(
       fc.property(arbDefiniteDay, arbWeekStart, (day, weekStart) => {
         const week = D.week(weekStart, day);
-        definite(...ends(week));
         assert.equal(D.weekday(D.firstDay(week)), weekStart);
         assert.equal(lengthInDays(week), 7);
       }),
@@ -275,7 +276,7 @@ describe("calendar shapes", () => {
       fc.property(arbDefiniteDay, arbWeekStart, arbShift, (day, weekStart, n) => {
         const week = D.week(weekStart, day);
         const shifted = D.firstDay(D.add(n, week));
-        definite(D.firstDay(week), shifted);
+        definite(shifted);
         assert.deepEqual(shifted, D.add(7 * n, D.firstDay(week)));
       }),
     );
@@ -286,7 +287,6 @@ describe("calendar shapes", () => {
       fc.property(arbDefiniteDay, fc.integer({ min: -100, max: 100 }), (day, n) => {
         const month = D.add(12 * n, D.month(day));
         const quarter = D.add(4 * n, D.quarter(day));
-        definite(D.firstDay(month), D.firstDay(quarter), D.firstDay(D.add(n, D.year(day))));
         assert.equal(D.year(D.firstDay(month)).value, D.year(day).value + n);
         assert.equal(parts(D.firstDay(month)).month, parts(D.firstDay(D.month(day))).month);
         assert.equal(D.year(D.firstDay(quarter)).value, D.year(day).value + n);
@@ -400,39 +400,48 @@ describe("ordering", () => {
   });
 });
 
-describe("saturation", () => {
-  test("dates outside the representable range become the far past or far future", () => {
+describe("the far past and the far future", () => {
+  test("lie outside every definite day, however remote", () => {
     fc.assert(
-      fc.property(fc.integer({ min: -9_000, max: 9_999 }), fc.integer({ min: 1, max: 12 }), (year, month) => {
-        const day = D.day(year, month, 1);
-        if (year < D.MIN_YEAR) assert.deepEqual(day, D.farPast);
-        else if (year > D.MAX_YEAR) assert.deepEqual(day, D.farFuture);
-        else assert.ok(D.isDefinite(day));
+      fc.property(fc.integer({ min: -200_000, max: 200_000 }), fc.integer({ min: 1, max: 12 }), (year, month) => {
+        const remote = D.day(year, month, 1);
+        assert.ok(D.isDefinite(remote));
+        assert.equal(D.compare(D.farPast, remote), -1);
+        assert.equal(D.compare(D.farFuture, remote), 1);
       }),
     );
   });
 
-  test("shifting far enough in either direction reaches them", () => {
+  test("are what an infinite shift reaches, from any period", () => {
     fc.assert(
-      fc.property(arbPeriod, fc.integer({ min: 1_000_000, max: Number.MAX_SAFE_INTEGER }), (period, n) => {
+      fc.property(arbPeriod, (period) => {
         fc.pre(D.isDefinite(period));
-        assert.ok(D.isFarFuture(D.add(n, period)));
-        assert.ok(D.isFarPast(D.sub(n, period)));
-        assert.deepEqual(D.firstDay(D.add(n, period)), D.farFuture);
-        assert.deepEqual(D.lastDay(D.sub(n, period)), D.farPast);
+        assert.ok(D.isFarFuture(D.add(Infinity, period)));
+        assert.ok(D.isFarPast(D.sub(Infinity, period)));
+        assert.deepEqual(D.firstDay(D.add(Infinity, period)), D.farFuture);
+        assert.deepEqual(D.lastDay(D.sub(Infinity, period)), D.farPast);
       }),
     );
   });
 
-  test("no definite period ever leaves the representable range", () => {
+  test("absorb every shift, so nothing ever escapes them", () => {
     fc.assert(
-      fc.property(arbPeriod, arbShift, (period, n) => {
-        const moved = D.add(n, period);
-        const [first, last] = ends(moved);
-        for (const day of [first, last]) {
-          if (!D.isDefinite(day)) continue;
-          assert.ok(parts(day).year >= D.MIN_YEAR && parts(day).year <= D.MAX_YEAR);
-        }
+      fc.property(arbSampleFrom(arbInfiniteDay), arbShift, arbShift, ({ day, period }, m, n) => {
+        assert.deepEqual(D.add(m, D.add(n, period)), period);
+        assert.deepEqual(D.sub(m, D.add(n, period)), period);
+        assert.deepEqual(ends(D.add(n, period)), [day, day]);
+        assert.equal(D.isDefinite(D.add(n, period)), false);
+      }),
+    );
+  });
+
+  test("stay put under every conversion back to a period", () => {
+    fc.assert(
+      fc.property(arbSampleFrom(arbInfiniteDay), ({ day, kind, weekStart }) => {
+        const period = periodOf(kind, weekStart, day);
+        assert.equal(period.value, day.value);
+        assert.deepEqual(D.firstDay(period), day);
+        assert.deepEqual(D.lastDay(period), day);
       }),
     );
   });

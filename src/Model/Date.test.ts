@@ -3,6 +3,10 @@ import assert from "node:assert/strict";
 
 import * as D from "./Date.ts";
 
+// The range of dates worth caring about. The module itself is unbounded — these
+// are only the dates the tests sweep over.
+const [FIRST_YEAR, LAST_YEAR] = [1900, 2100];
+
 /** A definite day, written the way it reads. Throws rather than returning null, so a typo in a test fails loudly. */
 const d = (iso: string): D.Day => {
   const value = D.fromISODate(iso);
@@ -78,6 +82,11 @@ describe("weeks", () => {
     assert.equal(D.toISODate(D.firstDay(D.week("sunday", d("2026-09-13")))), "2026-09-13");
   });
 
+  test("weeks straddle the ends of a year", () => {
+    assert.deepEqual(span(D.week("sunday", d("1900-01-01"))), ["1899-12-31", "1900-01-06"]);
+    assert.deepEqual(span(D.week("monday", d("2100-12-31"))), ["2100-12-27", "2101-01-02"]);
+  });
+
   test("shift by whole weeks", () => {
     const week = D.week("monday", d("2026-09-12"));
     assert.deepEqual(span(D.add(4, week)), ["2026-10-05", "2026-10-11"]);
@@ -133,15 +142,19 @@ describe("months, quarters and years", () => {
 describe("the far past and the far future", () => {
   test("lie outside every definite day", () => {
     assert.equal(D.compare(D.farPast, d("1900-01-01")), -1);
+    assert.equal(D.compare(D.farPast, d("-2000-01-01")), -1);
     assert.equal(D.compare(D.farFuture, d("2100-12-31")), 1);
+    assert.equal(D.compare(D.farFuture, d("9999-12-31")), 1);
     assert.equal(D.compare(D.farPast, D.farPast), 0);
     assert.equal(D.compare(D.farPast, D.farFuture), -1);
   });
 
-  test("absorb shifts", () => {
+  test("absorb shifts, including infinite ones", () => {
     assert.deepEqual(D.add(10, D.farPast), D.farPast);
     assert.deepEqual(D.sub(10, D.farFuture), D.farFuture);
-    assert.deepEqual(D.add(Infinity, d("2026-01-01")), D.farFuture);
+    assert.deepEqual(D.add(Infinity, D.farPast), D.farPast);
+    assert.deepEqual(D.sub(Infinity, D.farFuture), D.farFuture);
+    assert.deepEqual(D.add(-Infinity, D.farFuture), D.farFuture);
   });
 
   test("exist for every kind of period", () => {
@@ -152,15 +165,18 @@ describe("the far past and the far future", () => {
     assert.deepEqual(D.add(3, D.year(D.farPast)), D.year(D.farPast));
   });
 
-  test("are what dates outside 1900..2100 saturate to", () => {
-    assert.deepEqual(D.day(2200, 1, 1), D.farFuture);
-    assert.deepEqual(D.day(1800, 1, 1), D.farPast);
-    assert.deepEqual(D.add(1, d("2100-12-31")), D.farFuture);
-    assert.deepEqual(D.sub(1, d("1900-01-01")), D.farPast);
-    assert.deepEqual(D.firstDay(D.add(500, D.year(d("2026-01-01")))), D.farFuture);
-    // The week of 1900-01-01 (a Monday) fits; the Sunday-start week around it starts in 1899.
-    assert.equal(D.toISODate(D.firstDay(D.week("monday", d("1900-01-01")))), "1900-01-01");
-    assert.deepEqual(D.firstDay(D.week("sunday", d("1900-01-01"))), D.farPast);
+  test("are the only way to leave the calendar — remote dates are ordinary days", () => {
+    assert.ok(D.isDefinite(D.day(2200, 1, 1)));
+    assert.ok(D.isDefinite(D.day(1800, 1, 1)));
+    assert.equal(D.toISODate(D.add(1, d("2100-12-31"))), "2101-01-01");
+    assert.equal(D.toISODate(D.sub(1, d("1900-01-01"))), "1899-12-31");
+    assert.equal(D.toISODate(D.firstDay(D.add(500, D.year(d("2026-01-01"))))), "2526-01-01");
+  });
+
+  test("are what shifting by an infinite amount reaches", () => {
+    assert.deepEqual(D.add(Infinity, d("2026-01-01")), D.farFuture);
+    assert.deepEqual(D.sub(Infinity, d("2026-01-01")), D.farPast);
+    assert.ok(D.isFarFuture(D.add(Infinity, D.month(d("2026-01-01")))));
   });
 
   test("have no calendar representation", () => {
@@ -195,15 +211,16 @@ describe("comparison", () => {
   });
 });
 
-test("every day in the representable range round-trips through ISO text", () => {
-  let day = D.day(D.MIN_YEAR, 1, 1);
+test("every day of 1900..2100 round-trips through ISO text", () => {
+  const last = D.day(LAST_YEAR, 12, 31);
+  let day = D.day(FIRST_YEAR, 1, 1);
   let count = 0;
-  while (D.isDefinite(day)) {
+  while (D.compare(day, last) <= 0) {
     const iso = D.toISODate(day)!;
     assert.equal(D.fromISODate(iso)?.value, day.value, iso);
     day = D.add(1, day);
     count++;
   }
-  const expected = (Date.UTC(D.MAX_YEAR + 1, 0, 1) - Date.UTC(D.MIN_YEAR, 0, 1)) / 86_400_000;
+  const expected = (Date.UTC(LAST_YEAR + 1, 0, 1) - Date.UTC(FIRST_YEAR, 0, 1)) / 86_400_000;
   assert.equal(count, expected, "walked the whole range, one day at a time");
 });
