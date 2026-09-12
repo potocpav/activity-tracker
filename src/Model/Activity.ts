@@ -1,18 +1,16 @@
 import {
   StatPeriod,
   DataPoint,
-  DateList,
-  dateListToTime,
-  normalizeDateList,
+  ISODate,
+  dayFromISO,
   TagFilter,
   StatValue,
   Stat,
-  dateToDateList,
   ActivityType,
   WeekStart,
-  dateListToDate,
   BinnableSize,
 } from "./StoreTypes";
+import * as D from "./Date";
 import { renderLongFormNumber, renderLongFormValue } from "./Unit";
 import { NativeModules } from "react-native";
 
@@ -25,20 +23,10 @@ const locale = NativeModules.I18nManager.localeIdentifier;
 export const FUTURE_HORIZON_DAYS = 365;
 
 /** The last day a data point may be dated to */
-export const futureHorizon = (today: Date): Date =>
-  new Date(today.getFullYear(), today.getMonth(), today.getDate() + FUTURE_HORIZON_DAYS);
+export const futureHorizon = (today: D.Day): D.Day => D.add(FUTURE_HORIZON_DAYS, today);
 
-export const dayCmp = (dp: DataPoint, day: DateList) => {
-  return cmpDateList(dp.date, day);
-};
-
-export const cmpDateList = (d1: DateList, d2: DateList) => {
-  return d1[0] - d2[0] || d1[1] - d2[1] || d1[2] - d2[2];
-};
-
-export const dateBetween = (d: DateList, lo: DateList, hi: DateList) => {
-  return cmpDateList(d, lo) >= 0 && cmpDateList(d, hi) <= 0;
-};
+/** Orders a data point against a day, for `findZeroSlice` */
+export const dayCmp = (dp: DataPoint, day: D.Day) => D.compare(dayFromISO(dp.date), day);
 
 /// This is a gem. Leaving for posterity.
 ///
@@ -57,28 +45,48 @@ export const dateBetween = (d: DateList, lo: DateList, hi: DateList) => {
 // };
 
 /** A closed interval of days: both `lo` and `hi` are part of it */
-export type DayInterval = { lo: DateList; hi: DateList };
+export type DayInterval = { lo: D.Day; hi: D.Day };
+
+/** The whole of the period of `binSize` that contains `day` */
+export const binPeriod = (binSize: BinnableSize, day: D.Day, weekStart: WeekStart): D.Period => {
+  switch (binSize) {
+    case "day":
+      return day;
+    case "week":
+      return D.week(weekStart, day);
+    case "month":
+      return D.month(day);
+    case "quarter":
+      return D.quarter(day);
+    case "year":
+      return D.year(day);
+  }
+};
+
+/** First day of the bin `i` bins on from the one holding `origin`; `i` may be negative */
+export const binStart = (binSize: BinnableSize, origin: D.Day, i: number, weekStart: WeekStart): D.Day =>
+  D.firstDay(D.add(i, binPeriod(binSize, origin, weekStart)));
 
 /** How far an activity's data reaches, for the periods that are relative to it */
 export type DataExtent = {
   /** Day of the first data point */
-  first: DateList | null;
+  first: D.Day | null;
   /** Day of the last data point, which may be in the future */
-  last: DateList | null;
+  last: D.Day | null;
   /** Day of the last data point that is not in the future, so today at the latest */
-  lastActive: DateList | null;
+  lastActive: D.Day | null;
 };
 
-export const dataExtent = (dataPoints: DataPoint[], today: DateList): DataExtent => {
+export const dataExtent = (dataPoints: DataPoint[], today: D.Day): DataExtent => {
   if (dataPoints.length === 0) {
     return { first: null, last: null, lastActive: null };
   }
   // Points are kept sorted by day, so the ones up to today are a prefix of the array
-  const nUpToToday = findZeroSlice(dataPoints, (dp: DataPoint) => (cmpDateList(dp.date, today) > 0 ? 1 : 0))[1];
+  const nUpToToday = findZeroSlice(dataPoints, (dp: DataPoint) => (dayCmp(dp, today) > 0 ? 1 : 0))[1];
   return {
-    first: dataPoints[0].date,
-    last: dataPoints[dataPoints.length - 1].date,
-    lastActive: nUpToToday > 0 ? dataPoints[nUpToToday - 1].date : null,
+    first: dayFromISO(dataPoints[0].date),
+    last: dayFromISO(dataPoints[dataPoints.length - 1].date),
+    lastActive: nUpToToday > 0 ? dayFromISO(dataPoints[nUpToToday - 1].date) : null,
   };
 };
 
@@ -95,47 +103,41 @@ export const dataExtent = (dataPoints: DataPoint[], today: DateList): DataExtent
  */
 export const statPeriodInterval = (
   period: StatPeriod,
-  today: DateList,
+  today: D.Day,
   extent: DataExtent,
   weekStart: WeekStart,
 ): DayInterval | null => {
+  /** The calendar period around today, from its first day to its last */
+  const around = (p: D.Period): DayInterval => ({ lo: D.firstDay(p), hi: D.lastDay(p) });
+  /** The `n` days ending today, today included */
+  const lastDays = (n: number): DayInterval => ({ lo: D.sub(n - 1, today), hi: today });
+
   switch (period) {
     case "today":
       return { lo: today, hi: today };
-    case "this_week": {
-      const startDay = weekStart === "sunday" ? 0 : 1;
-      const dayOfWeek = (dateListToDate(today).getDay() - startDay + 7) % 7;
-      return {
-        lo: normalizeDateList([today[0], today[1], today[2] - dayOfWeek]),
-        hi: normalizeDateList([today[0], today[1], today[2] - dayOfWeek + 6]),
-      };
-    }
+    case "this_week":
+      return around(D.week(weekStart, today));
     case "this_month":
-      return { lo: normalizeDateList([today[0], today[1], 1]), hi: normalizeDateList([today[0], today[1] + 1, 0]) };
-    case "this_quarter": {
-      const thisQuarter = Math.floor((today[1] - 1) / 3);
-      return {
-        lo: normalizeDateList([today[0], thisQuarter * 3 + 1, 1]),
-        hi: normalizeDateList([today[0], thisQuarter * 3 + 4, 0]),
-      };
-    }
+      return around(D.month(today));
+    case "this_quarter":
+      return around(D.quarter(today));
     case "this_year":
-      return { lo: normalizeDateList([today[0], 1, 1]), hi: normalizeDateList([today[0] + 1, 1, 0]) };
+      return around(D.year(today));
     case "last_7_days":
-      return { lo: normalizeDateList([today[0], today[1], today[2] - 6]), hi: today };
+      return lastDays(7);
     case "last_30_days":
-      return { lo: normalizeDateList([today[0], today[1], today[2] - 29]), hi: today };
+      return lastDays(30);
     case "last_90_days":
-      return { lo: normalizeDateList([today[0], today[1], today[2] - 89]), hi: today };
+      return lastDays(90);
     case "last_365_days":
-      return { lo: normalizeDateList([today[0], today[1], today[2] - 364]), hi: today };
+      return lastDays(365);
     case "last_active_day":
       return extent.lastActive === null ? null : { lo: extent.lastActive, hi: extent.lastActive };
     case "all_time":
       if (extent.first === null || extent.last === null) {
         return { lo: today, hi: today };
       }
-      return { lo: extent.first, hi: cmpDateList(extent.last, today) > 0 ? extent.last : today };
+      return { lo: extent.first, hi: D.compare(extent.last, today) > 0 ? extent.last : today };
   }
 };
 
@@ -144,10 +146,7 @@ export const dayIntervalLength = (interval: DayInterval | null): number => {
   if (interval === null) {
     return 1;
   }
-  // Rounding absorbs the hour a daylight saving change adds to or takes off the span
-  const loTime = dateListToTime(interval.lo);
-  const hiTime = dateListToTime(interval.hi);
-  return Math.max(1, Math.round((hiTime - loTime) / (1000 * 60 * 60 * 24)) + 1);
+  return Math.max(1, D.daysBetween(interval.lo, interval.hi) + 1);
 };
 
 /**
@@ -158,7 +157,8 @@ export const statPeriodCmp = (dp: DataPoint, interval: DayInterval | null) => {
   if (interval === null) {
     return -1;
   }
-  return dateBetween(dp.date, interval.lo, interval.hi) ? 0 : cmpDateList(dp.date, interval.lo);
+  const day = dayFromISO(dp.date);
+  return D.compare(day, interval.lo) >= 0 && D.compare(day, interval.hi) <= 0 ? 0 : D.compare(day, interval.lo);
 };
 
 export const extractValue = (
@@ -179,7 +179,7 @@ export const extractValue = (
 };
 
 export const calcStatValue = (stat: Stat, activity: ActivityType, weekStart: WeekStart) => {
-  const today = dateToDateList(new Date());
+  const today = D.today();
   const interval = statPeriodInterval(stat.period, today, dataExtent(activity.dataPoints, today), weekStart);
   const periodSlice = findZeroSlice(activity.dataPoints, (dp: DataPoint) => statPeriodCmp(dp, interval));
 
@@ -279,73 +279,43 @@ export const findZeroSlice = (data: any[], cmp: (x: any) => number): [number, nu
   return [startLo, endLo];
 };
 
-export const binTime = (binSize: BinnableSize, t0: number, i: number, weekStart: WeekStart): Date => {
-  const t0Date = new Date(t0);
-  switch (binSize) {
-    case "day": {
-      return new Date(t0Date.getFullYear(), t0Date.getMonth(), t0Date.getDate() + i, 0);
-    }
-    case "week": {
-      const startDay = weekStart === "sunday" ? 0 : 1;
-      const dayOfWeek = (t0Date.getDay() - startDay + 7) % 7;
-      return new Date(t0Date.getFullYear(), t0Date.getMonth(), t0Date.getDate() - dayOfWeek + i * 7, 0);
-    }
-    case "month": {
-      return new Date(t0Date.getFullYear(), t0Date.getMonth() + i, 1, 0);
-    }
-    case "quarter": {
-      const month = t0Date.getMonth();
-      return new Date(t0Date.getFullYear(), month - (month % 3) + i * 3, 1, 0);
-    }
-    case "year": {
-      return new Date(t0Date.getFullYear() + i, 0, 1, 0);
-    }
-  }
-};
+/** One bin of a time series: the days it spans, and the values that fell in it */
+export type Bin = { day: D.Day; nDays: number; values: any[] };
 
 export const binTimeSeries = (
   binSize: BinnableSize,
-  dataPoints: { date: DateList; value: number }[],
+  dataPoints: { date: ISODate; value: number }[],
   weekStart: WeekStart,
-): { time: number; nDays: number; values: any[] }[] => {
+): Bin[] => {
   if (dataPoints.length === 0) {
     return [];
   }
-  const t0 = dateListToTime(dataPoints[0].date);
+  const origin = dayFromISO(dataPoints[0].date);
+  const start = (i: number) => binStart(binSize, origin, i, weekStart);
+  const bin = (i: number): Bin => ({ day: start(i), nDays: D.daysBetween(start(i), start(i + 1)), values: [] });
 
-  const nDays = (binSize: BinnableSize, idx: number) => {
-    const tDiff = binTime(binSize, t0, idx + 1, weekStart).getTime() - binTime(binSize, t0, idx, weekStart).getTime();
-    return Math.round(tDiff / (1000 * 60 * 60 * 24));
-  };
-
-  var bins: { time: number; nDays: number; values: any[] }[] = [
-    {
-      time: binTime(binSize, t0, 0, weekStart).getTime(),
-      nDays: nDays(binSize, 0),
-      values: [],
-    },
-  ];
-  var binIx = 0;
-  for (let i = 0; i < dataPoints.length; i++) {
-    const dp = dataPoints[i];
-    while (binTime(binSize, t0, binIx + 1, weekStart).getTime() <= dateListToTime(dp.date)) {
+  const bins: Bin[] = [bin(0)];
+  let binIx = 0;
+  for (const dp of dataPoints) {
+    const day = dayFromISO(dp.date);
+    while (D.compare(start(binIx + 1), day) <= 0) {
       binIx++;
-      bins.push({ time: binTime(binSize, t0, binIx, weekStart).getTime(), nDays: nDays(binSize, binIx), values: [] });
+      bins.push(bin(binIx));
     }
     bins[bins.length - 1].values.push(dp.value);
   }
   // pad till today
-  const t1 = new Date().getTime();
-  while (binTime(binSize, t0, binIx + 1, weekStart).getTime() <= t1) {
+  const today = D.today();
+  while (D.compare(start(binIx + 1), today) <= 0) {
     binIx++;
-    bins.push({ time: binTime(binSize, t0, binIx, weekStart).getTime(), nDays: nDays(binSize, binIx), values: [] });
+    bins.push(bin(binIx));
   }
 
   return bins;
 };
 
 export const extractStatValue = (
-  filteredValues: [DateList, number][],
+  filteredValues: [ISODate, number][],
   statValue: StatValue,
   /** Days the values were collected over, from `dayIntervalLength` */
   periodDays: number,
@@ -355,7 +325,7 @@ export const extractStatValue = (
 
   let value;
   if (statValue === "n_days") {
-    value = new Set(periodDates.map((d: DateList) => d.join("-"))).size;
+    value = new Set(periodDates).size;
   } else if (statValue === "n_points") {
     value = periodValues.length;
   } else if (statValue === "daily_mean") {
@@ -422,6 +392,7 @@ export const valueToLabel = (value: StatValue): string => {
   }
 };
 
-export const formatDate = (date: Date) => {
-  return date.toLocaleDateString(locale, { year: "numeric", month: "short", day: "numeric" });
+/** A day written out for the user, in their locale. One of the few places a `Date` is still the right tool. */
+export const formatDate = (day: D.Day) => {
+  return D.toDate(day)!.toLocaleDateString(locale, { year: "numeric", month: "short", day: "numeric" });
 };

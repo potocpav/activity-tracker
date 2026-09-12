@@ -1,5 +1,6 @@
 import { Device, Subscription } from "react-native-ble-plx";
 import * as Crypto from "expo-crypto";
+import * as D from "./Date";
 
 export type Unit =
   | { type: "none" }
@@ -87,13 +88,19 @@ export type SetTag = {
 
 export type TagName = string;
 
-// Normalized [year, month, day] numbers
-// !! Both month and day are 1-indexed, which is different from the Date object. There, month is 0-indexed
-export type DateList = [number, number, number];
+/**
+ * A calendar day as it is stored and passed between screens: `YYYY-MM-DD`.
+ *
+ * A string rather than a `Day` so that persisted state and navigation params stay plain
+ * JSON. Sorting these lexicographically orders them chronologically, but anything past
+ * a comparison — arithmetic, periods, weekdays — goes through `Model/Date`: convert with
+ * `dayFromISO` and `dayToISO`.
+ */
+export type ISODate = string;
 
 export type DataPoint = {
   uuid: string;
-  date: DateList;
+  date: ISODate;
   value?: number | Record<string, number>;
   note?: string;
   tags?: TagName[];
@@ -235,7 +242,7 @@ export type ActivityPath = {
   activityId: number;
 };
 
-export type BleScaleWorkoutState = { state: "playing"; t0: number; t0Rest: number; date: DateList };
+export type BleScaleWorkoutState = { state: "playing"; t0: number; t0Rest: number; date: ISODate };
 
 export type State = {
   // Device related state
@@ -279,25 +286,15 @@ export type State = {
   updateActivityDataPoint: any;
 };
 
-export const dateToDateList = (date: Date): DateList => {
-  return [date.getFullYear(), date.getMonth() + 1, date.getDate()];
-};
+/**
+ * Reads a stored day. Stored days are always written by `dayToISO`, so this cannot fail
+ * in practice; a corrupt one reads as the far past, which sorts before every real day
+ * rather than crashing the screen that touches it.
+ */
+export const dayFromISO = (date: ISODate): D.Day => D.fromISODate(date) ?? D.farPast;
 
-export const dateListToDate = (dateList: DateList): Date => {
-  return new Date(dateList[0], dateList[1] - 1, dateList[2]);
-};
-
-export const normalizeDateList = (dateList: DateList): DateList => {
-  return dateToDateList(dateListToDate(dateList));
-};
-
-export const timeToDateList = (time: number): DateList => {
-  return dateToDateList(new Date(time));
-};
-
-export const dateListToTime = (dateList: DateList): number => {
-  return dateListToDate(dateList).getTime();
-};
+/** Writes a day for storage. */
+export const dayToISO = (day: D.Day): ISODate => D.toISODate(day)!;
 
 export const generateUuids = (state: State) => {
   state.activities.forEach((tab: ActivityTab, tabId: number) => {

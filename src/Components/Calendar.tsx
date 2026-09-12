@@ -1,12 +1,11 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, useWindowDimensions } from "react-native";
 import {
-  dateToDateList,
-  normalizeDateList,
-  DateList,
+  ISODate,
+  dayFromISO,
+  dayToISO,
   ActivityType,
   TagFilter,
-  dateListToDate,
   SubUnit,
   statValueUnit,
   ActivityPath,
@@ -15,12 +14,12 @@ import {
 import {
   findZeroSlice,
   dayCmp,
-  cmpDateList,
   extractStatValue,
   extractValue,
-  binTime,
+  binStart,
   FUTURE_HORIZON_DAYS,
 } from "../Model/Activity";
+import * as D from "../Model/Date";
 import useStore from "../Model/Store";
 import { useAppTheme, FUTURE_OPACITY } from "../Model/Theme";
 import { useToday } from "../Model/useToday";
@@ -34,14 +33,13 @@ type CalendarComponentProps = {
 };
 
 const ITEM_MARGIN = 2;
-const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 /** Weeks the calendar always keeps scrollable ahead of this week, to plan into */
 const MIN_FUTURE_WEEKS = 8;
 /** Weeks it always keeps scrollable behind this week, however little data reaches back */
 const MIN_PAST_WEEKS = 44;
 
 type CalendarDayValue = {
-  day: DateList;
+  day: D.Day;
   hasData: boolean;
   hasFilteredData: boolean;
   value: number | null;
@@ -51,7 +49,7 @@ type CalendarDayValue = {
 
 type WeekColumnProps = {
   weekIdx: number;
-  now: Date;
+  now: D.Day;
   dayValues: CalendarDayValue[];
   navigation: any;
   activityPath: ActivityPath;
@@ -83,26 +81,26 @@ const WeekColumnImpl: React.FC<WeekColumnProps> = ({
   const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);
   const deleteActivityDataPointByDate = useStore((state: any) => state.deleteActivityDataPointByDate);
   const dismissHint = useStore((state: any) => state.dismissHint);
-  const nowMs = now.getTime();
-  const itemWeekStart = binTime("week", nowMs, -weekIdx, weekStart);
-  const todayDay = dateToDateList(useToday());
+  const itemWeekStart = binStart("week", now, -weekIdx, weekStart);
+  const todayDay = useToday();
+  // The label marks the week a month starts in, so it only shows on the week holding the 1st
+  const weekStartParts = D.dayParts(itemWeekStart)!;
+  const startsMonth = weekStartParts.dayOfMonth <= 7;
   return (
     <View style={styles.weekColumn}>
       <View style={styles.monthLabelContainer}>
-        {itemWeekStart.getDate() <= 7 && itemWeekStart.getMonth() > 0 && (
+        {startsMonth && weekStartParts.month > 1 && (
           <Text
             style={[styles.monthLabel, { color: theme.onSurfaceVariant }]}
-          >{`${itemWeekStart.toLocaleDateString("en-US", { month: "short" })}`}</Text>
+          >{`${D.toDate(itemWeekStart)!.toLocaleDateString("en-US", { month: "short" })}`}</Text>
         )}
-        {itemWeekStart.getDate() <= 7 && itemWeekStart.getMonth() == 0 && (
-          <Text
-            style={[styles.monthLabel, { color: theme.onSurfaceVariant }]}
-          >{`${itemWeekStart.toLocaleDateString("en-US", { year: "numeric" })}`}</Text>
+        {startsMonth && weekStartParts.month === 1 && (
+          <Text style={[styles.monthLabel, { color: theme.onSurfaceVariant }]}>{`${weekStartParts.year}`}</Text>
         )}
       </View>
       {dayValues.map(({ day, hasData, hasFilteredData, value, isWeekend, hasNotes }, dayIdx) => {
-        const isToday = cmpDateList(todayDay, day) === 0;
-        const isFuture = cmpDateList(day, todayDay) > 0;
+        const isToday = D.compare(todayDay, day) === 0;
+        const isFuture = D.compare(day, todayDay) > 0;
         return (
           <TouchableOpacity
             key={dayIdx}
@@ -110,10 +108,10 @@ const WeekColumnImpl: React.FC<WeekColumnProps> = ({
               if (unitType === "none") {
                 dismissHint("quick_check_daily_activity");
                 if (hasFilteredData) {
-                  deleteActivityDataPointByDate(activityPath, day, tagFilters);
+                  deleteActivityDataPointByDate(activityPath, dayToISO(day), tagFilters);
                 } else {
                   updateActivityDataPoint(activityPath, undefined, {
-                    date: day,
+                    date: dayToISO(day),
                     tags: positiveTags,
                     uuid: Crypto.randomUUID(),
                   });
@@ -122,11 +120,11 @@ const WeekColumnImpl: React.FC<WeekColumnProps> = ({
             }}
             onPress={() => {
               if (hasData) {
-                navigation.navigate("ActivityData", { activityPath, day });
+                navigation.navigate("ActivityData", { activityPath, day: dayToISO(day) });
               } else {
                 navigation.navigate("EditDataPoint", {
                   activityPath,
-                  inputData: { type: "new", dataPoint: { date: day, tags: positiveTags } },
+                  inputData: { type: "new", dataPoint: { date: dayToISO(day), tags: positiveTags } },
                 });
               }
             }}
@@ -140,7 +138,7 @@ const WeekColumnImpl: React.FC<WeekColumnProps> = ({
                   isFuture && styles.future,
                 ]}
               >
-                {day[2]}
+                {D.dayParts(day)!.dayOfMonth}
               </Text>
             )}
 
@@ -222,9 +220,7 @@ const dayValuesEqual = (a: CalendarDayValue[], b: CalendarDayValue[]): boolean =
       x.value !== y.value ||
       x.isWeekend !== y.isWeekend ||
       x.hasNotes !== y.hasNotes ||
-      x.day[0] !== y.day[0] ||
-      x.day[1] !== y.day[1] ||
-      x.day[2] !== y.day[2]
+      x.day.value !== y.day.value
     ) {
       return false;
     }
@@ -265,32 +261,23 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, 
 
   const styles = getStyles(itemWidth, dimensions, theme);
   const now = useToday();
-  const pastWeekStart = (date: Date, i: number) => binTime("week", date.getTime(), -i, weekStart);
 
-  const firstDpDate: DateList | null = activity.dataPoints[0]?.date || null;
-  const lastDpDate: DateList | null = activity.dataPoints[activity.dataPoints.length - 1]?.date || null;
+  const firstDpDate: ISODate | null = activity.dataPoints[0]?.date || null;
+  const lastDpDate: ISODate | null = activity.dataPoints[activity.dataPoints.length - 1]?.date || null;
 
-  const thisWeek = pastWeekStart(now, 0);
-  const firstDataWeek = firstDpDate ? pastWeekStart(dateListToDate(firstDpDate), 0) : thisWeek;
-  const lastDataWeek = lastDpDate ? pastWeekStart(dateListToDate(lastDpDate), 0) : thisWeek;
-
-  // Hoist .getTime() into locals: two .getTime() calls inline in one expression crash the
-  // React Compiler (babel-plugin-react-compiler@1.0.0 codegen bug), making it bail out of
-  // the whole component.
-  const thisWeekMs = thisWeek.getTime();
-  const firstDataWeekMs = firstDataWeek.getTime();
-  const lastDataWeekMs = lastDataWeek.getTime();
+  // Weeks are indexed, so the distance between two of them is a subtraction
+  const weekOf = (date: ISODate) => D.week(weekStart, dayFromISO(date));
+  const thisWeek = D.week(weekStart, now);
+  const firstDataWeek = firstDpDate ? weekOf(firstDpDate) : thisWeek;
+  const lastDataWeek = lastDpDate ? weekOf(lastDpDate) : thisWeek;
 
   // Weeks drawn either side of this one: the minimums always, stretched to reach the
   // first and last points when the data runs further out. A point can only be planned up
   // to the horizon, and the total is capped at maxWeekCount, which trims the oldest weeks.
-  const futureWeeks = Math.min(
-    maxFutureWeeks,
-    Math.max(MIN_FUTURE_WEEKS, Math.round((lastDataWeekMs - thisWeekMs) / WEEK_MS)),
-  );
+  const futureWeeks = Math.min(maxFutureWeeks, Math.max(MIN_FUTURE_WEEKS, lastDataWeek.value - thisWeek.value));
   // A negative span, from an activity whose only points are planned ones, falls back to
   // the minimum
-  const pastWeeks = Math.max(MIN_PAST_WEEKS, Math.round((thisWeekMs - firstDataWeekMs) / WEEK_MS));
+  const pastWeeks = Math.max(MIN_PAST_WEEKS, thisWeek.value - firstDataWeek.value);
   const weekCount = Math.min(maxWeekCount, futureWeeks + pastWeeks + 1);
   const positiveTags = calendar.tagFilters.filter((t: TagFilter) => t.state === "yes").map((t: TagFilter) => t.name);
 
@@ -311,17 +298,12 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, 
   }
 
   const computeWeekDayValues = (weekIdx: number): CalendarDayValue[] => {
-    const itemWeekStart = pastWeekStart(now, weekIdx);
-    const weekStartDay = itemWeekStart.getDay();
+    const itemWeekStart = D.firstDay(D.sub(weekIdx, thisWeek));
     const days: CalendarDayValue[] = [];
     for (let dayIdx = 0; dayIdx < 7; dayIdx++) {
-      const day = normalizeDateList([
-        itemWeekStart.getFullYear(),
-        itemWeekStart.getMonth() + 1,
-        itemWeekStart.getDate() + dayIdx,
-      ]);
+      const day = D.add(dayIdx, itemWeekStart);
       const [dayStart, dayEnd] = findZeroSlice(activity.dataPoints, (dp) => dayCmp(dp, day));
-      const filtered: [DateList, number][] = [];
+      const filtered: [ISODate, number][] = [];
       let hasNotes = false;
       for (let k = dayStart; k < dayEnd; k++) {
         const dp = activity.dataPoints[k];
@@ -338,7 +320,7 @@ const Calendar: React.FC<CalendarComponentProps> = ({ navigation, activityPath, 
         hasData: dayEnd > dayStart,
         hasFilteredData: filtered.length > 0,
         value: extractStatValue(filtered, calendar.value, 1),
-        isWeekend: [0, 6].includes((weekStartDay + dayIdx) % 7),
+        isWeekend: ["saturday", "sunday"].includes(D.weekday(day)!),
         hasNotes,
       });
     }

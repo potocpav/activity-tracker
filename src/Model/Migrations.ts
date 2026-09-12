@@ -1,6 +1,17 @@
-import { ActivityType, DataPoint, GraphProps, HintType, allHints, ActivityTab, generateUuids } from "./StoreTypes";
+import {
+  ActivityType,
+  DataPoint,
+  GraphProps,
+  HintType,
+  allHints,
+  ActivityTab,
+  generateUuids,
+  ISODate,
+  dayToISO,
+} from "./StoreTypes";
+import { day } from "./Date";
 
-export const version = 35;
+export const version = 36;
 
 export const migrate = (persisted: any, version: number) => {
   if (version < 6) {
@@ -29,7 +40,7 @@ export const migrate = (persisted: any, version: number) => {
   }
   if (version < 12) {
     persisted.activities.forEach((activity: ActivityType) => {
-      activity.dataPoints = activity.dataPoints.map((dp: DataPoint) => ({
+      activity.dataPoints = activity.dataPoints.map((dp: any) => ({
         ...dp,
         date: [dp.date[0], dp.date[1] + 1, dp.date[2]],
       }));
@@ -159,6 +170,22 @@ export const migrate = (persisted: any, version: number) => {
   if (version < 35) {
     // A hint added after the user's hints were first seeded: activate it for them too
     persisted.activeHints = [...persisted.activeHints, "lock_activity"];
+  }
+  if (version < 36) {
+    // Days were [year, month, day] triples, with the month 1-indexed; they are now
+    // `YYYY-MM-DD` strings. Going through `day` normalises any triple that drifted out
+    // of range, the way the old `normalizeDateList` did.
+    const toISODate = (date: [number, number, number]): ISODate => dayToISO(day(date[0], date[1], date[2]));
+    persisted.activities.forEach((tab: ActivityTab) => {
+      tab.activities.forEach((activity: ActivityType) => {
+        activity.dataPoints.forEach((dp: DataPoint) => {
+          dp.date = toISODate(dp.date as unknown as [number, number, number]);
+        });
+      });
+    });
+    if (persisted.bleScaleWorkoutState !== null) {
+      persisted.bleScaleWorkoutState.date = toISODate(persisted.bleScaleWorkoutState.date);
+    }
   }
   return persisted;
 };

@@ -64,7 +64,9 @@ type FlatListChartData = {
   height: number;
   unit: SubUnit;
   gridLineColor: string;
-  items: { time: number; values: number[]; nDays: number; dayIndex?: number }[]; // todo: swap for any[]
+  // The chart itself only needs an identity per item; everything it draws comes from the
+  // callbacks below. `day` is the bin's first day, whose day number is that identity.
+  items: { day: { value: number }; values: number[]; nDays: number; dayIndex?: number }[];
   renderItem: (params: { item: any; index: number; view: ViewDimensions }) => React.ReactNode;
   itemBoundingBox: (item: any, itemWidthPx: number) => BoundingBox;
   itemLabel: (item: any) => string;
@@ -266,7 +268,7 @@ const FlatListChart = ({
                     />
                   </View>
                 )}
-                keyExtractor={(item) => `${item.time.toString()}-${item.dayIndex?.toString() ?? ""}`}
+                keyExtractor={(item) => `${item.day.value.toString()}-${item.dayIndex?.toString() ?? ""}`}
                 inverted={true}
                 horizontal={true}
               />

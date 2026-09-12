@@ -171,6 +171,34 @@ describe("shifting periods", () => {
   });
 });
 
+describe("daysBetween", () => {
+  test("is what add needs to turn one day into the other", () => {
+    fc.assert(
+      fc.property(arbDefiniteDay, arbDefiniteDay, (from, to) => {
+        assert.deepEqual(D.add(D.daysBetween(from, to), from), to);
+      }),
+    );
+  });
+
+  test("is antisymmetric, and agrees with compare", () => {
+    fc.assert(
+      fc.property(arbDefiniteDay, arbDefiniteDay, (from, to) => {
+        assert.equal(D.daysBetween(from, to) + D.daysBetween(to, from), 0);
+        assert.equal(Math.sign(D.daysBetween(from, to)), D.compare(from, to) * -1 || 0);
+      }),
+    );
+  });
+
+  test("adds up along a period", () => {
+    fc.assert(
+      fc.property(arbPeriod, (period) => {
+        definite(period);
+        assert.equal(D.daysBetween(D.firstDay(period), D.lastDay(period)) + 1, lengthInDays(period));
+      }),
+    );
+  });
+});
+
 describe("first and last day", () => {
   test("a period never ends before it starts", () => {
     fc.assert(

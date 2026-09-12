@@ -23,7 +23,8 @@ import {
   ActivityType,
   Tag,
   DataPoint,
-  DateList,
+  ISODate,
+  dayFromISO,
   SetTag,
   TagName,
   State,
@@ -39,6 +40,7 @@ import { areUnitsEqual } from "./Unit";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { findZeroSlice, dayCmp, extractValue } from "./Activity";
+import * as D from "./Date";
 import { version, migrate } from "./Migrations";
 import * as Crypto from "expo-crypto";
 
@@ -694,20 +696,21 @@ const useStore = create<State>()(
               dataPointUuid !== undefined
                 ? updatedDataPoints.findIndex((dp: DataPoint) => dp.uuid === dataPointUuid)
                 : undefined;
+            const updatedDay = dayFromISO(updatedDataPoint.date);
             if (dataPointIndex !== undefined) {
-              if (dayCmp(updatedDataPoint, updatedDataPoints[dataPointIndex].date) == 0) {
+              if (D.compare(updatedDay, dayFromISO(updatedDataPoints[dataPointIndex].date)) == 0) {
                 // if date is the same, update in place
                 updatedDataPoints[dataPointIndex] = updatedDataPoint;
                 insertIndex = dataPointIndex;
               } else {
                 // if date is different, remove the old data point and insert the new one as the last element in the new day
                 updatedDataPoints.splice(dataPointIndex, 1);
-                insertIndex = findZeroSlice(updatedDataPoints, (dp: DataPoint) => dayCmp(dp, updatedDataPoint.date))[1];
+                insertIndex = findZeroSlice(updatedDataPoints, (dp: DataPoint) => dayCmp(dp, updatedDay))[1];
                 updatedDataPoints.splice(insertIndex, 0, updatedDataPoint);
               }
             } else {
               // if data point index is undefined, insert the new data point as the last element in the new day
-              insertIndex = findZeroSlice(updatedDataPoints, (dp: DataPoint) => dayCmp(dp, updatedDataPoint.date))[1];
+              insertIndex = findZeroSlice(updatedDataPoints, (dp: DataPoint) => dayCmp(dp, updatedDay))[1];
               updatedDataPoints.splice(insertIndex, 0, updatedDataPoint);
             }
             return { ...activity, dataPoints: updatedDataPoints };
@@ -726,10 +729,11 @@ const useStore = create<State>()(
         );
       },
 
-      deleteActivityDataPointByDate: (activityPath: ActivityPath, date: DateList, tagFilters: TagFilter[]) => {
+      deleteActivityDataPointByDate: (activityPath: ActivityPath, date: ISODate, tagFilters: TagFilter[]) => {
         set((state: State) =>
           mapActivity(state, activityPath, (activity: ActivityType) => {
-            const [dayStart, dayEnd] = findZeroSlice(activity.dataPoints, (dp) => dayCmp(dp, date));
+            const day = dayFromISO(date);
+            const [dayStart, dayEnd] = findZeroSlice(activity.dataPoints, (dp) => dayCmp(dp, day));
             for (let k = dayStart; k < dayEnd; k++) {
               if (extractValue(activity.dataPoints[k], tagFilters, null) !== null) {
                 const updatedDataPoints = [...activity.dataPoints];

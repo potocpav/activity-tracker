@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, View, NativeModules, ToastAndroid } from "react-native";
+import { StyleSheet, Text, View, ToastAndroid } from "react-native";
 import useStore from "../../Model/Store";
 import { ActivityPath, ActivityType, StatValue, State } from "../../Model/StoreTypes";
 import TagMenu from "../TagMenu";
@@ -11,16 +11,10 @@ import Hint from "../Hint";
 import RenameDialog from "../RenameDialog";
 import { Button, ButtonRow } from "../Element";
 
-const locale = NativeModules.I18nManager.localeIdentifier;
-
 type ActivityCalendarProps = {
   navigation: any;
   activityPath: ActivityPath;
   calendarIndex: number;
-};
-
-export const formatDate = (date: Date) => {
-  return date.toLocaleDateString(locale, { year: "numeric", month: "short", day: "numeric" });
 };
 
 const ActivityCalendar = ({ navigation, activityPath, calendarIndex }: ActivityCalendarProps) => {

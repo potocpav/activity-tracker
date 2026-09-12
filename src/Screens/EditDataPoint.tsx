@@ -13,17 +13,18 @@ import TextField from "../Components/TextField";
 import {
   ActivityType,
   ActivityPath,
-  dateToDateList,
+  dayToISO,
   DataPoint,
-  dateListToDate,
+  dayFromISO,
   SubUnit,
-  DateList,
+  ISODate,
   State,
 } from "../Model/StoreTypes";
 import useStore from "../Model/Store";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import { CheckButton, CheckPlusButton, DeleteButton, ButtonRow, Button } from "../Components/Element";
-import { cmpDateList, formatDate, futureHorizon } from "../Model/Activity";
+import { futureHorizon } from "../Model/Activity";
+import * as D from "../Model/Date";
 import { useAppTheme, useThemePalette, Theme } from "../Model/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SystemBars } from "react-native-edge-to-edge";
@@ -53,6 +54,9 @@ type InputData =
     };
 
 // Return the single value if all values are the same (using JSON.stringify to compare), otherwise null
+/** The earliest day a data point may be dated to */
+const MILLENNIUM = D.day(2000, 1, 1);
+
 const singleValueOrNull = (values: any[]): any | null => {
   const set = new Set(values.map((v) => JSON.stringify(v)));
   return (set.size === 1 ? values[0] : null) ?? null;
@@ -76,21 +80,20 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   const editingMultiple = inputData.type === "edit" && inputData.dataPoints.length > 1;
   const dataPoints: DataPoint[] = inputData.type === "new" ? [inputData.dataPoint] : inputData.dataPoints;
 
-  const date = singleValueOrNull(dataPoints.map((dp) => dateListToDate(dp.date)));
+  const date: ISODate | null = singleValueOrNull(dataPoints.map((dp) => dp.date));
   const note = singleValueOrNull(dataPoints.map((dp) => dp.note));
   const tags = singleValueOrNull(dataPoints.map((dp) => dp.tags));
   const [showErrors, setShowErrors] = useState(false);
 
-  const [inputDate, setInputDate] = useState<Date | null>(date);
+  const [inputDay, setInputDay] = useState<D.Day | null>(date === null ? null : dayFromISO(date));
   const [inputNote, setInputNote] = useState<string>(note ?? "");
   const [inputTags, setInputTags] = useState<string[]>(tags ?? []);
 
   const dateInputRef = useRef<InputWrapperRef>(undefined);
   let dateError: string | null = null;
-  let inputDateList: DateList | null = inputDate ? dateToDateList(inputDate) : null;
-  if (inputDateList !== null && cmpDateList(inputDateList, dateToDateList(futureHorizon(today))) > 0) {
+  if (inputDay !== null && D.compare(inputDay, futureHorizon(today)) > 0) {
     dateError = "Date cannot be more than a year in the future";
-  } else if (inputDateList !== null && cmpDateList(inputDateList, [2000, 1, 1]) < 0) {
+  } else if (inputDay !== null && D.compare(inputDay, MILLENNIUM) < 0) {
     dateError = "Date must be from this millenium";
   }
 
@@ -225,7 +228,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
     const note = inputNote === "" ? {} : { note: inputNote };
     const newPoint: DataPoint = {
       uuid: Crypto.randomUUID(),
-      date: inputDateList as DateList, // TODO: handle null case
+      date: dayToISO(inputDay as D.Day), // TODO: handle null case
       ...(newValue === undefined ? {} : { value: newValue }),
       ...(inputTags.length > 0 ? { tags: inputTags } : {}),
       ...note,
@@ -250,14 +253,15 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   };
 
   const showDatePicker = () => {
+    // The picker speaks Date, so the day is handed over and taken back at its edge
     DateTimePickerAndroid.open({
-      value: inputDate ?? today,
-      maximumDate: futureHorizon(today),
-      minimumDate: new Date(2000, 0, 1),
+      value: D.toDate(inputDay ?? today)!,
+      maximumDate: D.toDate(futureHorizon(today))!,
+      minimumDate: D.toDate(MILLENNIUM)!,
       firstDayOfWeek: weekStart === "monday" ? 1 : 0,
       onValueChange: (event, selectedDate) => {
         if (selectedDate !== undefined) {
-          setInputDate(selectedDate);
+          setInputDay(D.fromDate(selectedDate));
         }
       },
     });
@@ -290,7 +294,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
     navigation,
     theme,
     activity,
-    inputDate,
+    inputDay,
     ...inputValues.map((inputValue: any) => inputValue.value[0]),
     inputTags,
     inputNote,
@@ -316,7 +320,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
                   label="Date"
                   editable={false}
                   activityColor={activity.color}
-                  value={inputDate ? inputDate.toLocaleDateString(locale) : "Select date"}
+                  value={inputDay ? D.toDate(inputDay)!.toLocaleDateString(locale) : "Select date"}
                 />
               </Pressable>
               <Button onPress={showDatePicker} style={{ marginTop: 15 }}>

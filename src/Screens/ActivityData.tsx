@@ -3,17 +3,8 @@ import { StyleSheet, Text, View, SectionList, Alert, BackHandler } from "react-n
 import { useFocusEffect } from "@react-navigation/native";
 import useStore from "../Model/Store";
 import { useShallow } from "zustand/react/shallow";
-import {
-  DataPoint,
-  ActivityType,
-  Tag,
-  DateList,
-  dateListToDate,
-  ActivityPath,
-  State,
-  dateToDateList,
-} from "../Model/StoreTypes";
-import { cmpDateList, dayCmp, findZeroSlice, formatDate } from "../Model/Activity";
+import { DataPoint, ActivityType, Tag, ISODate, dayFromISO, ActivityPath, State, dayToISO } from "../Model/StoreTypes";
+import { dayCmp, findZeroSlice, formatDate } from "../Model/Activity";
 import { RenderTags } from "../Components/Tags";
 import TagMenu from "../Components/TagMenu";
 import { renderLongFormValue } from "../Model/Unit";
@@ -392,7 +383,7 @@ const DataPointSectionHeader = ({
   theme,
   toggleSelection,
 }: {
-  date: DateList;
+  date: ISODate;
   toggleStatus: "none" | "some" | "all";
   uuids: string[];
   theme: any;
@@ -409,7 +400,7 @@ const DataPointSectionHeader = ({
   const styles = getStyles(theme);
   return (
     <View style={styles.sectionHeader}>
-      <Text style={{ color: theme.onSurface }}>{formatDate(dateListToDate(date))}</Text>
+      <Text style={{ color: theme.onSurface }}>{formatDate(dayFromISO(date))}</Text>
       <Button onPress={() => toggleSelection(uuids)}>
         <MaterialCommunityIcons name={toggleIcon} size={24} color={theme.onSurfaceVariant} />
       </Button>
@@ -418,7 +409,7 @@ const DataPointSectionHeader = ({
 };
 
 const ActivityData = ({ navigation, route }: ActivityDataProps) => {
-  const { activityPath, day } = route.params;
+  const { activityPath, day }: { activityPath: ActivityPath; day: ISODate | undefined } = route.params;
   const activity: ActivityType = useStore(
     (state: State) => state.activities[activityPath.tabId]?.activities[activityPath.activityId],
   );
@@ -426,7 +417,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
   const theme = useAppTheme(activity.color);
   const [selectedPointUuids, setSelectedPointUuids] = useState<string[]>([]);
   const selectModeActive = selectedPointUuids.length > 0;
-  const today = dateToDateList(useToday());
+  const today = useToday();
 
   const styles = getStyles(theme);
 
@@ -441,7 +432,8 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
   let dps: [DataPoint, number][] = activity.dataPoints.map((o: DataPoint, i: number) => [o, i]);
   // filter only daily points
   if (day) {
-    const daySlice = findZeroSlice(dps, (dp) => dayCmp(dp[0], day));
+    const selectedDay = dayFromISO(day);
+    const daySlice = findZeroSlice(dps, (dp) => dayCmp(dp[0], selectedDay));
     const dayDataAndIndex = dps.slice(...daySlice);
     dps = dayDataAndIndex;
   }
@@ -475,7 +467,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
       index: i,
       selected: selectModeActive ? selectedPointUuids.includes(dataPoint.uuid) : false,
     };
-    if (lastDate && cmpDateList(dataPoint.date, lastDate) == 0) {
+    if (lastDate && dataPoint.date === lastDate) {
       acc[acc.length - 1].data.push(newPoint);
     } else {
       acc.push({
@@ -559,7 +551,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
           onPress={() =>
             navigation.navigate("EditDataPoint", {
               activityPath,
-              inputData: { type: "new", dataPoint: { date: day ?? today, tags: requiredTags } },
+              inputData: { type: "new", dataPoint: { date: day ?? dayToISO(today), tags: requiredTags } },
             })
           }
         >
@@ -585,7 +577,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
 
     navigation.setOptions({
       title: day
-        ? formatDate(dateListToDate(day))
+        ? formatDate(dayFromISO(day))
         : selectModeActive
           ? selectedPointUuids.length + " selected"
           : "All data",
@@ -610,7 +602,7 @@ const ActivityData = ({ navigation, route }: ActivityDataProps) => {
           ListFooterComponent={() => <Inset type="bottom" />}
           renderSectionHeader={({ section: { date, toggleStatus, data } }) => (
             <DataPointSectionHeader
-              date={date as DateList}
+              date={date as ISODate}
               toggleStatus={toggleStatus}
               uuids={data.map((item: any) => item.dataPoint.uuid)}
               theme={theme}

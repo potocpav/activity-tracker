@@ -265,6 +265,13 @@ export const year = (value: Day): Year => ({
 
 // --- comparison ------------------------------------------------------------
 
+/**
+ * Days from `from` to `to`: positive when `to` is the later one, zero for the same day.
+ * ±Infinity when one end is the far past or far future, and NaN when both are the same
+ * one, since the distance between two infinities is not a number of days.
+ */
+export const daysBetween = (from: Day, to: Day): number => to.value - from.value;
+
 /** Chronological ordering of two days: negative, zero or positive. Total, including the far past and far future. */
 export const compare = (a: Day, b: Day): number => (a.value < b.value ? -1 : a.value > b.value ? 1 : 0);
 

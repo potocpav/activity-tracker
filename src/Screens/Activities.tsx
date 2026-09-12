@@ -1,7 +1,7 @@
 import React, { useState, useRef, useMemo } from "react";
 import { StyleSheet, Text, View, useWindowDimensions, FlatList, ToastAndroid } from "react-native";
 import useStore from "../Model/Store";
-import { ActivityType, DataPoint, dateToDateList, Stat, ActivityTab, ActivityPath } from "../Model/StoreTypes";
+import { ActivityType, DataPoint, dayToISO, Stat, ActivityTab, ActivityPath } from "../Model/StoreTypes";
 import { dayCmp, findZeroSlice, renderStatValue } from "../Model/Activity";
 import { useAppTheme, useThemePalette, useWideDisplay } from "../Model/Theme";
 import { useToday } from "../Model/useToday";
@@ -176,7 +176,7 @@ const ActivityCard = ({
   const authenticated = useAuthenticated();
   const wideDisplay = useWideDisplay();
   const palette = useThemePalette();
-  const today = dateToDateList(useToday());
+  const today = useToday();
   const theme = useAppTheme();
   const dimensions = useWindowDimensions();
   const styles = getStyles(theme, wideDisplay, dimensions);
@@ -269,7 +269,7 @@ const ActivityCard = ({
               } else {
                 navigation.navigate("EditDataPoint", {
                   activityPath,
-                  inputData: { type: "new", dataPoint: { date: today } },
+                  inputData: { type: "new", dataPoint: { date: dayToISO(today) } },
                 });
               }
             } else {
@@ -280,7 +280,7 @@ const ActivityCard = ({
                 case null:
                   navigation.navigate("EditDataPoint", {
                     activityPath,
-                    inputData: { type: "new", dataPoint: { date: today } },
+                    inputData: { type: "new", dataPoint: { date: dayToISO(today) } },
                   });
                   break;
               }
@@ -298,7 +298,7 @@ const ActivityCard = ({
             if (todayNPoints > 0) {
               deleteActivityDataPoint(activityPath, end - 1);
             } else {
-              updateActivityDataPoint(activityPath, undefined, { date: today, uuid: Crypto.randomUUID() });
+              updateActivityDataPoint(activityPath, undefined, { date: dayToISO(today), uuid: Crypto.randomUUID() });
             }
           }
         }}

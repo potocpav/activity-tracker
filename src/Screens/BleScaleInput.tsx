@@ -8,7 +8,7 @@ import {
   ActivityType,
   BleScaleWorkoutState,
   DataPoint,
-  dateToDateList,
+  dayToISO,
   State,
   Tag,
   Unit,
@@ -110,7 +110,7 @@ const BleScaleInputInner: React.FC<BleScaleInputInnerProps> = ({
   const updateActivityDataPoint = useStore((state: any) => state.updateActivityDataPoint);
   const theme = useAppTheme(activity.color);
   const palette = useThemePalette();
-  const today = dateToDateList(useToday());
+  const today = useToday();
 
   const styles = getStyles(theme);
   const connectedDevice = useStore((state: any) => state.connectedDevice);
@@ -274,7 +274,7 @@ const BleScaleInputInner: React.FC<BleScaleInputInnerProps> = ({
           }
           setNewDataPoint({
             uuid: Crypto.randomUUID(),
-            date: today,
+            date: dayToISO(today),
             value: {
               Weight: Math.round(newPull.wAvg * 100) / 100,
               Time: Math.round(duration * 100) / 100,
@@ -311,7 +311,7 @@ const BleScaleInputInner: React.FC<BleScaleInputInnerProps> = ({
   });
 
   const onPlay = () => {
-    setWorkoutState({ state: "playing", t0: t.value, t0Rest: 0, date: today });
+    setWorkoutState({ state: "playing", t0: t.value, t0Rest: 0, date: dayToISO(today) });
   };
 
   const onReset = () => {
@@ -340,7 +340,7 @@ const BleScaleInputInner: React.FC<BleScaleInputInnerProps> = ({
       currentPull: { t0: 0, wSum: 0, wCount: 0, wMin: 0, wMax: 0, active: false },
     });
     if (workoutState?.state !== "playing") {
-      setWorkoutState({ state: "playing", t0: t.value, t0Rest: 0, date: today });
+      setWorkoutState({ state: "playing", t0: t.value, t0Rest: 0, date: dayToISO(today) });
     }
     setRecordingState("recording");
     startMeasurement(onDataUpdate);

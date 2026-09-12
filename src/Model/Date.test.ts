@@ -258,6 +258,23 @@ describe("the far past and the far future", () => {
   });
 });
 
+describe("daysBetween", () => {
+  test("counts the days from one day to another", () => {
+    assert.equal(D.daysBetween(d("2026-01-01"), d("2026-01-01")), 0);
+    assert.equal(D.daysBetween(d("2026-01-01"), d("2026-01-02")), 1);
+    assert.equal(D.daysBetween(d("2026-01-02"), d("2026-01-01")), -1);
+    assert.equal(D.daysBetween(d("2026-01-01"), d("2027-01-01")), 365);
+    assert.equal(D.daysBetween(d("2024-01-01"), d("2025-01-01")), 366); // leap year
+  });
+
+  test("is infinite towards the far past and far future", () => {
+    assert.equal(D.daysBetween(d("2026-01-01"), D.farFuture), Infinity);
+    assert.equal(D.daysBetween(d("2026-01-01"), D.farPast), -Infinity);
+    assert.equal(D.daysBetween(D.farPast, d("2026-01-01")), Infinity);
+    assert.ok(Number.isNaN(D.daysBetween(D.farFuture, D.farFuture)));
+  });
+});
+
 describe("comparison", () => {
   test("orders days chronologically", () => {
     assert.equal(D.compare(d("2026-01-01"), d("2026-01-02")), -1);

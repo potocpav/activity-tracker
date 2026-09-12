@@ -11,8 +11,8 @@ import { Button, Switch } from "../Components/Element";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { ListSection, ListItem, ListIcon } from "../Components/List";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { allHints, ActivityType, DateList, Unit, ActivityTab, stripUuids, generateUuids } from "../Model/StoreTypes";
-import { cmpDateList } from "../Model/Activity";
+import { allHints, ActivityType, Unit, ActivityTab, stripUuids, generateUuids, dayToISO } from "../Model/StoreTypes";
+import * as D from "../Model/Date";
 import { SystemBars } from "react-native-edge-to-edge";
 import * as SQLite from "expo-sqlite";
 import { defaultGraphs, defaultCalendar, defaultStats } from "../Model/DefaultActivity";
@@ -80,10 +80,7 @@ const Settings = () => {
   const exportData = async () => {
     const stateWithoutUuids = stripUuids({ ...state });
     const data = JSON.stringify({ ...partialize(stateWithoutUuids), version: version }, null, 2);
-    const date = new Date();
-    const dateStr = date.toISOString().split("T")[0];
-
-    const file = new File(Paths.cache, `activities-${dateStr}.json`);
+    const file = new File(Paths.cache, `activities-${dayToISO(D.today())}.json`);
     try {
       if (file.exists) {
         file.delete();
@@ -131,7 +128,7 @@ const Settings = () => {
             ...tab,
             activities: tab.activities.map((activity: ActivityType) => ({
               ...activity,
-              dataPoints: [...activity.dataPoints].sort((a, b) => cmpDateList(a.date, b.date)),
+              dataPoints: [...activity.dataPoints].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0)),
             })),
           })),
         };
@@ -168,8 +165,7 @@ const Settings = () => {
             .filter((r: any) => r.habit === habit.id)
             .filter((r: any) => isNumeric || r.value === 2)
             .map((r: any) => {
-              const dateObject = new Date(r.timestamp);
-              const date = [dateObject.getFullYear(), dateObject.getMonth() + 1, dateObject.getDate()] as DateList;
+              const date = dayToISO(D.fromDate(new Date(r.timestamp)));
               const note = r.notes === "" ? {} : { note: r.notes };
               if (isNumeric) {
                 return {

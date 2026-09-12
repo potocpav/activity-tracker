@@ -4,11 +4,11 @@ import Menu from "../Menu";
 import useStore from "../../Model/Store";
 import {
   DataPoint,
-  dateListToTime,
   ActivityType,
   GraphType,
   WeekStart,
-  DateList,
+  ISODate,
+  dayFromISO,
   SubUnit,
   GraphProps,
   Unit,
@@ -16,9 +16,9 @@ import {
   BinnableSize,
   ActivityPath,
   State,
-  dateToDateList,
 } from "../../Model/StoreTypes";
-import { binTime, binTimeSeries, cmpDateList, extractValue } from "../../Model/Activity";
+import { binStart, binTimeSeries, extractValue } from "../../Model/Activity";
+import * as D from "../../Model/Date";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import TagMenu from "../TagMenu";
 import SubUnitMenu from "../SubUnitMenu";
@@ -225,35 +225,33 @@ const ActivityGraph = ({ activityPath, graphIndex }: { activityPath: ActivityPat
   );
 };
 
-const xLabel = (t: number, binSize: BinSize, dayIndex?: number) => {
-  const d = new Date(t);
+const xLabel = (day: D.Day, binSize: BinSize, dayIndex?: number) => {
+  const { year, month, dayOfMonth } = D.dayParts(day)!;
+  // The month name only comes from Date, for the locale's own abbreviation
+  const monthName = () => D.toDate(day)!.toLocaleString("default", { month: "short" });
   switch (binSize) {
     case "point": {
       if (dayIndex !== undefined && dayIndex === 0) {
-        const date = d.getDate();
-        return date > 1 ? `${date}` : `${date}\n${d.toLocaleString("default", { month: "short" })}`;
+        return dayOfMonth > 1 ? `${dayOfMonth}` : `${dayOfMonth}\n${monthName()}`;
       } else {
         return "";
       }
     }
     case "day": {
-      const date = d.getDate();
-      return date > 1 ? `${date}` : `${date}\n${d.toLocaleString("default", { month: "short" })}`;
+      return dayOfMonth > 1 ? `${dayOfMonth}` : `${dayOfMonth}\n${monthName()}`;
     }
     case "week": {
-      const date = d.getDate();
-      return date > 7 ? `${date}` : `${date}\n${d.toLocaleString("default", { month: "short" })}`;
+      return dayOfMonth > 7 ? `${dayOfMonth}` : `${dayOfMonth}\n${monthName()}`;
     }
     case "month": {
-      const m = d.getMonth() + 1;
-      return m > 1 ? `${m}` : `${m}\n'${d.getFullYear() % 100}`;
+      return month > 1 ? `${month}` : `${month}\n'${year % 100}`;
     }
     case "quarter": {
-      const q = d.getMonth() / 3 + 1;
-      return q > 1 ? `q${q}` : `q${q}\n'${d.getFullYear() % 100}`;
+      const q = (month - 1) / 3 + 1;
+      return q > 1 ? `q${q}` : `q${q}\n'${year % 100}`;
     }
     case "year": {
-      return `'${d.getFullYear() % 100}`;
+      return `'${year % 100}`;
     }
   }
 };
@@ -298,7 +296,8 @@ const StatBox = ({ theme, unit, stats, onPress }: { theme: any; unit: SubUnit; s
             <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
               <View style={{ flex: 1, minWidth: 100 }}>
                 <Text style={{ color: theme.onSurface }} numberOfLines={1}>
-                  {`${stats.regression.slope >= 0 ? "+" : ""}${renderLongFormValue(stats.regression.slope * 1e3 * 3600 * 24 * 30, unit)} per month`}
+                  {/* The regression runs over day numbers, so a month is 30 of them */}
+                  {`${stats.regression.slope >= 0 ? "+" : ""}${renderLongFormValue(stats.regression.slope * 30, unit)} per month`}
                 </Text>
               </View>
             </View>
@@ -352,20 +351,20 @@ type Stats = {
 const RegressionLine = ({
   theme,
   regression,
-  time,
+  day,
   view,
   weekStart,
   binSize,
 }: {
   theme: any;
   regression: { slope: number; intercept: number };
-  time: number;
+  day: D.Day;
   view: ViewDimensions;
   weekStart: WeekStart;
   binSize: BinnableSize;
 }) => {
-  const x0 = binTime(binSize, time, -1, weekStart).getTime();
-  const x1 = binTime(binSize, time, 1, weekStart).getTime();
+  const x0 = binStart(binSize, day, -1, weekStart).value;
+  const x1 = binStart(binSize, day, 1, weekStart).value;
   const y0 = view.yToPx(regression.intercept + regression.slope * x0);
   const y1 = view.yToPx(regression.intercept + regression.slope * x1);
   return (
@@ -407,34 +406,33 @@ const ActivityChart = ({ height, graph, dataPoints, activityUnit, weekStart, the
   const windowDimensions = useWindowDimensions();
   const today = useToday();
 
-  // Every item is stamped with the start of its first day, so one starting after today
-  // has not begun yet and is drawn faded, like a future day in the calendar
-  const startOfToday = dateListToTime(dateToDateList(today));
-  const itemOpacity = (item: { time: number }) => (item.time > startOfToday ? FUTURE_OPACITY : 1);
+  // Every item is stamped with its first day, so one starting after today has not begun
+  // yet and is drawn faded, like a future day in the calendar
+  const itemOpacity = (item: { day: D.Day }) => (D.compare(item.day, today) > 0 ? FUTURE_OPACITY : 1);
 
   const [selectedRange, setSelectedRange] = useState<{ min: number; max: number } | null>(null);
 
-  const filteredValues: { date: DateList; value: number }[] = dataPoints
+  const filteredValues: { date: ISODate; value: number }[] = dataPoints
     .map((dp: DataPoint) => ({
       date: dp.date,
       value: extractValue(dp, graph.tagFilters, graph.subUnit),
     }))
-    .filter((x) => x.value !== null) as { date: DateList; value: number }[];
+    .filter((x) => x.value !== null) as { date: ISODate; value: number }[];
 
-  let items: { time: number; values: any[]; nDays: number; dayIndex?: number }[];
+  let items: { day: D.Day; values: any[]; nDays: number; dayIndex?: number }[];
   if (graph.binSize === "point") {
     items = [];
     let dayIndex = 0;
-    let lastDate = null;
+    let lastDate: ISODate | null = null;
     for (let i = 0; i < filteredValues.length; i++) {
-      if (lastDate === null || cmpDateList(lastDate, filteredValues[i].date) !== 0) {
+      if (lastDate === null || lastDate !== filteredValues[i].date) {
         lastDate = filteredValues[i].date;
         dayIndex = 0;
       } else {
         dayIndex++;
       }
       items.push({
-        time: dateListToTime(filteredValues[i].date),
+        day: dayFromISO(filteredValues[i].date),
         values: [filteredValues[i].value],
         nDays: 1,
         dayIndex,
@@ -474,19 +472,19 @@ const ActivityChart = ({ height, graph, dataPoints, activityUnit, weekStart, the
     const rangeItems = items.slice(selectedRange.min, selectedRange.max + 1);
     switch (graph.graphType) {
       case "bar-daily-mean":
-        rangeValues = rangeItems.map((item) => ({ x: item.time, y: (item.values.length * 100) / item.nDays }));
+        rangeValues = rangeItems.map((item) => ({ x: item.day.value, y: (item.values.length * 100) / item.nDays }));
         break;
       case "bar-sum":
         rangeValues = rangeItems.map((item) => ({
-          x: item.time,
+          x: item.day.value,
           y: item.values.reduce((a: number, b: number) => a + b, 0),
         }));
         break;
       case "bar-count":
-        rangeValues = rangeItems.map((item) => ({ x: item.time, y: item.values.length }));
+        rangeValues = rangeItems.map((item) => ({ x: item.day.value, y: item.values.length }));
         break;
       case "box":
-        rangeValues = rangeItems.map((item) => item.values.map((y) => ({ x: item.time, y }))).flat();
+        rangeValues = rangeItems.map((item) => item.values.map((y) => ({ x: item.day.value, y }))).flat();
         break;
     }
     if (isSummable(unit) && rangeItems.length >= 1 && graph.binSize !== "point") {
@@ -530,7 +528,7 @@ const ActivityChart = ({ height, graph, dataPoints, activityUnit, weekStart, the
             <RegressionLine
               theme={theme}
               regression={selectionStats.regression}
-              time={item.time}
+              day={item.day}
               weekStart={weekStart}
               binSize={graph.binSize}
               view={view}
@@ -559,7 +557,7 @@ const ActivityChart = ({ height, graph, dataPoints, activityUnit, weekStart, the
             <RegressionLine
               theme={theme}
               regression={selectionStats.regression}
-              time={item.time}
+              day={item.day}
               view={view}
               weekStart={weekStart}
               binSize={graph.binSize}
@@ -596,7 +594,7 @@ const ActivityChart = ({ height, graph, dataPoints, activityUnit, weekStart, the
         items={items}
         renderItem={renderItem}
         itemBoundingBox={itemBoundingBox}
-        itemLabel={(item) => xLabel(item.time, graph.binSize, item.dayIndex)}
+        itemLabel={(item) => xLabel(item.day, graph.binSize, item.dayIndex)}
         setSelectedRange={setSelectedRange}
       />
       {selectionStats && (

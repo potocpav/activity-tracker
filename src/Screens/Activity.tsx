@@ -2,7 +2,8 @@ import React from "react";
 import { Text, View, Alert } from "react-native";
 import Menu from "../Components/Menu";
 import useStore from "../Model/Store";
-import { DataPoint, ActivityType, Tag, dateListToDate, State, ActivityPath, dateToDateList } from "../Model/StoreTypes";
+import { DataPoint, ActivityType, Tag, State, ActivityPath, dayToISO } from "../Model/StoreTypes";
+import * as D from "../Model/Date";
 import ActivitySummary from "./ActivitySummary";
 import { File, Paths, EncodingType } from "expo-file-system";
 import * as Sharing from "expo-sharing";
@@ -64,7 +65,7 @@ const ActivityInner: React.FC<{ activity: ActivityType; activityPath: ActivityPa
   const duplicateActivity = useStore((state: any) => state.duplicateActivity);
   const deleteActivity = useStore((state: any) => state.deleteActivity);
   const dismissHint = useStore((state: any) => state.dismissHint);
-  const today = dateToDateList(useToday());
+  const today = dayToISO(useToday());
 
   const deleteActivityWrapper = () => {
     Alert.alert(
@@ -120,14 +121,12 @@ const ActivityInner: React.FC<{ activity: ActivityType; activityPath: ActivityPa
       const tags = (() => {
         return activity.tags.map((t: Tag) => ((dp.tags ?? []).includes(t.name) ? 1 : null));
       })();
-      return [dateListToDate(dp.date).toISOString().split("T")[0], ...values, ...tags];
+      return [dp.date, ...values, ...tags];
     });
     const csv = renderCsv([headerRow, ...dataRows]);
 
     // save to file and share
-    const date = new Date();
-    const dateStr = date.toISOString().split("T")[0];
-    const file = new File(Paths.cache, `activity-${dateStr}.csv`);
+    const file = new File(Paths.cache, `activity-${dayToISO(D.today())}.csv`);
 
     try {
       if (file.exists) {
