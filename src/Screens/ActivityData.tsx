@@ -120,17 +120,15 @@ const DataPointContainer = (props: {
       style={[
         {
           padding: 6,
-          // The black theme has no tint to lift a point off the background, so the point
-          // is drawn as an outline on black instead of a grey card.
-          backgroundColor: props.theme.black ? props.theme.background : props.theme.elevation2,
+          backgroundColor: props.selected ? props.theme.elevation2 : props.theme.background,
           margin: 4,
           borderRadius: 15,
           elevation: 2,
-          borderWidth: 2,
+          borderWidth: StyleSheet.hairlineWidth,
           borderColor: props.selected
             ? props.theme.primary
             : props.theme.black
-              ? props.theme.outlineVariant
+              ? props.theme.outline
               : "transparent",
         },
         props.style,
@@ -407,7 +405,7 @@ const DataPointSectionHeader = ({
 }) => {
   let toggleIcon: keyof typeof MaterialCommunityIcons.glyphMap;
   if (toggleStatus === "none") {
-    toggleIcon = "checkbox-blank-outline";
+    toggleIcon = "circle-small";
   } else if (toggleStatus === "all") {
     toggleIcon = "checkbox-intermediate";
   } else {
@@ -417,8 +415,12 @@ const DataPointSectionHeader = ({
   return (
     <View style={styles.sectionHeader}>
       <Text style={{ color: theme.onSurface }}>{formatDate(dayFromISO(date))}</Text>
-      <Button onPress={() => toggleSelection(uuids)}>
-        <MaterialCommunityIcons name={toggleIcon} size={24} color={theme.onSurfaceVariant} />
+      <Button onPress={() => toggleSelection(uuids)} style={{ paddingVertical: 0, height: 25 }}>
+        {toggleStatus === "none" ? (
+          <></>
+        ) : (
+          <MaterialCommunityIcons name={toggleIcon} size={24} color={theme.onSurface} />
+        )}
       </Button>
     </View>
   );
@@ -633,7 +635,7 @@ const getStyles = (theme: any) =>
       backgroundColor: theme.background,
     },
     sectionHeader: {
-      padding: 5,
+      paddingLeft: 5,
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
