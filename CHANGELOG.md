@@ -5,7 +5,7 @@
   - [ ] Remove wing tabs when no activities exist
   - [ ] Animate title on tab changes
   - [ ] Navigate to the new tab on Loop Habits import
-- [o] Handle large number of data points
+- [ ] Handle large number of data points
   - [x] Bulk selection
   - [ ] Bulk editing
   - [ ] Bulk deletion
