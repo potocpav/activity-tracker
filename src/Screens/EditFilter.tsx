@@ -22,7 +22,6 @@ import {
 import { filterDataPoints, formatDate, periodToLabel } from "../Model/Activity";
 import { numberToString, renderUnit, stringToNumber } from "../Model/Unit";
 import DropdownMenu from "../Components/DropdownMenu";
-import SegmentedButtons from "../Components/SegmentedButtons";
 import TagMenu from "../Components/TagMenu";
 import { ValueEditor } from "../Components/UnitView";
 import { Button, ButtonRow, CheckButton, Divider, Switch } from "../Components/Element";
@@ -198,6 +197,18 @@ const EditFilter = ({ navigation, route }: { navigation: any; route: any }) => {
   ];
   const selectedSortKey = inputSortKey === "date" ? "date" : boundsKey(inputSortSubUnit);
 
+  const sortDirectionLabel =
+    inputSortDirection === "descending"
+      ? inputSortKey === "date"
+        ? "Newest"
+        : "Highest"
+      : inputSortKey === "date"
+        ? "Oldest"
+        : "Lowest";
+
+  const toggleSortDirection = () =>
+    setInputSortDirection((direction: SortDirection) => (direction === "descending" ? "ascending" : "descending"));
+
   const onSelectSort = (key: string) => {
     if (key === "date") {
       setInputSortKey("date");
@@ -235,7 +246,7 @@ const EditFilter = ({ navigation, route }: { navigation: any; route: any }) => {
           </Text>
 
           <Section title="Sort by">
-            <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap", justifyContent: "space-between", gap: 8 }}>
               {subUnits.length > 0 && (
                 <DropdownMenu
                   options={sortOptions}
@@ -247,24 +258,14 @@ const EditFilter = ({ navigation, route }: { navigation: any; route: any }) => {
                   theme={theme}
                 />
               )}
-              <View style={{ flex: 1, minWidth: 200 }}>
-                <SegmentedButtons
-                  value={inputSortDirection}
-                  onValueChange={(value: string) => setInputSortDirection(value as SortDirection)}
-                  buttons={[
-                    {
-                      value: "descending",
-                      label: inputSortKey === "date" ? "Newest" : "Highest",
-                      icon: "sort-descending",
-                    },
-                    {
-                      value: "ascending",
-                      label: inputSortKey === "date" ? "Oldest" : "Lowest",
-                      icon: "sort-ascending",
-                    },
-                  ]}
+              <Button onPress={toggleSortDirection}>
+                <MaterialCommunityIcons
+                  name={inputSortDirection === "descending" ? "sort-descending" : "sort-ascending"}
+                  size={20}
+                  color={theme.onSurfaceVariant}
                 />
-              </View>
+                <Text style={{ color: theme.onSurfaceVariant }}>{sortDirectionLabel}</Text>
+              </Button>
             </View>
           </Section>
 

@@ -50,7 +50,6 @@ const ITEM_HEIGHT = 60;
 
 const DataPointContainer = (props: {
   children: React.ReactNode;
-  // theme: any,
   onDelete?: () => void;
   onPress?: () => void;
   onLongPress?: () => void;
@@ -120,7 +119,8 @@ const DataPointContainer = (props: {
       style={[
         {
           padding: 6,
-          backgroundColor: props.selected ? props.theme.elevation2 : props.theme.background,
+          backgroundColor: props.selected ? (props.theme.black ? props.theme.elevation2 : props.theme.elevation3):
+            (props.theme.black ? props.theme.background : props.theme.elevation2),
           margin: 4,
           borderRadius: 15,
           elevation: 2,
