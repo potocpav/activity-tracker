@@ -129,11 +129,7 @@ const Settings = () => {
         }
         let migrated = migrate(json, json.version);
 
-        // Every stored date must read back as a calendar day: one that does not cannot
-        // be placed or binned, and binning it hangs the graphs. Files written before the
-        // dates were validated have theirs dropped by the migrations above, so anything
-        // still unreadable here means a file that is damaged beyond what they cover, and
-        // the import is refused rather than applied in part.
+        // Every stored date must read back as a calendar day.
         const unreadable = migrated.activities.flatMap((tab: ActivityTab) =>
           tab.activities.flatMap((activity: ActivityType) =>
             activity.dataPoints
