@@ -14,6 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import {
   allHints,
   ActivityType,
+  DataPoint,
   Unit,
   ActivityTab,
   stripUuids,
@@ -128,9 +129,30 @@ const Settings = () => {
         }
         let migrated = migrate(json, json.version);
 
-        // slight sanity check
-        // sort data points by date
+        // Every stored date must read back as a calendar day: one that does not cannot
+        // be placed or binned, and binning it hangs the graphs. Files written before the
+        // dates were validated have theirs dropped by the migrations above, so anything
+        // still unreadable here means a file that is damaged beyond what they cover, and
+        // the import is refused rather than applied in part.
+        const unreadable = migrated.activities.flatMap((tab: ActivityTab) =>
+          tab.activities.flatMap((activity: ActivityType) =>
+            activity.dataPoints
+              .filter((dp: DataPoint) => D.fromISODate(dp.date) === null)
+              .map((dp: DataPoint) => `${activity.name}: "${dp.date}"`),
+          ),
+        );
+        if (unreadable.length > 0) {
+          const shown = unreadable.slice(0, 5).join("\n");
+          const rest = unreadable.length > 5 ? `\n…and ${unreadable.length - 5} more` : "";
+          Alert.alert(
+            "Import Error",
+            `${unreadable.length} data point${unreadable.length === 1 ? " has" : "s have"} an unreadable date. ` +
+              `Nothing was imported.\n\n${shown}${rest}`,
+          );
+          return;
+        }
 
+        // sort data points by date
         migrated = {
           ...migrated,
           activities: migrated.activities.map((tab: ActivityTab) => ({

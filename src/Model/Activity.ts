@@ -372,18 +372,24 @@ export const binTimeSeries = (
   dataPoints: { date: ISODate; value: number }[],
   weekStart: WeekStart,
 ): Bin[] => {
-  if (dataPoints.length === 0) {
+  // A day that is not definite has no calendar position: every bin boundary taken
+  // around one is that same infinity, so the walks below would compare equal forever
+  // and never advance. Stored dates are meant to be `YYYY-MM-DD`, but a malformed one
+  // reads back as the far past, so drop those points rather than hang on them.
+  const points = dataPoints
+    .map((dp) => ({ day: dayFromISO(dp.date), value: dp.value }))
+    .filter((dp) => D.isDefinite(dp.day));
+  if (points.length === 0) {
     return [];
   }
-  const origin = dayFromISO(dataPoints[0].date);
+  const origin = points[0].day;
   const start = (i: number) => binStart(binSize, origin, i, weekStart);
   const bin = (i: number): Bin => ({ day: start(i), nDays: D.daysBetween(start(i), start(i + 1)), values: [] });
 
   const bins: Bin[] = [bin(0)];
   let binIx = 0;
-  for (const dp of dataPoints) {
-    const day = dayFromISO(dp.date);
-    while (D.compare(start(binIx + 1), day) <= 0) {
+  for (const dp of points) {
+    while (D.compare(start(binIx + 1), dp.day) <= 0) {
       binIx++;
       bins.push(bin(binIx));
     }

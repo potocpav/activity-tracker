@@ -10,9 +10,9 @@ import {
   dayToISO,
   defaultDataFilter,
 } from "./StoreTypes";
-import { day } from "./Date";
+import { day, fromISODate } from "./Date";
 
-export const version = 37;
+export const version = 38;
 
 export const migrate = (persisted: any, version: number) => {
   if (version < 6) {
@@ -193,6 +193,17 @@ export const migrate = (persisted: any, version: number) => {
     persisted.activities.forEach((tab: ActivityTab) => {
       tab.activities.forEach((activity: ActivityType) => {
         activity.dataFilter = defaultDataFilter();
+      });
+    });
+  }
+  if (version < 38) {
+    // A date that does not parse has no calendar position, so the point carrying it can
+    // be neither placed nor binned — it used to hang the graphs that tried. The date is
+    // the only record of when the value was taken, so there is nothing to repair it
+    // from, and the point goes with it.
+    persisted.activities.forEach((tab: ActivityTab) => {
+      tab.activities.forEach((activity: ActivityType) => {
+        activity.dataPoints = activity.dataPoints.filter((dp: DataPoint) => fromISODate(dp.date) !== null);
       });
     });
   }
