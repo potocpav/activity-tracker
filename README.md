@@ -25,6 +25,7 @@ Track your performance metrics and their progress over time. With custom statist
 
 ## Links
 
+- [My Projects](https://potocpav.github.io)
 - [FAQ](https://potocpav.github.io/activity-tracker/faq)
 - [Change Log](CHANGELOG.md)
 - [Privacy Policy](https://potocpav.github.io/activity-tracker/privacy)
