@@ -37,21 +37,14 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import * as Crypto from "expo-crypto";
 import { useToday } from "../Model/useToday";
 import { withActivityLock } from "../Components/LockedActivity";
+import { areUnitsEqual } from "../Model/Unit";
+import { InputData, DraftInput, draftKey, sameInput } from "../Model/EditDraft";
+import useEditDraftStore from "../Model/EditDraftStore";
 
 type EditDataPointProps = {
   navigation: any;
   route: any;
 };
-
-type InputData =
-  | {
-      type: "new";
-      dataPoint: DataPoint;
-    }
-  | {
-      type: "edit";
-      dataPoints: DataPoint[];
-    };
 
 // Return the single value if all values are the same (using JSON.stringify to compare), otherwise null
 /** The earliest day a data point may be dated to */
@@ -78,16 +71,30 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
   const deleteActivityDataPointsByUuid = useStore((state: any) => state.deleteActivityDataPointsByUuid);
 
   const editingMultiple = inputData.type === "edit" && inputData.dataPoints.length > 1;
-  const dataPoints: DataPoint[] = inputData.type === "new" ? [inputData.dataPoint] : inputData.dataPoints;
+  const dataPoints: DataPoint[] = inputData.type === "new" ? [inputData.dataPoint as DataPoint] : inputData.dataPoints;
+
+  // Unsaved input left behind on this very screen (the app was killed, or the activity
+  // locked up), taken over once, on mount.
+  const key = draftKey(activity.uuid, inputData);
+  const [restored] = useState(() => {
+    const draft = useEditDraftStore.getState().draft;
+    return draft?.key === key ? draft : null;
+  });
+  const restoredValues = restored !== null && areUnitsEqual(restored.unit, activity.unit) ? restored.values : null;
 
   const date: ISODate | null = singleValueOrNull(dataPoints.map((dp) => dp.date));
   const note = singleValueOrNull(dataPoints.map((dp) => dp.note));
   const tags = singleValueOrNull(dataPoints.map((dp) => dp.tags));
   const [showErrors, setShowErrors] = useState(false);
 
-  const [inputDay, setInputDay] = useState<D.Day | null>(date === null ? null : dayFromISO(date));
-  const [inputNote, setInputNote] = useState<string>(note ?? "");
-  const [inputTags, setInputTags] = useState<string[]>(tags ?? []);
+  const [inputDay, setInputDay] = useState<D.Day | null>(() => {
+    const day = restored !== null ? restored.day : date;
+    return day === null ? null : dayFromISO(day);
+  });
+  const [inputNote, setInputNote] = useState<string>(restored?.note ?? note ?? "");
+  const [inputTags, setInputTags] = useState<string[]>(
+    restored?.tags.filter((t) => activity.tags.some((tag) => tag.name === t)) ?? tags ?? [],
+  );
 
   const dateInputRef = useRef<InputWrapperRef>(undefined);
   let dateError: string | null = null;
@@ -99,6 +106,8 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
 
   let inputValues: {
     subUnit: { name: string | null; unit: SubUnit };
+    /** The value the screen was opened with, before any draft */
+    initial: string;
     value: [string, (text: string) => void];
   }[];
 
@@ -108,10 +117,12 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
       break;
     case "single":
       const value: number | null = singleValueOrNull(dataPoints.map((dp) => dp.value as number | undefined));
+      const initial = numberToString(value, activity.unit.unit);
       inputValues = [
         {
           subUnit: { name: null, unit: activity.unit.unit },
-          value: useState<string>(numberToString(value, activity.unit.unit)),
+          initial,
+          value: useState<string>(restoredValues?.[""] ?? initial),
         },
       ];
       break;
@@ -123,9 +134,11 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
             return value?.[u.name] ?? null;
           }),
         );
+        const initial = numberToString(value, u.unit);
         return {
           subUnit: u,
-          value: useState<string>(numberToString(value, u.unit)),
+          initial,
+          value: useState<string>(restoredValues?.[u.name] ?? initial),
         };
       });
       break;
@@ -155,6 +168,44 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
       emptyValueError = "Enter at least one value";
     }
   }
+
+  // Keep the input as a draft while it differs from what the screen was opened with, so it
+  // survives the screen going away without the user leaving it. Saved on every change: when
+  // the app is backgrounded, a locked activity unmounts this screen before anything else
+  // could get to it.
+  const setDraft = useEditDraftStore((state) => state.setDraft);
+  const clearDraft = useEditDraftStore((state) => state.clearDraft);
+  React.useEffect(() => {
+    const valuesOf = (pick: (v: (typeof inputValues)[number]) => string) =>
+      Object.fromEntries(inputValues.map((v) => [v.subUnit.name ?? "", pick(v)]));
+    const initialInput: DraftInput = {
+      day: date,
+      note: note ?? "",
+      tags: tags ?? [],
+      values: valuesOf((v) => v.initial),
+    };
+    const input: DraftInput = {
+      day: inputDay === null ? null : dayToISO(inputDay),
+      note: inputNote,
+      tags: inputTags,
+      values: valuesOf((v) => v.value[0]),
+    };
+    if (sameInput(input, initialInput)) {
+      clearDraft(key);
+    } else {
+      setDraft({ ...input, key, unit: activity.unit });
+    }
+  }, [key, activity.unit, inputDay, inputNote, inputTags, ...inputValues.map((v) => v.value[0])]);
+
+  // Leaving the screen on purpose (save, delete, back) is the end of the draft. Being
+  // unmounted by the activity lock, or the app being killed, is not.
+  React.useEffect(() => navigation.addListener("beforeRemove", () => clearDraft(key)), [navigation, key]);
+
+  React.useEffect(() => {
+    if (restored !== null) {
+      ToastAndroid.show("Restored unsaved changes", ToastAndroid.SHORT);
+    }
+  }, []);
 
   const toggleInputTag = (tag: string) => {
     setInputTags(inputTags.includes(tag) ? inputTags.filter((t: string) => t !== tag) : [...inputTags, tag]);
