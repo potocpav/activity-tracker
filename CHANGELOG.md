@@ -36,13 +36,14 @@
 
 # Changelog
 
-## 3.8.0 (planned)
+## 3.8.0 (2026-11-12)
 
 - Tweaks and fixes
 - Add future date input
 - Filter and sort the data list by date, value, tags and notes
+- Save a draft data point when the app is closed
 
-### 3.7.0
+### 3.7.0 (2026-09-14)
 
 - Add ratings
 - Add locked activities
