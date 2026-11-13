@@ -169,40 +169,32 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
     }
   }
 
-  // Keep the input as a draft while it differs from what the screen was opened with, so it
-  // survives the screen going away without the user leaving it. Saved on every change: when
-  // the app is backgrounded, a locked activity unmounts this screen before anything else
-  // could get to it.
+  // Keep the input as a draft, so it survives the screen going away without being saved
+  // (the app killed, or a locked activity locking up). There is a single draft: whatever
+  // edit screen was open last overwrites it. Written on every change: when the app is
+  // backgrounded, a locked activity unmounts this screen before anything else could get to it.
   const setDraft = useEditDraftStore((state) => state.setDraft);
   const clearDraft = useEditDraftStore((state) => state.clearDraft);
+  const valuesOf = (pick: (v: (typeof inputValues)[number]) => string) =>
+    Object.fromEntries(inputValues.map((v) => [v.subUnit.name ?? "", pick(v)]));
+  const input: DraftInput = {
+    day: inputDay === null ? null : dayToISO(inputDay),
+    note: inputNote,
+    tags: inputTags,
+    values: valuesOf((v) => v.value[0]),
+  };
   React.useEffect(() => {
-    const valuesOf = (pick: (v: (typeof inputValues)[number]) => string) =>
-      Object.fromEntries(inputValues.map((v) => [v.subUnit.name ?? "", pick(v)]));
+    setDraft({ ...input, key, unit: activity.unit });
+  }, [key, activity.unit, inputDay, inputNote, inputTags, ...inputValues.map((v) => v.value[0])]);
+
+  React.useEffect(() => {
     const initialInput: DraftInput = {
       day: date,
       note: note ?? "",
       tags: tags ?? [],
       values: valuesOf((v) => v.initial),
     };
-    const input: DraftInput = {
-      day: inputDay === null ? null : dayToISO(inputDay),
-      note: inputNote,
-      tags: inputTags,
-      values: valuesOf((v) => v.value[0]),
-    };
-    if (sameInput(input, initialInput)) {
-      clearDraft(key);
-    } else {
-      setDraft({ ...input, key, unit: activity.unit });
-    }
-  }, [key, activity.unit, inputDay, inputNote, inputTags, ...inputValues.map((v) => v.value[0])]);
-
-  // Leaving the screen on purpose (save, delete, back) is the end of the draft. Being
-  // unmounted by the activity lock, or the app being killed, is not.
-  React.useEffect(() => navigation.addListener("beforeRemove", () => clearDraft(key)), [navigation, key]);
-
-  React.useEffect(() => {
-    if (restored !== null) {
+    if (restored !== null && !sameInput(input, initialInput)) {
       ToastAndroid.show("Restored unsaved changes", ToastAndroid.SHORT);
     }
   }, []);
@@ -216,6 +208,7 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
       activityPath,
       dataPoints.map((dp) => dp.uuid),
     );
+    clearDraft(key);
     navigation.goBack();
   };
 
@@ -289,6 +282,8 @@ const EditDataPoint: FC<EditDataPointProps> = ({ navigation, route }) => {
       inputData.type === "new" ? undefined : dataPoints[0].uuid,
       newPoint,
     );
+    // Saved, so there is nothing left to restore
+    clearDraft(key);
     return { index: newIndex, dataPoint: newPoint };
   };
 
