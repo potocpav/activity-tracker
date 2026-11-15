@@ -36,7 +36,11 @@
 
 # Changelog
 
-## 3.8.0 (2026-11-12)
+## 3.8.1 (2026-11-15)
+
+- Keep the data point draft when going back, until it is saved or deleted
+
+### 3.8.0 (2026-11-12)
 
 - Tweaks and fixes
 - Add future date input
