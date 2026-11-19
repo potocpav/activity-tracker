@@ -36,7 +36,11 @@
 
 # Changelog
 
-## 3.8.1 (2026-11-15)
+## 3.8.2 (2026-11-19)
+
+- Added obfuscation, upgraded expo
+
+### 3.8.1 (2026-11-15)
 
 - Keep the data point draft when going back, until it is saved or deleted
 
