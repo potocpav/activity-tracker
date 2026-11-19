@@ -2,7 +2,7 @@ import React, { Fragment } from "react";
 import { ScrollView, Text, View } from "react-native";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { SystemBars } from "react-native-edge-to-edge";
+import { SystemBars } from "../Components/SystemBars";
 import useStore from "../Model/Store";
 import {
   ActivityType,

@@ -23,7 +23,7 @@ import {
   defaultDataFilter,
 } from "../Model/StoreTypes";
 import * as D from "../Model/Date";
-import { SystemBars } from "react-native-edge-to-edge";
+import { SystemBars } from "../Components/SystemBars";
 import * as SQLite from "expo-sqlite";
 import { defaultGraphs, defaultCalendar, defaultStats } from "../Model/DefaultActivity";
 import * as Crypto from "expo-crypto";

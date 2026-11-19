@@ -23,7 +23,7 @@ import TagDialog from "../Components/TagDialog";
 import { useAppTheme, useThemePalette, Theme } from "../Model/Theme";
 import { defaultCalendar, defaultGraphs, defaultStats, defaultBleScaleGraphs } from "../Model/DefaultActivity";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { SystemBars } from "react-native-edge-to-edge";
+import { SystemBars } from "../Components/SystemBars";
 import { UnitEditor } from "../Components/UnitView";
 import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";
 import { ListItem } from "../Components/List";

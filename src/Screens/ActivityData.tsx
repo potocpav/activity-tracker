@@ -22,7 +22,7 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useThemePalette } from "../Model/Theme";
 import { useAppTheme } from "../Model/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { SystemBars } from "react-native-edge-to-edge";
+import { SystemBars } from "../Components/SystemBars";
 import EmptyPagePlaceholder from "../Components/EmptyPagePlaceholder";
 import Inset from "../Components/SafeAreaInset";
 import { ButtonRow, DeleteIcon, Button, Divider } from "../Components/Element";

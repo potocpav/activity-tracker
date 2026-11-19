@@ -1,7 +1,7 @@
 import React from "react";
 import { Text, View } from "react-native";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { SystemBars } from "react-native-edge-to-edge";
+import { SystemBars } from "./SystemBars";
 import { Button } from "./Element";
 import useStore from "../Model/Store";
 import { ActivityType, State } from "../Model/StoreTypes";

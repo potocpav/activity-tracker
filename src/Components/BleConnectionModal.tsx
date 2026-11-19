@@ -4,7 +4,7 @@ import { Device } from "react-native-ble-plx";
 import useStore from "../Model/Store";
 import { useAppTheme } from "../Model/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { SystemBars } from "react-native-edge-to-edge";
+import { SystemBars } from "./SystemBars";
 
 type BleDeviceModalProps = {
   navigation: any;

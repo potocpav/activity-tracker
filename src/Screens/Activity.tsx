@@ -8,7 +8,7 @@ import ActivitySummary from "./ActivitySummary";
 import { File, Paths, EncodingType } from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import { useAppTheme } from "../Model/Theme";
-import { SystemBars } from "react-native-edge-to-edge";
+import { SystemBars } from "../Components/SystemBars";
 import Hint from "../Components/Hint";
 import { BleScaleIcon, ButtonRow, DotsIconButton, EditIconButton, PlusIconButton, Button } from "../Components/Element";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";

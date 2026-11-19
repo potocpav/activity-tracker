@@ -26,7 +26,7 @@ import Animated, {
 import { renderLongFormValue } from "../Model/Unit";
 import TagSelector from "../Components/TagSelector";
 import SkiaChart, { xToCanvas, yToCanvas, Viewport } from "../Components/Chart/SkiaChart";
-import { SystemBars } from "react-native-edge-to-edge";
+import { SystemBars } from "../Components/SystemBars";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Button } from "../Components/Element";
 import SegmentedButtons from "../Components/SegmentedButtons";

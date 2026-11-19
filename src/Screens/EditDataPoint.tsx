@@ -27,7 +27,7 @@ import { futureHorizon } from "../Model/Activity";
 import * as D from "../Model/Date";
 import { useAppTheme, useThemePalette, Theme } from "../Model/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { SystemBars } from "react-native-edge-to-edge";
+import { SystemBars } from "../Components/SystemBars";
 import { numberToString, stringToNumber, renderUnit } from "../Model/Unit";
 import { ValueEditor } from "../Components/UnitView";
 import InputWrapper, { InputWrapperRef } from "../Components/InputWrapper";

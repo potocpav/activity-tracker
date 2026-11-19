@@ -5,7 +5,7 @@ import { ActivityType, DataPoint, dayToISO, Stat, ActivityTab, ActivityPath } fr
 import { dayCmp, findZeroSlice, renderStatValue } from "../Model/Activity";
 import { useAppTheme, useThemePalette, useWideDisplay } from "../Model/Theme";
 import { useToday } from "../Model/useToday";
-import { SystemBars } from "react-native-edge-to-edge";
+import { SystemBars } from "../Components/SystemBars";
 import { SafeAreaView } from "react-native-safe-area-context";
 import EmptyPagePlaceholder from "../Components/EmptyPagePlaceholder";
 import Hint from "../Components/Hint";

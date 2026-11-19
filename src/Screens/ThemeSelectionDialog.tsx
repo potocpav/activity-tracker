@@ -2,7 +2,7 @@ import React, { Fragment } from "react";
 import { View, StyleSheet, ScrollView } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import useStore from "../Model/Store";
-import { SystemBars } from "react-native-edge-to-edge";
+import { SystemBars } from "../Components/SystemBars";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppTheme } from "../Model/Theme";
 import { RadioButton } from "../Components/Element";

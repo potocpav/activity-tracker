@@ -19,7 +19,7 @@ import StatView from "../Components/StatView";
 import TextField from "../Components/TextField";
 import { useAppTheme } from "../Model/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { SystemBars } from "react-native-edge-to-edge";
+import { SystemBars } from "../Components/SystemBars";
 import { ButtonRow, CheckButton, CopyButton, DeleteButton } from "../Components/Element";
 import { withActivityLock } from "../Components/LockedActivity";
 
