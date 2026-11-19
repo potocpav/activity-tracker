@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { ComponentRef, useEffect, useRef, useState } from "react";
 import {
   Animated,
   LayoutChangeEvent,
@@ -81,7 +81,7 @@ const MenuBase: React.FC<MenuProps> = ({ visible, onDismiss, anchor, children })
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
-  const anchorRef = useRef<View>(null);
+  const anchorRef = useRef<ComponentRef<typeof View>>(null);
   const [anchorRect, setAnchorRect] = useState<Rect | null>(null);
   const [position, setPosition] = useState<Position | null>(null);
   const appear = useRef(new Animated.Value(0)).current;

@@ -1,4 +1,4 @@
-import React, { Fragment, useRef, useState, useMemo, useCallback } from "react";
+import React, { ComponentRef, Fragment, useRef, useState, useMemo, useCallback } from "react";
 import { View, Text, Platform, useWindowDimensions, FlatList, LayoutChangeEvent, LayoutRectangle } from "react-native";
 import { Canvas, matchFont, RoundedRect, Text as SkiaText, vec, Line } from "@shopify/react-native-skia";
 import { SubUnit } from "../../Model/StoreTypes";
@@ -114,7 +114,7 @@ const FlatListChart = ({
 }: FlatListChartData) => {
   const [hasMeasuredLayoutSize, setHasMeasuredLayoutSize] = useState(false);
   const [size, setSize] = useState<LayoutRectangle | null>(null);
-  const rootRef = useRef<View>(null);
+  const rootRef = useRef<ComponentRef<typeof View>>(null);
   const windowDimensions = useWindowDimensions();
   const font = matchFont({ fontFamily: fontFamily, fontSize: 10 * windowDimensions.fontScale });
   const width = size?.width ?? 0;

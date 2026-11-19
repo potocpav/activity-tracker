@@ -1,4 +1,4 @@
-import React, { Fragment, useRef, useState, useEffect } from "react";
+import React, { ComponentRef, Fragment, useRef, useState, useEffect } from "react";
 import { View, Platform, useWindowDimensions, LayoutChangeEvent, LayoutRectangle } from "react-native";
 import { Canvas, matchFont, Text as SkiaText, vec, Line, Skia, Path, rect, Group } from "@shopify/react-native-skia";
 import { SubUnit } from "../../Model/StoreTypes";
@@ -40,7 +40,7 @@ type SkiaChartData = {
 const SkiaChart = ({ gridLineColor, view, viewportShared, children }: SkiaChartData) => {
   const [hasMeasuredLayoutSize, setHasMeasuredLayoutSize] = useState(false);
   const [size, setSize] = useState<LayoutRectangle | null>(null);
-  const rootRef = useRef<View>(null);
+  const rootRef = useRef<ComponentRef<typeof View>>(null);
   const windowDimensions = useWindowDimensions();
   const font = matchFont({ fontFamily: fontFamily, fontSize: 10 * windowDimensions.fontScale });
 
