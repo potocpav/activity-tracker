@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from "react";
+import React, { useState, useRef } from "react";
 import { StyleSheet, Text, View, useWindowDimensions, FlatList, ToastAndroid } from "react-native";
 import useStore from "../Model/Store";
 import { ActivityType, DataPoint, dayToISO, Stat, ActivityTab, ActivityPath } from "../Model/StoreTypes";
@@ -34,7 +34,7 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
-import { Gesture, GestureDetector, Pressable } from "react-native-gesture-handler";
+import { GestureDetector, PanGesture, Pressable, usePanGesture } from "react-native-gesture-handler";
 import { scheduleOnRN } from "react-native-worklets";
 import SettingsButton from "../Components/SettingsButton";
 import SmallDialog from "../Components/SmallDialog";
@@ -76,29 +76,26 @@ const DraggableCard = ({
   const position = useSharedValue(0);
   const isPanning = useSharedValue(false);
   const alreadyMoved = useSharedValue(false);
-  const panGesture = useMemo(
-    () =>
-      Gesture.Pan()
-        .activateAfterLongPress(400)
-        .activeOffsetY([-TOLERANCE, TOLERANCE])
-        .failOffsetX([-TOLERANCE, TOLERANCE])
-        .onStart((e) => {
-          position.set(e.translationY);
-          isPanning.set(true);
-          alreadyMoved.set(false);
-        })
-        .onUpdate((e) => {
-          position.set(e.translationY);
-          draggedCardIx.set({
-            from: index,
-            to: Math.max(0, Math.min(numberOfItems - 1, Math.round(e.translationY / itemHeight) + index)),
-          });
-        })
-        .onEnd(() => {
-          isPanning.set(false);
-        }),
-    [index, numberOfItems, itemHeight, draggedCardIx, position, isPanning, alreadyMoved],
-  );
+  const panGesture = usePanGesture({
+    activateAfterLongPress: 400,
+    activeOffsetY: [-TOLERANCE, TOLERANCE],
+    failOffsetX: [-TOLERANCE, TOLERANCE],
+    onActivate: (e) => {
+      position.set(e.translationY);
+      isPanning.set(true);
+      alreadyMoved.set(false);
+    },
+    onUpdate: (e) => {
+      position.set(e.translationY);
+      draggedCardIx.set({
+        from: index,
+        to: Math.max(0, Math.min(numberOfItems - 1, Math.round(e.translationY / itemHeight) + index)),
+      });
+    },
+    onDeactivate: () => {
+      isPanning.set(false);
+    },
+  });
 
   const animatedStyle = useAnimatedStyle(() => {
     if (isPanning.value) {
@@ -147,6 +144,7 @@ const DraggableCard = ({
           navigation={navigation}
           selectedActivities={selectedActivities}
           setSelectedActivities={setSelectedActivities}
+          dragGesture={panGesture}
         />
       </Animated.View>
     </GestureDetector>
@@ -159,12 +157,15 @@ const ActivityCard = ({
   navigation,
   selectedActivities,
   setSelectedActivities,
+  dragGesture,
 }: {
   tabId: number;
   activityId: number;
   navigation: any;
   selectedActivities: number[];
   setSelectedActivities: (activities: (activities: number[]) => number[]) => void;
+  // The card's drag-to-reorder gesture: the presses must not block it
+  dragGesture: PanGesture;
 }) => {
   const index = activityId;
   const activityPath: ActivityPath = { tabId, activityId };
@@ -215,6 +216,7 @@ const ActivityCard = ({
       style={[styles.activityCard, { borderWidth: isSelected ? 2 : 0, borderColor: palette[activity.color] }]}
     >
       <Pressable
+        simultaneousWith={dragGesture}
         onLongPress={() => {
           toggleSelected();
         }}
@@ -255,6 +257,7 @@ const ActivityCard = ({
         ))}
       </Pressable>
       <Pressable
+        simultaneousWith={dragGesture}
         onPress={() => {
           if (selectedActivities.length === 0) {
             if (activity.locked && !authenticated) {
