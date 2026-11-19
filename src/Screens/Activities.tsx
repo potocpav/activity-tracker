@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useLayoutEffect } from "react";
 import { StyleSheet, Text, View, useWindowDimensions, FlatList, ToastAndroid } from "react-native";
 import useStore from "../Model/Store";
 import { ActivityType, DataPoint, dayToISO, Stat, ActivityTab, ActivityPath } from "../Model/StoreTypes";
@@ -28,7 +28,6 @@ import Animated, {
   FadeOut,
   FadeIn,
   SharedValue,
-  useAnimatedReaction,
   useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
@@ -46,10 +45,23 @@ type ActivitiesProps = {
   navigation: any;
 };
 
+// The drag in progress, or the drop waiting for the list to be reordered.
+type DragState = {
+  // the dragged card's activity uuid; positions shift once the list is reordered, so the
+  // dragged card must not be identified by its position
+  key: string;
+  // positions in the visible list, not activity indices
+  from: number;
+  to: number;
+  // the move has been sent to the store; cards hold still until the list re-renders
+  committed: boolean;
+};
+
 const DraggableCard = ({
   draggedCardIx,
   moveActivity,
   index,
+  itemKey,
   activityId,
   itemHeight,
   numberOfItems,
@@ -58,11 +70,13 @@ const DraggableCard = ({
   selectedActivities,
   setSelectedActivities,
 }: {
-  draggedCardIx: SharedValue<{ from: number; to: number } | null>;
+  draggedCardIx: SharedValue<DragState | null>;
   // `from` and `to` are positions in the visible list, not activity indices
   moveActivity: (from: number, to: number) => void;
   // position in the visible list, which skips hidden (locked) activities
   index: number;
+  // uuid of the activity
+  itemKey: string;
   // index of the activity within its tab
   activityId: number;
   itemHeight: number;
@@ -88,8 +102,10 @@ const DraggableCard = ({
     onUpdate: (e) => {
       position.set(e.translationY);
       draggedCardIx.set({
+        key: itemKey,
         from: index,
         to: Math.max(0, Math.min(numberOfItems - 1, Math.round(e.translationY / itemHeight) + index)),
+        committed: false,
       });
     },
     onDeactivate: () => {
@@ -98,36 +114,40 @@ const DraggableCard = ({
   });
 
   const animatedStyle = useAnimatedStyle(() => {
+    const drag = draggedCardIx.value;
     if (isPanning.value) {
-    } else if (draggedCardIx.value?.from == index) {
+    } else if (drag === null) {
+      position.set(0);
+    } else if (drag.committed) {
+      // The move is in the store; hold still until the reordered list resets the drag.
+      // Recomputing here would apply the old positions to the reordered cards.
+    } else if (drag.key === itemKey) {
       // dropped
-      if (draggedCardIx.value && !alreadyMoved.value) {
-        const dragged = draggedCardIx.value;
+      if (!alreadyMoved.value) {
         alreadyMoved.set(true);
-
         position.set(
-          withSpring(
-            (draggedCardIx.value.to - index) * itemHeight,
-            { stiffness: 10000, damping: 1000 },
-            (cancelled) => {
-              if (cancelled && dragged && dragged.from !== dragged.to) {
-                scheduleOnRN(moveActivity, dragged.from, dragged.to);
-              }
-            },
-          ),
+          withSpring((drag.to - drag.from) * itemHeight, { stiffness: 10000, damping: 1000 }, (finished) => {
+            if (!finished) {
+              return;
+            }
+            if (drag.from !== drag.to) {
+              draggedCardIx.set({ ...drag, committed: true });
+              scheduleOnRN(moveActivity, drag.from, drag.to);
+            } else {
+              draggedCardIx.set(null);
+            }
+          }),
         );
       }
-    } else if (draggedCardIx.value !== null) {
+    } else {
       // drag in progress, but I am a non-dragged card
-      if (index < draggedCardIx.value.from && index >= draggedCardIx.value.to) {
+      if (index < drag.from && index >= drag.to) {
         position.set(withSpring(itemHeight));
-      } else if (index > draggedCardIx.value.from && index <= draggedCardIx.value.to) {
+      } else if (index > drag.from && index <= drag.to) {
         position.set(withSpring(-itemHeight));
       } else {
         position.set(withSpring(0));
       }
-    } else {
-      position.set(0);
     }
     return {
       transform: [{ translateY: position.value }],
@@ -376,7 +396,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   };
 
   const scrollY = useSharedValue(0);
-  const draggedCardIx = useSharedValue<{ from: number; to: number } | null>(null);
+  const draggedCardIx = useSharedValue<DragState | null>(null);
   const itemHeight = 40 * dimensions.fontScale;
 
   React.useEffect(() => {
@@ -474,13 +494,11 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
   // Locked activities are only listed once the user has authenticated
   const isHidden = (activity: ActivityType) => activity.locked && hideLockedActivities && !authenticated;
 
-  useAnimatedReaction(
-    () => {},
-    () => {
-      draggedCardIx.set(null);
-    },
-    [activities],
-  );
+  // Once the reordered list is committed, end the drop. A layout effect runs before the
+  // cards' animated styles pick up their new positions (those update in passive effects).
+  useLayoutEffect(() => {
+    draggedCardIx.set(null);
+  }, [activities, draggedCardIx]);
 
   return (
     <SafeAreaView style={[styles.container]} edges={["left", "right"]}>
@@ -521,6 +539,7 @@ const Activities: React.FC<ActivitiesProps> = ({ navigation }) => {
                     <DraggableCard
                       draggedCardIx={draggedCardIx}
                       index={index}
+                      itemKey={item.activity.uuid}
                       activityId={item.activityId}
                       moveActivity={(from: number, to: number) =>
                         moveActivityAction(tabId, visibleActivities[from].activityId, visibleActivities[to].activityId)
